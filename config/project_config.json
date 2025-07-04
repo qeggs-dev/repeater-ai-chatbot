@@ -54,17 +54,17 @@
         ]
     },
     {
-        "name": "WKHTMLTOPDF_PATH",
+        "name": "WKHTMLTOIMAGE_PATH",
         "values": [
             {
                 "type": "path",
                 "system": "Windows",
-                "value": "C:\\Program Files\\wkhtmltopdf\\bin\\wkhtmltopdf.exe"
+                "value": "C:\\Program Files\\wkhtmltopdf\\bin\\wkhtmltoimage.exe"
             },
             {
                 "type": "path",
                 "system": "Linux",
-                "value": "/usr/local/bin/wkhtmltopdf"
+                "value": "/usr/local/bin/wkhtmltoimage"
             }
         ]
     },

@@ -151,7 +151,7 @@ async def render(
     user_id: str,
     text: str = Form(...),
     style: str | None = Form(None),
-    timeout: int | None = Form(None),
+    timeout: float | None = Form(None),
 ):
     """
     Endpoint for rendering markdown text to image
@@ -166,7 +166,7 @@ async def render(
     rendered_image_dir = configs.get_config("rendered_image_dir", "./temp/render").get_value(Path)
 
     # 延迟删除函数
-    async def _wait_delete(sleep_time: int, filename: str):
+    async def _wait_delete(sleep_time: float, filename: str):
         """
         等待一段时间后删除图片
         """

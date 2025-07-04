@@ -289,8 +289,8 @@ PS: `system`字段可以让配置加载器在读取该项的时候自动按照�
 
 | 请求 | URL | 参数(表单数据) | 描述 |
 | :---: | :---: | :---: | :---: |
-| `POST` | `/chat/completion/{user_id:str}` | `message(str)`<br/>`user_name(str)`<br/>`role(str) = 'user'`<br/>`role_name(str)`<br/>`model_type(str)`<br/>`load_prompt(bool) = true`<br/>`rendering(bool) = false`<br/>`save_context(bool) = true`<br/>`reference_context_id(str)`<br/>`continue_completion(bool)`  | AI聊天 |
-| `POST` | `/render/{user_id:str}` | `text(str)`<br/>`style(str)` | 文本渲染 |
+| `POST` | `/chat/completion/{user_id:str}` | `message(str)`<br/>`user_name(str)`<br/>`role(str) = 'user'`<br/>`role_name(str)`<br/>`model_type(str)`<br/>`load_prompt(bool) = true`<br/>`save_context(bool) = true`<br/>`reference_context_id(str)`<br/>`continue_completion(bool)`  | AI聊天 |
+| `POST` | `/render/{user_id:str}` | `text(str)`<br/>`style(str)`<br/>`timeout(float)` | 文本渲染 |
 | `POST` | `/userdata/variable/expand/{user_id:str}` | `username(str)`<br/>`text(str)` | 变量解析 |
 | `GET` | `/userdata/context/get/{user_id:str}` | | 获取上下文 |
 | `GET` | `/userdata/context/length/{user_id:str}` | | 获取上下文长度 |
