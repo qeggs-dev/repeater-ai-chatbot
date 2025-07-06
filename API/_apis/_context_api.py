@@ -26,7 +26,8 @@ async def get_context_length(user_id: str):
     Endpoint for getting context
     """
     # 从chat.context_manager中加载用户ID为user_id的上下文
-    context = await chat.context_manager.load(user_id, [])
+    context_loader = await chat.get_context_loader()
+    context = await context_loader.get_context_object(user_id)
     # 将上下文转换为Context.ContextObject对象
     context = core.Context.ContextObject().from_context(context)
     # 返回JSONResponse，包含上下文的总长度和上下文的长度
@@ -53,13 +54,14 @@ async def withdraw_context(user_id: str, index: int = Form(...)):
     """
     Endpoint for withdrawing context
     """
-    # 从chat.context_manager中加载用户ID为user_id的上下文
-    context = await chat.context_manager.load(user_id, [])
+    # 从context_loader中加载用户ID为user_id的上下文
+    context_loader = await chat.get_context_loader()
+    context = await context_loader.get_context_object(user_id)
 
     # 检查索引是否在上下文范围内
-    if 0 <= index < len(context):
-        context.pop(index)
-        await chat.context_manager.save(user_id, context)
+    if 0 <= index < len(context.context_list):
+        context.context_list.pop(index)
+        await context_loader.save(user_id, context)
     else:
         raise HTTPException(400, "Index out of range")
     
@@ -71,19 +73,20 @@ async def rewrite_context(user_id: str, index: int = Form(...), content: str = F
     """
     Endpoint for rewriting context
     """
-    # 从chat.context_manager中加载用户ID为user_id的上下文
-    context = await chat.context_manager.load(user_id, [])
+    # 从context_loader中加载用户ID为user_id的上下文
+    context_loader = await chat.get_context_loader()
+    context = await context_loader.get_context_object(user_id)
 
     # 检查索引是否在上下文范围内
-    if 0 <= index < len(context):
+    if 0 <= index < len(context.context_list):
         if content:
-            context[index]["content"] = content
+            context.context_list[index].content = content
         if reasoning_content:
-            if context[index]["role"] == "assistant":
-                context[index]["reasoning_content"] = reasoning_content
+            if context.context_list[index].role == "assistant":
+                context.context_list[index].reasoning_content = reasoning_content
             else:
                 raise HTTPException(400, "Only assistant can have reasoning_content")
-        await chat.context_manager.save(user_id, context)
+        await context_loader.save(user_id, context)
     else:
         raise HTTPException(400, "Index out of range")
     
