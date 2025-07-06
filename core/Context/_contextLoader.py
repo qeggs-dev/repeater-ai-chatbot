@@ -44,14 +44,12 @@ class ContextLoader:
             config: ConfigManager,
             prompt: PromptManager,
             context: ContextManager,
-            prompt_vp: PromptVP
         ):
         self.config: ConfigManager = config
         self.prompt: PromptManager = prompt
         self.context: ContextManager = context
-        self.prompt_vp: PromptVP = prompt_vp
     
-    async def _load_prompt(self, context:ContextObject, user_id: str) -> ContextObject:
+    async def _load_prompt(self, context:ContextObject, user_id: str, prompt_vp: PromptVP) -> ContextObject:
         user_prompt:str = await self.prompt.load(user_id=user_id, default='')
         if user_prompt:
             # 使用用户提示词
@@ -82,7 +80,7 @@ class ContextLoader:
                 logger.warning(f"Default Prompt Directory Not Found: {default_prompt_dir}", user_id = user_id)
                 prompt = ""
         # 展开变量
-        prompt = await self._expand_variables(prompt, variables = self.prompt_vp, user_id=user_id)
+        prompt = await self._expand_variables(prompt, variables = prompt_vp, user_id=user_id)
 
         # 创建Content单元
         prompt = ContentUnit(
@@ -92,6 +90,20 @@ class ContextLoader:
         # 将Content单元加入Context
         context.prompt = prompt
         return context
+    
+    async def get_context_object(
+            self,
+            user_id: str,
+        ) -> ContextObject:
+        try:
+            context_list = await self.context.load(user_id=user_id, default=[])
+        except orjson.JSONDecodeError:
+            raise ContextLoadingSyntaxError(f"Context File Syntax Error: {user_id}")
+        # 构建上下文对象
+        contextObj = ContextObject()
+        contextObj.update_from_context(context_list)
+        logger.info(f"Load Context: {len(contextObj.context_list)}", user_id = user_id)
+        return contextObj
 
     async def _append_context(
             self,
@@ -100,7 +112,8 @@ class ContextLoader:
             new_message: str,
             role: str = 'user',
             role_name: str | None = None,
-            continue_completion: bool = False
+            continue_completion: bool = False,
+            prompt_vp: PromptVP | None = None
         ) -> ContextObject:
         """
         添加上下文
@@ -110,22 +123,17 @@ class ContextLoader:
         :param New_Message: 新消息
         :param role: 角色
         :param roleName: 角色名称
-        :param continue_completion: 是否继续完成
+        :param continue_completion: 是否继续生成
         :return: 上下文对象
         """
-        try:
-            context_list = await self.context.load(user_id=user_id, default=[])
-        except orjson.JSONDecodeError:
-            raise ContextLoadingSyntaxError(f"Context File Syntax Error: {user_id}")
-        if not continue_completion:
             # 构建上下文对象
-            contextObj = ContextObject()
+        contextObj = await self.get_context_object(user_id=user_id)
+        
+        if not continue_completion:
             content = ContentUnit()
-            content.content = await self._expand_variables(new_message, variables = self.prompt_vp, user_id=user_id)
+            content.content = await self._expand_variables(new_message, variables = prompt_vp, user_id=user_id)
             content.role = ContextRole(role)
             content.role_name = role_name
-            contextObj.update_from_context(context_list)
-            logger.info(f"Load Context: {len(contextObj.context_list)}", user_id = user_id)
 
             # 添加上下文
             if not context.context_list:
@@ -141,7 +149,8 @@ class ContextLoader:
             role: str = 'user',
             role_name: str | None = None,
             load_prompt: bool = True,
-            continue_completion: bool = False
+            continue_completion: bool = False,
+            prompt_vp: PromptVP = PromptVP()
         ) -> ContextObject:
         """
         加载上下文
@@ -155,7 +164,7 @@ class ContextLoader:
         """
         # 如果允许添加提示词，就加载提示词，否则使用空上下文对象
         if load_prompt:
-            context = await self._load_prompt(ContextObject(), user_id=user_id)
+            context = await self._load_prompt(ContextObject(), user_id=user_id, prompt_vp = prompt_vp)
         else:
             context = ContextObject()
         
@@ -166,7 +175,8 @@ class ContextLoader:
             new_message = message,
             role = role,
             role_name = role_name,
-            continue_completion = continue_completion
+            continue_completion = continue_completion,
+            prompt_vp = prompt_vp
         )
         return context
     

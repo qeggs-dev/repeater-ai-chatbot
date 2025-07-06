@@ -1,6 +1,7 @@
 from .._resource import app, chat, configs, validate_path
 from fastapi import HTTPException
 from fastapi.responses import FileResponse
+from pathlib import Path
 
 @app.get("/file/render/{file_uuid}.png", name = "render_file")
 async def get_render_file(file_uuid: str):

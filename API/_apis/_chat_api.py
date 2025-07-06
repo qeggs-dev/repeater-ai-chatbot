@@ -20,7 +20,7 @@ from fastapi.exceptions import (
     HTTPException
 )
 from loguru import logger
-from .._resource import app, chat, ApiInfo
+from .._resource import app, chat, core
 
 @app.post("/chat/completion/{user_id}")
 async def chat_endpoint(
@@ -54,6 +54,6 @@ async def chat_endpoint(
             reference_context_id = reference_context_id,
             continue_completion = continue_completion
         )
-    except ApiInfo.APIGroupNotFoundError as e:
+    except core.ApiInfo.APIGroupNotFoundError as e:
         raise HTTPException(detail=str(e), status_code=400)
     return JSONResponse(context)

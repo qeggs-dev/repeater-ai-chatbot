@@ -1,7 +1,7 @@
 from .._resource import (
     chat,
     app,
-    Context
+    core
 )
 from fastapi import Form
 from fastapi.responses import (
@@ -28,7 +28,7 @@ async def get_context_length(user_id: str):
     # 从chat.context_manager中加载用户ID为user_id的上下文
     context = await chat.context_manager.load(user_id, [])
     # 将上下文转换为Context.ContextObject对象
-    context = Context.ContextObject().from_context(context)
+    context = core.Context.ContextObject().from_context(context)
     # 返回JSONResponse，包含上下文的总长度和上下文的长度
     return JSONResponse(
         {

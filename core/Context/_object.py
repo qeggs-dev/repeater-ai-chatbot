@@ -371,6 +371,14 @@ class ContextObject:
     def __len__(self):
         return len(self.context_list)
     
+    def __iter__(self):
+        # 先 yield 提示词
+        yield self.prompt
+        # 再正常遍历 context_list
+        for content in self.context_list:
+            yield content
+
+    
     def update_from_context(self, context: list[dict]) -> None:
         """
         从上下文列表更新上下文

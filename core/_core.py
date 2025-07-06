@@ -8,6 +8,7 @@ from typing import (
 )
 import random
 from pathlib import Path
+from dataclasses import dataclass, asdict
 
 # ==== 第三方库 ==== #
 from loguru import logger
@@ -40,6 +41,20 @@ from ConfigManager import ConfigLoader
 configs = ConfigLoader()
 
 __version__ = configs.get_config("VERSION", "4.1.0.0").get_value(str)
+
+@dataclass
+class _Output:
+    reasoning_content: str = ""
+    content: str = ""
+    model_name: str = ""
+    model_type: str = ""
+    model_id: str = ""
+    create_time: int = 0
+    id: str = ""
+
+    @property
+    def as_dict(self):
+        return asdict(self)
 
 class Core:
     def __init__(self, max_concurrency: int | None = None):
@@ -186,10 +201,6 @@ class Core:
     # region > get context
     async def get_context_loader(
             self,
-            user_id: str,
-            user_name: str,
-            model_type: str = configs.get_config("default_model_type", "chat").get_value(str),
-            user_config: dict = {},
         ) -> Context.ContextLoader:
         """
         加载上下文
@@ -203,12 +214,6 @@ class Core:
             config=self.user_config_manager,
             prompt=self.prompt_manager,
             context=self.context_manager,
-            prompt_vp = await self.get_prompt_vp(
-                user_id = user_id,
-                user_name = user_name,
-                model_type = model_type,
-                config = user_config
-            )
         )
         return context_loader
     
@@ -222,7 +227,8 @@ class Core:
             role_name: str | None = None,
             load_prompt: bool = True,
             continue_completion: bool = False,
-            reference_context_id: str | None = None
+            reference_context_id: str | None = None,
+            prompt_vp: PromptVP = PromptVP()
         ) -> Context.ContextObject:
         """
         获取上下文
@@ -244,7 +250,8 @@ class Core:
                 role = role,
                 role_name = role_name if role_name else user_name,
                 load_prompt = load_prompt,
-                continue_completion = continue_completion
+                continue_completion = continue_completion,
+                prompt_vp = prompt_vp
             )
         else:
             context = await context_loader.load(
@@ -253,9 +260,12 @@ class Core:
                 role = role,
                 role_name = role_name,
                 load_prompt = load_prompt,
-                continue_completion = continue_completion
+                continue_completion = continue_completion,
+                prompt_vp = prompt_vp
             )
         return context
+    # endregion
+
     # region > Chat
     async def Chat(
             self,
@@ -308,13 +318,16 @@ class Core:
             if not model_type:
                 model_type = config.get("model_type", configs.get_config("default_model_type", "chat").get_value(str))
 
-            # 获取上下文加载器
-            context_loader = await self.get_context_loader(
+            # 获取Prompt_vp以展开变量内容
+            prompt_vp = await self.get_prompt_vp(
                 user_id = user_id,
                 user_name = user_name,
                 model_type = model_type,
-                user_config = config
+                config = config
             )
+
+            # 获取上下文加载器
+            context_loader = await self.get_context_loader()
 
             # 获取上下文
             context = await self.get_context(
@@ -326,7 +339,8 @@ class Core:
                 role_name = role_name,
                 load_prompt = load_prompt,
                 continue_completion = continue_completion,
-                reference_context_id = reference_context_id
+                reference_context_id = reference_context_id,
+                prompt_vp = prompt_vp
             )
             
             # 创建请求对象
@@ -372,35 +386,24 @@ class Core:
             # 记录预处理结束时间
             call_prepare_end_time = time.time_ns()
 
-            # 输出
-            output =  {
-                "reasoning_content": "",
-                "content": "",
-                "model_name": api.model_name,
-                "model_type": api.model_type,
-                "model_id": api.model_id,
-            }
+            # 输出 (为了自动填充输出内容)
+            output = _Output()
+            output.model_name = api.group_name
+            output.model_type = api.model_type
+            output.model_id = api.model_id
 
             # 提交请求
             try:
                 response = await self.api_client.submit_Request(user_id=user_id, request=request)
             except CallAPI.Exceptions.CallApiException as e:
-                output["content"] = f"Error:{e}"
-                return output
+                output.content = f"Error:{e}"
+                return output.as_dict
 
             # 补充调用日志的时间信息
             response.calling_log.task_start_time = task_start_time
             response.calling_log.call_prepare_start_time = task_start_time
             response.calling_log.call_prepare_end_time = call_prepare_end_time
             response.calling_log.created_time = response.created
-
-            # 获取Prompt_vp以展开模型输出内容
-            prompt_vp = await self.get_prompt_vp(
-                user_id = user_id,
-                user_name = user_name,
-                model_type = model_type,
-                config = config
-            )
             # 处理模型输出内容
             response.context.last_content.content = prompt_vp.process(response.context.last_content.content)
             # 记录Prompt_vp的命中情况
@@ -426,9 +429,11 @@ class Core:
 
             # 返回模型输出内容
             
-            output["reasoning_content"] = response.context.last_content.reasoning_content
-            output["content"] = response.context.last_content.content
-            return output
+            output.reasoning_content = response.context.last_content.reasoning_content
+            output.content = response.context.last_content.content
+            output.create_time = response.created
+            output.id = response.id
+            return output.as_dict
     # endregion
 
     # region > 重新加载API信息

@@ -13,12 +13,7 @@ from ConfigManager import ConfigLoader
 configs = ConfigLoader(
     config_file_path = env.path("CONFIG_FILE_PATH", "./configs/project_config.json")
 )
-from core import (
-    Core,
-    ApiInfo,
-    Context
-)
-from core.CallLog import CallAPILog
+import core
 from Markdown import markdown_to_image, STYLES as MARKDOWN_STYLES
 from admin_apikey_manager import AdminKeyManager
 from PathProcessors import validate_path
@@ -26,7 +21,7 @@ from PathProcessors import validate_path
 
 # region Global Objects
 app = FastAPI(title="RepeaterChatBackend")
-chat = Core()
+chat = core.Core()
 
 # 生成或读取API Key
 admin_api_key = AdminKeyManager()
