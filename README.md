@@ -161,6 +161,7 @@
 ## 配置选项表
 
 | 选项 | 描述 | 是否必填 | 默认值(*示例值*) |
+| :---: | :---: | :---: | :---: |
 | `API_INFO_FILE_PATH` | API信息文件路径 | **必填** | *`./config/apiconfig.json`* |
 | `CALL_LOG_FILE_PATH` | 主API调用日志的持久化存储文件 | **必填** | *`./config/calllog.jsonl`* |
 | `RENDERED_IMAGE_DIR` | 渲染图片的缓存位置 | **必填** |* `./temp/render`* |
