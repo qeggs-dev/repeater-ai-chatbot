@@ -249,13 +249,13 @@ PS: `system`字段可以让配置加载器在读取该项的时候自动按照�
 | `purple` | 紫色 |
 | `yellow` | 黄色 |
 | `orange` | 橙色 |
-| `dark_red` | 暗红色 |
-| `dark_pink` | 暗粉色 |
-| `dark_blue` | 暗蓝色 |
-| `dark_green` | 暗绿色 |
-| `dark_purple` | 暗紫色 |
-| `dark_yellow` | 暗黄色 |
-| `dark_orange` | 暗橙色 |
+| `dark-red` | 暗红色 |
+| `dark-pink` | 暗粉色 |
+| `dark-blue` | 暗蓝色 |
+| `dark-green` | 暗绿色 |
+| `dark-purple` | 暗紫色 |
+| `dark-yellow` | 暗黄色 |
+| `dark-orange` | 暗橙色 |
 
 ---
 
