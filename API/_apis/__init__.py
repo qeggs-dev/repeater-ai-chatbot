@@ -45,3 +45,6 @@ from ._admin_api import (
     reload_apiinfo,
     regenerate_admin_key
 )
+from ._static_api import (
+    favicon
+)
