@@ -5,6 +5,7 @@ import aiofiles
 from pathlib import Path
 from ConfigManager import ConfigLoader
 from PathProcessors import validate_path, sanitize_filename
+from loguru import logger
 
 configs = ConfigLoader()
 
@@ -31,6 +32,7 @@ async def get_style(style_name: str, use_base: bool = True) -> str:
     try:
         return await _read_style(style_file_path)
     except (FileNotFoundError, ValueError):
+        logger.warning(f"Style file not found: {style_file_path}", user_id = "[System]")
         return BASE_STYLE
 
 async def get_style_names() -> list[str]:
