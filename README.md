@@ -245,6 +245,15 @@ PS: `system`字段可以让配置加载器在读取该项的时候自动按照�
 | `pink` | 粉色 |
 | `blue` | 蓝色 |
 | `green` | 绿色 |
+| `purple` | 紫色 |
+| `yellow` | 黄色 |
+| `orange` | 橙色 |
+| `dark_pink` | 暗粉色 |
+| `dark_blue` | 暗蓝色 |
+| `dark_green` | 暗绿色 |
+| `dark_purple` | 暗紫色 |
+| `dark_yellow` | 暗黄色 |
+| `dark_orange` | 暗橙色 |
 
 ---
 
@@ -290,14 +299,14 @@ PS: `system`字段可以让配置加载器在读取该项的时候自动按照�
 
 | 请求 | URL | 参数(表单数据) | 描述 |
 | :---: | :---: | :---: | :---: |
-| `POST` | `/chat/completion/{user_id:str}` | `message(str)`<br/>`user_name(str)`<br/>`role(str) = 'user'`<br/>`role_name(str)`<br/>`model_type(str)`<br/>`load_prompt(bool) = true`<br/>`save_context(bool) = true`<br/>`reference_context_id(str)`<br/>`continue_completion(bool)`  | AI聊天 |
-| `POST` | `/render/{user_id:str}` | `text(str)`<br/>`style(str)`<br/>`timeout(float)` | 文本渲染 |
-| `POST` | `/userdata/variable/expand/{user_id:str}` | `username(str)`<br/>`text(str)` | 变量解析 |
+| `POST` | `/chat/completion/{user_id:str}` | *`message(str)`*<br/>*`user_name(str)`*<br/>*`role(str) = 'user'`*<br/>*`role_name(str)`*<br/>*`model_type(str)`*<br/>*`load_prompt(bool) = true`*<br/>*`save_context(bool) = true`*<br/>*`reference_context_id(str)`*<br/>*`continue_completion(bool)`*  | AI聊天 |
+| `POST` | `/render/{user_id:str}` | **`text(str)`**<br/>*`style(str)`*<br/>*`timeout(float)`* | 文本渲染 |
+| `POST` | `/userdata/variable/expand/{user_id:str}` | *`username(str)`*<br/>`text(str)` | 变量解析 |
 | `GET` | `/userdata/context/get/{user_id:str}` | | 获取上下文 |
 | `GET` | `/userdata/context/length/{user_id:str}` | | 获取上下文长度 |
 | `GET` | `/userdata/context/userlist` | | 获取用户列表 |
 | `POST` | `/userdata/context/withdraw/{user_id:str}` | `index(int)` | 撤回上下文 |
-| `POST` | `/userdata/context/rewrite/{user_id:str}` | `index(int)`<br/>`content(str)`<br/>`reasoning_content(str)` | 重写上下文 |
+| `POST` | `/userdata/context/rewrite/{user_id:str}` | `index(int)`<br/>`content(str)`<br/>*`reasoning_content(str)`* | 重写上下文 |
 | `GET` | `/userdata/context/branch/{user_id:str}` | | 获取用户分支ID列表 |
 | `GET` | `/userdata/context/now_branch/{user_id:str}` | | 获取用户当前分支ID |
 | `POST` | `/userdata/context/change/{user_id:str}` | `new_branch_id(str)` | 切换上下文 |

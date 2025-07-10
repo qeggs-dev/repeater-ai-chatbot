@@ -27,6 +27,15 @@
         ]
     },
     {
+        "name": "RENDER_STYLES_DIR",
+        "values": [
+            {
+                "type": "path",
+                "value": "./styles"
+            }
+        ]
+    },
+    {
         "name": "STATIC_DIR",
         "values": [
             {

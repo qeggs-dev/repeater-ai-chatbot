@@ -89,7 +89,6 @@ class Core:
         # 初始化调用日志管理器
         self.calllog = CallLog.CallLogManager(configs.get_config('Call_Log_File_Path').get_value(Path))
 
-        
         # 添加退出函数
         def _exit():
             """

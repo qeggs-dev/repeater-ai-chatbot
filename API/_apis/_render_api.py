@@ -1,10 +1,9 @@
 from .._resource import (
     app,
     configs,
-    MARKDOWN_STYLES,
-    chat,
-    markdown_to_image
+    chat
 )
+from Markdown import markdown_to_image, get_style_names
 from fastapi import (
     HTTPException,
     BackgroundTasks,
@@ -60,7 +59,7 @@ async def render(
             await _delete(filename)
         
     if style:
-        if style not in MARKDOWN_STYLES:
+        if style not in get_style_names():
             raise HTTPException(status_code=400, detail="Invalid style")
     else:
         # 获取用户配置
@@ -77,8 +76,7 @@ async def render(
     logger.info(f'Rendering image {filename} for "{style}" style', user_id=user_id)
 
     # 调用markdown_to_image函数生成图片
-    await asyncio.to_thread(
-        markdown_to_image,
+    await markdown_to_image(
         markdown_text = text,
         output_path = rendered_image_dir / filename,
         style = style
@@ -104,3 +102,8 @@ async def render(
             "created_ms": create_ms
         }
     )
+
+@app.get("/render_styles")
+async def get_render_styles():
+    style_names = await get_style_names()
+    return JSONResponse(style_names)
