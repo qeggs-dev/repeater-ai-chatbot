@@ -1,13 +1,14 @@
 import markdown
 import imgkit
+import asyncio
 from pathlib import Path
-from .styles import STYLES
+from ._styles import get_style, get_style_names
 from ConfigManager import ConfigLoader
 
 configs = ConfigLoader()
 
 # 修改 markdown_to_image 函数
-def markdown_to_image(
+async def markdown_to_image(
     markdown_text: str,
     output_path: str,
     width: int = 800,
@@ -34,7 +35,7 @@ def markdown_to_image(
     # 2. 构建完整 HTML
     if css is None:
         # 使用预设样式
-        css = STYLES.get(style, STYLES["light"])
+        css = await get_style(style)
     
     # 添加自适应宽度
     css += f"\nbody {{ width: {width - 60}px; }}"
@@ -53,7 +54,7 @@ def markdown_to_image(
     
     # 3. 配置转换选项
     default_options = {
-        'enable-local-file-access': None,  # 允许本地文件
+        'enable-local-file-access': None, # 允许本地文件
         'encoding': "UTF-8",              # 编码设置
         'quiet': ''                       # 静默模式
     }
@@ -63,49 +64,12 @@ def markdown_to_image(
     # 4. 转换并保存图片
     wkhtmltoimage_path = configs.get_config("wkhtmltoimage_path").get_value(Path)
     config = imgkit.config(wkhtmltoimage=wkhtmltoimage_path)
-    imgkit.from_string(
-        string=full_html,
-        output_path=output_path,
-        config=config,
-        options=default_options
+    await asyncio.to_thread(
+        imgkit.from_string,
+        string = full_html,
+        output_path = output_path,
+        config = config,
+        options = default_options
     )
     
     return str(Path(output_path).resolve())
-
-# 修改使用示例
-if __name__ == "__main__":
-    example_markdown = """
-# 主题样式演示
-
-## 代码块示例
-```python
-def greet(name):
-    print(f"Hello, {name}!")
-
-greet("World")
-```
-
-## 列表示例
-- 项目 1
-- 项目 2
-- 项目 3
-
-## 引用
-> 这是优雅的引用样式
-
-## 表格
-| 姓名   | 年龄 | 职业    |
-|--------|------|---------|
-| Alice  | 28   | 工程师  |
-| Bob    | 32   | 设计师  |
-    """
-    
-    # 生成所有样式示例
-    for style_name in ["light", "dark", "pink", "blue", "green"]:
-        output_file = markdown_to_image(
-            markdown_text=example_markdown,
-            output_path=f"output_{style_name}.png",
-            width=800,
-            style=style_name
-        )
-        print(f"生成 {style_name} 主题: {output_file}")
