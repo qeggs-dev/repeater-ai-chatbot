@@ -400,6 +400,9 @@ class Client:
                         arguments_str = delta_data.function_arguments,
                     )
                 )
+            
+            if delta_data.system_fingerprint:
+                model_response.system_fingerprint = delta_data.system_fingerprint
 
             # 判断是否为空并增加空chunk计数器
             if delta_data.is_empty:
@@ -491,6 +494,12 @@ class Client:
                                 delta_data.function_name = tool.function.name
                             if hasattr(tool.function, "arguments"):
                                 delta_data.function_arguments = tool.function.arguments
+            
+            if hasattr(choice, "finish_reason"):
+                delta_data.finish_reason = choice.finish_reason
+             
+        if hasattr(chunk, "system_fingerprint"):
+            delta_data.system_fingerprint = chunk.system_fingerprint
 
         # 转录usage数据
         if hasattr(chunk, 'usage') and chunk.usage is not None:
@@ -530,6 +539,12 @@ class Client:
         logger.info(f"Presence Penalty: {request.presence_penalty}", user_id = user_id)
         logger.info(f"Max Tokens: {request.max_tokens if request.max_tokens else 'MAX'}", user_id = user_id)
         logger.info(f"Max Completion Tokens: {request.max_completion_tokens if request.max_completion_tokens else 'MAX'}", user_id = user_id)
+        
+        logger.info("============= Response =============", user_id = user_id)
+        if response.system_fingerprint:
+            logger.info(f"System Fingerprint: {response.system_fingerprint}", user_id = user_id)
+        logger.info(f"Finish Reason: {response.finish_reason}", user_id = user_id)
+
         if response.calling_log.total_chunk > 0:
             logger.info("============ Chunk Count ===========", user_id = user_id)
             logger.info(f"Total Chunk: {response.calling_log.total_chunk}", user_id = user_id)
@@ -537,6 +552,7 @@ class Client:
                 logger.info(f"Empty Chunk: {response.calling_log.empty_chunk}", user_id = user_id)
                 logger.info(f"Non-Empty Chunk: {response.calling_log.total_chunk - response.calling_log.empty_chunk}", user_id = user_id)
             logger.info(f"Chunk effective ratio: {1 - response.calling_log.empty_chunk / response.calling_log.total_chunk :.2%}", user_id = user_id)
+        
         logger.info("========== Time Statistics =========", user_id = user_id)
         logger.info(f"Total Time: {format_deltatime_ns(response.calling_log.stream_processing_end_time - response.calling_log.request_start_time, '%H:%M:%S.%f.%u.%n')}", user_id = user_id)
         logger.info(f"API Request Time: {format_deltatime_ns(response.calling_log.request_end_time - response.calling_log.request_start_time, '%H:%M:%S.%f.%u.%n')}", user_id = user_id)
@@ -566,7 +582,7 @@ class Client:
         if response.stream:
             logger.info(f"Average Generation Rate: {response.token_usage.completion_tokens / ((response.calling_log.stream_processing_end_time - response.calling_log.stream_processing_start_time) / 1e9):.2f} /s", user_id = user_id)
 
-        logger.info("========== Content Length ==========", user_id = user_id)
+        logger.info("============= Content ==============", user_id = user_id)
         logger.info(f"Total Content Length: {len(response.context.last_content.reasoning_content) + len(response.context.last_content.content)}", user_id = user_id)
         response.calling_log.total_context_length = sum_string_lengths(response.context.full_context, "content")
         logger.info(f"Reasoning Content Length: {len(response.context.last_content.reasoning_content)}", user_id = user_id)

@@ -1,5 +1,5 @@
 from dataclasses import dataclass, asdict, field
-from typing import Callable, Coroutine
+from typing import Callable, Coroutine, Literal
 
 from ..Context import ContextObject
 from ..CallLog import CallLog
@@ -46,6 +46,7 @@ class Delta:
     function_name: str | None = None
     function_arguments: str | None = None
     token_usage: TokensCount | None = None
+    finish_reason: Literal["stop", "length", "content_filter", "tool_calls", "insufficient_system_resource"] | None = None
     created: int = 0
     model: str = ""
     system_fingerprint: str = ""
@@ -96,7 +97,7 @@ class Response:
     stream_processing_start_time_ns:int = 0
     stream_processing_end_time_ns:int = 0
     chunk_times: list[int] = field(default_factory=list)
-    finish_reason: str = ""
+    finish_reason: Literal["stop", "length", "content_filter", "tool_calls", "insufficient_system_resource"] = "stop"
     system_fingerprint: str = ""
     logprobs: list[Logprob] | None = None
     calling_log: CallLog | None = None
