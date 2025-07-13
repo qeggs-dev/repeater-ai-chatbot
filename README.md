@@ -169,7 +169,7 @@
 | `STATIC_DIR` | 静态资源位置 | **必填** | *`./static`* |
 | `USER_DATA_DIR` | 用户数据存放位置 | **必填** | *`./data/userdata`* |
 | `DEFAULT_MODEL_TYPE` | 调用时默认使用的模型类型 | **必填** | *`chat`* |
-| `WKHTMLTOPDF_PATH` | 渲染图片依赖的[`Wkhtmltopdf`](https://wkhtmltopdf.org/downloads.html)的位置 | **必填** | |
+| `WKHTMLTOIMAGE_PATH` | 渲染图片依赖的[`Wkhtmltopdf`](https://wkhtmltopdf.org/downloads.html)中`wkhtmltoimage`的路径 | **必填** | |
 | `DEFAULT_OUTPUT_DPI` | 渲染图片输出的DPI | **必填** | *`150`* |
 | `BOT_NAME` | 机器人名字 | **必填** | *`复读机`* |
 | `BIRTHDAY_YEAR` | 机器人出生年份 | **必填** | *`2024`* |
@@ -214,22 +214,22 @@
 ```json
 [
     {
-        "name": "WKHTMLTOPDF_PATH",
+        "name": "WKHTMLTOIMAGE_PATH",
         "values": [
             {
                 "type": "path",
                 "system": "Windows",
-                "value": "C:\\Program Files\\wkhtmltopdf\\bin\\wkhtmltopdf.exe"
+                "value": "C:\\Program Files\\wkhtmltopdf\\bin\\wkhtmltoimage.exe"
             },
             {
                 "type": "path",
                 "system": "Linux",
-                "value": "/usr/local/bin/wkhtmltopdf"
+                "value": "/usr/local/bin/wkhtmltoimage"
             },
             {
                 "type": "path",
                 "system": "*",
-                "value": "./wkhtmltopdf/wkhtmltopdf"
+                "value": "./wkhtmltopdf/wkhtmltoimage"
             }
         ]
     }
