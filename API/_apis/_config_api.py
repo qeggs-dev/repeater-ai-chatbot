@@ -23,7 +23,7 @@ async def change_config(user_id: str):
     config = await chat.get_config(user_id = user_id)
 
     # 返回配置
-    return JSONResponse(config)
+    return JSONResponse(config.configs)
 
 @app.put("/userdata/config/set/{user_id}/{value_type}")
 async def set_config(user_id: str, value_type: str, key: str = Form(...), value: Any = Form(...)):

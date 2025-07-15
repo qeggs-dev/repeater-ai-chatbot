@@ -14,7 +14,7 @@ class CallLogObject:
     model: str = ""
     user_id: str = ""
     user_name: str = ""
-    stream: bool = env.bool("STREAM", True)
+    stream: bool = True
 
     total_chunk: int = 0
     empty_chunk: int = 0

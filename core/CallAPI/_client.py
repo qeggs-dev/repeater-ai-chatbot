@@ -544,6 +544,7 @@ class Client:
         if response.system_fingerprint:
             logger.info(f"System Fingerprint: {response.system_fingerprint}", user_id = user_id)
         logger.info(f"Finish Reason: {response.finish_reason}", user_id = user_id)
+        logger.info(f"Finish Reason Cause: {response.finish_reason_cause}", user_id = user_id)
 
         if response.calling_log.total_chunk > 0:
             logger.info("============ Chunk Count ===========", user_id = user_id)
