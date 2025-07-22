@@ -408,6 +408,7 @@ class Core:
             try:
                 response = await self.api_client.submit_Request(user_id=user_id, request=request)
             except CallAPI.Exceptions.CallApiException as e:
+                logger.error(f"CallAPI Error: {e}")
                 output.content = f"Error:{e}"
                 return output.as_dict
 
@@ -463,6 +464,7 @@ class Core:
     # region > 加载指定API INFO文件
     async def load_apiinfo(self, api_info_file_path: Path):
         if not api_info_file_path.exists():
+            logger.error(f"API INFO File not found: {api_info_file_path}")
             raise FileNotFoundError(f"File not found: {api_info_file_path}")
         await self.apiinfo.load_async(api_info_file_path)
     # endregion
