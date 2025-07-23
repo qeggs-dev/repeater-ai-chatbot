@@ -5,6 +5,7 @@ import time
 import atexit
 from typing import (
     Coroutine,
+    AsyncIterator
 )
 import random
 from pathlib import Path
@@ -276,6 +277,13 @@ class Core:
         return context
     # endregion
 
+    # region > get blacklist
+    async def get_blacklist(self) -> AsyncIterator[str]: # 获取黑名单
+        blacklist_file_path = configs.get_config("blacklist_file_path", "./config/blacklist.txt").get_value(Path)
+        async with aiofiles.open(blacklist_file_path, 'r') as f:
+            async for line in f:
+                yield line.strip()
+
     # region > Chat
     async def Chat(
             self,
@@ -317,6 +325,15 @@ class Core:
         async with lock:
             logger.info("====================================", user_id = user_id)
             logger.info("Start Task", user_id = user_id)
+
+            # 判断用户是否在黑名单中
+            async for black_user_id in self.get_blacklist():
+                if user_id == black_user_id:
+                    logger.info("User in blacklist", user_id = user_id)
+                    return _Output(
+                        content="Sorry, you are in blacklist.",
+                        finish_reason_cause="blacklist"
+                    ).as_dict
 
             # 进行用户名映射
             user_name = await self.load_nickname_mapping(user_id, user_name)

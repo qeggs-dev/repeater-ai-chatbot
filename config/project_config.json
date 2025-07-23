@@ -180,6 +180,15 @@
         ]
     },
     {
+        "name": "REASON_PROMPT_DIR",
+        "values": [
+            {
+                "type": "str",
+                "value": "./Prompt/Reason"
+            }
+        ]
+    },
+    {
         "name": "PARSET_PROMPT_NAME",
         "values": [
             {
