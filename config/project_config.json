@@ -175,7 +175,7 @@
         "values": [
             {
                 "type": "str",
-                "value": "./PresetsPrompt"
+                "value": "./Prompt/Presets"
             }
         ]
     },
