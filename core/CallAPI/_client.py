@@ -67,14 +67,6 @@ class Client:
         # 协程池
         self.coroutine_pool = CoroutinePool(max_concurrency)
     # region 协程池管理
-    async def _submit(self, coro: Awaitable[Any], user_id: str) -> Any:
-        """提交任务到协程池，并等待返回结果"""
-        return await self.coroutine_pool.submit(coro, user_id)
-        
-    async def _shutdown(self):
-        """关闭池，等待所有任务完成"""
-        await self.coroutine_pool.shutdown()
-
     async def set_concurrency(self, new_max: int):
         """动态修改并发限制"""
         await self.coroutine_pool.set_concurrency(new_max)
@@ -85,9 +77,9 @@ class Client:
         """提交请求，并等待API返回结果"""
         try:
             if request.stream:
-                response:Response = await self._submit(self._call_stream_api(user_id, request), user_id = user_id)
+                response = await self.coroutine_pool.submit(self._call_stream_api(user_id, request), user_id = user_id)
             else:
-                response:Response = await self._submit(self._call_api(user_id, request), user_id = user_id)
+                response = await self.coroutine_pool.submit(self._call_api(user_id, request), user_id = user_id)
         except openai.NotFoundError:
             raise ModelNotFoundError(request.model)
         except openai.APIConnectionError:
