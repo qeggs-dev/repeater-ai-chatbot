@@ -28,6 +28,8 @@ class ConfigObject:
         """
         The type of the current value.
         """
+        if len(self._values) == 0:
+            return None
         return type(self._values[self._now_index])
 
     @property
