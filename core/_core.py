@@ -1,4 +1,5 @@
 # ==== 标准库 ==== #
+import re
 import asyncio
 import sys
 import time
@@ -37,6 +38,7 @@ from TimeParser import (
     calculate_age
 )
 from ConfigManager import ConfigLoader
+from RegexChecker import RegexChecker
 
 # ==== 本模块代码 ==== #
 configs = ConfigLoader()
@@ -63,7 +65,23 @@ class Core:
 
         # 移除默认处理器
         logger.remove()
-        logger.add(sys.stderr, format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{extra[user_id]}</cyan> - <level>{message}</level>")
+        # 添加自定义处理器
+        logger.add(
+            sys.stderr,
+            format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{extra[user_id]}</cyan> - <level>{message}</level>",
+            filter=lambda record: "donot_send_console" not in record["extra"]
+        )
+
+        log_dir = configs.get_config("log_file_dir", "./logs").get_value(Path)
+        if not log_dir.exists():
+            log_dir.mkdir(parents=True, exist_ok=True)
+        log_file = log_dir / "app_{time:YYYY-MM-DD_HH-mm-ss}.log"
+        logger.add(
+            log_file,
+            format="{time:YYYY-MM-DD HH:mm:ss} | {level: <8} | {extra[user_id]} - {message}",
+            enqueue=True,
+            delay=True
+        )
 
         # 全局锁(用于获取会话锁)
         self.lock = asyncio.Lock()
@@ -91,6 +109,16 @@ class Core:
         # 初始化调用日志管理器
         self.calllog = CallLog.CallLogManager(configs.get_config('Call_Log_File_Path').get_value(Path))
 
+        # 黑名单
+        self.blacklist: RegexChecker = RegexChecker()
+        blacklist_file_path = configs.get_config("blacklist_file_path", "./config/blacklist.regex").get_value(Path)
+        try:
+            with open(blacklist_file_path, 'r', encoding='utf-8') as f:
+                self.blacklist.load_strstream(f)
+        except ValueError:
+            logger.error("Invalid blacklist file", user_id = "[System]")
+        self.blacklist_match_timeout: int | None = configs.get_config("blacklist_match_timeout", 10).get_value(int)
+
         # 添加退出函数
         def _exit():
             """
@@ -99,6 +127,7 @@ class Core:
             # 保存调用日志
             if configs.get_config("save_call_log", True).get_value(bool):
                 self.calllog.save_call_log()
+            logger.info("Exiting...", user_id = "[System]")
         
         # 注册退出函数
         atexit.register(_exit)
@@ -277,12 +306,46 @@ class Core:
         return context
     # endregion
 
-    # region > get blacklist
-    async def get_blacklist(self) -> AsyncIterator[str]: # 获取黑名单
-        blacklist_file_path = configs.get_config("blacklist_file_path", "./config/blacklist.txt").get_value(Path)
-        async with aiofiles.open(blacklist_file_path, 'r') as f:
-            async for line in f:
-                yield line.strip()
+    # region > load blacklist
+    async def load_blacklist(self, path: str | Path | None = None, timeout: int | None = None) -> None:
+        """
+        加载黑名单
+        :param path: 黑名单文件路径
+        :param timeout: 超时时间
+        """
+        if not path:
+            blacklist_file_path = configs.get_config("blacklist_file_path", "./config/blacklist.regex").get_value(Path)
+        else:
+            blacklist_file_path = Path(path)
+        
+        if blacklist_file_path.exists():
+            self.blacklist.clear()
+            async with aiofiles.open(blacklist_file_path, 'r') as f:
+                self.blacklist.load(await f.read())
+    # endregion
+
+    # region > in blacklist
+    async def in_blacklist(self, user_id: str) -> bool:
+        """
+        判断用户是否在黑名单中
+        :param user_id: 用户ID
+        :return: 是否在黑名单中
+        """
+        async def _match_blacklist(user_id: str, timeout: int | None) -> bool:
+            if timeout is not None:
+                return await asyncio.wait_for(asyncio.to_thread(self.blacklist.check, user_id), timeout = timeout)
+            else:
+                return await asyncio.to_thread(self.blacklist.check, user_id)
+        
+        try:
+            if await _match_blacklist(user_id, self.blacklist_match_timeout):
+                logger.info("User in blacklist", user_id = user_id)
+                return True
+        except asyncio.exceptions.TimeoutError:
+            logger.warning("Blacklist match timeout", user_id = user_id)
+            return False
+        return False
+    # endregion
 
     # region > Chat
     async def Chat(
@@ -327,13 +390,11 @@ class Core:
             logger.info("Start Task", user_id = user_id)
 
             # 判断用户是否在黑名单中
-            async for black_user_id in self.get_blacklist():
-                if user_id == black_user_id:
-                    logger.info("User in blacklist", user_id = user_id)
-                    return _Output(
-                        content="Sorry, you are in blacklist.",
-                        finish_reason_cause="blacklist"
-                    ).as_dict
+            if await self.in_blacklist(user_id):
+                return _Output(
+                    content="Error: Sorry, you are in blacklist.",
+                    finish_reason_cause="User in blacklist"
+                ).as_dict
 
             # 进行用户名映射
             user_name = await self.load_nickname_mapping(user_id, user_name)
@@ -391,7 +452,7 @@ class Core:
 
             # 打印上下文信息
             if user_input.content:
-                logger.info(f"Message:\n{user_input.content}", user_id = user_id)
+                logger.info("Message:\n{message}", message = user_input.content, user_id = user_id)
             else:
                 logger.warning("No message to send", user_id = user_id)
             logger.info(f"User Name: {user_name}", user_id = user_id)
@@ -434,7 +495,8 @@ class Core:
             response.calling_log.call_prepare_start_time = task_start_time
             response.calling_log.call_prepare_end_time = call_prepare_end_time
             response.calling_log.created_time = response.created
-            # 处理模型输出内容
+
+            # 展开模型输出内容中的变量
             response.context.last_content.content = prompt_vp.process(response.context.last_content.content)
             # 记录Prompt_vp的命中情况
             logger.info(f"Prompt Hits Variable: {prompt_vp.hit_var()}/{prompt_vp.discover_var()}({prompt_vp.hit_var() / prompt_vp.discover_var() if prompt_vp.discover_var() != 0 else 0:.2%})", user_id = user_id)

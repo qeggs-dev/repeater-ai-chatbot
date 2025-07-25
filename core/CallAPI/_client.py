@@ -29,6 +29,7 @@ from ..Context import (
     ContextRole
 )
 from ..CallLog import CallLog
+from ..CoroutinePool import CoroutinePool
 from TimeParser import (
     format_deltatime,
     format_deltatime_ns
@@ -64,45 +65,38 @@ def sum_string_lengths(items, field_name):
 class Client:
     def __init__(self, max_concurrency: int | None = None):
         # 协程池
-        self.max_concurrency = max_concurrency if max_concurrency is not None else env.int('MAX_CONCURRENCY', 1000) # 最大并发数
-        self.semaphore = asyncio.Semaphore(self.max_concurrency)
-        self.tasks = set()  # 存储运行中的任务
+        self.coroutine_pool = CoroutinePool(max_concurrency)
     # region 协程池管理
     async def _submit(self, coro: Awaitable[Any], user_id: str) -> Any:
         """提交任务到协程池，并等待返回结果"""
-        async with self.semaphore:  # 控制并发数
-            task = asyncio.create_task(coro)
-            self.tasks.add(task)
-            logger.debug(f'Created a new task for {inspect.currentframe().f_back.f_code.co_name} ({len(self.tasks)}/{self.max_concurrency})', user_id = user_id)
-            try:
-                result = await task
-                return result
-            finally:
-                self.tasks.remove(task)
-                logger.debug(f'Removed a task ({len(self.tasks)}/{self.max_concurrency})', user_id = user_id)
+        return await self.coroutine_pool.submit(coro, user_id)
         
     async def _shutdown(self):
         """关闭池，等待所有任务完成"""
-        await asyncio.gather(*self.tasks)
+        await self.coroutine_pool.shutdown()
 
     async def set_concurrency(self, new_max: int):
         """动态修改并发限制"""
-        self.max_concurrency = new_max
-        self.semaphore = asyncio.Semaphore(new_max)
+        await self.coroutine_pool.set_concurrency(new_max)
     # endregion
 
     # region 提交任务
     async def submit_Request(self, user_id:str, request: Request) -> Response:
-        """提交请求到协程池，并等待返回结果"""
+        """提交请求，并等待API返回结果"""
         try:
             if request.stream:
-                response = await self._submit(self._call_stream_api(user_id, request), user_id = user_id)
+                response:Response = await self._submit(self._call_stream_api(user_id, request), user_id = user_id)
             else:
-                response = await self._submit(self._call_api(user_id, request), user_id = user_id)
+                response:Response = await self._submit(self._call_api(user_id, request), user_id = user_id)
         except openai.NotFoundError:
             raise ModelNotFoundError(request.model)
         except openai.APIConnectionError:
             raise APIConnectionError(f"{request.url} Connection Failed")
+        
+        if response.context.last_content.reasoning_content:
+            logger.bind(donot_send_console=True).info("Reasoning_Content: \n{reasoning_content}", reasoning_content = request.context.last_content.reasoning_content, user_id = user_id)
+        if response.context.last_content.content:
+            logger.bind(donot_send_console=True).info("Content: \n{content}", content = request.context.last_content.content, user_id = user_id)
         
         await self._print_log(
             user_id = user_id,
@@ -380,6 +374,7 @@ class Client:
                     if not model_response_content_unit.reasoning_content:
                         print('\n\n', end="", flush=True)
                     print(f"\033[7m{delta_data.reasoning_content}\033[0m", end="", flush=True)
+                    logger.bind(donot_send_console=True).info(f"Received Reasoning_Content chunk: \"{delta_data.reasoning_content}\"", user_id = user_id)
                 model_response_content_unit.reasoning_content += delta_data.reasoning_content
             
             # 记录模型响应内容
@@ -388,6 +383,7 @@ class Client:
                     if not model_response_content_unit.content:
                         print('\n\n', end="", flush=True)
                     print(delta_data.content, end="", flush=True)
+                    logger.bind(donot_send_console=True).info(f"Received Content chunk: \"{delta_data.content}\"", user_id = user_id)
                 model_response_content_unit.content += delta_data.content
             
             # 记录模型工具调用内容
@@ -555,9 +551,12 @@ class Client:
             logger.info(f"Chunk effective ratio: {1 - response.calling_log.empty_chunk / response.calling_log.total_chunk :.2%}", user_id = user_id)
         
         logger.info("========== Time Statistics =========", user_id = user_id)
-        logger.info(f"Total Time: {format_deltatime_ns(response.calling_log.stream_processing_end_time - response.calling_log.request_start_time, '%H:%M:%S.%f.%u.%n')}", user_id = user_id)
-        logger.info(f"API Request Time: {format_deltatime_ns(response.calling_log.request_end_time - response.calling_log.request_start_time, '%H:%M:%S.%f.%u.%n')}", user_id = user_id)
-        logger.info(f"Stream Processing Time: {format_deltatime_ns(response.calling_log.stream_processing_end_time - response.calling_log.stream_processing_start_time, '%H:%M:%S.%f.%u.%n')}", user_id = user_id)
+        total_time = response.calling_log.stream_processing_end_time - response.calling_log.request_start_time
+        logger.info(f"Total Time: {total_time / 10**9:.2f}s({format_deltatime_ns(total_time, '%H:%M:%S.%f.%u.%n')})", user_id = user_id)
+        requests_time = response.calling_log.request_end_time - response.calling_log.request_start_time
+        logger.info(f"API Request Time: {requests_time / 10**9:.2f}s({format_deltatime_ns(requests_time, '%H:%M:%S.%f.%u.%n')})", user_id = user_id)
+        stream_processing_time = response.calling_log.stream_processing_end_time - response.calling_log.stream_processing_start_time
+        logger.info(f"Stream Processing Time: {stream_processing_time / 10**9:.2f}s({format_deltatime_ns(stream_processing_time, '%H:%M:%S.%f.%u.%n')})", user_id = user_id)
 
         created_utc_dt = datetime.fromtimestamp(response.created, tz=timezone.utc)
         created_utc_str = created_utc_dt.strftime('%Y-%m-%d %H:%M:%S UTC')
@@ -569,9 +568,12 @@ class Client:
 
         if response.calling_log.total_chunk > 0:
             chunk_nozero_times = [time for time in response.calling_log.chunk_times if time != 0]
-            logger.info(f"Chunk Average Spawn Time: {format_deltatime_ns(sum(chunk_nozero_times) // len(chunk_nozero_times), '%H:%M:%S.%f.%u.%n')}", user_id = user_id)
-            logger.info(f"Chunk Max Spawn Time: {format_deltatime_ns(max(chunk_nozero_times), '%H:%M:%S.%f.%u.%n')}", user_id = user_id)
-            logger.info(f"Chunk Min Spawn Time: {format_deltatime_ns(min(chunk_nozero_times), '%H:%M:%S.%f.%u.%n')}", user_id = user_id)
+            chunk_average_spawn_time = sum(chunk_nozero_times) / len(chunk_nozero_times)
+            max_chunk_spawn_time = max(chunk_nozero_times)
+            min_chunk_spawn_time = min(chunk_nozero_times)
+            logger.info(f"Chunk Average Spawn Time: {chunk_average_spawn_time / 10**6:.2f}ms({format_deltatime_ns(chunk_average_spawn_time, '%H:%M:%S.%f.%u.%n')})", user_id = user_id)
+            logger.info(f"Chunk Max Spawn Time: {max_chunk_spawn_time / 10**6:.2f}ms({format_deltatime_ns(max_chunk_spawn_time, '%H:%M:%S.%f.%u.%n')})", user_id = user_id)
+            logger.info(f"Chunk Min Spawn Time: {min_chunk_spawn_time / 10**6:.2f}ms({format_deltatime_ns(min_chunk_spawn_time, '%H:%M:%S.%f.%u.%n')})", user_id = user_id)
 
         logger.info("=========== Token Count ============", user_id = user_id)
         logger.info(f"Total Tokens: {response.token_usage.total_tokens}", user_id = user_id)
