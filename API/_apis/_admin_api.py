@@ -24,6 +24,17 @@ async def reload_apiinfo(api_key: str = Header(..., alias="X-Admin-API-Key")):
     await chat.reload_apiinfo()
     return JSONResponse({"detail": "Apiinfo reloaded"})
 
+@app.post("/admin/blacklist/reload")
+async def reload_blacklist(api_key: str = Header(..., alias="X-Admin-API-Key")):
+    """
+    Endpoint for reloading blacklist
+    """
+    if not admin_api_key.validate_key(api_key):
+        raise HTTPException(detail="Invalid API key", status_code=401)
+    logger.info("Reloading blacklist", user_id="[Admin API]")
+    await chat.load_blacklist()
+    return JSONResponse({"detail": "Blacklist reloaded"})
+
 @app.post("/admin/configs/reload")
 async def reload_configs(api_key: str = Header(..., alias="X-Admin-API-Key")):
     """
