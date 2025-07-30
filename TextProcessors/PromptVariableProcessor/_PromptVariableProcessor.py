@@ -1,10 +1,11 @@
 import re
 import types
 import shlex
+from ._escape import escape_string
 from ._exceptions import *
 
 class PromptVP:
-    '''
+    r'''
     ## PromptVP: Prompt Variable Processor
 
     ---
@@ -27,6 +28,9 @@ class PromptVP:
     {var}->```...```
     当变量var存在且其值不为空、不为False、执行后内容非空时，显示后面的内容块
     否则整个内容块将被去除
+
+    允许部分内容进行转义操作：
+    <esc:\033[92mHello World\033[0m>  # 转义内容为：\033[92mHello World\033[0m
 
     变量可以被传参，格式：
     {variable_name arg1 arg2 arg3}
@@ -58,6 +62,9 @@ class PromptVP:
     When the variable var exists and its value is not empty, not False, and not empty after execution, 
     the content block is displayed. Otherwise, the entire content block is removed.
 
+    Partial content can be escaped:
+    <esc:\033[92mHello World\033[0m>  # Escaped content is: \033[92mHello World\033[0m
+
     Variables can be passed in the format:
     {variable_name arg1 arg2 arg3}
 
@@ -79,11 +86,13 @@ class PromptVP:
     _INDENT_PATTERN = re.compile(r'(\s*)')
     # 变量提取正则添加转义变量的忽略
     _VAR_EXTRACT_PATTERN = re.compile(r'(?<!\\)(?:\\\\)*\{([a-zA-Z0-9_]+)')
-    # 条件块正则表达式保持不变
+    # 条件块正则表达式
     _CONDITIONAL_BLOCK_PATTERN = re.compile(
         r'\{([a-zA-Z0-9_]+)\}\s*->\s*```(.*?)```',
         re.DOTALL
     )
+    # 转义块正则表达式
+    _ESCAPE_BLOCK_PATTERN = re.compile(r'<esc:"(.*?)">', re.DOTALL)
 
     def __init__(self):
         self.variables = {}
@@ -105,8 +114,13 @@ class PromptVP:
     def process(self, text: str, **kwargs) -> str:
         '''处理文本中的变量'''
 
-        # 先处理条件块
+        # 处理转义块
+        text = self._process_escape_blocks(text)
+
+        # 处理条件块
         text = self._process_conditional_blocks(text, **kwargs)
+        parts = self._SENSITIVE_BLOCK_PATTERN.split(text)
+        
 
         # 分割敏感块和普通内容
         parts = self._SENSITIVE_BLOCK_PATTERN.split(text)
@@ -140,6 +154,17 @@ class PromptVP:
                 processed.append(self._replace_vars(part, check_exists=True, **kwargs))
 
         return ''.join(processed)
+    
+    def _process_escape_blocks(self, text: str) -> str:
+        '''处理转义块'''
+        def replacer(match):
+            content = match.group(1)
+            try:
+                return escape_string(content)
+            except Exception as e:
+                return f"[Escape Error: {str(e)}]"
+        
+        return self._ESCAPE_BLOCK_PATTERN.sub(replacer, text)
 
     
     def _process_conditional_blocks(self, text: str, **kwargs) -> str:
@@ -437,3 +462,15 @@ if __name__ == '__main__':
     text = r"正常: {var}, 转义: \{var}, 双重转义: \\{var}"
     print(processor.process(text))
     # 输出: "正常: value, 转义: {var}, 双重转义: \value"
+    processor = PromptVP()
+    text = r'''Normal text
+    <esc:"Special\nCharsHere">
+    More text
+    '''
+    print(processor.process(text))
+    # 输出: "
+    # Normal text
+    #     Special
+    # Chars	Here
+    # More text
+    #     "
