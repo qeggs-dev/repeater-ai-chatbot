@@ -368,7 +368,7 @@ class Client:
                     if not model_response_content_unit.reasoning_content:
                         print('\n\n', end="", flush=True)
                     print(f"\033[7m{delta_data.reasoning_content}\033[0m", end="", flush=True)
-                    logger.bind(donot_send_console=True).info(f"Received Reasoning_Content chunk: \"{delta_data.reasoning_content}\"", user_id = user_id)
+                    logger.bind(donot_send_console=True).info("Received Reasoning_Content chunk: \"{reasoning_content}\"", user_id = user_id, reasoning_content = delta_data.reasoning_content)
                 model_response_content_unit.reasoning_content += delta_data.reasoning_content
             
             # 记录模型响应内容
@@ -377,7 +377,7 @@ class Client:
                     if not model_response_content_unit.content:
                         print('\n\n', end="", flush=True)
                     print(delta_data.content, end="", flush=True)
-                    logger.bind(donot_send_console=True).info(f"Received Content chunk: \"{delta_data.content}\"", user_id = user_id)
+                    logger.bind(donot_send_console=True).info("Received Content chunk: \"{content}\"", user_id = user_id, content = delta_data.content)
                 model_response_content_unit.content += delta_data.content
             
             # 记录模型工具调用内容

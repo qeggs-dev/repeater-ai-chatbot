@@ -45,7 +45,7 @@ class Delta:
     function_type: str = ""
     function_name: str = ""
     function_arguments: str = ""
-    token_usage: TokensCount = TokensCount()
+    token_usage: TokensCount = field(default_factory=TokensCount)
     finish_reason: Literal["stop", "length", "content_filter", "tool_calls", "insufficient_system_resource"] | None = None
     created: int = 0
     model: str = ""
