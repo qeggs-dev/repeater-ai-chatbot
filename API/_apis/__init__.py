@@ -1,3 +1,5 @@
+from ._global_exception_recorder import catch_exceptions_middleware
+
 from ._chat_api import chat_endpoint
 from ._render_api import render
 from ._expand_variables_api import expand_variables
