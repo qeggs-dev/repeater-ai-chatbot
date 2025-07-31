@@ -6,7 +6,9 @@ import time
 import atexit
 from typing import (
     Coroutine,
-    AsyncIterator
+    AsyncIterator,
+    Literal,
+    Iterable
 )
 import random
 from pathlib import Path
@@ -16,6 +18,7 @@ from dataclasses import dataclass, asdict
 from loguru import logger
 import aiofiles
 import orjson
+from jinja2 import Template
 
 # ==== 自定义库 ==== #
 from . import CallAPI
@@ -26,9 +29,11 @@ from .ApiInfo import (
     ApiInfo,
     ApiGroup
 )
+from . import MetasoClient
 from . import CallLog
 from TextProcessors import (
-    PromptVP
+    PromptVP,
+    SafeFormatter,
 )
 from TimeParser import (
     format_timestamp,
@@ -109,6 +114,9 @@ class Core:
         # 初始化调用日志管理器
         self.calllog = CallLog.CallLogManager(configs.get_config('Call_Log_File_Path').get_value(Path))
 
+        # MetasoClient
+        self.metaso_client = MetasoClient.Search.Client()
+
         # 黑名单
         self.blacklist: RegexChecker = RegexChecker()
         blacklist_file_path = configs.get_config("blacklist_file_path", "./config/blacklist.regex").get_value(Path)
@@ -160,6 +168,7 @@ class Core:
             user_id: str,
             user_name: str = "",
             model_type: str = "",
+            user_input: str = "",
             config: UserConfigManager.Configs = UserConfigManager.Configs(),
         ) -> PromptVP:
         """
@@ -361,6 +370,7 @@ class Core:
             save_context: bool = True,
             reference_context_id: str | None = None,
             continue_completion: bool = False,
+            search: bool = False,
         ) -> dict[str, str]:
         """
         与模型对话
@@ -484,7 +494,10 @@ class Core:
 
             # 提交请求
             try:
-                response = await self.api_client.submit_Request(user_id=user_id, request=request)
+                response = self._sendmsg(
+                    user_id=user_id,
+                    request=request
+                )
             except CallAPI.Exceptions.CallApiException as e:
                 logger.error(f"CallAPI Error: {e}")
                 output.content = f"Error:{e}"
@@ -535,6 +548,62 @@ class Core:
             return output.as_dict
     # endregion
 
+    # region > 发送请求
+    async def _sendmsg(self, user_id: str, request: CallAPI.Request) -> CallAPI.Response:
+        response = await self.api_client.submit_Request(
+            user_id=user_id,
+            request=request
+        )
+        return response
+    # endregion
+    
+    # region > 网络搜索
+    async def _search_for_internet(
+            self, question: str,
+            scope:Literal["webpage", "document", "scholar", "image", "video", "podcast"] = "webpage",
+            includeSummary: bool = True,
+            includeRawContent: bool = False,
+            conciseSnippet: bool = False,
+            n: int = 10,
+            format_str: str = "{title}\n"
+        ) -> str:
+        request = MetasoClient.Search.Request()
+        api_group = self.apiinfo.find_type("search")
+        if not api_group:
+            return ""
+        request.api_key = api_group[0].api_key
+        request.body.q = question
+        request.body.scope = scope
+        request.body.includeSummary = includeSummary
+        request.body.conciseSnippet = conciseSnippet
+        request.body.includeRawContent = includeRawContent
+        request.body.size = n
+        response = await self.metaso_client.request(request)
+        
+        output_str = ""
+        formatter = SafeFormatter("<Missing>")
+        def format_response(iterable: Iterable[MetasoClient.Search.ResponseContent]):
+            output = ""
+            for webpages in iterable:
+                output = formatter.format(
+                    format_str,
+                    title = webpages.title,
+                    link = webpages.link,
+                    score = webpages.score,
+                    snippet = webpages.snippet,
+                    position = webpages.position,
+                    authors = webpages.authors,
+                    date = webpages.date,
+                )
+            return output
+        
+
+        output_str += format_response(response.webpages)
+        output_str += format_response(response.documents)
+        output_str += format_response(response.scholars)
+        output_str += format_response(response.images)
+        output_str += format_response(response.videos)
+        output_str += format_response(response.podcasts)
     # region > 重新加载API信息
     async def reload_apiinfo(self):
         await self.apiinfo.load_async(configs.get_config("api_info_file_path", "./config/api_info.json").get_value(Path))

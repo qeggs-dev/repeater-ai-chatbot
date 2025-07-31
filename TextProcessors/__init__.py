@@ -2,3 +2,4 @@ from .PromptVariableProcessor import PromptVP
 from .PromptVariableProcessor import exception as PromptPV_Exception
 from ._limitBlankLines import limit_blank_lines
 from ._adjustIndentation import adjust_indentation
+from ._SafeFormatter import SafeFormatter

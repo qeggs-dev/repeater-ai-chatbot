@@ -562,7 +562,7 @@ class Client:
 
         if response.calling_log.total_chunk > 0:
             chunk_nozero_times = [time for time in response.calling_log.chunk_times if time != 0]
-            chunk_average_spawn_time = sum(chunk_nozero_times) / len(chunk_nozero_times)
+            chunk_average_spawn_time = sum(chunk_nozero_times) // len(chunk_nozero_times)
             max_chunk_spawn_time = max(chunk_nozero_times)
             min_chunk_spawn_time = min(chunk_nozero_times)
             logger.info(f"Chunk Average Spawn Time: {chunk_average_spawn_time / 10**6:.2f}ms({format_deltatime_ns(chunk_average_spawn_time, '%H:%M:%S.%f.%u.%n')})", user_id = user_id)

@@ -93,7 +93,7 @@ class ConfigManager:
                     logger.debug("Save config to cache", user_id = user_id)
                     cache[user_id] = configs
 
-                    if user_id in cache and not self._debonce_save_tasks[user_id].done():
+                    if user_id in cache and (user_id in self._debonce_save_tasks and not self._debonce_save_tasks[user_id].done()):
                         self._debonce_save_tasks[user_id].cancel()
                     task = asyncio.create_task(
                         self._wait_and_save(user_id, self._debonce_save_wait_time)
@@ -134,7 +134,7 @@ class ConfigManager:
             cache = await self._get_cache()
             if user_id in cache:
                 logger.debug("Save config", user_id = user_id)
-                await self._user_config_manager.save(user_id, cache[user_id])
+                await self._user_config_manager.save(user_id, cache[user_id].configs)
                 del cache[user_id]
         except asyncio.CancelledError:
             logger.info("User config save task cancelled", user_id = user_id)
