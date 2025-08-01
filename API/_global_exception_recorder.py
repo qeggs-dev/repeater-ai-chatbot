@@ -4,7 +4,7 @@ from loguru import logger
 import traceback
 import time
 
-from .._resource import app
+from ._resource import app
 
 @app.middleware("http")
 async def catch_exceptions_middleware(request: Request, call_next):
@@ -14,9 +14,9 @@ async def catch_exceptions_middleware(request: Request, call_next):
         # 记录异常日志
         try:
             traceback_info = traceback.format_exc()
-            logger.error("API call failed: \n{traceback}", user_id = "[System]", traceback = traceback_info)
+            logger.error("Exception: \n{traceback}", user_id = "[Global Exception Recorder]", traceback = traceback_info)
         except KeyError:
-            logger.error("Exception: {exception}", exception = e)
+            logger.error("[Global Exception Recorder] Exception: {exception}", exception = e)
         return JSONResponse(
             status_code=500,
             content={

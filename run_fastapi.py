@@ -3,7 +3,7 @@ env = Env()
 env.read_env()
 
 from API import app, configs
-
+from loguru import logger
 
 def main():
     import uvicorn
@@ -15,6 +15,9 @@ def main():
 
     host = configs.get_config("server.host", host).get_value(str)
     port = configs.get_config("server.port", port).get_value(int)
+
+    logger.info(f"Starting server at {host}:{port}", user_id = "[System]")
+    logger.info("Press CTRL+C to stop the server", user_id = "[System]")
 
     uvicorn.run(
         app = app,
