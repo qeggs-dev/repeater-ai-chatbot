@@ -167,7 +167,7 @@ class ConfigManager:
         :param user_id: 用户ID
         :return: None
         """
-        cache = self._get_cache()
+        cache = await self._get_cache()
         if user_id in cache:
             del cache[user_id]
         await self._user_config_manager.delete(user_id)
