@@ -73,7 +73,13 @@ class ScriptStarter:
         else:
             return self.venv_path / "bin" / self.python_path
     
-    def seek_user_consent(self, prompt, default_item: bool = False, cached: bool = False) -> bool:
+    def seek_user_consent(
+            self,
+            prompt,
+            default_item: bool = False,
+            cached: bool = False,
+            allow_empty_input: bool = False
+        ) -> bool:
         """
         寻求用户同意
         """
@@ -82,21 +88,29 @@ class ScriptStarter:
         if cached:
             if prompt in self.seek_user_consent_cache:
                 return self.seek_user_consent_cache[prompt]
-        if import_prompt_toolkit:
-            completer = WordCompleter(yes_characters + no_characters)
-            check = prompt_toolkit.prompt(prompt, completer=completer)
-        else:
-            check = input(f"{prompt} [{'Y/n' if default_item else 'y/N'}]: ")
+        while True:
+            if import_prompt_toolkit:
+                completer = WordCompleter(yes_characters + no_characters)
+                check = prompt_toolkit.prompt(f"{prompt} [{'Y/n' if default_item else 'y/N'}]: ", completer=completer)
+            else:
+                check = input(f"{prompt} [{'Y/n' if default_item else 'y/N'}]: ")
+            if allow_empty_input or check:
+                break
+
         if default_item:
             if check.lower() in no_characters:
-                return False
+                allow = False
             else:
-                return True
+                allow = True
         else:
             if check.lower() in yes_characters:
-                return True
+                allow = True
             else:
-                return False
+                allow = False
+        
+        if cached:
+            self.seek_user_consent_cache[prompt] = allow
+        return allow
     
     def run_command(self, command: list[str], cwd: str | Path | None = None):
         """
@@ -234,9 +248,9 @@ class ScriptStarter:
             
             self.prompt_restart()
     def check_import(self):
+        global prompt_toolkit, WordCompleter, import_prompt_toolkit
         if not import_prompt_toolkit:
             self.run_command(["pip", "install", "prompt_toolkit"])
-            global prompt_toolkit, WordCompleter, import_prompt_toolkit
             try:
                 import prompt_toolkit
                 from prompt_toolkit.completion import WordCompleter
