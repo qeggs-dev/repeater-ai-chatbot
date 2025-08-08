@@ -4,6 +4,9 @@ import inspect
 from typing import (
     Any,
     Awaitable,
+    AsyncGenerator,
+    overload,
+    Literal,
 )
 import time
 from datetime import datetime, timezone
@@ -73,12 +76,22 @@ class Client:
     # endregion
 
     # region 提交任务
-    async def submit_Request(self, user_id:str, request: Request) -> Response:
+    @overload
+    async def submit_Request(self, user_id: str, request: Request, stream_response: Literal[False] = False) -> Response:
+        ...
+
+    @overload
+    async def submit_Request(self, user_id: str, request: Request, stream_response: Literal[True]) -> AsyncGenerator[Delta, None, Response]:
+        ...
+
+    async def submit_Request(self, user_id:str, request: Request, stream_response: bool = False) -> Response | AsyncGenerator[Delta, None, Response]:
         """提交请求，并等待API返回结果"""
         try:
             if request.stream:
-                response = await self.coroutine_pool.submit(self._call_stream_api(user_id, request), user_id = user_id)
+                response = await self.coroutine_pool.submit(self._call_stream_api(user_id, request, stream_response), user_id = user_id)
             else:
+                if stream_response:
+                    raise StreamNotAvailable("Enabling stream response is not allowed when request.stream is false.")
                 response = await self.coroutine_pool.submit(self._call_api(user_id, request), user_id = user_id)
         except openai.NotFoundError:
             raise ModelNotFoundError(request.model)
@@ -275,7 +288,15 @@ class Client:
     # endregion
 
     # region 流式API
-    async def _call_stream_api(self, user_id:str, request: Request) -> Response:
+    @overload
+    async def _call_stream_api(self, user_id: str, request: Request, stream_response: Literal[False] = False) -> Response:
+        ...
+
+    @overload
+    async def _call_stream_api(self, user_id: str, request: Request, stream_response: Literal[True]) -> AsyncGenerator[Delta, None, Response]:
+        ...
+
+    async def _call_stream_api(self, user_id:str, request: Request, stream_response: bool = False) -> Response | AsyncGenerator[Delta, None, Response]:
         """调用流式API"""
         # 创建响应对象
         model_response = Response()
@@ -336,6 +357,9 @@ class Client:
         async for chunk in response:
             # 翻译chunk
             delta_data = await self._process_chunk(chunk)
+
+            if stream_response:
+                yield delta_data
 
             # 记录会话开启时间
             if not model_response.created:

@@ -233,10 +233,10 @@ class Core:
                 nickname_mapping = {}
         
         if user_name in nickname_mapping:
-            logger.info(f"User Name [{user_name}] -> [{nickname_mapping[user_name]}]", user_id=user_id)
+            logger.info("User Name [{user_name}] -> [{to_nickname}]", user_id=user_id, user_name = user_name, to_nickname = nickname_mapping[user_name])
             user_name = nickname_mapping[user_name]
         elif user_id in nickname_mapping:
-            logger.info(f"User Name [{user_name}] -> [{nickname_mapping[user_name]}]", user_id=user_id)
+            logger.info("User Name [{user_id}](ID) -> [{to_nickname}]", user_id=user_id, to_nickname = nickname_mapping[user_id])
             user_name = nickname_mapping[user_id]
         
         return user_name

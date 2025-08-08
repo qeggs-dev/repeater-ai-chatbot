@@ -32,7 +32,7 @@ async def catch_exceptions_middleware(request: Request, call_next):
     except Exception as e:
         # 记录异常日志
         try:
-            logger.exception("Exception: \n{traceback}", user_id = "[Global Exception Recorder]", traceback = traceback_info)
+            logger.exception("An Exception occurred:", user_id = "[Global Exception Recorder]")
         except KeyError:
             logger.exception("[Global Exception Recorder] Exception: {exception}", exception = e)
         return JSONResponse(

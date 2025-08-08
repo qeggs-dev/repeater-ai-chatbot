@@ -21,3 +21,7 @@ class ModelNotFoundError(CallApiException):
 class APIConnectionError(CallApiException):
     """Exception raised when the API connection fails."""
     pass
+
+class StreamNotAvailable(CallApiException):
+    """Exception raised when the stream is not available."""
+    pass
