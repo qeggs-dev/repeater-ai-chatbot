@@ -58,6 +58,13 @@ class Delta:
         Check if the delta data is empty.
         """
         return not (self.reasoning_content or self.content or self.function_name or self.function_arguments or self.token_usage)
+    
+    @property
+    def as_dict(self) -> dict:
+        """
+        Convert the delta data to a dictionary.
+        """
+        return asdict(self)
 
 @dataclass
 class Request:

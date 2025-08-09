@@ -1,4 +1,8 @@
-from ._client import Client
+from ._client import (
+    ClientBase,
+    ClientNoStream,
+    ClientStream
+)
 from ._object import (
     Request,
     TokensCount,
