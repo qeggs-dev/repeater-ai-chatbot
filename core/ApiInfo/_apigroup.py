@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
+from ._exceptions import *
 
-from environs import Env
+from environs import Env, EnvError
 
 env = Env()
 
@@ -17,4 +18,7 @@ class ApiGroup:
 
     @property
     def api_key(self) -> str:
-        return env.str(self.api_key_envname, '')
+        try:
+            return env.str(self.api_key_envname, '')
+        except EnvError:
+            raise APIKeyNotSetError(f"API key for {self.group_name} not set. Please set the environment variable {self.api_key_envname}.")

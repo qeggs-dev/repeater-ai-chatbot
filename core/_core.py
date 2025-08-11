@@ -5,10 +5,10 @@ import sys
 import time
 import atexit
 from typing import (
-    Coroutine,
     AsyncIterator,
     Literal,
-    Iterable
+    Iterable,
+    Any,
 )
 import random
 from pathlib import Path
@@ -27,7 +27,7 @@ from . import DataManager
 from . import UserConfigManager
 from .ApiInfo import (
     ApiInfo,
-    ApiGroup
+    ApiGroup,
 )
 from . import MetasoClient
 from . import CallLog
@@ -40,7 +40,7 @@ from TimeParser import (
     get_birthday_countdown,
     date_to_zodiac,
     format_timestamp,
-    calculate_age
+    calculate_age,
 )
 from ConfigManager import ConfigLoader
 from RegexChecker import RegexChecker
@@ -106,7 +106,8 @@ class Core:
             version = __version__
         )
         # 初始化Client并设置并发大小
-        self.api_client = CallAPI.Client(configs.get_config('max_concurrency', 10).get_value(int) if max_concurrency is None else max_concurrency)
+        self.api_client = CallAPI.ClientNoStream(configs.get_config('max_concurrency', 1000).get_value(int) if max_concurrency is None else max_concurrency)
+        self.stream_api_client = CallAPI.ClientStream(configs.get_config('max_concurrency', 1000).get_value(int) if max_concurrency is None else max_concurrency)
 
         # 初始化API信息管理器
         self.apiinfo = ApiInfo()
@@ -159,13 +160,8 @@ class Core:
         return lock
     
     def _Generate_UUID4(self) -> str:
-        if hasattr(self._Generate_UUID4, "_uuid"):
-            return self._Generate_UUID4._uuid
-        else:
-            import uuid
-            self._Generate_UUID4._uuid = uuid
-        
-        return self._Generate_UUID4._uuid.uuid4()
+        import uuid
+        return str(uuid.uuid4())
     
     # region > get prompt_vp
     async def get_prompt_vp(
@@ -352,9 +348,9 @@ class Core:
         """
         async def _match_blacklist(user_id: str, timeout: int | None) -> bool:
             if timeout is not None:
-                return await asyncio.wait_for(asyncio.to_thread(self.blacklist.check, user_id), timeout = timeout)
+                return bool(await asyncio.wait_for(asyncio.to_thread(self.blacklist.check, user_id), timeout = timeout))
             else:
-                return await asyncio.to_thread(self.blacklist.check, user_id)
+                return bool(await asyncio.to_thread(self.blacklist.check, user_id))
         
         try:
             if await _match_blacklist(user_id, self.blacklist_match_timeout):
@@ -380,8 +376,8 @@ class Core:
             save_context: bool = True,
             reference_context_id: str | None = None,
             continue_completion: bool = False,
-            search: bool = False,
-        ) -> dict[str, str]:
+            stream: bool = False,
+        ) -> dict[str, str] | AsyncIterator[dict[str, Any]]:
         """
         与模型对话
 
@@ -400,7 +396,7 @@ class Core:
         """
         try:
             # 记录开始时间
-            task_start_time = time.time_ns()
+            task_start_time = CallLog.TimeStamp()
 
             # 获取用户锁对象
             lock = await self._get_session_lock(user_id)
@@ -424,8 +420,8 @@ class Core:
                 config = await self.get_config(user_id)
                 
                 # 获取模型类型
-                if not model_type:
-                    model_type = config.get("model_type", configs.get_config("default_model_type", "chat").get_value(str))
+                if model_type is None:
+                    model_type: str = config.get("model_type", configs.get_config("default_model_type", "chat").get_value(str))
 
                 # 获取Prompt_vp以展开变量内容
                 prompt_vp = await self.get_prompt_vp(
@@ -458,7 +454,7 @@ class Core:
                 request = CallAPI.Request()
                 # 设置上下文
                 request.context = context
-
+                
                 # 获取API信息
                 apilist = self.apiinfo.find_type(model_type = model_type)
                 # 取第一个API
@@ -495,7 +491,7 @@ class Core:
                 request.print_chunk = print_chunk
 
                 # 记录预处理结束时间
-                call_prepare_end_time = time.time_ns()
+                call_prepare_end_time = CallLog.TimeStamp()
 
                 # 输出 (为了自动填充输出内容)
                 output = _Output()
@@ -505,10 +501,25 @@ class Core:
 
                 # 提交请求
                 try:
-                    response = await self._sendmsg(
-                        user_id=user_id,
-                        request=request
-                    )
+                    response: CallAPI.Response = CallAPI.Response()
+                    if stream:
+                        generator = CallAPI.StreamingResponseGenerationLayer(
+                            user_id = user_id,
+                            request = request,
+                            response_iterator = self.stream_api_client.submit_Request(
+                                user_id = user_id,
+                                request = request
+                            )
+                        )
+                        async for chunk in generator:
+                            yield chunk.as_dict
+                        response = generator.response
+                    else:
+                        response = await self.api_client.submit_Request(
+                            user_id = user_id,
+                            request = request
+                        )
+
                 except CallAPI.Exceptions.CallApiException as e:
                     logger.error(f"CallAPI Error: {e}")
                     output.content = f"Error:{e}"
@@ -541,7 +552,7 @@ class Core:
                     logger.warning("Context not saved", user_id = user_id)
 
                 # 记录任务结束时间
-                response.calling_log.task_end_time = time.time_ns()
+                response.calling_log.task_end_time = CallLog.TimeStamp()
 
                 # 记录调用日志
                 await self.calllog.add_call_log(response.calling_log)
@@ -561,15 +572,6 @@ class Core:
             traceback_info = traceback.format_exc()
             logger.error("API call failed: \n{traceback}", user_id = user_id, traceback = traceback_info)
             raise
-    # endregion
-
-    # region > 发送请求
-    async def _sendmsg(self, user_id: str, request: CallAPI.Request) -> CallAPI.Response:
-        response = await self.api_client.submit_Request(
-            user_id=user_id,
-            request=request
-        )
-        return response
     # endregion
     
     # region > 网络搜索
@@ -619,6 +621,8 @@ class Core:
         output_str += format_response(response.images)
         output_str += format_response(response.videos)
         output_str += format_response(response.podcasts)
+        return output_str
+    # endregion
     # region > 重新加载API信息
     async def reload_apiinfo(self):
         await self.apiinfo.load_async(configs.get_config("api_info_file_path", "./config/api_info.json").get_value(Path))

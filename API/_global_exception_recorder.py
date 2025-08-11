@@ -47,19 +47,20 @@ async def catch_exceptions_middleware(request: Request, call_next):
 # 关闭应用的函数
 async def shutdown_server(exception: CriticalException | None = None) -> None:
     wait_time = None
-    if callable(exception.wait):
-        try:
-            logger.warning("Exceptions include waiting callbacks, and programs may exit delayed...", user_id = "[Global Exception Recorder]")
-        except KeyError:
-            logger.warning("[Global Exception Recorder] Exceptions include waiting callbacks, and programs may exit delayed...")
-        if asyncio.iscoroutinefunction(exception.wait):
-            wait_time = await exception.wait()
-        else:
-            wait_time = exception.wait()
-        if not isinstance(wait_time, float):
-            wait_time = None
-    elif isinstance(exception.wait, float):
-        wait_time = exception.wait
+    if exception is not None:
+        if callable(exception.wait):
+            try:
+                logger.warning("Exceptions include waiting callbacks, and programs may exit delayed...", user_id = "[Global Exception Recorder]")
+            except KeyError:
+                logger.warning("[Global Exception Recorder] Exceptions include waiting callbacks, and programs may exit delayed...")
+            if asyncio.iscoroutinefunction(exception.wait):
+                wait_time = await exception.wait()
+            else:
+                wait_time = exception.wait()
+            if not isinstance(wait_time, float):
+                wait_time = None
+        elif isinstance(exception.wait, float):
+            wait_time = exception.wait
     
     if wait_time is not None and (isinstance(wait_time, float) or isinstance(wait_time, int)) and wait_time > 0:
         try:

@@ -24,7 +24,7 @@ class ConfigObject:
         else:
             return f"<ConfigObject: \"{self.name}\" = None>"
     @property
-    def value_type(self) -> type:
+    def value_type(self) -> type | None:
         """
         The type of the current value.
         """
@@ -79,7 +79,6 @@ class ConfigObject:
 
         Examples:
             >>> config.get_value(int)  # Try converting to int
-            >>> config.get_value(converter=lambda x: datetime.fromisoformat(x))
         """
         raw_value = self._values[self._now_index]
 

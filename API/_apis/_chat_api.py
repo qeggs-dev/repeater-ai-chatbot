@@ -33,7 +33,7 @@ class ChatRequest(BaseModel):
     save_context: bool = True
     reference_context_id: str | None = None
     continue_completion: bool = False
-
+    stream: bool = False
 
 @app.post("/chat/completion/{user_id}")
 async def chat_endpoint(
@@ -57,8 +57,12 @@ async def chat_endpoint(
             load_prompt = request.load_prompt,
             save_context = request.save_context,
             reference_context_id = request.reference_context_id,
-            continue_completion = request.continue_completion
+            continue_completion = request.continue_completion,
+            stream = request.stream
         )
+        if not request.stream:
+            return JSONResponse(context)
+        else:
+            return StreamingResponse(context, media_type="application/x-ndjson")
     except core.ApiInfo.APIGroupNotFoundError as e:
         raise HTTPException(detail=str(e), status_code=400)
-    return JSONResponse(context)
