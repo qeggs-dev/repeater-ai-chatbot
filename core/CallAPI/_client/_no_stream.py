@@ -32,11 +32,13 @@ class ClientNoStream(ClientBase):
             response = await self._submit_task(user_id, request)
             if not isinstance(response, Response):
                 generator = StreamingResponseGenerationLayer(user_id, request, response)
-                for chunk in generator:
+                async for chunk in generator:
                     pass
                 output = generator.response
             else:
                 output = response
+
+            await self._preprocess_response(user_id, request, output)
 
         except openai.NotFoundError:
             raise ModelNotFoundError(request.model)

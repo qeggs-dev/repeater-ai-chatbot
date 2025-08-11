@@ -125,11 +125,11 @@ class ClientBase(ABC):
             logger.info(f"Chunk effective ratio: {1 - response.calling_log.empty_chunk / response.calling_log.total_chunk :.2%}", user_id = user_id)
         
         logger.info("========== Time Statistics =========", user_id = user_id)
-        total_time = response.calling_log.stream_processing_end_time - response.calling_log.request_start_time
+        total_time = response.calling_log.stream_processing_end_time.monotonic - response.calling_log.request_start_time.monotonic
         logger.info(f"Total Time: {total_time / 10**9:.2f}s({format_deltatime_ns(total_time, '%H:%M:%S.%f.%u.%n')})", user_id = user_id)
-        requests_time = response.calling_log.request_end_time - response.calling_log.request_start_time
+        requests_time = response.calling_log.request_end_time.monotonic - response.calling_log.request_start_time.monotonic
         logger.info(f"API Request Time: {requests_time / 10**9:.2f}s({format_deltatime_ns(requests_time, '%H:%M:%S.%f.%u.%n')})", user_id = user_id)
-        stream_processing_time = response.calling_log.stream_processing_end_time - response.calling_log.stream_processing_start_time
+        stream_processing_time = response.calling_log.stream_processing_end_time.monotonic - response.calling_log.stream_processing_start_time.monotonic
         logger.info(f"Stream Processing Time: {stream_processing_time / 10**9:.2f}s({format_deltatime_ns(stream_processing_time, '%H:%M:%S.%f.%u.%n')})", user_id = user_id)
 
         created_utc_dt = datetime.fromtimestamp(response.created, tz=timezone.utc)
@@ -141,7 +141,7 @@ class ClientBase(ABC):
         logger.info(f"Created Time: {created_local_str}", user_id = user_id)
 
         if response.calling_log.total_chunk > 0:
-            chunk_nozero_times = [time for time in response.calling_log.chunk_times if time != 0]
+            chunk_nozero_times = [time.monotonic for time in response.calling_log.chunk_times if time.monotonic != 0]
             chunk_average_spawn_time = sum(chunk_nozero_times) // len(chunk_nozero_times)
             max_chunk_spawn_time = max(chunk_nozero_times)
             min_chunk_spawn_time = min(chunk_nozero_times)

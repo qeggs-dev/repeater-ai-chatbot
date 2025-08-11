@@ -47,7 +47,7 @@ class Delta:
     function_arguments: str = ""
     token_usage: TokensCount = field(default_factory=TokensCount)
     finish_reason: Literal["stop", "length", "content_filter", "tool_calls", "insufficient_system_resource"] | None = None
-    created: TimeStamp = 0
+    created: int = 0
     model: str = ""
     system_fingerprint: str = ""
     logprobs: list[Logprob] = field(default_factory=list)

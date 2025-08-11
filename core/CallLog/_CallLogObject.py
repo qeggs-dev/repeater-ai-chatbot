@@ -1,28 +1,6 @@
 from dataclasses import dataclass, field, asdict
-from typing import Any, overload
-from environs import Env
-import time
-from . import __version__
-
-env = Env()
-
-@dataclass
-class TimeStamp:
-    time_stamp: int = 0
-    monotonic: int = 0
-
-    def reload(self, update_time: bool = True, update_monotonic: bool = True) -> None:
-        """
-        Record the current time
-        """
-        if update_time:
-            self.time_stamp = time.time_ns()
-        if update_monotonic:
-            self.monotonic = time.monotonic_ns()
-    
-    def __post_init__(self) -> None:
-        self.reload()
-
+from typing import Any
+from ._TimeStamp_Obj import TimeStamp
 
 @dataclass
 class CallLogObject:
@@ -35,7 +13,6 @@ class CallLogObject:
     user_id: str = ""
     user_name: str = ""
     stream: bool = True
-    version: str = __version__
 
     total_chunk: TimeStamp = 0
     empty_chunk: TimeStamp = 0

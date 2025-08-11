@@ -1,8 +1,8 @@
 from typing import AsyncGenerator, Self
-from .._object import Request, Delta, Response
-from ...CallLog import CallLog
-from ...Context import ContentUnit, ContextRole, FunctionResponseUnit
-from ...CallLog import TimeStamp
+from ._object import Request, Delta, Response
+from ..CallLog import CallLog
+from ..Context import ContentUnit, ContextRole, FunctionResponseUnit
+from ..CallLog import TimeStamp
 from loguru import logger
 
 class StreamingResponseGenerationLayer:
@@ -51,9 +51,10 @@ class StreamingResponseGenerationLayer:
         print("\n", end="", flush=True)
         # 记录流开始时间
         # 记录上次chunk时间
-        self.last_chunk_time:int = 0
+        self.last_chunk_time:TimeStamp = TimeStamp(0,0)
+        self.created:TimeStamp = TimeStamp()
         # chunk耗时列表
-        self.chunk_times:list[int] = []
+        self.chunk_times:list[TimeStamp] = []
     
     def finally_stream(self):
         print('\n\n', end="", flush=True)
@@ -91,13 +92,13 @@ class StreamingResponseGenerationLayer:
             delta_data = await anext(self._response_iterator)
             self._parse_delta(delta_data)
             return delta_data
-        except StopIteration:
+        except StopAsyncIteration as e:
             if not self._finished:
                 self._finished = True
             stream_processing_end_time: int = TimeStamp()
             self.response.calling_log.stream_processing_end_time = stream_processing_end_time
             self.finally_stream()
-            raise
+            raise e
     
     def _parse_delta(self, delta_data: Delta):
         # 记录会话开启时间
@@ -105,13 +106,13 @@ class StreamingResponseGenerationLayer:
             self.response.created = delta_data.created
         
         # 记录chunk时间
-        if last_chunk_time == 0:
-            last_chunk_time = delta_data.created * (10**9)
+        if self.last_chunk_time == TimeStamp(0,0):
+            self.last_chunk_time = TimeStamp()
         else:
             this_chunk_time = TimeStamp()
-            time_difference = this_chunk_time - last_chunk_time
+            time_difference = this_chunk_time - self.last_chunk_time
             self.chunk_times.append(time_difference)
-            last_chunk_time = this_chunk_time
+            self.last_chunk_time = this_chunk_time
         
         # 记录会话ID
         if not self.response.id:
@@ -159,8 +160,8 @@ class StreamingResponseGenerationLayer:
 
         # 判断是否为空并增加空chunk计数器
         if delta_data.is_empty:
-            empty_chunk_count += 1
-        chunk_count += 1
+            self.empty_chunk_count += 1
+        self.chunk_count += 1
 
         # 处理回调函数
         if self.request.continue_processing_callback_function is not None:

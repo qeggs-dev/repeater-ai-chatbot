@@ -1,3 +1,3 @@
 from ._call_api import CallAPI
 from ._call_stream_api import StreamAPI
-from ._streaming_response_generation_layer import StreamingResponseGenerationLayer
+from .._streaming_response_generation_layer import StreamingResponseGenerationLayer

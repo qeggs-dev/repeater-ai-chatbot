@@ -499,75 +499,77 @@ class Core:
                 output.model_type = api.model_type
                 output.model_id = api.model_id
 
+                async def post_treatment(response: CallAPI.Response):
+                    # 补充调用日志的时间信息
+                    response.calling_log.task_start_time = task_start_time
+                    response.calling_log.call_prepare_start_time = task_start_time
+                    response.calling_log.call_prepare_end_time = call_prepare_end_time
+                    response.calling_log.created_time = response.created
+
+                    # 展开模型输出内容中的变量
+                    response.context.last_content.content = prompt_vp.process(response.context.last_content.content)
+                    # 记录Prompt_vp的命中情况
+                    logger.info(f"Prompt Hits Variable: {prompt_vp.hit_var()}/{prompt_vp.discover_var()}({prompt_vp.hit_var() / prompt_vp.discover_var() if prompt_vp.discover_var() != 0 else 0:.2%})", user_id = user_id)
+
+                    # 保存上下文
+                    if save_context:
+                        context = response.context
+                        if reference_context_id:
+                            historical_context = await context_loader.get_context_object(user_id)
+                            historical_context.append(user_input)
+                            historical_context.append(response.context.last_content)
+                            context = historical_context
+                        await context_loader.save(
+                            user_id = user_id,
+                            context = context
+                        )
+                    else:
+                        logger.warning("Context not saved", user_id = user_id)
+
+                    # 记录任务结束时间
+                    response.calling_log.task_end_time = CallLog.TimeStamp()
+
+                    # 记录调用日志
+                    await self.calllog.add_call_log(response.calling_log)
+
+                    # 记录API调用成功
+                    logger.success(f"API call successful", user_id = user_id)
+
+                    # 返回模型输出内容
+                    output.reasoning_content = response.context.last_content.reasoning_content
+                    output.content = response.context.last_content.content
+                    output.create_time = response.created
+                    output.id = response.id
+
+                    output.finish_reason_cause = response.finish_reason_cause
+
                 # 提交请求
                 try:
                     response: CallAPI.Response = CallAPI.Response()
                     if stream:
-                        generator = CallAPI.StreamingResponseGenerationLayer(
+                        async def generator_wrapper(generator: CallAPI.StreamingResponseGenerationLayer) -> AsyncIterator[dict[str, Any]]:
+                            async for chunk in generator:
+                                yield chunk.as_dict
+                        response_iterator = await self.stream_api_client.submit_Request(
                             user_id = user_id,
                             request = request,
-                            response_iterator = self.stream_api_client.submit_Request(
-                                user_id = user_id,
-                                request = request
-                            )
+                            response_callback = post_treatment
                         )
-                        async for chunk in generator:
-                            yield chunk.as_dict
-                        response = generator.response
+
+                        return generator_wrapper(response_iterator)
                     else:
                         response = await self.api_client.submit_Request(
                             user_id = user_id,
                             request = request
                         )
+                        await post_treatment(response)
+                        return output.as_dict
 
                 except CallAPI.Exceptions.CallApiException as e:
                     logger.error(f"CallAPI Error: {e}")
                     output.content = f"Error:{e}"
                     return output.as_dict
 
-                # 补充调用日志的时间信息
-                response.calling_log.task_start_time = task_start_time
-                response.calling_log.call_prepare_start_time = task_start_time
-                response.calling_log.call_prepare_end_time = call_prepare_end_time
-                response.calling_log.created_time = response.created
-
-                # 展开模型输出内容中的变量
-                response.context.last_content.content = prompt_vp.process(response.context.last_content.content)
-                # 记录Prompt_vp的命中情况
-                logger.info(f"Prompt Hits Variable: {prompt_vp.hit_var()}/{prompt_vp.discover_var()}({prompt_vp.hit_var() / prompt_vp.discover_var() if prompt_vp.discover_var() != 0 else 0:.2%})", user_id = user_id)
-
-                # 保存上下文
-                if save_context:
-                    context = response.context
-                    if reference_context_id:
-                        historical_context = await context_loader.get_context_object(user_id)
-                        historical_context.append(user_input)
-                        historical_context.append(response.context.last_content)
-                        context = historical_context
-                    await context_loader.save(
-                        user_id = user_id,
-                        context = context
-                    )
-                else:
-                    logger.warning("Context not saved", user_id = user_id)
-
-                # 记录任务结束时间
-                response.calling_log.task_end_time = CallLog.TimeStamp()
-
-                # 记录调用日志
-                await self.calllog.add_call_log(response.calling_log)
-
-                # 记录API调用成功
-                logger.success(f"API call successful", user_id = user_id)
-
-                # 返回模型输出内容
-                output.reasoning_content = response.context.last_content.reasoning_content
-                output.content = response.context.last_content.content
-                output.create_time = response.created
-                output.id = response.id
-
-                output.finish_reason_cause = response.finish_reason_cause
-                return output.as_dict
         except Exception as e:
             traceback_info = traceback.format_exc()
             logger.error("API call failed: \n{traceback}", user_id = user_id, traceback = traceback_info)
