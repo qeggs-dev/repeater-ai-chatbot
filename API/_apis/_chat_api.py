@@ -1,3 +1,4 @@
+from typing import AsyncIterator, Any
 import orjson
 from environs import Env
 env = Env()
@@ -22,6 +23,7 @@ from fastapi.exceptions import (
 from loguru import logger
 from .._resource import app, chat, core
 from pydantic import BaseModel
+import orjson
 
 class ChatRequest(BaseModel):
     message: str = ""
@@ -63,6 +65,10 @@ async def chat_endpoint(
         if not request.stream:
             return JSONResponse(context)
         else:
-            return StreamingResponse(context, media_type="application/x-ndjson")
+            async def generator_wrapper(context: AsyncIterator[dict[str, Any]]) -> AsyncIterator[bytes]:
+                async for chunk in context:
+                    yield orjson.dumps(chunk) + b"\n"
+
+            return StreamingResponse(generator_wrapper(context), media_type="application/x-ndjson")
     except core.ApiInfo.APIGroupNotFoundError as e:
         raise HTTPException(detail=str(e), status_code=400)
