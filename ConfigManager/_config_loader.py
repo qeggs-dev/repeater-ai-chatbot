@@ -161,7 +161,7 @@ class ConfigLoader:
                             value = value_item.value
                         config.value = value
                     except (ValueError, TypeError, orjson.JSONDecodeError, yaml.YAMLError):
-                        logger.warning(f"The custom configuration data type conversion failed, and an attempt has been made to use the {config.value_type} type.", user_id = "[System]")
+                        logger.warning(f"The custom configuration data type conversion failed, and an attempt has been made to use the {config.value_type} type.")
                         config.value = value_item.value
             
             configs[name] = config

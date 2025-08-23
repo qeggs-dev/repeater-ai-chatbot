@@ -1,6 +1,6 @@
+import re
 import asyncio
 import aiofiles
-import orjson
 from pathlib import Path
 from typing import Dict, List, Optional, Union
 
@@ -10,11 +10,12 @@ from ._exceptions import *
 class ApiInfo:
     def __init__(self, CaseSensitive: bool = False):
         self._api_groups: List[ApiGroup] = []
-        self._api_types: Dict[str, List[ApiGroup]] = {}
-        self._api_names: Dict[str, List[ApiGroup]] = {}
-        self._api_baseGroups: Dict[str, List[ApiGroup]] = {}
-        self._api_task_types: Dict[str, List[ApiGroup]] = {}
+        self._api_types: Dict[str, List[int]] = {}
+        self._api_names: Dict[str, List[int]] = {}
+        self._api_base_groups: Dict[str, List[int]] = {}
+        self._api_task_types: Dict[str, List[int]] = {}
         self.CaseSensitive = CaseSensitive
+        self._filter_expression_parser = re.compile(r"(?P<findmode>type|name|base_group|task_type)\s*=\s*(?P<value>.*)")
 
     def _create_api_group(self, api_data: dict, model_data: dict) -> ApiGroup:
         """Create an ApiGroup instance from raw data."""
@@ -22,11 +23,16 @@ class ApiInfo:
         if 'Metadata' in model_data:
             metadata.update(model_data.get('Metadata', {}))
         
+        request_type = model_data.get('request_type', 'GET')
+        if request_type not in ["GET", "POST", "PUT", "DELETE", "PATCH"]:
+            request_type = "GET"
+        
         return ApiGroup(
             group_name = api_data.get('Name', ''),
             api_key_envname = model_data.get('ApiKeyEnv', api_data.get('ApiKeyEnv', '')),
             model_name = model_data.get('Name', ''),
             url = model_data.get('URL', api_data.get('URL', '')),
+            request_type = request_type,
             model_id = model_data.get('Id', ''),
             model_type = model_data.get('Type', ''),
             task_type = model_data.get('TaskType', ''),
@@ -39,15 +45,20 @@ class ApiInfo:
             
         # Update type index
         if self.CaseSensitive:
-            self._api_types.setdefault(api_group.model_type, []).append(api_group)
-            self._api_names.setdefault(api_group.model_name, []).append(api_group)
-            self._api_baseGroups.setdefault(api_group.group_name, []).append(api_group)
-            self._api_task_types.setdefault(api_group.task_type, []).append(api_group)
+            model_type_key = api_group.model_type
+            model_name_key = api_group.model_name
+            group_name_key = api_group.group_name
+            task_type_key = api_group.task_type
         else:
-            self._api_types.setdefault(api_group.model_type.lower(), []).append(api_group)
-            self._api_names.setdefault(api_group.model_name.lower(), []).append(api_group)
-            self._api_baseGroups.setdefault(api_group.group_name.lower(), []).append(api_group)
-            self._api_task_types.setdefault(api_group.task_type.lower(), []).append(api_group)
+            model_type_key = api_group.model_type.lower()
+            model_name_key = api_group.model_name.lower()
+            group_name_key = api_group.group_name.lower()
+            task_type_key = api_group.task_type.lower()
+        
+        self._api_types.setdefault(model_type_key, []).append(len(self._api_groups) - 1)
+        self._api_names.setdefault(model_name_key, []).append(len(self._api_groups) - 1)
+        self._api_base_groups.setdefault(group_name_key, []).append(len(self._api_groups) - 1)
+        self._api_task_types.setdefault(task_type_key, []).append(len(self._api_groups) - 1)
 
     def _parse_api_groups(self, raw_api_groups: List[dict]) -> None:
         """Parse raw API groups data and populate indexes."""
@@ -70,94 +81,135 @@ class ApiInfo:
                 self._add_api_group(api_group)
     
     def load(self, path: Path) -> None:
-        """Load and parse API groups from a JSON file."""
-        try:
-            with open(path, 'rb') as f:
-                fdata = f.read()
-                raw_api_groups: List[dict] = orjson.loads(fdata)
-                self._parse_api_groups(raw_api_groups)
-        except orjson.JSONDecodeError as e:
-            raise ValueError(f'Invalid JSON format: {e}')
-        except OSError as e:
-            raise IOError(f'Failed to read file: {e}')
+        """Load and parse API groups from a JSON/YAML file."""
+        if not path.exists():
+            raise FileNotFoundError(f"File '{path}' does not exist")
+        
+        if path.suffix.lower() == '.json':
+            import orjson
+            try:
+                with open(path, 'rb') as f:
+                    fdata = f.read()
+                    raw_api_groups: List[dict] = orjson.loads(fdata)
+                    self._parse_api_groups(raw_api_groups)
+            except orjson.JSONDecodeError as e:
+                raise ValueError(f'Invalid JSON format: {e}')
+            except OSError as e:
+                raise IOError(f'Failed to read file: {e}')
+        elif path.suffix.lower() == '.yaml' or path.suffix.lower() == '.yml':
+            import yaml
+            try:
+                with open(path, 'r', encoding='utf-8') as f:
+                    fdata = f.read()
+                    raw_api_groups: List[dict] = yaml.safe_load(fdata)
+                    self._parse_api_groups(raw_api_groups)
+            except yaml.YAMLError as e:
+                raise ValueError(f'Invalid YAML format: {e}')
+            except OSError as e:
+                raise IOError(f'Failed to read file: {e}')
+        else:
+            raise ValueError(f'Invalid file format: {path.suffix}')
 
     async def load_async(self, path: Path) -> None:
-        """Load and parse API groups from a JSON file."""
-        try:
-            async with aiofiles.open(path, 'rb') as f:
-                fdata = await f.read()
-                raw_api_groups: List[dict] = await asyncio.to_thread(orjson.loads, fdata)
-                await asyncio.to_thread(self._parse_api_groups, raw_api_groups)
-        except orjson.JSONDecodeError as e:
-            raise ValueError(f'Invalid JSON format: {e}')
-        except OSError as e:
-            raise IOError(f'Failed to read file: {e}')
+        """Load and parse API groups from a JSON/YAML file."""
+        if not path.exists():
+            raise FileNotFoundError(f"File '{path}' does not exist")
+        
+        if not path.suffix.lower() == '.json':
+            import orjson
+            try:
+                async with aiofiles.open(path, 'rb') as f:
+                    fdata = await f.read()
+                    raw_api_groups: List[dict] = orjson.loads(fdata)
+                    self._parse_api_groups(raw_api_groups)
+            except orjson.JSONDecodeError as e:
+                raise ValueError(f'Invalid JSON format: {e}')
+            except OSError as e:
+                raise IOError(f'Failed to read file: {e}')
+        elif path.suffix.lower() == '.yaml' or path.suffix.lower() == '.yml':
+            import yaml
+            try:
+                async with aiofiles.open(path, 'r', encoding='utf-8') as f:
+                    fdata = await f.read()
+                    raw_api_groups: List[dict] = yaml.safe_load(fdata)
+                    self._parse_api_groups(raw_api_groups)
+            except yaml.YAMLError as e:
+                raise ValueError(f'Invalid YAML format: {e}')
+            except OSError as e:
+                raise IOError(f'Failed to read file: {e}')
+        else:
+            raise ValueError(f'Invalid file format: {path.suffix}')
 
     def find_type(self, model_type: str, default: list[ApiGroup] = None) -> List[ApiGroup]:
         """Find API groups by model type."""
-        if not self.CaseSensitive:
-            if model_type.lower() in self._api_types:
-                return self._api_types[model_type.lower()].copy()
-            else:
-                if default is not None:
-                    return default.copy()
-                raise APIGroupNotFoundError(f'API group not found for model type: {model_type}')
+        if self.CaseSensitive:
+            key = model_type
         else:
-            if model_type in self._api_types:
-                return self._api_types[model_type].copy()
-            else:
-                if default is not None:
-                    return default.copy()
-                raise APIGroupNotFoundError(f'API group not found for model type: {model_type}')
+            key = model_type.lower()
+
+        index_list = self._api_types.get(key, None)
+        if index_list is None:
+            return []
+        
+        return [self._api_groups[i] for i in index_list]
     
     def find_name(self, model_name: str, default: list[ApiGroup] = None) -> List[ApiGroup]:
         """Find API groups by model name."""
-        if not self.CaseSensitive:
-            if model_name.lower() in self._api_names:
-                return self._api_names[model_name.lower()].copy()
-            else:
-                if default is not None:
-                    return default.copy()
-                raise APIGroupNotFoundError(f'API group not found for model name: {model_name}')
+        if self.CaseSensitive:
+            key = model_name
         else:
-            if model_name in self._api_names:
-                return self._api_names[model_name].copy()
-            else:
-                if default is not None:
-                    return default.copy()
-                raise APIGroupNotFoundError(f'API group not found for model name: {model_name}')
+            key = model_name.lower()
+
+        index_list = self._api_names.get(key, None)
+        if index_list is None:
+            return []
+
+        return [self._api_groups[i] for i in index_list]
     
     def find_baseGroup(self, group_name: str, default: list[ApiGroup] = None) -> List[ApiGroup]:
         """Find API groups by base group name."""
-        if not self.CaseSensitive:
-            if group_name.lower() in self._api_baseGroups:
-                return self._api_baseGroups[group_name.lower()].copy()
-            else:
-                if default is not None:
-                    return default.copy()
-                raise APIGroupNotFoundError(f'API group not found for base group name: {group_name}')
+        if self.CaseSensitive:
+            key = group_name
         else:
-            if group_name in self._api_baseGroups:
-                return self._api_baseGroups[group_name].copy()
-            else:
-                if default is not None:
-                    return default.copy()
-                raise APIGroupNotFoundError(f'API group not found for base group name: {group_name}')
+            key = group_name.lower()
+
+        index_list = self._api_base_groups.get(key, None)
+        if index_list is None:
+            return []
+
+        return [self._api_groups[i] for i in index_list]
 
     def find_task_type(self, task_type: str, default: list[ApiGroup] = None) -> List[ApiGroup]:
         """Find API groups by model task type."""
-        if not self.CaseSensitive:
-            if task_type.lower() in self._api_task_types:
-                return self._api_task_types[task_type.lower()].copy()
-            else:
-                if default is not None:
-                    return default.copy()
-                raise APIGroupNotFoundError(f'API group not found for task type: {task_type}')
+        if self.CaseSensitive:
+            key = task_type
         else:
-            if task_type in self._api_task_types:
-                return self._api_task_types[task_type].copy()
-            else:
-                if default is not None:
-                    return default.copy()
-                raise APIGroupNotFoundError(f'API group not found for task type: {task_type}')
+            key = task_type.lower()
+
+        index_list = self._api_task_types.get(key, None)
+        if index_list is None:
+            return []
+
+        return [self._api_groups[i] for i in index_list]
+    
+    def filter_with_expression(self, expression: str) -> list[ApiGroup]:
+        """Filter API groups using a custom expression."""
+        match = self._filter_expression_parser.match(expression)
+        if not match:
+            raise ValueError(f'Invalid filter expression: {expression}')
         
+        find_mode = match.group('findmode')
+        value = match.group('value')
+
+        if find_mode == "type":
+            api_list = self.find_type(value)
+        elif find_mode == "name":
+            api_list = self.find_name(value)
+        elif find_mode == "base_group":
+            api_list = self.find_baseGroup(value)
+        elif find_mode == "task_type":
+            api_list = self.find_task_type(value)
+        else:
+            raise ValueError(f'Unsupported find mode: {find_mode}')
+        
+        return api_list

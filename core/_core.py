@@ -4,6 +4,7 @@ import asyncio
 import sys
 import time
 import atexit
+import logging
 from typing import (
     AsyncIterator,
     Literal,
@@ -66,32 +67,10 @@ class _Output:
         return asdict(self)
 
 class Core:
+    # region > init
     def __init__(self, max_concurrency: int | None = None):
 
-        # 移除默认处理器
-        logger.remove()
-        # 添加自定义处理器
-        logger.add(
-            sys.stderr,
-            format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{extra[user_id]}</cyan> - <level>{message}</level>",
-            filter=lambda record: "donot_send_console" not in record["extra"]
-        )
-
-        log_dir = configs.get_config("log_file_dir", "./logs").get_value(Path)
-        max_log_file_size = configs.get_config("max_log_file_size", "10MB").get_value(str)
-        log_retention = configs.get_config("log_retention", "10 days").get_value(str)
-        if not log_dir.exists():
-            log_dir.mkdir(parents=True, exist_ok=True)
-        log_file = log_dir / "repeater_log_{time:YYYY-MM-DD_HH-mm-ss}.log"
-        logger.add(
-            log_file,
-            format="{time:YYYY-MM-DD HH:mm:ss} | {level: <8} | {extra[user_id]} - {message}",
-            enqueue=True,
-            delay=True,
-            rotation=max_log_file_size,
-            retention=log_retention,
-            compression="zip"
-        )
+        self.logger_init()
 
         # 全局锁(用于获取会话锁)
         self.lock = asyncio.Lock()
@@ -130,7 +109,7 @@ class Core:
             with open(blacklist_file_path, 'r', encoding='utf-8') as f:
                 self.blacklist.load_strstream(f)
         except ValueError:
-            logger.error("Invalid blacklist file", user_id = "[System]")
+            logger.error("Invalid blacklist file")
         self.blacklist_match_timeout: int | None = configs.get_config("blacklist_match_timeout", 10).get_value(int)
 
         # 添加退出函数
@@ -141,11 +120,79 @@ class Core:
             # 保存调用日志
             if configs.get_config("save_call_log", True).get_value(bool):
                 self.calllog.save_call_log()
-            logger.info("Exiting...", user_id = "[System]")
+            logger.info("Exiting...")
         
         # 注册退出函数
         atexit.register(_exit)
+    # endregion
+    
+    # region > logger_init
+    def logger_init(self):
+        logging.root.handlers = [self._InterceptHandler()]
+        logging.root.setLevel(logging.INFO)
 
+        # 移除其他日志处理器
+        for name in logging.root.manager.loggerDict.keys():
+            logging.getLogger(name).handlers = []
+            logging.getLogger(name).propagate = True
+
+        # 移除默认处理器
+        logger.remove()
+        # 添加自定义处理器
+        logger.add(
+            sys.stderr,
+            format="<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{extra[user_id]}</cyan> - <level>{message}</level>",
+            filter=lambda record: "donot_send_console" not in record["extra"]
+        )
+
+        log_dir = configs.get_config("log_file_dir", "./logs").get_value(Path)
+        max_log_file_size = configs.get_config("max_log_file_size", "10MB").get_value(str)
+        log_retention = configs.get_config("log_retention", "10 days").get_value(str)
+        if not log_dir.exists():
+            log_dir.mkdir(parents=True, exist_ok=True)
+        log_file = log_dir / "repeater_log_{time:YYYY-MM-DD_HH-mm-ss}.log"
+        logger.add(
+            log_file,
+            format="{time:YYYY-MM-DD HH:mm:ss} | {level: <8} | {extra[user_id]} - {message}",
+            enqueue=True,
+            delay=True,
+            rotation=max_log_file_size,
+            retention=log_retention,
+            compression="zip"
+        )
+        logger.configure(
+            extra={
+                "user_id": "[System]"
+            }
+        )
+    # endregion
+
+    # region > get logger
+    class _InterceptHandler(logging.Handler):
+        def __init__(self, extra_fields:dict | None = None):
+            super().__init__()
+            self.extra_fields = extra_fields or {}
+
+        def emit(self, record):
+            try:
+                level = logger.level(record.levelname).name
+            except ValueError:
+                level = record.levelno
+            
+            # 找到调用者
+            frame, depth = logging.currentframe(), 2
+            while frame.f_code.co_filename == logging.__file__:
+                frame = frame.f_back
+                depth += 1
+            
+            # 创建带有额外字段的绑定logger
+            bound_logger = logger.bind(**self.extra_fields)
+            bound_logger.opt(depth=depth, exception=record.exc_info).log(
+                level, record.getMessage()
+            )
+    # endregion
+
+    # region > get session lock
     async def _get_session_lock(self, user_id: str) -> asyncio.Lock:
         """
         获取指定用户的会话锁
@@ -158,10 +205,13 @@ class Core:
                 self.session_locks[user_id] = asyncio.Lock()
             lock = self.session_locks[user_id]
         return lock
+    # endregion
     
+    # region > generate uuid4
     def _Generate_UUID4(self) -> str:
         import uuid
         return str(uuid.uuid4())
+    # endregion
     
     # region > get prompt_vp
     async def get_prompt_vp(

@@ -1,5 +1,6 @@
 from dataclasses import dataclass, field
 from ._exceptions import *
+from typing import Literal
 
 from environs import Env, EnvError
 
@@ -12,6 +13,7 @@ class ApiGroup:
     group_name: str = ""
     model_name: str = ""
     model_id: str = ""
+    request_type: Literal["GET", "POST", "PUT", "DELETE", "PATCH"] | None = "GET"
     model_type: str = ""
     task_type: str = ""
     metadata: dict = field(default_factory=dict)

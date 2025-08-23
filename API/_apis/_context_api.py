@@ -53,7 +53,7 @@ async def get_context_userlist():
     # 从chat.context_manager中获取所有用户ID
     userid_list = await chat.context_manager.get_all_user_id()
 
-    logger.info(f"Get Context userlist", user_id = "[System]")
+    logger.info(f"Get Context userlist")
 
     # 返回JSONResponse，包含所有用户ID
     return JSONResponse(userid_list)

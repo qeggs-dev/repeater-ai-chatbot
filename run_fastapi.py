@@ -2,6 +2,7 @@ from environs import Env
 env = Env()
 env.read_env()
 
+import logging
 from API import app, configs
 from loguru import logger
 
@@ -20,17 +21,22 @@ def main():
     workers = configs.get_config("server.workers", workers).get_value(int)
     reload = configs.get_config("server.reload", reload).get_value(bool)
 
-    logger.info(f"Starting server at {host}:{port}", user_id = "[System]")
-    logger.info(f"Server will run with {workers} workers", user_id = "[System]")
+    logger.info(f"Starting server at {host}:{port}")
+
+    if workers:
+        logger.info(f"Server will run with {workers} workers")
+    
     if reload:
-        logger.info("Server will reload on code change", user_id = "[System]")
-    logger.info("Press CTRL+C to stop the server", user_id = "[System]")
+        logger.info("Server will reload on code change")
+    
+    logger.info("Server starting...")
 
     uvicorn.run(
         app = app,
         host = host,
         port = port,
-        workers = workers
+        workers = workers,
+        log_config = None,
     )
 
 if __name__ == "__main__":

@@ -57,10 +57,10 @@ class CallLogManager:
             if self._debonce_task and not self._debonce_task.done():
                 self._debonce_task.cancel()  # 如果已有任务，先取消
             if len(self.log_list) < self.max_cache_size:
-                logger.info("Call log debonce task created", user_id="[System]")
+                logger.info("Call log debonce task created")
                 self._debonce_task = asyncio.create_task(self._wait_and_save_async(wait_time = self.debonce_save_wait_time))  # 重新创建
             else:
-                logger.info("Call log saved immediately", user_id="[System]")
+                logger.info("Call log saved immediately")
                 self._debonce_task = asyncio.create_task(self._wait_and_save_async(wait_time = 0)) # 直接保存
 
     def _save_call_log(self) -> None:
@@ -84,7 +84,7 @@ class CallLogManager:
             with open(self.log_file, 'wb') as f:
                 f.write(write_log(self.log_list))
         
-        logger.info(f"Saved {len(self.log_list)} call logs to file", user_id="[System]")
+        logger.info(f"Saved {len(self.log_list)} call logs to file")
 
         # 清空日志列表
         self.log_list.clear()
@@ -109,7 +109,7 @@ class CallLogManager:
             # 如果文件不存在，则以写入模式打开文件
             async with aiofiles.open(self.log_file, 'wb') as f:
                 await f.write(write_log(self.log_list)) 
-        logger.info(f"Saved {len(self.log_list)} call logs to file", user_id="[System]")
+        logger.info(f"Saved {len(self.log_list)} call logs to file")
 
         # 清空日志列表
         self.log_list.clear()
@@ -128,7 +128,7 @@ class CallLogManager:
                     call_log_list.append(CallLogObject.from_dict(data))
         async with self.async_lock:
             call_log_list += copy.deepcopy(self.log_list)
-        logger.info(f"Read {len(call_log_list)} call logs from file", user_id="[System]")
+        logger.info(f"Read {len(call_log_list)} call logs from file")
         return call_log_list
 
     async def read_stream_call_log(self) -> AsyncIterator[CallLogObject]:
@@ -157,7 +157,7 @@ class CallLogManager:
 
         # 记录总数（所有日志已生成）
         total = file_log_count + mem_log_count
-        logger.info(f"Read {total} call logs from file", user_id="[System]")
+        logger.info(f"Read {total} call logs from file")
         
     
     def save_call_log(self) -> None:
@@ -185,4 +185,4 @@ class CallLogManager:
             # 时间到后保存日志
             await self._save_call_log_async()
         except asyncio.CancelledError:
-            logger.info("Call log save task cancelled", user_id="[System]")
+            logger.info("Call log save task cancelled")
