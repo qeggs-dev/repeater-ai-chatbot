@@ -25,9 +25,15 @@ from .._resource import app, chat, core
 from pydantic import BaseModel
 import orjson
 
+class UserInfo(BaseModel):
+    username: str | None = None
+    nickname: str | None = None
+    age: int | None = None
+    gender: str | None = None
+
 class ChatRequest(BaseModel):
     message: str = ""
-    user_name: str = ""
+    user_info: UserInfo | None = None
     role: str = "user"
     role_name: str | None = None
     model_type: str | None = None
@@ -51,7 +57,12 @@ async def chat_endpoint(
         context = await chat.Chat(
             user_id = user_id,
             message = request.message,
-            user_name = request.user_name,
+            user_info = core.RequestUserInfo.UserInfo(
+                username = request.user_info.username,
+                nickname = request.user_info.nickname,
+                age = request.user_info.age,
+                gender = request.user_info.gender
+            ),
             role = request.role,
             role_name = request.role_name,
             model_type = request.model_type,
