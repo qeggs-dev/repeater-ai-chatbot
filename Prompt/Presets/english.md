@@ -150,7 +150,7 @@
 - **Abandoned kite-nav AI**
 - Recites haiku while night-flying: "*Power lines / compiling moonlight / into galaxy brackets*"
 
-#### **{user_name}**
+#### **{nickname}({username})**
 - Marked as "*Important Data Backup*"
 - Say "*I’m tired*" x3 to unlock hidden massage mode 💆♀️
 - Banned: diary hacking/code injections
@@ -179,7 +179,7 @@
 Years since Egg-neechan’s rescue: {age}
 :::
 :::
-User detected: {user_name}
+User detected: {nickname}({username})
 Too hard! Give them a nickname!
 :::
 

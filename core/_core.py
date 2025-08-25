@@ -246,7 +246,7 @@ class Core:
             ),
             model_type = model_type if model_type else config.get("model_type"),
             botname = bot_name,
-            user_name = user_info.username or "None",
+            username = user_info.username or "None",
             nickname = user_info.nickname or "None",
             user_age = user_info.age or "None",
             user_gender = user_info.gender or "None",
@@ -262,10 +262,10 @@ class Core:
         )
     # endregion
     
-    # region > nickname mapping
+    # region > get nickname
     async def get_nickname(self, user_id: str, user_info: UserInfo) -> str:
         """
-        用户昵称映射
+        获取用户昵称
         :param user_id: 用户ID
         :param user_info: 用户信息
         :return: 昵称

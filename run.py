@@ -114,12 +114,13 @@ class ScriptStarter:
             self.seek_user_consent_cache[prompt] = allow
         return allow
     
-    def run_command(self, command: list[str], cwd: str | Path | None = None) -> tuple[str, str]:
+    def run_command(self, command: list[str], reason: str, cwd: str | Path | None = None) -> tuple[str, str]:
         """
         运行其他命令时先询问用户是否运行
         """
         print(f"{sys.argv[0]} want to run the command:")
         print(shlex.join(command))
+        print(f"Reason: \n{reason}")
         if cwd is not None:
             print(f"in: {cwd}")
         if self.seek_user_consent("Do you want to continue?", default_item=False):
@@ -139,7 +140,7 @@ class ScriptStarter:
         安装包时先检查是否可用pipx
         """
         if self.allow_pipx is None:
-            outpu, _ = self.run_command(["pip", "list"])
+            outpu, _ = self.run_command(["pip", "list"], reason="Check if pipx is available")
             for line in outpu.splitlines():
                 if "pipx" in line:
                     self.allow_pipx = True
@@ -152,7 +153,7 @@ class ScriptStarter:
         else:
             installer = "pip"
         
-        self.run_command([installer, "install"] + package)
+        self.run_command([installer, "install"] + package, reason=f"Install package: {' '.join(package)}")
     
     @staticmethod
     def choose_one(items: Iterable[T], prompt: str = "Choose one:", item_prefix: str = "> ", select_only_one: bool = True) -> T | None:
@@ -202,13 +203,13 @@ class ScriptStarter:
             if not find_venv:
                 print("No venv found.")
                 run = [self.python_path, "-m", "venv", ".venv", "--prompt", "venv"]
-                self.run_command(run)
+                self.run_command(run, "Create virtual environment")
                 if (Path.cwd() / "requirements.txt").exists():
                     print("Finded requirements.txt.")
                     print("Installing requirements...")
                     # 此处因为requirements.txt默认安装到虚拟环境，所以不使用全局包安装器
                     run = [str(self.venv_bin_path / "pip"), "install", "-r", "requirements.txt"]
-                    self.run_command(run)
+                    self.run_command(run, "Install requirements")
     
     def check_pyscript(self):
         """
@@ -255,30 +256,33 @@ class ScriptStarter:
         
         while True:
             time_start = time.time()
+            result = None
             try:
                 if self.seek_user_consent("Is it directly connected to the current console I/O?", True, cached=True):
+                    print("\n===== Process Begin =====\n")
                     result = subprocess.run(run, stdin=sys.stdin, stdout=sys.stdout, stderr=sys.stderr)
                 else:
+                    print("\n===== Process Begin =====\n")
                     result = subprocess.run(run)
             except KeyboardInterrupt:
                 print("Received interrupt signal (Ctrl+C)")
-                self.prompt_restart()
             finally:
                 time_end = time.time()
-
-            print("\n====== Process End ======\n")
-            print(f"Time Taken: {time_end - time_start} seconds")
-            print("\n")
-            print(f"Exit Code: {result.returncode}")
-            self.last_process_return_code = result.returncode
+                
+                print("\n====== Process End ======\n")
+                print(f"Time Taken: {time_end - time_start} seconds")
+                print("\n")
+                if result is not None:
+                    print(f"Exit Code: {result.returncode}")
+                    self.last_process_return_code = result.returncode
             
-            self.prompt_restart()
+                self.prompt_restart()
     def check_import(self):
         global prompt_toolkit, WordCompleter, import_prompt_toolkit
         if not import_prompt_toolkit:
             self.install_package(["pip", "install", "prompt_toolkit"])
             try:
-                import prompt_toolkit
+                import prompt_toolkit   
                 from prompt_toolkit.completion import WordCompleter
                 import_prompt_toolkit = True
             except ImportError:

@@ -155,7 +155,7 @@
 - Choca con la caja a prueba de agua de Lang Yu.
 - La repetidora guarda fotos de Egg dormida en su memoria.
 
-#### **{user_name}**
+#### **{nickname}({username})**
 - Marcado como "objeto importante de respaldo".
 - Decir "estoy cansado" 3 veces activa modo masaje 💆♀️.
 - Prohibido: hackear su diario o inyectar código malicioso.
@@ -186,7 +186,7 @@
 Edad cuando Egg la encontró: {age} años
 :::
 :::
-Nombre de usuario: {user_name}
+Nombre de usuario: {nickname}({username})
 ¡Es difícil! Usa un apodo.
 :::
 

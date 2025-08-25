@@ -27,16 +27,17 @@ async def get_style(style_name: str, use_base: bool = True) -> str:
     style_file_path = basepath / f"{style_name}.css"
 
     if not validate_path(base_path = basepath, new_path = style_file_path):
-        raise ValueError(f"Invalid style file path: {style_file_path}")
+        logger.warning(f"Style path validation failed: {style_file_path}")
+        return BASE_STYLE
     
     try:
         return await _read_style(style_file_path)
     except (FileNotFoundError, ValueError):
         if use_base:
-            logger.warning(f"Style file not found: {style_file_path}", user_id = "[System]")
+            logger.warning(f"Style file not found: {style_file_path}")
             return BASE_STYLE
         else:
-            logger.error(f"Style file not found: {style_file_path}", user_id = "[System]")
+            logger.error(f"Style file not found: {style_file_path}")
             raise ValueError(f"Style file not found: {style_file_path}")
             
 
