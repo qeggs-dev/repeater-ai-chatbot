@@ -207,7 +207,7 @@ class ConfigManager:
             cache[user_id] = configs
             logger.info("Force write config", user_id = user_id)
 
-    async def save_all(self) -> None:
+    async def save_all(self, clear_all_tasks: bool = True) -> None:
         """
         保存所有用户配置
 
@@ -218,7 +218,9 @@ class ConfigManager:
 
             for user_id, configs in cache.items():
                 await self._user_config_manager.save(user_id, configs.configs)
-            
+                if clear_all_tasks:
+                    self._downgrade_tasks[user_id].cancel()
+                    self._debonce_save_tasks[user_id].cancel()
             logger.info(f"Saved {len(cache)} config", user_id = user_id)
             cache.clear()
     

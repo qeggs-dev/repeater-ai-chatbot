@@ -73,8 +73,11 @@ async def chat_endpoint(
             continue_completion = request.continue_completion,
             stream = request.stream
         )
-        if not request.stream:
-            return JSONResponse(context.as_dict)
+        if isinstance(context, core.Response):
+            if context.status == 200:
+                return JSONResponse(context.as_dict)
+            else:
+                raise HTTPException(detail=context.as_dict, status_code=context.status)
         else:
             async def generator_wrapper(context: AsyncIterator[core.CallAPI.Delta]) -> AsyncIterator[bytes]:
                 async for chunk in context:

@@ -59,7 +59,8 @@ async def set_config(user_id: str, value_type: str, key: str = Form(...), value:
     config[key] = value
 
     # 保存配置
-    await chat.user_config_manager.save(user_id=user_id, configs=config)
+    # await chat.user_config_manager.save(user_id=user_id, configs=config)
+    await chat.user_config_manager.force_write(user_id=user_id, configs=config)
     
     logger.info("Set user config {key}={value}(type:{value_type})", user_id = user_id, key = key, value = value, value_type = value_type)
 

@@ -3,6 +3,7 @@ from typing import Callable, Coroutine, Literal, Any
 
 from ..Context import ContextObject, CallingFunctionRequest
 from ..CallLog import CallLog, TimeStamp
+import math
 
 @dataclass
 class TokensCount:
@@ -14,6 +15,14 @@ class TokensCount:
     total_tokens = 0
     prompt_cache_hit_tokens = 0
     prompt_cache_miss_tokens = 0
+
+    @property
+    def prompt_cache_hit_ratio(self) -> float:
+        if self.prompt_cache_hit_tokens is not None and self.prompt_cache_miss_tokens is not None:
+            if self.prompt_cache_hit_tokens + self.prompt_cache_miss_tokens > 0:
+                return self.prompt_cache_hit_tokens / (self.prompt_cache_hit_tokens + self.prompt_cache_miss_tokens)
+        else:
+            return math.nan
     
     @property
     def as_dict(self) -> dict[str, int]:

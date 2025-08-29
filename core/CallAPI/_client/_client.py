@@ -45,6 +45,7 @@ from .._utils import (
     remove_keys_from_dicts,
     sum_string_lengths
 )
+import math
 
 class ClientBase(ABC):
     def __init__(self, max_concurrency: int = 1000):
@@ -153,9 +154,12 @@ class ClientBase(ABC):
         logger.info(f"Total Tokens: {response.token_usage.total_tokens}", user_id = user_id)
         logger.info(f"Context Input Tokens: {response.token_usage.prompt_tokens}", user_id = user_id)
         logger.info(f"Completion Output Tokens: {response.token_usage.completion_tokens}", user_id = user_id)
-        logger.info(f"Cache Hit Count: {response.token_usage.prompt_cache_hit_tokens}", user_id = user_id)
-        logger.info(f"Cache Miss Count: {response.token_usage.prompt_cache_miss_tokens}", user_id = user_id)
-        logger.info(f"Cache Hit Ratio: {response.token_usage.prompt_cache_hit_tokens / response.token_usage.prompt_tokens :.2%}", user_id = user_id)
+        if response.token_usage.prompt_cache_hit_tokens is not None:
+            logger.info(f"Cache Hit Count: {response.token_usage.prompt_cache_hit_tokens}", user_id = user_id)
+        if response.token_usage.prompt_cache_miss_tokens is not None:
+            logger.info(f"Cache Miss Count: {response.token_usage.prompt_cache_miss_tokens}", user_id = user_id)
+        if not math.isnan(response.token_usage.prompt_cache_hit_ratio):
+            logger.info(f"Cache Hit Ratio: {response.token_usage.prompt_cache_hit_ratio :.2%}", user_id = user_id)
         if response.stream:
             logger.info(f"Average Generation Rate: {response.token_usage.completion_tokens / ((response.calling_log.stream_processing_end_time - response.calling_log.stream_processing_start_time) / 1e9):.2f} /s", user_id = user_id)
 

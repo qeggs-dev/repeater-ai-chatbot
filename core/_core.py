@@ -9,6 +9,7 @@ from typing import (
     Literal,
     Iterable,
     Any,
+    Coroutine
 )
 import random
 from pathlib import Path
@@ -483,7 +484,7 @@ class Core:
                 
                 # 获取默认模型uid
                 if model_uid is None:
-                    model_uid: str = config.get("model_uid", configs.get_config("default_model_uid", "chat").get_value(str))
+                    model_uid: str = config.get("model_uid", configs.get_config("default_model_uid", "deepseek-chat").get_value(str))
 
                 # 获取Prompt_vp以展开变量内容
                 prompt_vp = await self.get_prompt_vp(
@@ -574,7 +575,8 @@ class Core:
                 output.model_name = api.group_name
                 output.model_type = api.model_uid
                 output.model_id = api.model_id
-
+                
+                # region >> 处理结果
                 async def post_treatment(response: CallAPI.Response):
                     # 补充调用日志的时间信息
                     response.calling_log.task_start_time = task_start_time
@@ -618,8 +620,9 @@ class Core:
                     output.id = response.id
 
                     output.finish_reason_cause = response.finish_reason_cause
+                # endregion
 
-                # 提交请求
+                # region >> 提交请求
                 try:
                     response: CallAPI.Response = CallAPI.Response()
                     if stream:
@@ -645,6 +648,7 @@ class Core:
                     logger.error(f"CallAPI Error: {e}")
                     output.content = f"Error:{e}"
                     return output
+                # endregion
 
         except Exception as e:
             traceback_info = traceback.format_exc()
