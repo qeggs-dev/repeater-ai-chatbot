@@ -164,7 +164,7 @@ class ClientBase(ABC):
             logger.info(f"Average Generation Rate: {response.token_usage.completion_tokens / ((response.calling_log.stream_processing_end_time - response.calling_log.stream_processing_start_time) / 1e9):.2f} /s", user_id = user_id)
 
         logger.info("============= Content ==============", user_id = user_id)
-        logger.info(f"Total Content Length: {len(response.context.last_content.reasoning_content) + len(response.context.last_content.content)}", user_id = user_id)
+        logger.info(f"Total Content Length: {response.context.total_length}", user_id = user_id)
         response.calling_log.total_context_length = sum_string_lengths(response.context.full_context, "content")
         logger.info(f"Reasoning Content Length: {len(response.context.last_content.reasoning_content)}", user_id = user_id)
         response.calling_log.reasoning_content_length = len(response.context.last_content.reasoning_content)

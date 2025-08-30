@@ -22,6 +22,7 @@ BASE_VENV_PATH = Path(".venv")
 BASE_WINDOWS_PYTHON = Path("python.exe")
 BASE_LINUX_PYTHON = Path("python3")
 SYSTEM = platform.system() # 主打一个减少计算
+RUN_SCRIPT_PATH = "run_fastapi.py"
 
 T = TypeVar("T")
 
@@ -55,7 +56,7 @@ class ScriptStarter:
         else:
             self.python_path = BASE_LINUX_PYTHON
         
-        self.script_path = ("run_fastapi.py")
+        self.script_path = (RUN_SCRIPT_PATH)
 
         self.last_process_return_code = None
 

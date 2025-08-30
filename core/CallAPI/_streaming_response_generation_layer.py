@@ -6,6 +6,17 @@ from ..CallLog import TimeStamp
 from loguru import logger
 
 class StreamingResponseGenerationLayer:
+    """
+    Delta 生成流包装器
+
+    用于在流式响应中创建统计夹层以恢复非流式调用时的统计功能
+
+    ---
+
+    :param user_id: 用户ID
+    :param request: 请求对象
+    :param response_iterator: 原始响应迭代器
+    """
     def __init__(self, user_id: str, request: Request, response_iterator: AsyncGenerator[Delta, None]) -> None:
         self.request: Request = request
         self._response_iterator: AsyncGenerator[Delta, None] = response_iterator

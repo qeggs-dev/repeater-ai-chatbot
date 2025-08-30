@@ -21,8 +21,7 @@ class TokensCount:
         if self.prompt_cache_hit_tokens is not None and self.prompt_cache_miss_tokens is not None:
             if self.prompt_cache_hit_tokens + self.prompt_cache_miss_tokens > 0:
                 return self.prompt_cache_hit_tokens / (self.prompt_cache_hit_tokens + self.prompt_cache_miss_tokens)
-        else:
-            return math.nan
+        return math.nan
     
     @property
     def as_dict(self) -> dict[str, int]:
