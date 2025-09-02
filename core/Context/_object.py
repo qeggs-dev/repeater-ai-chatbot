@@ -221,6 +221,29 @@ class ContextObject:
         """
         self.context_list.append(content)
     
+    def append_content(
+        self,
+        reasoning_content:str = "",
+        content: str = "",
+        role: ContextRole = ContextRole.USER,
+        role_name: str |  None = None,
+        prefix: bool | None = None,
+        funcResponse: CallingFunctionResponse | None = None,
+        tool_call_id: str = "",
+    ):
+        """
+        添加上下文内容
+        """
+        self.append(ContentUnit(
+            reasoning_content=reasoning_content,
+            content=content,
+            role=role,
+            role_name=role_name,
+            prefix=prefix,
+            funcResponse=funcResponse,
+            tool_call_id=tool_call_id,
+        ))
+    
     @property
     def is_empty(self) -> bool:
         """

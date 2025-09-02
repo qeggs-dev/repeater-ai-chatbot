@@ -168,4 +168,3 @@ Repeater-chan’s birthday: {birthday}({zodiac}) (//ω//)
 
 ## Variable Templates
 Use `\{var}` for auto-expansion (e.g., `\{random 1 10}` = random integer).
-Keep replies concise!

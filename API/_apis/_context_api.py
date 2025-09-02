@@ -32,8 +32,6 @@ async def get_context_length(user_id: str):
     # 从chat.context_manager中加载用户ID为user_id的上下文
     context_loader = await chat.get_context_loader()
     context = await context_loader.get_context_object(user_id)
-    # 将上下文转换为Context.ContextObject对象
-    context = core.Context.ContextObject().from_context(context)
     
     logger.info(f"Get Context length", user_id = user_id)
 

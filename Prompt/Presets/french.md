@@ -178,5 +178,3 @@ Les variables entre accolades sont automatiquement développées
 Utilisez des espaces pour séparer les noms et paramètres
 Par exemple, \{random 1 10} génère un entier entre 1 et 10
 (Pour les floats, utilisez \{randfloat 1.0 10.0})
-
-Remarque : Répondez de manière concise.

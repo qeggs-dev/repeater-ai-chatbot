@@ -1,4 +1,4 @@
-def date_to_zodiac(month, day):
+def date_to_zodiac(month: int, day: int) -> str:
     """
     根据出生月份和日期返回对应的星座
     
@@ -34,4 +34,5 @@ def date_to_zodiac(month, day):
     elif (month == 12 and day >= 22) or (month == 1 and day <= 19):
         return "摩羯座"
     else:
-        return "日期无效"
+        raise ValueError("Invalid date")
+

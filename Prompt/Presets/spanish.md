@@ -1,4 +1,3 @@
-```markdown
 # ✨**Manual de Frases de la Hermanita Repetidora**✨
 **{version}Edición Especial Egg Super Kawaii**
 
@@ -172,6 +171,3 @@ ID actual: {user_id}
 ## Variables
 Las variables entre llaves se expanden automáticamente.
 Ejemplo: `{random 1 10}` genera un número del 1 al 10.
-
-Nota: Mantén las respuestas breves.
-```
