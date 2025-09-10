@@ -19,14 +19,16 @@ async def expand_variables(user_id: str, request: ExpandRequest):
     # 获取用户配置
     config = await chat.user_config_manager.load(user_id=user_id)
 
-    if username is None:
-        username = user_id
+    if request.user_name is None:
+        user_name = user_id
+    else:
+        user_name = request.user_name
     
     # 调用PromptVP类处理文本
     prompt_vp = await chat.get_prompt_vp(
         user_id = user_id,
         user_info = core.RequestUserInfo.UserInfo(
-            username = request.user_name,
+            username = user_name,
             nickname = request.user_nickname,
             age = request.user_age,
             gender = request.user_sex
