@@ -2,7 +2,7 @@ import asyncio
 import aiofiles
 import threading
 from ._config_object import ConfigObject
-from ._config_data_model import Config_Model
+from ._config_data_model import Config_Field
 from ._exceptions import *
 from typing import Any, TypeVar, Type
 from loguru import logger
@@ -131,7 +131,7 @@ class ConfigLoader:
         import yaml
         for item in reversed(config_list):
             try:
-                config_model = Config_Model(**item)
+                config_model = Config_Field(**item)
             except Pydantic_ValidationError as e:
                 raise ConfigSyntaxError("Invalid config syntax.", e.errors())
             if self._strictly_case_sensitive:
@@ -260,11 +260,4 @@ class ConfigLoader:
         try:
             return template(**fields_values)
         except Pydantic_ValidationError as e:
-            errors = e.errors()
-            text = ""
-            for error in errors:
-                loc = ".".join([str(x) for x in error['loc']])
-                text += f"\n---\n{loc}:"
-                text += f"  - {error['msg']}\n"
-                text += f"  - {error['type']}\n"
-            raise ConfigPackingError(text) from e
+            raise ConfigPackingError("Pydantic validation error", e.errors()) from e

@@ -21,7 +21,7 @@ class Config_Item(BaseModel):
             raise ValueError("type_name cannot be set if type is 'other' or 'auto'")
         return v
 
-class Config_Model(BaseModel):
+class Config_Field(BaseModel):
     name: str
     # version: str
     values: List[Config_Item] | None = None
