@@ -251,6 +251,13 @@ class ContextObject:
         """
         return not self.prompt and not self.context_list
     
+    @property
+    def has_new_func_calling_response(self) -> bool:
+        """
+        判断上下文是否包含新的函数调用响应
+        """
+        return self.last_content.funcResponse is not None
+    
     @classmethod
     def from_context(cls, context: list[dict]) -> "ContextObject":
         """

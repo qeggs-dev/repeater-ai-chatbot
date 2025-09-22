@@ -4,8 +4,6 @@ class ContextManagerException(Exception):
 class ContextSyntaxError(ContextManagerException):
     pass
 
-
-
 class ContextLoadingSyntaxError(ContextSyntaxError):
     pass
 

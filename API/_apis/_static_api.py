@@ -1,7 +1,8 @@
-from .._resource import app
+from .._resource import app, configs
 from fastapi.responses import FileResponse
 
 @app.get('/favicon.ico')
 async def favicon():
     """Return favicon"""
-    return FileResponse('static/favicon.ico')
+    static_dir = configs.get_config('static.base_path').get_value(str)
+    return FileResponse(f'{static_dir}/favicon.ico')

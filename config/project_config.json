@@ -1,6 +1,6 @@
 [
     {
-        "name": "LOG_LEVEL",
+        "name": "LOGGER.LOG_LEVEL",
         "values": [
             {
                 "type": "str",
@@ -19,7 +19,7 @@
         ]
     },
     {
-        "name": "API_INFO_FILE_PATH",
+        "name": "API_INFO.API_FILE_PATH",
         "values": [
             {
                 "type": "path",
@@ -28,7 +28,7 @@
         ]
     },
     {
-        "name": "CALL_LOG_FILE_PATH",
+        "name": "CALLLOG.LOG_FILE_PATH",
         "values": [
             {
                 "type": "path",
@@ -37,7 +37,7 @@
         ]
     },
     {
-        "name": "MARKDOWN_TO_IMAGE_PREPROCESS_MAP_BEFORE",
+        "name": "RENDER.MARKDOWN.TO_IMAGE.PREPROCESS_MAP.BEFORE",
         "values": [
             {
                 "type": "dict",
@@ -48,7 +48,7 @@
         ]
     },
     {
-        "name": "MARKDOWN_TO_IMAGE_PREPROCESS_MAP_END",
+        "name": "RENDER.MARKDOWN.TO_IMAGE.PREPROCESS_MAP.AFTER",
         "values": [
             {
                 "type": "dict",
@@ -60,7 +60,7 @@
         ]
     },
     {
-        "name": "RENDERED_IMAGE_DIR",
+        "name": "RENDER.OUTPUT_IMAGE_DIR",
         "values": [
             {
                 "type": "path",
@@ -69,7 +69,7 @@
         ]
     },
     {
-        "name": "RENDER_STYLES_DIR",
+        "name": "RENDER.MARKDOWN.TO_IMAGE.STYLES",
         "values": [
             {
                 "type": "path",
@@ -78,7 +78,7 @@
         ]
     },
     {
-        "name": "STATIC_DIR",
+        "name": "STATIC.BASE_PATH",
         "values": [
             {
                 "type": "path",
@@ -87,7 +87,7 @@
         ]
     },
     {
-        "name": "USER_DATA_DIR",
+        "name": "USER_DATA.DIR",
         "values": [
             {
                 "type": "path",
@@ -96,16 +96,16 @@
         ]
     },
     {
-        "name": "DEFAULT_MODEL_TYPE",
+        "name": "API_INFO.DEFAULT_MODEL_UID",
         "values": [
             {
                 "type": "str",
-                "value": "chat"
+                "value": "deepseek-chat"
             }
         ]
     },
     {
-        "name": "WKHTMLTOIMAGE_PATH",
+        "name": "RENDER.MARKDOWN.WKHTMLTOIMAGE_PATH",
         "values": [
             {
                 "type": "path",
@@ -120,16 +120,7 @@
         ]
     },
     {
-        "name": "DEFAULT_OUTPUT_DPI",
-        "values": [
-            {
-                "type": "int",
-                "value": 150
-            }
-        ]
-    },
-    {
-        "name": "BOT_NAME",
+        "name": "BOT_INFO.BOT_NAME",
         "values": [
             {
                 "type": "str",
@@ -138,7 +129,7 @@
         ]
     },
     {
-        "name": "BIRTHDAY_YEAR",
+        "name": "BOT_INFO.BIRTHDAY_YEAR",
         "values": [
             {
                 "type": "int",
@@ -147,7 +138,7 @@
         ]
     },
     {
-        "name": "BIRTHDAY_MONTH",
+        "name": "BOT_INFO.BIRTHDAY_MONTH",
         "values": [
             {
                 "type": "int",
@@ -156,7 +147,7 @@
         ]
     },
     {
-        "name": "BIRTHDAY_DAY",
+        "name": "BOT_INFO.BIRTHDAY_DAY",
         "values": [
             {
                 "type": "int",
@@ -165,16 +156,22 @@
         ]
     },
     {
-        "name": "SAVE_CALL_LOG",
+        "name": "CALLLOG.AUTO_SAVE",
         "values": [
             {
                 "type": "bool",
+                "environment": "PROD",
                 "value": true
+            },
+            {
+                "type": "bool",
+                "environment": "DEV",
+                "value": false
             }
         ]
     },
     {
-        "name": "README_FILE_PATH",
+        "name": "README.FILE_PATH",
         "values": [
             {
                 "type": "str",
@@ -183,7 +180,7 @@
         ]
     },
     {
-        "name": "RENDERED_DEFAULT_IMAGE_TIMEOUT",
+        "name": "RENDER.DEFAULT_IMAGE_TIMEOUT",
         "values": [
             {
                 "type": "int",
@@ -192,7 +189,7 @@
         ]
     },
     {
-        "name": "MAX_CONCURRENCY",
+        "name": "CALLAPI.MAX_CONCURRENCY",
         "values": [
             {
                 "type": "int",
@@ -201,7 +198,7 @@
         ]
     },
     {
-        "name": "DEFAULT_PROMPT_DIR",
+        "name": "PROMPT.DEFAULT_DIR",
         "values": [
             {
                 "type": "str",
@@ -210,7 +207,7 @@
         ]
     },
     {
-        "name": "REASON_PROMPT_DIR",
+        "name": "PROMPT.REASON_DIR",
         "values": [
             {
                 "type": "str",
@@ -219,7 +216,7 @@
         ]
     },
     {
-        "name": "PARSET_PROMPT_NAME",
+        "name": "PROMPT.PARSET_NAME",
         "values": [
             {
                 "type": "str",
@@ -228,7 +225,7 @@
         ]
     },
     {
-        "name": "USER_DATA_SUB_DIR_NAME",
+        "name": "USER_DATA.SUB_DIR_NAME",
         "values": [
             {
                 "type": "str",
@@ -237,7 +234,7 @@
         ]
     },
     {
-        "name": "USER_DATA_METADATA_FILENAME",
+        "name": "USER_DATA.METADATA_FILENAME",
         "values": [
             {
                 "type": "str",
@@ -246,7 +243,7 @@
         ]
     },
     {
-        "name": "USER_DATA_CACHE_METADATA",
+        "name": "USER_DATA.CACHE_METADATA",
         "values": [
             {
                 "name": "bool",
@@ -255,7 +252,7 @@
         ]
     },
     {
-        "name": "CONTEXT_USERDATA_CACHE_METADATA",
+        "name": "CONTEXT_USERDATA.CACHE_METADATA",
         "values": [
             {
                 "name": "bool",
@@ -264,7 +261,7 @@
         ]
     },
     {
-        "name": "PROMPT_USERDATA_CACHE_METADATA",
+        "name": "PROMPT_USERDATA.CACHE_METADATA",
         "values": [
             {
                 "name": "bool",
@@ -273,7 +270,7 @@
         ]
     },
     {
-        "name": "USERCONFIG_USERDATA_CACHE_METADATA",
+        "name": "USERCONFIG_USERDATA.CACHE_METADATA",
         "values": [
             {
                 "name": "bool",
@@ -282,7 +279,7 @@
         ]
     },
     {
-        "name": "USER_DATA_CACHE_DATA",
+        "name": "USER_DATA.CACHE_DATA",
         "values": [
             {
                 "name": "bool",
@@ -291,7 +288,7 @@
         ]
     },
     {
-        "name": "CONTEXT_USERDATA_CACHE_DATA",
+        "name": "CONTEXT_USERDATA.CACHE_DATA",
         "values": [
             {
                 "name": "bool",
@@ -300,7 +297,7 @@
         ]
     },
     {
-        "name": "PROMPT_USERDATA_CACHE_DATA",
+        "name": "PROMPT_USERDATA.CACHE_DATA",
         "values": [
             {
                 "name": "bool",
@@ -309,7 +306,7 @@
         ]
     },
     {
-        "name": "USERCONFIG_USERDATA_CACHE_DATA",
+        "name": "USERCONFIG_USERDATA.CACHE_DATA",
         "values": [
             {
                 "name": "bool",
@@ -318,7 +315,7 @@
         ]
     },
     {
-        "name": "CONFIG_CACHE_DOWNGRADE_WAIT_TIME",
+        "name": "CONFIG_CACHE.DOWNGRADE_WAIT_TIME",
         "values": [
             {
                 "type": "int",
@@ -327,7 +324,7 @@
         ]
     },
     {
-        "name": "CONFIG_CACHE_DEBONCE_SAVE_WAIT_TIME",
+        "name": "CONFIG_CACHE.DEBONCE.SAVE_WAIT_TIME",
         "values": [
             {
                 "type": "int",
@@ -336,7 +333,7 @@
         ]
     },
     {
-        "name": "USER_NICKNAME_MAPPING_FILE_PATH",
+        "name": "USER_NICKNAME_MAPPING.FILE_PATH",
         "values": [
             {
                 "type": "path",
@@ -345,16 +342,7 @@
         ]
     },
     {
-        "name": "TIMEZONE_OFFSET",
-        "values": [
-            {
-                "type": "int",
-                "value": 8
-            }
-        ]
-    },
-    {
-        "name": "DEFAULT_TEMPERATURE",
+        "name": "MODEL.DEFAULT_TEMPERATURE",
         "values": [
             {
                 "type": "float",
@@ -363,25 +351,16 @@
         ]
     },
     {
-        "name": "DEFAULT_TOP_P",
+        "name": "MODEL.DEFAULT_TOP_P",
         "values": [
             {
                 "type": "float",
-                "value": 0.9
+                "value": 1.0
             }
         ]
     },
     {
-        "name": "DEFAULT_FREQUENCY_PENALTY",
-        "values": [
-            {
-                "type": "float",
-                "value": 0.0
-            }
-        ]
-    },
-    {
-        "name": "DEFAULT_PRESENCE_PENALTY",
+        "name": "MODEL.DEFAULT_FREQUENCY_PENALTY",
         "values": [
             {
                 "type": "float",
@@ -390,23 +369,32 @@
         ]
     },
     {
-        "name": "DEFAULT_MAX_TOKENS",
+        "name": "MODEL.DEFAULT_PRESENCE_PENALTY",
         "values": [
             {
-                "value": null
+                "type": "float",
+                "value": 0.0
             }
         ]
     },
     {
-        "name": "DEFAULT_MAX_COMPLETION_TOKENS",
+        "name": "MODEL.DEFAULT_MAX_TOKENS",
         "values": [
             {
-                "value": null
+                "value": 4096
             }
         ]
     },
     {
-        "name": "CALLLOG_DEBONCE_SAVE_WAIT_TIME",
+        "name": "MODEL.DEFAULT_MAX_COMPLETION_TOKENS",
+        "values": [
+            {
+                "value": 4096
+            }
+        ]
+    },
+    {
+        "name": "CALLLOG.DEBONCE.SAVE_WAIT_TIME",
         "values": [
             {
                 "type": "int",
@@ -415,7 +403,7 @@
         ]
     },
     {
-        "name": "CALLLOG_MAX_CACHE_SIZE",
+        "name": "CALLLOG.MAX_CACHE_SIZE",
         "values": [
             {
                 "type": "int",
@@ -424,7 +412,7 @@
         ]
     },
     {
-        "name": "BLACKLIST_FILE_PATH",
+        "name": "BLACKLIST.FILE_PATH",
         "values": [
             {
                 "type": "path",
@@ -433,7 +421,7 @@
         ]
     },
     {
-        "name": "BLACKLIST_MATCH_TIMEOUT",
+        "name": "BLACKLIST.MATCH_TIMEOUT",
         "values": [
             {
                 "type": "int",
@@ -442,7 +430,7 @@
         ]
     },
     {
-        "name": "LOG_FILE_DIR",
+        "name": "LOGGER.LOG_FILE_DIR",
         "values": [
             {
                 "type": "path",
@@ -451,7 +439,7 @@
         ]
     },
     {
-        "name": "MAX_LOG_FILE_SIZE",
+        "name": "LOGGER.MAX_LOG_FILE_SIZE",
         "values": [
             {
                 "type": "str",
@@ -460,7 +448,7 @@
         ]
     },
     {
-        "name": "LOG_RETENTION",
+        "name": "LOGGER.LOG_RETENTION",
         "values": [
             {
                 "type": "str",

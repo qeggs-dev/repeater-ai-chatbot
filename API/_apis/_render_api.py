@@ -37,7 +37,7 @@ async def render(
     # 生成图片ID
     fuuid = uuid4()
     filename = f"{fuuid}.png"
-    rendered_image_dir = configs.get_config("rendered_image_dir", "./temp/render").get_value(Path)
+    render_output_image_dir = configs.get_config("render.output_image_dir", "./temp/render").get_value(Path)
 
     # 延迟删除函数
     async def _wait_delete(sleep_time: float, filename: str):
@@ -48,7 +48,7 @@ async def render(
             """
             删除图片
             """
-            await asyncio.to_thread(os.remove, rendered_image_dir / filename)
+            await asyncio.to_thread(os.remove, render_output_image_dir / filename)
             logger.info(f'Deleted image {filename}', user_id = user_id)
         
         try:
@@ -65,12 +65,12 @@ async def render(
         # 获取用户配置
         config = await chat.user_config_manager.load(user_id)
         # 获取环境变量中的图片渲染风格
-        default_style = configs.get_config("markdown_to_image_style", "light").get_value(str)
+        default_style = configs.get_config("Render.Markdown.to_Image_Styles", "light").get_value(str)
         # 获取图片渲染风格
         style = config.get('render_style', default_style)
     
     if not timeout:
-        timeout = configs.get_config("rendered_default_image_timeout", 60.0).get_value(float)
+        timeout = configs.get_config("render.default_image_timeout", 60.0).get_value(float)
     
     # 日志打印文件名和渲染风格
     logger.info(f'Rendering image {filename} for "{style}" style', user_id=user_id)
@@ -78,10 +78,10 @@ async def render(
     # 调用markdown_to_image函数生成图片
     await markdown_to_image(
         markdown_text = text,
-        output_path = rendered_image_dir / filename,
+        output_path = render_output_image_dir / filename,
         style = style,
-        preprocess_map_before = configs.get_config("markdown_to_image_preprocess_map_before", {}).get_value(dict),
-        preprocess_map_end = configs.get_config("markdown_to_image_preprocess_map_end", {}).get_value(dict),
+        preprocess_map_before = configs.get_config("render.markdown.to_image.preprocess_map.before", {}).get_value(dict),
+        preprocess_map_end = configs.get_config("render.markdown.to_image.preprocess_map.after", {}).get_value(dict),
     )
     create_ms = time.time_ns() // 10**6
     create = create_ms // 1000

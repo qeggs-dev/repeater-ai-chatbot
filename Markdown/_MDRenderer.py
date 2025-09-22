@@ -74,7 +74,7 @@ async def markdown_to_image(
         default_options.update(options)
     
     # 4. 转换并保存图片
-    wkhtmltoimage_path = configs.get_config("wkhtmltoimage_path").get_value(Path)
+    wkhtmltoimage_path = configs.get_config("render.markdown.wkhtmltoimage_path").get_value(Path)
     config = imgkit.config(wkhtmltoimage=wkhtmltoimage_path)
     await asyncio.to_thread(
         imgkit.from_string,

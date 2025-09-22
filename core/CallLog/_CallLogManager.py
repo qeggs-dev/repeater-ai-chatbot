@@ -15,19 +15,20 @@ class CallLogManager:
             self,
             log_file: Path,
             debonce_save_wait_time: float | None = None,
-            max_cache_size: int | None = None
+            max_cache_size: int | None = None,
+            auto_save: bool = True
         ):
         # 日志缓存列表
-        self.log_list: List[CallLogObject | CallAPILogObject] = []
+        self._log_list: List[CallLogObject | CallAPILogObject] = []
 
         # 防抖保存等待时间
         if debonce_save_wait_time is None:
-            debonce_save_wait_time = configs.get_config("Calllog_Debonce_Save_Wait_Time", 1200.0).get_value(float)
+            debonce_save_wait_time = configs.get_config("Calllog.Debonce.Save_Wait_Time", 1200.0).get_value(float)
         self.debonce_save_wait_time:float = debonce_save_wait_time
 
         # 最大缓存大小
         if max_cache_size is None:
-            max_cache_size = configs.get_config("Calllog_Max_Cache_Size", 1000).get_value(int)
+            max_cache_size = configs.get_config("Calllog.Max_Cache_Size", 1000).get_value(int)
         self.max_cache_size = max_cache_size
 
         # 日志文件路径
@@ -41,6 +42,9 @@ class CallLogManager:
         # 防抖任务
         self._debonce_task: asyncio.Task | None = None
 
+        # 自动保存
+        self.auto_save: bool = auto_save
+
     async def add_call_log(self, call_log: CallLogObject | CallAPILogObject) -> None:
         """
         添加调用日志项
@@ -50,13 +54,13 @@ class CallLogManager:
         """
         async with self.async_lock:
             # 添加日志项
-            self.log_list.append(call_log)
+            self._log_list.append(call_log)
             logger.info("Call log added", user_id=call_log.user_id)
             
             # 防抖保存操作
             if self._debonce_task and not self._debonce_task.done():
                 self._debonce_task.cancel()  # 如果已有任务，先取消
-            if len(self.log_list) < self.max_cache_size:
+            if len(self._log_list) < self.max_cache_size:
                 logger.info("Call log debonce task created")
                 self._debonce_task = asyncio.create_task(self._wait_and_save_async(wait_time = self.debonce_save_wait_time))  # 重新创建
             else:
@@ -68,7 +72,7 @@ class CallLogManager:
         保存队列中的所有日志到文件
         """
         # 如果日志列表为空，直接返回
-        if not self.log_list:
+        if not self._log_list:
             return
         
         # 将日志列表转换为字节流
@@ -78,24 +82,25 @@ class CallLogManager:
         try:
             # 如果文件存在，以追加模式打开
             with open(self.log_file, 'ab') as f:
-                f.write(write_log(self.log_list))
+                f.write(write_log(self._log_list))
         except FileNotFoundError:
             # 如果文件不存在，以写入模式打开
             with open(self.log_file, 'wb') as f:
-                f.write(write_log(self.log_list))
+                f.write(write_log(self._log_list))
         
-        logger.info(f"Saved {len(self.log_list)} call logs to file")
+        logger.info(f"Saved {len(self._log_list)} call logs to file")
 
         # 清空日志列表
-        self.log_list.clear()
+        self._log_list.clear()
 
     async def _save_call_log_async(self) -> None:
         """
         异步保存队列中的所有日志到文件
         """
         # 如果日志列表为空，则直接返回
-        if not self.log_list:
+        if not self._log_list:
             return
+        
         
         # 定义一个函数，将日志列表转换为字节流
         def write_log(log_list: List[CallLogObject]) -> bytes:
@@ -104,15 +109,15 @@ class CallLogManager:
         try:
             # 如果文件存在，则以追加模式打开文件
             async with aiofiles.open(self.log_file, 'ab') as f:
-                await f.write(write_log(self.log_list))
+                await f.write(write_log(self._log_list))
         except FileNotFoundError:
             # 如果文件不存在，则以写入模式打开文件
             async with aiofiles.open(self.log_file, 'wb') as f:
-                await f.write(write_log(self.log_list)) 
-        logger.info(f"Saved {len(self.log_list)} call logs to file")
+                await f.write(write_log(self._log_list)) 
+        logger.info(f"Saved {len(self._log_list)} call logs to file")
 
         # 清空日志列表
-        self.log_list.clear()
+        self._log_list.clear()
 
     async def read_call_log(self) -> List[CallLogObject]:
         """
@@ -127,7 +132,7 @@ class CallLogManager:
                     data = await asyncio.to_thread(orjson.loads, line)
                     call_log_list.append(CallLogObject.from_dict(data))
         async with self.async_lock:
-            call_log_list += copy.deepcopy(self.log_list)
+            call_log_list += copy.deepcopy(self._log_list)
         logger.info(f"Read {len(call_log_list)} call logs from file")
         return call_log_list
 
@@ -139,7 +144,7 @@ class CallLogManager:
         """
         # 深拷贝内存日志
         async with self.async_lock:
-            mem_logs = copy.deepcopy(self.log_list)
+            mem_logs = copy.deepcopy(self._log_list)
         mem_log_count = len(mem_logs)
         
         # 读取文件日志
@@ -183,6 +188,9 @@ class CallLogManager:
             # 等待指定时间
             await asyncio.sleep(wait_time)
             # 时间到后保存日志
-            await self._save_call_log_async()
+            if self.auto_save:
+                await self._save_call_log_async()
+            else:
+                self._log_list.clear()
         except asyncio.CancelledError:
             logger.info("Call log save task cancelled")

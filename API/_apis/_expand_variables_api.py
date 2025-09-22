@@ -33,7 +33,7 @@ async def expand_variables(user_id: str, request: ExpandRequest):
             age = request.user_age,
             gender = request.user_sex
         ),
-        model_type = "nomodel",
+        model_uid = "nomodel",
         config = config
     )
     output = prompt_vp.process(request.text)
