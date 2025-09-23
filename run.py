@@ -1,6 +1,6 @@
 # A lightly dependent Python script launcher!
-# Python Simple Launcher On Virtual Environment Scripts
-# SLOVES Starter !!!
+# Python Simple Launcher For Virtual Environment Scripts
+# Sloves Starter !!!
 
 __version__ = "0.3.1"
 
