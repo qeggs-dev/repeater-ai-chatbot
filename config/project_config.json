@@ -114,7 +114,7 @@
             },
             {
                 "type": "path",
-                "system": "Linux",
+                "system": "*",
                 "value": "/usr/local/bin/wkhtmltoimage"
             }
         ]
