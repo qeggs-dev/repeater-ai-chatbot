@@ -101,61 +101,62 @@
 
 | 选项 | 描述 | 是否必填 | 默认值(*示例值*) | 类型 | 单位 |
 | :---: | :---: | :---: | :---: | :---: | :---: |
-| `CALLLOG.LOG_FILE_PATH` | 主API调用日志的持久化存储文件 | **必填** | *`./config/calllog.jsonl`* | str | *无* |
-| `RENDER.OUTPUT_IMAGE_DIR` | 渲染图片的缓存位置 | **必填** |* `./temp/render`* | str | *无* |
-| `RENDER.MARKDOWN.WKHTMLTOIMAGE_PATH` | 渲染图片依赖的[`Wkhtmltopdf`](https://wkhtmltopdf.org/downloads.html)中`wkhtmltoimage`的路径 | **必填** | str | *无* |
-| `STATIC.BASE_PATH` | 静态资源位置 | **必填** | *`./static`* | str | *无* |
-| `CALLLOG.AUTO_SAVE` | 是否将记录到主API的调用日志自动保存到文件 | *选填* | True | bool | *无* |
-| `BOT_INFO.NAME` | 机器人名字 | *选填* | `Bot` | str | *无* |
+| `CALLLOG.LOG_FILE_PATH` | 主API调用日志的持久化存储文件 | **必填** | *`./config/calllog.jsonl`* | str | |
+| `RENDER.OUTPUT_IMAGE_DIR` | 渲染图片的缓存位置 | **必填** | *`./temp/render`* | str | |
+| `RENDER.MARKDOWN.WKHTMLTOIMAGE_PATH` | 渲染图片依赖的[`Wkhtmltopdf`](https://wkhtmltopdf.org/downloads.html)中`wkhtmltoimage`的路径 | **必填** | `/usr/local/bin/wkhtmltoimage` | str | |
+| `STATIC.BASE_PATH` | 静态资源位置 | **必填** | *`./static`* | str | |
+| `CALLLOG.AUTO_SAVE` | 是否将记录到主API的调用日志自动保存到文件 | *选填* | `True` | bool | |
+| `BOT_INFO.NAME` | 机器人名字 | *选填* | `Bot` | str | |
 | `BOT_INFO.BIRTHDAY.YEAR` | 机器人出生年份 | *选填* | *`2024`* | int | 年 |
 | `BOT_INFO.BIRTHDAY_MONTH` | 机器人出生月份 | *选填* | *`01`* | int | 月 |
 | `BOT_INFO.BIRTHDAY_DAY` | 机器人出生日期 | *选填* | *`01`* | int | 日 |
-| `SERVER.HOST` | 服务监听的IP(此选项会覆盖环境变量中的配置) | *选填* | 环境变量`HOST` | str | *无* |
-| `SERVER.PORT` | 服务监听端口(此选项会覆盖环境变量中的配置) | *选填* | 环境变量`PORT` | int | *无* |
-| `SERVER.WORKERS` | 服务工作进程数(此选项会覆盖环境变量中的配置) | *选填* | 环境变量`WORKERS` | int | *无* |
-| `SERVER.RELOAD` | 是否自动重启 | *选填* | 环境变量`RELOAD` | bool | *无* |
-| `LOGGER.LOG_LEVEL` | 日志级别 | *选填* | `INFO` | str | *无* |
-| `LOGGER.LOG_FILE_DIR` | 日志文件位置 | *选填* | `./log` | str | *无* |
+| `SERVER.HOST` | 服务监听的IP(此选项会覆盖环境变量中的配置) | *选填* | 环境变量`HOST` | str | |
+| `SERVER.PORT` | 服务监听端口(此选项会覆盖环境变量中的配置) | *选填* | 环境变量`PORT` | int | |
+| `SERVER.WORKERS` | 服务工作进程数(此选项会覆盖环境变量中的配置) | *选填* | 环境变量`WORKERS` | int | |
+| `SERVER.RELOAD` | 是否自动重启 | *选填* | 环境变量`RELOAD` | bool | |
+| `LOGGER.LOG_LEVEL` | 日志级别 | *选填* | `INFO` | str | |
+| `LOGGER.LOG_FILE_DIR` | 日志文件位置 | *选填* | `./log` | str | |
 | `LOGGER.MAX_LOG_FILE_SIZE` | 日志文件最大大小 | *选填* | `10 MB` | str | 日志大小 |
 | `LOGGER.LOG_RETENTION` | 日志文件保留时间 | *选填* | `14 days` | str | 时间 |
-| `RENDER.DEFAULT_IMAGE_TIMEOUT` | 渲染图片的默认保留时间(单位：秒，图片生成后给予客户端的图片链接有效时间) | *选填* | 60 | int | *无* |
-| `RENDER.MARKDOWN.TO_IMAGE.STYLES` | Markdown渲染图片的样式文件夹 | *选填* | `./styles` | str | *无* |
-| `RENDER.MARKDOWN.TO_IMAGE.PREPROCESS_MAP.BEFORE` | Markdown渲染预处理映射（键会被替换为值的内容） | *选填* | *`{"\n": "<br/>"}`* | str | *无* |
-| `RENDER.MARKDOWN.TO_IMAGE.PREPROCESS_MAP.AFTER` | Markdown渲染后处理映射（键会被替换为值的内容） | *选填* | *`{"<code>": "<pre><code>", "</code>": "</code></pre>"}`* | str | *无* |
-| `PROMPT.DEFAULT_DIR` | 默认提示词文件夹 | *选填* | `./Prompt/Presets` | str | *无* |
-| `PROMPT.PARSET_NAME` | 默认提示词文件名(不包括文件后缀) | *选填* | `default` | str | *无* |
-| `PROMPT.DEFAULT_SUFFIX` | 默认提示词文件后缀 | *选填* | `.md` | str | *无* |
-| `USER_DATA.SUB_DIR_NAME` | 用户子数据文件夹名称 | *选填* | `ParallelData` | str | *无* |
-| `USER_DATA.DIR` | 用户数据存放位置 | *选填* | `./data/userdata` | str | *无* |
-| `USER_DATA.METADATA_FILENAME` | 用户数据元数据文件名 | *选填* | `metadata.json` | str | *无* |
-| `USER_DATA.CACHE_METADATA` | 是否缓存用户数据元数据 | *选填* | `False` | bool | *无* |
-| `USER_DATA.CONTEXT_USERDATA.CACHE_METADATA` | 控制用户数据元数据缓存是否开启 | *选填* | \*`USER_DATA.CACHE_METADATA`的值 | bool | *无* |
-| `USER_DATA.PROMPT_USERDATA.CACHE_METADATA` | 控制提示词数据元数据缓存是否开启 | *选填* | \*`USER_DATA.CACHE_METADATA`的值 | bool | *无* |
-| `USER_DATA.USERCONFIG_USERDATA.CACHE_METADATA` | 配置用户数据元数据缓存是否开启 | *选填* | \*`USER_DATA.CACHE_METADATA`的值 | bool | *无* |
-| `USER_DATA.CACHE_DATA` | 是否缓存用户数据 | *选填* | `False` | bool | *无* |
-| `USER_DATA.CONTEXT_USERDATA.CACHE_DATA` | 控制用户数据缓存是否开启 | *选填* | \*`USER_DATA.CACHE_DATA`的值 | bool | *无* |
-| `USER_DATA.PROMPT_USERDATA.CACHE_DATA` | 控制提示词数据缓存是否开启 | *选填* | \*`USER_DATA.CACHE_DATA`的值 | bool | *无* |
-| `USER_DATA.USERCONFIG_USERDATA.CACHE_DATA` | 配置用户数据缓存是否开启 | *选填* | \*`USER_DATA._CACHE_DATA`的值 | bool | *无* |
-| `MODEL.DEFAULT_TEMPERATURE` | 默认模型温度 | *选填* | `1.0` | float | *无* |
-| `MODEL.DEFAULT_TOP_P` | 默认模型`Top_P` | *选填* | `1.0` | float | *无* |
-| `MODEL.DEFAULT_FREQUENCY_PENALTY` | 默认模型频率惩罚 | *选填* | `0.0` | float | *无* |
-| `MODEL.DEFAULT_PRESENCE_PENALTY` | 默认模型存在惩罚 | *选填* | `0.0` | float | *无* |
+| `RENDER.DEFAULT_IMAGE_TIMEOUT` | 渲染图片的默认保留时间(单位：秒，图片生成后给予客户端的图片链接有效时间) | *选填* | 60 | int | |
+| `RENDER.MARKDOWN.TO_IMAGE.STYLES` | Markdown渲染图片的样式文件夹 | *选填* | `./styles` | str | |
+| `RENDER.MARKDOWN.TO_IMAGE.PREPROCESS_MAP.BEFORE` | Markdown渲染预处理映射（键会被替换为值的内容） | *选填* | *`{"\n": "<br/>"}`* | str | |
+| `RENDER.MARKDOWN.TO_IMAGE.PREPROCESS_MAP.AFTER` | Markdown渲染后处理映射（键会被替换为值的内容） | *选填* | *`{"<code>": "<pre><code>", "</code>": "</code></pre>"}`* | str | |
+| `PROMPT.DEFAULT_DIR` | 默认提示词文件夹 | *选填* | `./Prompt/Presets` | str | |
+| `PROMPT.PARSET_NAME` | 默认提示词文件名(不包括文件后缀) | *选填* | `default` | str | |
+| `PROMPT.DEFAULT_SUFFIX` | 默认提示词文件后缀 | *选填* | `.md` | str | |
+| `USER_DATA.SUB_DIR_NAME` | 用户子数据文件夹名称 | *选填* | `ParallelData` | str | |
+| `USER_DATA.DIR` | 用户数据存放位置 | *选填* | `./data/userdata` | str | |
+| `USER_DATA.METADATA_FILENAME` | 用户数据元数据文件名 | *选填* | `metadata.json` | str | |
+| `USER_DATA.CACHE_METADATA` | 是否缓存用户数据元数据 | *选填* | `False` | bool | |
+| `USER_DATA.CONTEXT_USERDATA.CACHE_METADATA` | 控制用户数据元数据缓存是否开启 | *选填* | \*`USER_DATA.CACHE_METADATA`的值 | bool | |
+| `USER_DATA.PROMPT_USERDATA.CACHE_METADATA` | 控制提示词数据元数据缓存是否开启 | *选填* | \*`USER_DATA.CACHE_METADATA`的值 | bool | |
+| `USER_DATA.USERCONFIG_USERDATA.CACHE_METADATA` | 配置用户数据元数据缓存是否开启 | *选填* | \*`USER_DATA.CACHE_METADATA`的值 | bool | |
+| `USER_DATA.CACHE_DATA` | 是否缓存用户数据 | *选填* | `False` | bool | |
+| `USER_DATA.CONTEXT_USERDATA.CACHE_DATA` | 控制用户数据缓存是否开启 | *选填* | \*`USER_DATA.CACHE_DATA`的值 | bool | |
+| `USER_DATA.PROMPT_USERDATA.CACHE_DATA` | 控制提示词数据缓存是否开启 | *选填* | \*`USER_DATA.CACHE_DATA`的值 | bool | |
+| `USER_DATA.USERCONFIG_USERDATA.CACHE_DATA` | 配置用户数据缓存是否开启 | *选填* | \*`USER_DATA._CACHE_DATA`的值 | bool | |
+| `MODEL.DEFAULT_TEMPERATURE` | 默认模型温度 | *选填* | `1.0` | float | |
+| `MODEL.DEFAULT_TOP_P` | 默认模型`Top_P` | *选填* | `1.0` | float | |
+| `MODEL.DEFAULT_FREQUENCY_PENALTY` | 默认模型频率惩罚 | *选填* | `0.0` | float | |
+| `MODEL.DEFAULT_PRESENCE_PENALTY` | 默认模型存在惩罚 | *选填* | `0.0` | float | |
 | `MODEL.DEFAULT_MAX_TOKENS` | 默认模型最大输出token<br/>(部分API不支持 `DEFAULT_MAX_COMPLETION_TOKENS`设置 提供此项以兼容) | *选填* | `1024` | int | Token |
 | `MODEL.DEFAULT_MAX_COMPLETION_TOKENS` | 默认模型最大生成token | *选填* | `1024` | int | Token |
+| `MODEL.DEFAULT_STOP` | 默认模型停止词 | *选填* | [] | list[str] | |
 | `MODEL.STREAM` | 是否内部启用流式输出(此选项仅告知框架是否启用流式生成，但框架内部存在缓冲区，开启此选项后如果请求时没有设置`stream`参数，会等待生成完毕) | *选填* | `true` | bool |
 | `CALLLOG.DEBONCE.SAVE_WAIT_TIME` | 日志持久化存储的防抖时间 | *选填* | `1200.0` | float | 秒 |
 | `CALLLOG.MAX_CACHE_SIZE` | 日志缓存的最大数量 | *选填* | `1000` | int | 日志数量 |
 | `CONFIG_CACHE.DOWNGRADE_WAIT_TIME` | 配置管理器缓存降级等待时间 | *选填* | `600.0` | float | 秒 |
 | `CONFIG_CACHE.DEBONCE_SAVE_WAIT_TIME` | 配置管理器缓存延迟保存时间 | *选填* | `600.0` | float | 秒 |
-| `BLACKLIST.FILE_PATH` | 黑名单文件位置 | *选填* | `./config/blacklist.regex` | str | *无* |
+| `BLACKLIST.FILE_PATH` | 黑名单文件位置 | *选填* | `./config/blacklist.regex` | str | |
 | `BLACKLIST.MATCH_TIMEOUT` | 黑名单匹配超时时间 | *选填* | `10` | int | 秒 |
-| `API_INFO.API_FILE_PATH` | API信息文件路径 | *选填* | `./config/apiconfig.json` | str | *无* |
-| `API_INFO.DEFAULT_MODEL_UID` | 调用时默认使用的模型UID | *选填* | `deepseek-chat` | str | *无* |
-| `TIME.TIMEZONE` | 时区 | *选填* | 8 | int | 偏移小时数 |
-| `README.FILE_PATH` | README文件位置 | *选填* | `./README.md` | str | *无* |
-| `CORE.VERSION` | 版本号(用于替换Core中的版本号数据，以及提示词变量中的版本号) | *选填* | \*由代码自动生成 | str | *无* |
-| `CALLAPI.MAX_CONCURRENCY` | 最大并发数(仅适用于主请求API，也就是Chat API) | *选填* | 1000 | int | 请求数 |
-| `USER_NICKNAME_MAPPING.FILE_PATH` | 用户昵称映射表文件位置 | *选填* | `./config/UserNicknameMapping.json` | str | *无* |
+| `API_INFO.API_FILE_PATH` | API信息文件路径 | *选填* | `./config/apiconfig.json` | str | |
+| `API_INFO.DEFAULT_MODEL_UID` | 调用时默认使用的模型UID | *选填* | `deepseek-chat` | str | |
+| `TIME.TIMEZONE` | 时区 | *选填* | `8` | int | 偏移小时数 |
+| `README.FILE_PATH` | README文件位置 | *选填* | `./README.md` | str | |
+| `CORE.VERSION` | 版本号(用于替换Core中的版本号数据，以及提示词变量中的版本号) | *选填* | \*由代码自动生成 | str | |
+| `CALLAPI.MAX_CONCURRENCY` | 最大并发数(仅适用于主请求API，也就是Chat API) | *选填* | `1000` | int | 请求数 |
+| `USER_NICKNAME_MAPPING.FILE_PATH` | 用户昵称映射表文件位置 | *选填* | `./config/UserNicknameMapping.json` | str | |
 
 PS: 配置读取时默认不区分大小写
 
