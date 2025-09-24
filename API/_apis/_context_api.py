@@ -40,7 +40,8 @@ async def get_context_length(user_id: str):
     return JSONResponse(
         {
             "total_context_length": context.total_length,
-            "context_length": len(context)
+            "context_length": len(context),
+            "average_content_length": context.average_length
         }
     )
 
