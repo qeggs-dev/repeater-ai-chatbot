@@ -204,6 +204,15 @@ class ContextObject:
         :return: 上下文总长度
         """
         return sum([len(content) for content in self.context_list]) + (len(self.prompt) if self.prompt else 0)
+    
+    @property
+    def average_length(self) -> float:
+        """
+        获取上下文平均长度
+
+        :return: 上下文平均长度
+        """
+        return self.total_length / len(self.context_list)
 
     @property
     def context(self) -> list[dict]:
