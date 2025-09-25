@@ -523,9 +523,14 @@ class SlovesStarter:
 
         if self.argument:
             start.extend(self.argument)
+            print("Use argument:")
+            print(shlex.join(self.argument))
         else:
             if len(sys.argv) > 1:
-                start.extend(sys.argv[1:])
+                argument = sys.argv[1:]
+                print("Use argument:")
+                print(shlex.join(argument))
+                start.extend(argument)
         return start
     
     @staticmethod
