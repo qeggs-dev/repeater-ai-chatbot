@@ -2,7 +2,7 @@
 # Python Simple Launcher For Virtual Environment Scripts
 # Sloves Starter !!!
 
-__version__ = "0.3.1"
+__version__ = "0.4.0"
 
 import platform
 import subprocess
@@ -207,7 +207,7 @@ class SlovesStarter:
         self.run_cmd_need_to_ask: bool = True
         self.run_cmd_ask_default_values: dict[str, bool] = {}
         self.divider_line_char: str = "="
-        self.inject_environment_variables: dict[str, str] = {}
+        self.inject_environment_variables: dict[str, str] = os.environ.copy()
 
         self.set_title(self.title)
 
@@ -222,7 +222,12 @@ class SlovesStarter:
                     config_file = Path(f"config_{suffix}.json")
                 
                 if not config_file.exists():
-                    self.create_configuration(config_file)
+                    if self.ask(
+                            option_description = "Configuration file not found.\nDo you want to create a new one?",
+                            ask_prompt = "Create new configuration file",
+                            default_value = True
+                        ):
+                        self.create_configuration(config_file)
                     break
                 else:
                     suffix += 1
@@ -237,6 +242,11 @@ class SlovesStarter:
 
     @classmethod
     def load_config(cls):
+        """
+        Load the configuration file
+
+        :return: the configuration file
+        """
         suspected_configuration_file: list[Path] = []
         for file in Path.cwd().glob("*.json"):
             suspected_configuration_file.append(file)
@@ -290,10 +300,21 @@ class SlovesStarter:
             raise FileNotFoundError("Configuration file not found.")
         
     def parse_config(self, config: dict) -> None:
+        """
+        Parses the configuration file and sets the corresponding attributes.
+
+        :param config: The configuration dictionary.
+        """
         if not isinstance(config, dict):
             raise TypeError("Config must be a dict")
         def exists_and_is_designated_type(key: str, types: type | tuple[type, ...]) -> bool:
             return key in config and isinstance(config[key], types)
+        
+        def check_all_list_types(data: list[Any], types: type | tuple[type, ...]):
+            return all(isinstance(item, types) for item in data)
+        
+        def check_all_dict_types(data: dict[Any, Any], key_types: type | tuple[type, ...], value_types: type | tuple[type, ...]):
+            return all(isinstance(key, key_types) and isinstance(value, value_types) for key, value in data.items())
         
         if exists_and_is_designated_type("title", str):
             self.title = config["title"]
@@ -310,31 +331,43 @@ class SlovesStarter:
             self.exit_title = config["exit_title"]
         
         if exists_and_is_designated_type("python_name", dict):
-            try:
-                self.python_name = CrossPlatformValue(**config["python_name"])
-            except Exception:
-                pass
+            data = config["python_name"]
+            if exists_and_is_designated_type(data, str, str):
+                try:
+                    self.python_name = CrossPlatformValue(**data)
+                except Exception:
+                    pass
         
         if exists_and_is_designated_type("pip_name", dict):
-            try:
-                self.pip_name = CrossPlatformValue(**config["pip_name"])
-            except Exception:
-                pass
+            data = config["pip_name"]
+            if exists_and_is_designated_type(data, str, str):
+                try:
+                    self.pip_name = CrossPlatformValue(**data)
+                except Exception:
+                    pass
         
         if exists_and_is_designated_type("requirements_file", dict):
-            try:
-                self.requirements_file = CrossPlatformValue(**config["requirements_file"])
-            except Exception:
-                pass
+            data = config["requirements_file"]
+            if exists_and_is_designated_type(data, str, str):
+                try:
+                    self.requirements_file = CrossPlatformValue(**data)
+                except Exception:
+                    pass
         
         if exists_and_is_designated_type("venv_prompt", str):
             self.venv_prompt = config["venv_prompt"]
         
         if exists_and_is_designated_type("script_name", str | list):
-            self.script_name = config["script_name"]
+            data = config["script_name"]
+            if isinstance(data, str):
+                self.script_name = data
+            elif isinstance(data, list):
+                if check_all_list_types(data, str):
+                    self.script_name = data
         
         if exists_and_is_designated_type("argument", list):
-            self.argument = config["argument"]
+            if check_all_list_types(config["argument"], str):
+                self.argument = config["argument"]
         
         if exists_and_is_designated_type("use_venv", bool):
             self.use_venv = config["use_venv"]
@@ -353,15 +386,7 @@ class SlovesStarter:
             self.run_cmd_need_to_ask = config["run_cmd_need_to_ask"]
         
         if exists_and_is_designated_type("run_cmd_ask_default_values", dict):
-            type_correct: bool = True
-            for key, value in config["run_cmd_ask_default_values"].items():
-                if not isinstance(key, str):
-                    type_correct = False
-                    break
-                if not isinstance(value, bool):
-                    type_correct = False
-                    break
-            if type_correct:
+            if check_all_dict_types(config["run_cmd_ask_default_values"], str, bool):
                 self.run_cmd_ask_default_values = config["run_cmd_ask_default_values"]
         
         if exists_and_is_designated_type("divider_line_char", str):
@@ -369,18 +394,16 @@ class SlovesStarter:
                 self.divider_line_char = config["divider_line_char"]
         
         if exists_and_is_designated_type("inject_environment_variables", dict):
-            type_correct: bool = True
-            for key, value in config["inject_environment_variables"].items():
-                if not isinstance(key, str):
-                    type_correct = False
-                    break
-                if not isinstance(value, str):
-                    type_correct = False
-                    break
-            if type_correct:
+            if check_all_dict_types(config["inject_environment_variables"], str, str):
                 self.inject_environment_variables = config["inject_environment_variables"]
     
     def create_configuration(self, output: str | Path | None = None):
+        """
+        Creates a configuration file from the current configuration.
+
+        :param output: The output file path.
+        :return: Configuration dict
+        """
         config = {
             "title": self.title,
             "process_title": self.process_title,
@@ -409,6 +432,13 @@ class SlovesStarter:
 
     @staticmethod
     def pause_program(code: ExitCode | int = ExitCode.SUCCESS, prompt: str | None = None):
+        """
+        Pause the program and wait for user input to continue.
+
+        :param code: The exit code to return when the user presses Ctrl+C.
+        :param prompt: The prompt to display to the user.
+        :raise SystemExit: If the user presses Ctrl+C and the code is not ExitCode.ONLY_PAUSE.
+        """
         if isinstance(code, ExitCode) and code == ExitCode.ONLY_PAUSE:
             print(prompt or "Press Ctrl+C to continue.")
         else:
@@ -424,45 +454,85 @@ class SlovesStarter:
             else:
                 return
     
-    def run_cmd(self, cmd: list[str], reason: str, cwd: Path | None = None, default: bool = True, print_return_code: bool = True, env: dict[str, str] | None = None):
-        print(f"Running command: {shlex.join(cmd)}")
-        run = default
-        if self.run_cmd_need_to_ask:
-            if default:
-                y_n_str = "[Y/n]"
-            else:
-                y_n_str = "[y/N]"
-            if reason in self.run_cmd_ask_default_values:
-                value = self.run_cmd_ask_default_values[value]
-                if isinstance(value, bool):
-                    print(f"{reason} {y_n_str}: ", end=f"{value}\n")
-                    run = value
-                else:
-                    print(f"{reason} {y_n_str}: ", end=f"{value}\n")
-                    return value
-            else:
-                user_input = input(f"{reason} {y_n_str}:")
-                if default:
-                    if user_input.lower() in self.NO_CHARSET:
-                        run = False
-                    else:
-                        run = True
-                else:
-                    if user_input.lower() in self.YES_CHARSET:
-                        run = True
-                    else:
-                        run = False
+    def run_cmd(self, cmd: list[str], reason: str, cwd: Path | None = None, default: bool = True, print_return_code: bool = True, env: dict[str, str] | None = None) -> subprocess.CompletedProcess[bytes] | None:
+        """
+        Run a command with an interactive prompt to ask the user if they want to continue.
+
+        :param cmd: The command to run.
+        :param reason: The reason for running the command.
+        :param cwd: The working directory to run the command in.
+        :param default: The default value for the prompt.
+        :param print_return_code: Whether to print the return code of the command.
+        :param env: The environment variables to use when running the command.
+        :return: The result of the command. (Return None when the user has not approved.)
+        """
+        run = self.ask(
+            option_description = f"Running command: {shlex.join(cmd)}",
+            ask_prompt = reason,
+            default = default
+        )
         
         if run:
-            result = subprocess.run(cmd, cwd=cwd, env=env)
+            result: subprocess.CompletedProcess[bytes] = subprocess.run(cmd, cwd=cwd, env=env)
             if print_return_code:
                 print(f"Command returned with code {result.returncode}")
             return result
         else:
             return None
+    
+    def ask(self, option_description: str, ask_prompt: str, default: bool = True) -> bool:
+        """
+        Ask the user if they want to continue with an option.
+
+        :param option_description: The description of the option.
+        :param reason: The reason for asking the user.
+        :param default: The default value for the prompt.
+        :return: Whether the user wants to continue with the option.
+        """
+        print(option_description)
+        approved = default
+        if self.run_cmd_need_to_ask:
+            if default:
+                y_n_str = "[Y/n]"
+            else:
+                y_n_str = "[y/N]"
+            if option_description in self.run_cmd_ask_default_values:
+                value = self.run_cmd_ask_default_values[option_description]
+                if isinstance(value, bool):
+                    print(f"{ask_prompt} {y_n_str}: ", end=f"{value}\n")
+                    approved = value
+                else:
+                    print(f"{ask_prompt} {y_n_str}: ", end=f"{value}\n")
+                    return value
+            elif ask_prompt in self.run_cmd_ask_default_values:
+                value = self.run_cmd_ask_default_values[ask_prompt]
+                if isinstance(value, bool):
+                    print(f"{ask_prompt} {y_n_str}: ", end=f"{value}\n")
+                    approved = value
+                else:
+                    print(f"{ask_prompt} {y_n_str}: ", end=f"{value}\n")
+                    return value
+            else:
+                user_input = input(f"{ask_prompt} {y_n_str}:")
+                if default:
+                    if user_input.lower() in self.NO_CHARSET:
+                        approved = False
+                    else:
+                        approved = True
+                else:
+                    if user_input.lower() in self.YES_CHARSET:
+                        approved = True
+                    else:
+                        approved = False
+        return approved
 
     # Initialize virtual environment
     def init_venv(self, ignore_existing: bool = True):
+        """
+        Initialize virtual environment
+
+        :param ignore_existing: Ignore existing virtual environment
+        """
         if not (ignore_existing and (Path.cwd() / ".venv" / "pyvenv.cfg").exists()):
             if self.run_cmd([self.python_name.value, "-m", "venv", ".venv", "--prompt", self.venv_prompt], reason="Initializing virtual environment", cwd=self.cwd) is not None:
                 if SYSTEM == "Windows":
@@ -477,6 +547,11 @@ class SlovesStarter:
     
     # Run the program
     def get_start_cmd(self):
+        """
+        Get the command to start the program
+
+        :return: The command to start the program
+        """
         def choose_script_file(script_list: list[Path]) -> Path | None:
             if len(script_list) == 0:
                 return None
@@ -506,6 +581,7 @@ class SlovesStarter:
                         else:
                             print("Invalid choice. Please try again.")
                 return script_name
+        script_name = self.script_name
         
         if self.script_name is None:
             suspected_script_file:list[Path] = []
@@ -561,6 +637,11 @@ class SlovesStarter:
     
     @staticmethod
     def set_title(title: str):
+        """
+        Set console title
+
+        :param title: Title
+        """
         if SYSTEM == "Windows":
             try:
                 import ctypes
@@ -573,13 +654,26 @@ class SlovesStarter:
             sys.stdout.flush()
     
     def print_divider_line(self, char: str | None = None):
+        """
+        Print divider line
+
+        :param char: Divider Char
+        """
         print((char or self.divider_line_char) * os.get_terminal_size().columns)
     
     @staticmethod
     def center_print(text: str):
+        """
+        Center print text
+
+        :param text: Text to print
+        """
         print(text.center(os.get_terminal_size().columns))
 
     def main(self):
+        """
+        Main function
+        """
         self.center_print(self.title)
         if self.is_venv():
             print("Starter Run in Virtual Environment")
@@ -623,6 +717,9 @@ class SlovesStarter:
     
     @atexit.register
     def exit_handler(self):
+        """
+        This function is called when the program exits.
+        """
         self.set_title(self.exit_title)
 
 if __name__ == "__main__":
