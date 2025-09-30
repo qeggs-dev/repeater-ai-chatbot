@@ -85,10 +85,21 @@ class ClientBase(ABC):
             client = StreamAPI()
         else:
             client = CallAPI()
-        return await client.call(
-            user_id = user_id,
-            request = request
-        ), client
+        try:
+            return await client.call(
+                user_id = user_id,
+                request = request
+            ), client
+        except openai.BadRequestError as e:
+            if e.code in range(400, 500):
+                logger.error(f"BadRequestError: {e}", user_id = user_id)
+                raise BadRequestError(e.message)
+            elif e.code in range(500, 600):
+                logger.error(f"API Server Error: {e}", user_id = user_id)
+                raise APIServerError(e.message)
+        except Exception as e:
+            logger.error(f"Error: {e}", user_id = user_id)
+            raise CallApiException(e)
     # endregion
 
     # region 打印日志

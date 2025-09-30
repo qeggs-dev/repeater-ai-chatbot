@@ -8,6 +8,7 @@ from typing import (
 
 # ==== 第三方库 ==== #
 import openai
+from loguru import logger
 
 # ==== 自定义库 ==== #
 from .._object import (
@@ -46,15 +47,25 @@ class ClientStream(ClientBase):
             raise APIConnectionError(f"{request.url} Connection Failed")
     
     async def _submit_task(self, user_id: str, request: Request) -> AsyncIterator[Delta]:
-        if request.stream:
-            client = StreamAPI()
-        else:
-            raise StreamNotAvailable("When request.stream == True, the stream is not available.")
-        generator = client.call(
-            user_id = user_id,
-            request = request
-        )
+        try:
+            if request.stream:
+                client = StreamAPI()
+            else:
+                raise StreamNotAvailable("When request.stream == True, the stream is not available.")
+            generator = client.call(
+                user_id = user_id,
+                request = request
+            )
 
-        async for delta in generator:
-            yield delta
-    
+            async for delta in generator:
+                yield delta
+        except openai.BadRequestError as e:
+            if e.code in range(400, 500):
+                logger.error(f"BadRequestError: {e}", user_id = user_id)
+                raise BadRequestError(e.message)
+            elif e.code in range(500, 600):
+                logger.error(f"API Server Error: {e}", user_id = user_id)
+                raise APIServerError(e.message)
+        except Exception as e:
+            logger.error(f"Error: {e}", user_id = user_id)
+            raise CallApiException(e)

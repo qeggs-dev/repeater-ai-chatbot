@@ -2,8 +2,11 @@ class CallApiException(Exception):
     """Base class for exceptions in this module."""
     pass
 
+class BadRequestError(CallApiException):
+    """Exception raised when the request is bad."""
+    pass
 
-class ModelNotFoundError(CallApiException):
+class ModelNotFoundError(BadRequestError):
     """Exception raised when a model is not found.
 
     Attributes:
@@ -24,4 +27,8 @@ class APIConnectionError(CallApiException):
 
 class StreamNotAvailable(CallApiException):
     """Exception raised when the stream is not available."""
+    pass
+
+class APIServerError(CallApiException):
+    """Exception raised when the API server returns an error."""
     pass

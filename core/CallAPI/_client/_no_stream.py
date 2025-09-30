@@ -8,6 +8,7 @@ from typing import (
 
 # ==== 第三方库 ==== #
 import openai
+from loguru import logger
 
 # ==== 自定义库 ==== #
 from .._object import (
@@ -48,16 +49,27 @@ class ClientNoStream(ClientBase):
         return output
     
     async def _submit_task(self, user_id: str, request: Request) -> AsyncIterator[Delta] | Response:
-        if request.stream:
-            client = StreamAPI()
-            call = client.call(
-                user_id = user_id,
-                request = request
-            )
-        else:
-            client = CallAPI()
-            call = await client.call(
-                user_id = user_id,
-                request = request
-            )
-        return call
+        try:
+            if request.stream:
+                client = StreamAPI()
+                call = client.call(
+                    user_id = user_id,
+                    request = request
+                )
+            else:
+                client = CallAPI()
+                call = await client.call(
+                    user_id = user_id,
+                    request = request
+                )
+            return call
+        except openai.BadRequestError as e:
+            if e.code in range(400, 500):
+                logger.error(f"BadRequestError: {e}", user_id = user_id)
+                raise BadRequestError(e.message)
+            elif e.code in range(500, 600):
+                logger.error(f"API Server Error: {e}", user_id = user_id)
+                raise APIServerError(e.message)
+        except Exception as e:
+            logger.error(f"Error: {e}", user_id = user_id)
+            raise CallApiException(e)
