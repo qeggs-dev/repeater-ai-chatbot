@@ -38,7 +38,6 @@ class ExitCode(Enum):
 
     UNKNOWN_ERROR = 255
 
-
 class CrossPlatformValue(Generic[T_CPV]):
     """Cross-platform value container that returns the corresponding value based on the current operating system."""
     
@@ -176,6 +175,16 @@ class CrossPlatformValue(Generic[T_CPV]):
                 self._jvm_value == other._jvm_value and
                 self._default_value == other._default_value)
 
+def absolute_path(path: str | Path, cwd: str | Path = None) -> Path:
+    path = Path(path)
+    if cwd is None:
+        cwd = Path.cwd()
+    else:
+        cwd = Path(cwd)
+    if path.is_absolute():
+        return path
+    return cwd.absolute() / path
+
 class SlovesStarter:
     YES_CHARSET: list[str] = ["y", "yes", "true", "t", "1"]
     NO_CHARSET: list[str] = ["n", "no", "false", "f", "0"]
@@ -263,19 +272,19 @@ class SlovesStarter:
         if isinstance(path, Path):
             if recursive_search:
                 for file in path.rglob(glob):
-                    suspected_file.add(file)
+                    suspected_file.add(absolute_path(file))
             else:
                 for file in path.glob(glob):
-                    suspected_file.add(file)
+                    suspected_file.add(absolute_path(file))
         elif isinstance(path, list):
             if recursive_search:
                 for p in path:
                     for file in p.rglob(glob):
-                        suspected_file.add(file)
+                        suspected_file.add(absolute_path(file))
             else:
                 for p in path:
                     for file in p.glob(glob):
-                        suspected_file.add(file)
+                        suspected_file.add(absolute_path(file))
         
         if len(suspected_file) == 1:
             return suspected_file.pop()
@@ -371,7 +380,7 @@ class SlovesStarter:
         
         if exists_and_is_designated_type("python_name", dict):
             data = config["python_name"]
-            if exists_and_is_designated_type(data, str, str):
+            if check_all_dict_types(data, str, str):
                 try:
                     self.python_name = CrossPlatformValue(**data)
                 except Exception:
@@ -379,7 +388,7 @@ class SlovesStarter:
         
         if exists_and_is_designated_type("pip_name", dict):
             data = config["pip_name"]
-            if exists_and_is_designated_type(data, str, str):
+            if check_all_dict_types(data, str, str):
                 try:
                     self.pip_name = CrossPlatformValue(**data)
                 except Exception:
@@ -387,7 +396,7 @@ class SlovesStarter:
         
         if exists_and_is_designated_type("requirements_file", dict):
             data = config["requirements_file"]
-            if exists_and_is_designated_type(data, str, str):
+            if check_all_dict_types(data, str, str):
                 try:
                     self.requirements_file = CrossPlatformValue(**data)
                 except Exception:
@@ -506,17 +515,28 @@ class SlovesStarter:
         :param env: The environment variables to use when running the command.
         :return: The result of the command. (Return None when the user has not approved.)
         """
+        cwd = absolute_path(cwd)
         run = self.ask(
-            option_description = f"Running command: {shlex.join(cmd)}",
+            option_description = f"Running:\n{shlex.join(cmd)}\nwith cwd: \"{cwd}\"",
             ask_prompt = reason,
             default = default
         )
         
         if run:
-            result: subprocess.CompletedProcess[bytes] = subprocess.run(cmd, cwd=cwd, env=env)
-            if print_return_code:
-                print(f"Command returned with code {result.returncode}")
-            return result
+            if not cmd:
+                print("Warning: No command to run")
+                return None
+            try:
+                result: subprocess.CompletedProcess[bytes] = subprocess.run(cmd, cwd=cwd, env=env)
+                if print_return_code:
+                    print(f"Command returned with code {result.returncode}")
+                return result
+            except FileNotFoundError as e:
+                print(f"Warning: Command not found: {e}")
+                raise
+            except Exception as e:
+                print(f"Error running command: {e}")
+                raise
         else:
             return None
     
@@ -573,14 +593,14 @@ class SlovesStarter:
 
         :param ignore_existing: Ignore existing virtual environment
         """
-        if not (ignore_existing and (self.cwd / ".venv" / "pyvenv.cfg").exists()):
-            if self.run_cmd([self.python_name.value, "-m", "venv", ".venv", "--prompt", self.venv_prompt], reason="Initializing virtual environment", cwd=self.cwd) is not None:
+        if not (ignore_existing and (self.work_directory / ".venv" / "pyvenv.cfg").exists()):
+            if self.run_cmd([self.python_name.value, "-m", "venv", ".venv", "--prompt", self.venv_prompt], reason="Initializing virtual environment", cwd=self.work_directory) is not None:
                 if SYSTEM == "Windows":
-                    venv_bin_path = self.cwd / ".venv" / "Scripts"
+                    venv_bin_path = self.work_directory / ".venv" / "Scripts"
                 else:
-                    venv_bin_path = self.cwd / ".venv" / "bin"
-                if (self.cwd / self.requirements_file.value).exists():
-                    if self.run_cmd([str(venv_bin_path / self.pip_name.value), "install", "-r", self.requirements_file.value], reason="Installing requirements", cwd=self.cwd) is None:
+                    venv_bin_path = self.work_directory / ".venv" / "bin"
+                if (self.work_directory / self.requirements_file.value).exists():
+                    if self.run_cmd([str(venv_bin_path / self.pip_name.value), "install", "-r", self.requirements_file.value], reason="Installing requirements", cwd=self.work_directory) is None:
                         print("Failed to install requirements.")
             else:
                 print("Failed to initialize virtual environment.")
@@ -626,24 +646,24 @@ class SlovesStarter:
         if self.script_name is None:
             suspected_script_file:list[Path] = []
             self_path = Path(sys.argv[0])
-            for file in self.cwd.glob("*.py"):
+            for file in self.work_directory.glob("*.py"):
                 if file != self_path:
                     suspected_script_file.append(file)
             if len(suspected_script_file) == 0:
                 print("No Python script files found in the current directory.")
                 sys.exit(1)
-            script_name = choose_script_file(suspected_script_file)
+            script_name = absolute_path(choose_script_file(suspected_script_file), self.work_directory)
         elif isinstance(self.script_name, list):
             if len(self.script_name) == 1:
-                script_name = Path(self.script_name[0])
+                script_name = absolute_path(self.script_name[0], self.work_directory)
             elif len(self.script_name) == 0:
                 print("`script_name` is empty")
                 self.pause_program(ExitCode.SCRIPT_NAME_IS_EMPTY)
             else:
-                script_name = choose_script_file(self.script_name)
+                script_name = absolute_path(choose_script_file(self.script_name))
         elif isinstance(self.script_name, str | Path):
-            if Path(self.script_name).exists():
-                script_name = Path(self.script_name)
+            if absolute_path(self.script_name, self.work_directory).exists():
+                script_name = absolute_path(self.script_name, self.work_directory)
             else:
                 print("Error: Script not found!")
                 self.pause_program(ExitCode.SCRIPT_NOT_FOUND)
@@ -741,6 +761,8 @@ class SlovesStarter:
             except KeyboardInterrupt:
                 self.print_divider_line()
                 print("Program terminated by user.")
+            except Exception as e:
+                print(f"An error occurred while running the program.")
             finally:
                 # Reset Title
                 self.set_title(self.process_exit_title)
