@@ -514,6 +514,12 @@ class Core:
                     prompt_vp = prompt_vp
                 )
 
+                # 如果上下文需要收缩，则进行收缩
+                max_context_length = config.get('auto_shrink_length', configs.get_config("model.auto_shrink_length", 1000))
+                if len(context) > max_context_length:
+                    logger.info(f"Context length exceeds {max_context_length}, auto shrink", user_id = user_id)
+                    context.shrink(max_context_length)
+
                 user_input = context.last_content
                 
                 # 创建请求对象
@@ -629,10 +635,23 @@ class Core:
                             reference_context_id = reference_context_id,
                         )
                         return output
+                
+                except CallAPI.Exceptions.APIServerError as e:
+                    logger.error(f"API Server Error: {e}")
+                    output.content = f"Error:{e}"
+                    output.status = 500
+                    return output
+                
+                except CallAPI.Exceptions.BadRequestError as e:
+                    logger.error(f"Bad Request Error: {e}")
+                    output.content = f"Error:{e}"
+                    output.status = 400
+                    return output
 
                 except CallAPI.Exceptions.CallApiException as e:
                     logger.error(f"CallAPI Error: {e}")
                     output.content = f"Error:{e}"
+                    output.status = 500
                     return output
                 # endregion
 

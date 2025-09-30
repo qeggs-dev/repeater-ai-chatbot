@@ -275,18 +275,44 @@ class ContextObject:
     
     def pop(self, index: int = -1) -> ContentUnit:
         """
-        弹出最后一个上下文单元
+        弹出一个上下文单元
+
+        :param index: 弹出第几个上下文单元，默认为最后一个
+        :return: 弹出的上下文单元
+        :raises IndexOutOfRangeError: 如果index超出范围，则抛出该异常
         """
+        if index not in range(len(self.context_list)):
+            raise IndexOutOfRangeError("index out of range")
         return self.context_list.pop(index)
     
     def pop_last_n(self, n: int) -> "ContextObject":
         """
         弹出最后n个上下文单元
+
+        :param n: 弹出的元素个数
+        :return: 弹出的元素列表
+        :raises IndexOutOfRangeError: 数量超出范围
         """
+        if n not in range(0, len(self.context_list)):
+            raise IndexOutOfRangeError("index out of range")
         pop_list:list[ContentUnit] = []
         for _ in range(n):
             pop_list.append(self.pop())
         return ContextObject(prompt=self.prompt, context_list=pop_list)
+    
+    def pop_left_n(self, n: int = 0) -> ContentUnit:
+        """
+        弹出最左边的n个元素
+
+        :param n: 弹出的元素个数
+        :return: 弹出的元素列表
+        :raise IndexOutOfRangeError: 数量超出范围
+        """
+        if n not in range(0, len(self.context_list)):
+            raise IndexOutOfRangeError("index out of range")
+        pop_list = self.context_list[:n]
+        self.context_list = self.context_list[n:]
+        return pop_list
     
     @property
     def is_empty(self) -> bool:
@@ -301,6 +327,34 @@ class ContextObject:
         判断上下文是否包含新的函数调用响应
         """
         return self.last_content.funcResponse is not None
+    
+    def shrink(self, length: int):
+        """
+        缩小上下文长度
+        
+        :param length: 正数保留最后length个元素，负数保留前|length|个元素
+        :raise IndexOutOfRangeError: 数量超出范围
+        """
+        current_len = len(self.context_list)
+        
+        # 验证范围
+        if abs(length) > current_len:
+            raise IndexOutOfRangeError(f"length {length} out of range [{-current_len}, {current_len}]")
+        
+        # 当length大于等于实际长度时，不做任何事
+        if length >= len(self.context_list):
+            return
+        
+        if length > 0:
+            # 保留最后 length 个元素
+            self.context_list = self.context_list[-length:]
+        elif length < 0:
+            # 保留前 |length| 个元素
+            elements_to_remove = current_len + length  # length为负，所以是加法
+            self.pop_last_n(elements_to_remove)
+        else:
+            # length == 0，清空列表
+            self.context_list = []
     
     @classmethod
     def from_context(cls, context: list[dict]) -> "ContextObject":
