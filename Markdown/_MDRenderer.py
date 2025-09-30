@@ -4,6 +4,7 @@ import asyncio
 from pathlib import Path
 from ._styles import get_style, get_style_names
 from ConfigManager import ConfigLoader
+from ._BrExtension import BrExtension
 
 configs = ConfigLoader()
 
@@ -38,7 +39,7 @@ async def markdown_to_image(
             markdown_text = markdown_text.replace(key, value)
     
     # 1. 渲染 Markdown 为 HTML
-    html_content = markdown.markdown(markdown_text)
+    html_content = markdown.markdown(markdown_text, extensions=[BrExtension()])
     
     # 2. 构建完整 HTML
     if css is None:
