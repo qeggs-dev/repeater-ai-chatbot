@@ -14,25 +14,25 @@ class CallLogObject:
     user_name: str = ""
     stream: bool = True
 
-    total_chunk: TimeStamp = 0
-    empty_chunk: TimeStamp = 0
+    total_chunk: int = 0
+    empty_chunk: int = 0
 
-    task_start_time: TimeStamp = 0
-    task_end_time: TimeStamp = 0
-    request_start_time: TimeStamp = 0
-    request_end_time: TimeStamp = 0
-    stream_processing_start_time: TimeStamp = 0
-    stream_processing_end_time: TimeStamp = 0
-    call_prepare_start_time: TimeStamp = 0
-    call_prepare_end_time: TimeStamp = 0
+    task_start_time: TimeStamp = field(default_factory=lambda: TimeStamp(0,0))
+    task_end_time: TimeStamp = field(default=lambda: TimeStamp(0,0))
+    request_start_time: TimeStamp = field(default_factory=lambda: TimeStamp(0,0))
+    request_end_time: TimeStamp = field(default_factory=lambda: TimeStamp(0,0))
+    stream_processing_start_time: TimeStamp = field(default_factory=lambda: TimeStamp(0,0))
+    stream_processing_end_time: TimeStamp = field(default_factory=lambda: TimeStamp(0,0))
+    call_prepare_start_time: TimeStamp = field(default_factory=lambda: TimeStamp(0,0))
+    call_prepare_end_time: TimeStamp = field(default_factory=lambda: TimeStamp(0,0))
     chunk_times: list[TimeStamp] = field(default_factory=list)
     created_time: TimeStamp = 0
 
-    total_tokens: TimeStamp = 0
-    prompt_tokens: TimeStamp = 0
-    completion_tokens: TimeStamp = 0
-    cache_hit_count: TimeStamp = 0
-    cache_miss_count: TimeStamp = 0
+    total_tokens: int = 0
+    prompt_tokens: int = 0
+    completion_tokens: int = 0
+    cache_hit_count: int = 0
+    cache_miss_count: int = 0
 
     total_context_length: TimeStamp = 0
     reasoning_content_length: TimeStamp = 0
@@ -43,12 +43,13 @@ class CallLogObject:
         return asdict(self)
     
     @classmethod
-    def from_dict(cls, data: dict[str: Any]):
+    def from_dict(cls, data: dict[str, Any]):
         return cls(**data)
     
-    def update(self, data: dict[str: Any]):
+    def update(self, data: dict[str, Any]):
         for key, value in data.items():
-            setattr(self, key, value)
+            if not key.startswith("_"):
+                setattr(self, key, value)
     
 @dataclass
 class CallAPILogObject:
@@ -56,8 +57,8 @@ class CallAPILogObject:
     Class to represent a call API log object.
     """
     source: str = ""
-    start_time: TimeStamp = 0
-    end_time: TimeStamp = 0
+    start_time: TimeStamp = field(default_factory=lambda: TimeStamp(0,0))
+    end_time: TimeStamp = field(default_factory=lambda: TimeStamp(0,0))
     user_id: str = ""
 
     @property
@@ -65,9 +66,10 @@ class CallAPILogObject:
         return asdict(self)
     
     @classmethod
-    def from_dict(cls, data: dict[str: Any]):
+    def from_dict(cls, data: dict[str, Any]):
         return cls(**data)
     
-    def update(self, data: dict[str: Any]):
+    def update(self, data: dict[str, Any]):
         for key, value in data.items():
-            setattr(self, key, value)
+            if not key.startswith("_"):
+                setattr(self, key, value)

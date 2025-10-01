@@ -6,7 +6,7 @@ class TimeStamp:
     time_stamp: int = field(default_factory=lambda: time.time_ns())
     monotonic: int = field(default_factory=lambda: time.monotonic_ns())
 
-    def reload(self, update_time: bool = True, update_monotonic: bool = True) -> None:
+    def record(self, update_time: bool = True, update_monotonic: bool = True) -> None:
         """
         Record the current time
         """
