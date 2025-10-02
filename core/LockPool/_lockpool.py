@@ -14,7 +14,7 @@ class LockPool:
     def get_lock(self, key: T_KEY) -> threading.Lock:
         with self._lock:
             if key in self.locks:
-                logger.debug(f"LockPool: Get lock for {key}")
+                logger.debug(f"LockPool: Get lock for {repr(key)}")
                 return self.locks[key]
             class Packaged_Lock(threading.Lock):
                 def _increase_reference_counting(inner_self):
@@ -33,27 +33,31 @@ class LockPool:
                             del self.locks[key]
                         del self._reference_count[key]
                 
+                @property
+                def reference_count(inner_self):
+                    return self._reference_count.get(key, 0)
+                
                 def acquire(inner_self):
                     inner_self._increase_reference_counting()
-                    logger.debug(f'LockPool: Acquiring lock for {key}')
+                    logger.debug(f'LockPool: Acquiring lock for {repr(key)}({inner_self.reference_count})')
                     try:
                         super().acquire()
                     except Exception as e:
-                        logger.warning(f'LockPool: Failed to acquire lock for {key}: {e}')
                         inner_self._reduce_reference_counting()
+                        logger.warning(f'LockPool: Failed to acquire lock for {repr(key)}: {e}')
                         raise
                 def release(inner_self):
                     try:
                         super().release()
-                        logger.debug(f'LockPool: Releasing lock for {key}')
                         inner_self._reduce_reference_counting()
+                        logger.debug(f'LockPool: Released lock for {repr(key)}({inner_self.reference_count})')
                     except Exception as e:
-                        logger.warning(f'LockPool: Failed to release lock for {key}: {e}')
+                        logger.warning(f'LockPool: Failed to release lock for {repr(key)}: {e}')
                         raise
             
             lock = Packaged_Lock()
             self.locks[key] = lock
-            logger.debug(f"LockPool: Created lock for {key}")
+            logger.debug(f"LockPool: Created lock for {repr(key)}")
             return lock
     def lock_count(self, key: T_KEY):
         with self._lock:
