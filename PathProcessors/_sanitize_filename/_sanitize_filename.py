@@ -3,10 +3,7 @@ import asyncio
 import hashlib
 import base64
 from ._charset import DEFAULT_INVALID_CHARS
-from ._create_special_chars_remover import create_special_chars_remover
-
-# 创建预编译的移除器
-_remove_special_chars_optimized = create_special_chars_remover()
+from TextProcessors import special_chars_remover
 
 def sanitize_filename(
         text: str,
@@ -32,7 +29,7 @@ def sanitize_filename(
         if len(filename) > max_length:
             filename = filename[:max_length]
         return filename
-    _remove_special_chars_optimized(text)
+    return special_chars_remover(text)
 
 # 示例用法
 if __name__ == "__main__":
