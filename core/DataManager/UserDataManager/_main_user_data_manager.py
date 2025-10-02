@@ -18,7 +18,7 @@ class MainManager(UserMainManagerInterface):
         self._base_path = configs.get_config("User_Data.Dir", "./data/userdata").get_value(Path)
         self._base_name = sanitize_filename(base_name)
         if not validate_path(self._base_path, self._base_name):
-            raise ValueError("Invalid path for user data directory")
+            raise ValueError(f"Invalid path \"{self._base_name}\" for \"{self._base_path}\"")
         self.sub_managers:dict[str, SubManager] = {}
 
         self.cache_metadata = cache_metadata
