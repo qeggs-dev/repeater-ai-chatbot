@@ -10,7 +10,7 @@ import orjson
 import aiofiles
 
 # ==== 项目库 ==== #
-from PathProcessors import validate_path, sanitize_filename, sanitize_filename_async
+from PathProcessors import validate_path, sanitize_filename
 from ConfigManager import ConfigLoader
 
 class SubManager:

@@ -32,7 +32,7 @@ from TextProcessors import (
     PromptVP,
     limit_blank_lines,
 )
-from PathProcessors import validate_path, sanitize_filename_async
+from PathProcessors import validate_path, sanitize_filename
 from ConfigManager import ConfigLoader
 
 # ==== 本模块代码 ==== #
@@ -67,7 +67,7 @@ class ContextLoader:
                 suffix = configs.get_config("Prompt.Default_Suffix", "md").get_value(str)
 
                 # 加载默认提示词文件
-                default_prompt_file = default_prompt_dir / f'{await sanitize_filename_async(parset_prompt_name)}.{suffix}'
+                default_prompt_file = default_prompt_dir / f'{sanitize_filename(parset_prompt_name)}.{suffix}'
                 if not validate_path(default_prompt_dir, default_prompt_file):
                     raise InvalidPromptPathError(f"Invalid Prompt Path: {default_prompt_file}")
                 if default_prompt_file.exists():

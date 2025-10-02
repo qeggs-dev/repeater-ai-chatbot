@@ -7,7 +7,7 @@ from loguru import logger
 
 # ==== 自定义库 ==== #
 from .SubManager import SubManager
-from PathProcessors import validate_path, sanitize_filename, sanitize_filename_async
+from PathProcessors import validate_path, sanitize_filename
 from ConfigManager import ConfigLoader
 from ._user_mainmanager_interface import UserMainManagerInterface
 
@@ -31,7 +31,7 @@ class MainManager(UserMainManagerInterface):
         return self._base_path / self._base_name
     
     async def load(self, user_id: str, default: Any = None) -> Any:
-        user_id = await sanitize_filename_async(user_id)
+        user_id = sanitize_filename(user_id)
         manager = self.sub_managers.setdefault(
             user_id,
             SubManager(
@@ -77,7 +77,7 @@ class MainManager(UserMainManagerInterface):
             raise
     
     async def save(self, user_id: str, data: Any) -> None:
-        user_id = await sanitize_filename_async(user_id)
+        user_id = sanitize_filename(user_id)
         manager = self.sub_managers.setdefault(
             user_id,
             SubManager(
@@ -119,7 +119,7 @@ class MainManager(UserMainManagerInterface):
             raise
     
     async def delete(self, user_id: str) -> None:
-        user_id = await sanitize_filename_async(user_id)
+        user_id = sanitize_filename(user_id)
         manager = self.sub_managers.setdefault(
             user_id,
             SubManager(
@@ -162,7 +162,7 @@ class MainManager(UserMainManagerInterface):
             raise
     
     async def set_default_item_id(self, user_id: str, item: str) -> None:
-        user_id = await sanitize_filename_async(user_id)
+        user_id = sanitize_filename(user_id)
         manager = self.sub_managers.setdefault(
             user_id,
             SubManager(
@@ -205,7 +205,7 @@ class MainManager(UserMainManagerInterface):
             raise
 
     async def get_default_item_id(self, user_id: str) -> str:
-        user_id = await sanitize_filename_async(user_id)
+        user_id = sanitize_filename(user_id)
         manager = self.sub_managers.setdefault(
             user_id,
             SubManager(
