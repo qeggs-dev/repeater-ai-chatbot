@@ -50,7 +50,7 @@ from RegexChecker import RegexChecker
 # ==== 本模块代码 ==== #
 configs = ConfigLoader()
 
-__version__ = configs.get_config("Core.Version", "4.2.4.0").get_value(str)
+__version__ = configs.get_config("Core.Version", "4.2.4.1").get_value(str)
 
 @dataclass
 class Response:
@@ -514,11 +514,12 @@ class Core:
                     prompt_vp = prompt_vp
                 )
 
-                # 如果上下文需要收缩，则进行收缩
-                max_context_length = config.get('auto_shrink_length', configs.get_config("model.auto_shrink_length", 1000).get_value(int))
-                if len(context) > max_context_length:
-                    logger.info(f"Context length exceeds {max_context_length}, auto shrink", user_id = user_id)
-                    context.shrink(max_context_length)
+                # 如果上下文需要收缩，则进行收缩(为零或类型不对则不进行操作)
+                max_context_length = config.get('auto_shrink_length', configs.get_config("model.auto_shrink_length", 0).get_value(int))
+                if isinstance(max_context_length, int) and max_context_length > 0:
+                    if len(context) > max_context_length:
+                        logger.info(f"Context length exceeds {max_context_length}, auto shrink", user_id = user_id)
+                        context.shrink(max_context_length)
 
                 user_input = context.last_content
                 
