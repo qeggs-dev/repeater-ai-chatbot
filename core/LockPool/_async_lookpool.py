@@ -17,6 +17,7 @@ class LockPool:
             if key in self.locks:
                 logger.debug(f"LockPool: Get lock for {repr(key)}")
                 return self.locks[key]
+            
             class Packaged_Lock(asyncio.Lock):
                 def _increase_reference_counting(inner_self):
                     if key not in self._reference_count:
@@ -47,6 +48,7 @@ class LockPool:
                         inner_self._reduce_reference_counting()
                         logger.warning(f'LockPool: Failed to acquire lock for {repr(key)}: {e}')
                         raise
+
                 def release(inner_self):
                     try:
                         super().release()
@@ -60,10 +62,13 @@ class LockPool:
             logger.debug(f"LockPool: Created lock for {repr(key)}")
             self.locks[key] = lock
             return lock
+        
     async def lock_count(self, key: T_KEY):
         async with self._lock:
             return self._reference_count.get(key, 0)
+        
     def __contains__(self, key: T_KEY) -> bool:
         return key in self.locks
+    
     def __len__(self) -> int:
         return len(self.locks)
