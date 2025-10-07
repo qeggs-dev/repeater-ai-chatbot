@@ -23,14 +23,14 @@ from .._object import (
     Delta,
     TokensCount
 )
-from ...Context import (
+from ....Context import (
     FunctionResponseUnit,
     ContextObject,
     ContentUnit,
     ContextRole
 )
-from ...CallLog import CallLog, TimeStamp
-from ...CoroutinePool import CoroutinePool
+from ....CallLog import CallLog, TimeStamp
+from ....CoroutinePool import CoroutinePool
 from TimeParser import (
     format_deltatime,
     format_deltatime_ns

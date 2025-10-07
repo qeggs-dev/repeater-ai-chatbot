@@ -53,7 +53,7 @@ from RegexChecker import RegexChecker
 # ==== 本模块代码 ==== #
 configs = ConfigLoader()
 
-__version__ = configs.get_config("Core.Version", "4.2.4.1").get_value(str)
+__version__ = configs.get_config("Core.Version", "4.2.4.2").get_value(str)
 
 @dataclass
 class Response:
