@@ -15,7 +15,7 @@ def create_special_chars_remover(new_char: str):
     delete_chars = []
     for i in range(32, 127):
         c = chr(i)
-        if not (('A' <= c <= 'Z') or ('a' <= c <= 'z') or ('0' <= c <= '9') or c == '_'):
+        if not (('A' <= c <= 'Z') or ('a' <= c <= 'z') or ('0' <= c <= '9') or c in ['_', '-', '.']):
             delete_chars.append(c)
 
     delete_str = ''.join(delete_chars)
