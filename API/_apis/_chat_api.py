@@ -54,7 +54,7 @@ async def chat_endpoint(
     if request.continue_completion and request.message:
         raise HTTPException(detail="Cannot send message when continuing completion", status_code=400)
     try:
-        context = await chat.Chat(
+        context = await chat.chat(
             user_id = user_id,
             message = request.message,
             user_info = core.RequestUserInfo.UserInfo(
@@ -76,7 +76,7 @@ async def chat_endpoint(
         if isinstance(context, core.Response):
             return JSONResponse(context.as_dict, status_code=200)
         else:
-            async def generator_wrapper(context: AsyncIterator[core.CallAPI.Delta]) -> AsyncIterator[bytes]:
+            async def generator_wrapper(context: AsyncIterator[core.CompletionsAPI.Delta]) -> AsyncIterator[bytes]:
                 async for chunk in context:
                     yield orjson.dumps(chunk.as_dict) + b"\n"
 
