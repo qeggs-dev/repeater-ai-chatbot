@@ -133,7 +133,7 @@ async def get_config_now_branch_id(user_id: str):
     # 返回分支ID
     return PlainTextResponse(branch_id)
 
-@app.post("/userdata/config/change/{user_id}")
+@app.put("/userdata/config/change/{user_id}")
 async def change_config(user_id: str, new_branch_id: str = Form(...)):
     """
     Endpoint for changing config

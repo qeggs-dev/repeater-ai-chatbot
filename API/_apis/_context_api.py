@@ -173,7 +173,7 @@ async def get_context_now_branch_id(user_id: str):
     # 返回上下文分支ID
     return PlainTextResponse(branch_id)
 
-@app.post("/userdata/context/change/{user_id}")
+@app.put("/userdata/context/change/{user_id}")
 async def change_context(user_id: str, new_branch_id: str = Form(...)):
     """
     Endpoint for changing context

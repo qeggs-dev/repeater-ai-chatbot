@@ -74,11 +74,12 @@ async def get_prompt_now_branch_id(user_id: str):
     # 返回分支ID
     return PlainTextResponse(branch_id)
 
-@app.post("/userdata/prompt/change/{user_id}")
-async def change_prompt(user_id: str, new_branch_id: str):
+@app.put("/userdata/prompt/change/{user_id}")
+async def change_prompt(user_id: str, new_branch_id: str = Form(...)):
     """
     Endpoint for changing prompt
     """
+    
     # 设置用户ID为user_id的提示词为new_prompt_id
     await chat.prompt_manager.set_default_item_id(user_id, item = new_branch_id)
 
