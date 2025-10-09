@@ -1217,14 +1217,15 @@ class SlovesStarter:
                 # Reset Title
                 first_run = False
                 set_title(self.process_exit_title)
-                if self.restart:
-                    if Ask("Re-select?").ask():
-                        reselect = False
-                        continue
-                    else:
-                        break
+            
+            if self.restart:
+                if Ask("Re-select?").ask():
+                    reselect = False
+                    continue
                 else:
                     break
+            else:
+                break
         
         if self.automatic_exit:
             self._exit(return_code)
