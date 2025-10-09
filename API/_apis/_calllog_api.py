@@ -27,11 +27,11 @@ class FilterList(BaseModel):
 
 def apply_filters(log_obj_dict: dict, filter_map: dict) -> bool:
     """
-    应用过滤器到日志对象
+    apply_filters_to_calllog
     
-    Args:
-        log_obj_dict: 日志对象字典
-        filter_map: 过滤器映射字典
+    
+    :parse log_obj_dict: Log object dictionary
+    :parse filter_map: Filter mapping dictionary
     
     Returns:
         bool: 是否通过过滤
@@ -59,13 +59,13 @@ def apply_filters(log_obj_dict: dict, filter_map: dict) -> bool:
 
 async def generate_calllog(filter: FilterList | None = None) -> AsyncIterator[Dict[str, Any]]:
     """
-    生成通话日志的异步生成器
+    Asynchronous generator that generates call logs
     
     Args:
-        filter: 可选的过滤器列表
+        filter: Optional list of filters
     
     Yields:
-        过滤后的日志对象字典
+        Filtered log object dictionary
     """
     # 获取日志生成器
     generator = chat.calllog.read_stream_call_log()
@@ -83,6 +83,8 @@ async def generate_calllog(filter: FilterList | None = None) -> AsyncIterator[Di
         log_obj_dict = log_obj.as_dict
         if apply_filters(log_obj_dict, filter_map):
             yield log_obj_dict
+        elif filter is None:
+            yield log_obj_dict
 
 @app.get("/calllog")
 async def get_calllog(filter: FilterList | None = None):
@@ -90,10 +92,10 @@ async def get_calllog(filter: FilterList | None = None):
     Endpoint for getting calllog
     
     Args:
-        filter: 可选的过滤器列表
+        filter: Optional list of filters
     
     Returns:
-        JSONResponse: 包含通话日志的JSON响应
+        JSONResponse: Filtered log object dictionary
     """
     logs = [calllog async for calllog in generate_calllog(filter=filter)]
     return JSONResponse(logs)
@@ -104,10 +106,10 @@ async def stream_call_logs(filter: FilterList | None = None):
     流式传输通话日志
     
     Args:
-        filter: 可选的过滤器列表
+        filter: Optional list of filters
     
     Returns:
-        StreamingResponse: JSONL格式的流式响应
+        StreamingResponse: Filtered log object dictionary
     """
     async def generate_jsonl() -> AsyncIterator[bytes]:
         """生成JSONL格式的字节流"""

@@ -7,6 +7,9 @@ from pathlib import Path
 async def get_render_file(file_uuid: str):
     """
     Endpoint for rendering file
+
+    Args:
+        file_uuid (str): The UUID of the file to render
     """
     render_output_image_dir = configs.get_config("render.output_image_dir", "./temp/render").get_value(Path)
     # 防止遍历攻击

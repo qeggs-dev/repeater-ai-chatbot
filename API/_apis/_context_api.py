@@ -16,6 +16,12 @@ from loguru import logger
 async def get_context(user_id: str):
     """
     Endpoint for getting context
+
+    Args:
+        user_id (str): User ID
+    
+    Returns:
+        JSONResponse: User context
     """
     # 从chat.context_manager中加载用户ID为user_id的上下文
     context = await chat.context_manager.load(user_id, [])
@@ -29,6 +35,12 @@ async def get_context(user_id: str):
 async def get_context_length(user_id: str):
     """
     Endpoint for getting context
+
+    Args:
+        user_id (str): The user ID
+    
+    Returns:
+        JSONResponse: The JSON response containing the context length
     """
     # 从chat.context_manager中加载用户ID为user_id的上下文
     context_loader = await chat.get_context_loader()
@@ -49,6 +61,9 @@ async def get_context_length(user_id: str):
 async def get_context_userlist():
     """
     Endpoint for getting context
+
+    Returns:
+        JSONResponse: A JSONResponse containing a list of user IDs
     """
     # 从chat.context_manager中获取所有用户ID
     userid_list = await chat.context_manager.get_all_user_id()
@@ -62,6 +77,13 @@ async def get_context_userlist():
 async def withdraw_context(user_id: str, length: int | None = Form(None, ge=0)):
     """
     Endpoint for withdrawing context
+
+    Args:
+        user_id (str): The user ID
+        length (int | None): The number of messages to withdraw
+
+    Returns:
+        JSONResponse: New context
     """
     # 从context_loader中加载用户ID为user_id的上下文
     context_loader = await chat.get_context_loader()
@@ -124,6 +146,13 @@ class RewriteContext(BaseModel):
 async def rewrite_context(user_id: str, rewrite_context: RewriteContext):
     """
     Endpoint for rewriting context
+
+    Args:
+        user_id (str): User ID
+        rewrite_context (RewriteContext): Context to rewrite
+
+    Returns:
+        JSONResponse: New context
     """
     # 从context_loader中加载用户ID为user_id的上下文
     context_loader = await chat.get_context_loader()
@@ -151,6 +180,12 @@ async def rewrite_context(user_id: str, rewrite_context: RewriteContext):
 async def get_context_branch_id(user_id: str):
     """
     Endpoint for getting context branch id list
+
+    Args:
+        user_id (str): User ID
+
+    Returns:
+        JSONResponse: A JSON response containing the context branch ID list
     """
     # 获取用户ID为user_id的上下文分支ID
     branchs = await chat.context_manager.get_all_item_id(user_id)
@@ -164,6 +199,12 @@ async def get_context_branch_id(user_id: str):
 async def get_context_now_branch_id(user_id: str):
     """
     Endpoint for getting context branch id
+
+    Args:
+        user_id (str): User ID
+
+    Returns:
+        JSONResponse: Context branch id
     """
     # 获取用户ID为user_id的上下文分支ID
     branch_id = await chat.context_manager.get_default_item_id(user_id)
@@ -177,6 +218,13 @@ async def get_context_now_branch_id(user_id: str):
 async def change_context(user_id: str, new_branch_id: str = Form(...)):
     """
     Endpoint for changing context
+
+    Args:
+        user_id (str): User ID
+        new_branch_id (str): New context branch ID
+    
+    Returns:
+        PlainTextResponse: Success text for changing context
     """
 
     # 设置用户ID为user_id的上下文为new_context_id
@@ -191,6 +239,12 @@ async def change_context(user_id: str, new_branch_id: str = Form(...)):
 async def delete_context(user_id: str):
     """
     Endpoint for deleting context
+
+    Args:
+        user_id (str): User ID
+
+    Returns:
+        PlainTextResponse: Success text for deleting context
     """
     # 删除用户ID为user_id的上下文
     await chat.context_manager.delete(user_id)

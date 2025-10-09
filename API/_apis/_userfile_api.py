@@ -20,6 +20,12 @@ import orjson
 async def get_userdata_file(user_id: str):
     """
     Endpoint for getting userdata file
+
+    Args:
+        user_id (str): User ID
+
+    Returns:
+        StreamingResponse: File stream
     """
     # 创建虚拟文件缓冲区
     buffer = BytesIO()

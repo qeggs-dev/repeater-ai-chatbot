@@ -32,6 +32,15 @@ async def change_config(user_id: str):
 async def set_config(user_id: str, value_type: str, key: str = Form(...), value: Any = Form(...)):
     """
     Endpoint for setting config
+
+    Args:
+        user_id (str): User ID
+        value_type (str): Value Type(Automatic type conversion)
+        key (str): Config Key
+        value (Any): Config Value
+    
+    Returns:
+        JSONResponse: Config
     """
     # 允许的值类型
     TYPES = {
@@ -67,10 +76,17 @@ async def set_config(user_id: str, value_type: str, key: str = Form(...), value:
     # 返回新配置内容
     return JSONResponse(config.configs)
 
-@app.post("/userdata/config/delkey/{user_id}")
+@app.put("/userdata/config/delkey/{user_id}")
 async def delkey_config(user_id: str, key: str = Form(...)):
     """
     Endpoint for delkey config
+
+    Parameters:
+        user_id (str): User ID
+        key (str): User config key
+
+    Returns:
+        JSONResponse: New config content
     """
 
     # 读取配置
@@ -95,6 +111,9 @@ async def delkey_config(user_id: str, key: str = Form(...)):
 async def get_config_userlist():
     """
     Endpoint for getting config userlist
+
+    Returns:
+        JSONResponse: A JSON response containing the list of user IDs
     """
 
     # 获取所有用户ID
@@ -109,6 +128,12 @@ async def get_config_userlist():
 async def get_config_branch_id(user_id: str):
     """
     Endpoint for get config branch id
+
+    Args:
+        user_id (str): The user id
+    
+    Returns:
+        JSONResponse: Current user's branch list
     """
 
     # 获取平行配置路由ID列表
@@ -123,6 +148,12 @@ async def get_config_branch_id(user_id: str):
 async def get_config_now_branch_id(user_id: str):
     """
     Endpoint for get config branch id
+
+    Args:
+        user_id (str): User id
+
+    Returns:
+        JSONResponse: Now Branch id
     """
 
     # 获取当前配置路由ID
@@ -137,6 +168,13 @@ async def get_config_now_branch_id(user_id: str):
 async def change_config(user_id: str, new_branch_id: str = Form(...)):
     """
     Endpoint for changing config
+
+    Args:
+        user_id (str): User id
+        new_branch_id (str): New branch id
+    
+    Returns:
+        PlainTextResponse: Plain text response
     """
 
     # 设置平行配置路由
@@ -152,6 +190,12 @@ async def change_config(user_id: str, new_branch_id: str = Form(...)):
 async def delete_config(user_id: str):
     """
     Endpoint for deleting config
+
+    Args:
+        user_id (str): The user id
+
+    Returns:
+        PlainTextResponse: Plain text response
     """
     # 删除配置
     await chat.user_config_manager.delete(user_id)
