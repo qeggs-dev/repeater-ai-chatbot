@@ -1186,6 +1186,7 @@ class SlovesStarter:
         set_title(self.title)
         if self.use_venv:
             self.init_venv()
+        print(f"Run With Python {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}")
         return_code = ExitCode.SUCCESS
         first_run = True
         reselect = self.reselect
@@ -1194,6 +1195,7 @@ class SlovesStarter:
                 if reselect or first_run:
                     start = self.get_start_cmd()
                 self.print_divider_line()
+                set_title(self.process_title)
                 result = self.run_cmd(
                     start,
                     reason = "Running the program",
