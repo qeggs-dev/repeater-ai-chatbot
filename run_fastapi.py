@@ -29,7 +29,7 @@ def main():
     if reload:
         logger.info("Server will reload on code change")
     
-    logger.info(f"Run With {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}")
+    logger.info(f"Run With Python {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}")
     
     logger.info("Server starting...")
 
