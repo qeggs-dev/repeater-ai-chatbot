@@ -1,0 +1,95 @@
+{
+    "title": "Repeater LLM Chat Backend Starter",
+    "process_title": "Repeater LLM Chat Backend",
+    "exit_title": "Repeater LLM Chat Backend Starter",
+    "python_name": {
+        "windows": "python",
+        "linux": "python3",
+        "default": "python3"
+    },
+    "pip_name": {
+        "windows": "pip",
+        "linux": "pip3",
+        "default": "pip3"
+    },
+    "venv_prompt": ".venv",
+    "script_name": [
+        "run_fastapi.py"
+    ],
+    "argument": null,
+    "restart": true,
+    "requirements": [
+        {
+            "name": "aiofiles",
+            "version_mode": "==",
+            "version": "24.1.0"
+        },
+        {
+            "name": "environs",
+            "version_mode": "==",
+            "version": "14.2.0"
+        },
+        {
+            "name": "pydantic",
+            "version_mode": "==",
+            "version": "2.11.7"
+        },
+        {
+            "name": "fastapi",
+            "version_mode": "==",
+            "version": "0.115.13"
+        },
+        {
+            "name": "python-multipart",
+            "version_mode": "==",
+            "version": "0.0.20"
+        },
+        {
+            "name": "loguru",
+            "version_mode": "==",
+            "version": "0.7.3"
+        },
+        {
+            "name": "openai",
+            "version_mode": "==",
+            "version": "1.90.0"
+        },
+        {
+            "name": "orjson",
+            "version_mode": "==",
+            "version": "3.10.18"
+        },
+        {
+            "name": "uvicorn",
+            "version_mode": "==",
+            "version": "0.34.3"
+        },
+        {
+            "name": "markdown",
+            "version_mode": "==",
+            "version": "3.8.2"
+        },
+        {
+            "name": "imgkit",
+            "version_mode": "==",
+            "version": "1.2.3"
+        },
+        {
+            "name": "httpx",
+            "version_mode": "==",
+            "version": "0.28.1"
+        },
+        {
+            "name": "pyyaml",
+            "version_mode": "==",
+            "version": "6.0.2"
+        },
+        {
+            "name": "deprecated",
+            "version_mode": "==",
+            "version": "1.2.18"
+        }
+    ],
+    "run_cmd_need_to_ask": false,
+    "run_cmd_ask_default_values": {}
+}
