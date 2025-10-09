@@ -633,6 +633,7 @@ class SlovesStarter:
         self.text_encoding:str = "utf-8"
         self.print_return_code: bool = True
         self.print_runtime: bool = True
+        self.automatic_exit: bool = False
 
         set_title(self.title)
 
@@ -838,6 +839,9 @@ class SlovesStarter:
         
         if exists_and_is_designated_type("print_runtime", bool):
             self.print_runtime = config["print_runtime"]
+        
+        if exists_and_is_designated_type("automatic_exit", bool):
+            self.automatic_exit = config["automatic_exit"]
     # endregion
     
     # region > create configuration
@@ -873,6 +877,7 @@ class SlovesStarter:
             "text_encoding": self.text_encoding,
             "print_return_code": self.print_return_code,
             "print_runtime": self.print_runtime,
+            "automatic_exit": self.automatic_exit,
         }
         if output is None:
             return config
@@ -882,8 +887,8 @@ class SlovesStarter:
     # endregion
 
     # region > pause program
-    @staticmethod
-    def pause_program(code: ExitCode | int = ExitCode.SUCCESS, prompt: str | None = None):
+    @classmethod
+    def pause_program(cls, code: ExitCode | int = ExitCode.SUCCESS, prompt: str | None = None, wait: bool = True):
         """
         Pause the program and wait for user input to continue.
 
@@ -895,16 +900,25 @@ class SlovesStarter:
             print(prompt or "Press Ctrl+C to continue.")
         else:
             print(prompt or f"Press Ctrl+C to Exit with code {code.value if isinstance(code, ExitCode) else code}{f'({code.name})' if isinstance(code, ExitCode) else ''}.")
-        try:
-            while True:
-                time.sleep(60)
-        except KeyboardInterrupt:
-            if isinstance(code, ExitCode) and code != ExitCode.ONLY_PAUSE:
-                exit(code.value)
-            if isinstance(code, int):
-                exit(code)
-            else:
-                return
+        if wait:
+            try:
+                while True:
+                    time.sleep(60)
+            except KeyboardInterrupt:
+                cls._exit(code)
+        else:
+            cls._exit(code)
+    # endregion
+
+    # region > exit
+    @staticmethod
+    def _exit(code: ExitCode | int | None = None) -> None:
+        if isinstance(code, ExitCode) and code != ExitCode.ONLY_PAUSE:
+            exit(code.value)
+        if isinstance(code, int):
+            exit(code)
+        else:
+            return
     # endregion
     
     # region > run cmd
@@ -1212,7 +1226,10 @@ class SlovesStarter:
                 else:
                     break
         
-        self.pause_program(return_code)
+        if self.automatic_exit:
+            self._exit(return_code)
+        else:
+            self.pause_program(return_code)
     # endregion
 # endregion
 
