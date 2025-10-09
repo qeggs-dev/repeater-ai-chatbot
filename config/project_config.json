@@ -118,7 +118,7 @@
         ]
     },
     {
-        "name": "BOT_INFO.BIRTHDAY_YEAR",
+        "name": "BOT_INFO.BIRTHDAY.YEAR",
         "values": [
             {
                 "type": "int",
@@ -127,7 +127,7 @@
         ]
     },
     {
-        "name": "BOT_INFO.BIRTHDAY_MONTH",
+        "name": "BOT_INFO.BIRTHDAY.MONTH",
         "values": [
             {
                 "type": "int",
@@ -136,7 +136,7 @@
         ]
     },
     {
-        "name": "BOT_INFO.BIRTHDAY_DAY",
+        "name": "BOT_INFO.BIRTHDAY.DAY",
         "values": [
             {
                 "type": "int",
@@ -370,6 +370,7 @@
         "name": "MODEL.DEFAULT_MAX_TOKENS",
         "values": [
             {
+                "type": "int",
                 "value": 4096
             }
         ]
@@ -378,6 +379,7 @@
         "name": "MODEL.DEFAULT_MAX_COMPLETION_TOKENS",
         "values": [
             {
+                "type": "int",
                 "value": 4096
             }
         ]
