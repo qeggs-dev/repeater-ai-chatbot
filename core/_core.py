@@ -53,7 +53,7 @@ from RegexChecker import RegexChecker
 # ==== 本模块代码 ==== #
 configs = ConfigLoader()
 
-__version__ = configs.get_config("Core.Version", "4.2.4.2").get_value(str)
+__version__ = configs.get_config("Core.Version", "4.2.4.3").get_value(str)
 
 @dataclass
 class Response:
@@ -147,7 +147,7 @@ class Core:
         # 添加自定义处理器
         logger.add(
             sys.stderr,
-            format = "<green>{time:YYYY-MM-DD HH:mm:ss}</green> | <level>{level: <8}</level> | <cyan>{extra[user_id]}</cyan> - <level>{message}</level>",
+            format = "<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | <level>{level: <8}</level> | <cyan>{extra[user_id]}</cyan> - <level>{message}</level>",
             filter = lambda record: "donot_send_console" not in record["extra"],
             level = log_level
         )
@@ -157,10 +157,10 @@ class Core:
         log_retention = configs.get_config("logger.log_retention", "10 days").get_value(str)
         if not log_dir.exists():
             log_dir.mkdir(parents=True, exist_ok=True)
-        log_file = log_dir / "repeater_log_{time:YYYY-MM-DD_HH-mm-ss}.log"
+        log_file = log_dir / "repeater_log_{time:YYYY-MM-DD_HH-mm-ss.SSS}.log"
         logger.add(
             log_file,
-            format = "{time:YYYY-MM-DD HH:mm:ss} | {level: <8} | {extra[user_id]} - {message}",
+            format = "{time:YYYY-MM-DD HH:mm:ss.SSS} | {level: <8} | {extra[user_id]} - {message}",
             level = log_level,
             enqueue = True,
             delay = True,
