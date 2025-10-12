@@ -158,11 +158,13 @@ PS: `run.py`启动器会在完成所有操作后启动主程序，而这只需�
 | `SERVER.RELOAD` | 是否自动重启 | *选填* | 环境变量`RELOAD` | bool | |
 | `LOGGER.LOG_LEVEL` | 日志级别 | *选填* | `INFO` | str | |
 | `LOGGER.LOG_FILE_DIR` | 日志文件位置 | *选填* | `./log` | str | |
+| `LOGGER.LOG_FILE_PREFIX` | 日志文件前缀 | *选填* | `repeater_log_` | str | |
 | `LOGGER.MAX_LOG_FILE_SIZE` | 日志文件最大大小 | *选填* | `10 MB` | str | 日志大小 |
 | `LOGGER.LOG_RETENTION` | 日志文件保留时间 | *选填* | `14 days` | str | 时间 |
 | `README.FILE_PATH` | README文件位置 | *选填* | `./README.md` | str | |
-| `RENDER.DEFAULT_IMAGE_TIMEOUT` | 渲染图片的默认保留时间(单位：秒，图片生成后给予客户端的图片链接有效时间) | *选填* | 60 | int | |
-| `RENDER.MARKDOWN.TO_IMAGE.STYLES` | Markdown渲染图片的样式文件夹 | *选填* | `./styles` | str | |
+| `RENDER.DEFAULT_IMAGE_TIMEOUT` | 渲染图片的默认保留时间(图片生成后给予客户端的图片链接有效时间) | *选填* | 60 | float | 秒 |
+| `RENDER.MARKDOWN.TO_IMAGE.DEFAULT_STYLES` | Markdown默认渲染图片的样式 | *选填* | `light` | str | |
+| `RENDER.MARKDOWN.TO_IMAGE.STYLES_DIR` | Markdown渲染图片的样式文件夹 | *选填* | `./styles` | str | |
 | `RENDER.MARKDOWN.TO_IMAGE.PREPROCESS_MAP.BEFORE` | Markdown渲染预处理映射（键会被替换为值的内容） | *选填* | *`{"\n": "<br/>"}`* | str | |
 | `RENDER.MARKDOWN.TO_IMAGE.PREPROCESS_MAP.AFTER` | Markdown渲染后处理映射（键会被替换为值的内容） | *选填* | *`{"<code>": "<pre><code>", "</code>": "</code></pre>"}`* | str | |
 | `PROMPT.DEFAULT_DIR` | 默认提示词文件夹 | *选填* | `./Prompt/Presets` | str | |
