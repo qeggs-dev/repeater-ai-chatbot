@@ -71,7 +71,7 @@ async def render(
         # 获取用户配置
         config = await chat.user_config_manager.load(user_id)
         # 获取环境变量中的图片渲染风格
-        default_style = configs.get_config("Render.Markdown.to_Image_Styles", "light").get_value(str)
+        default_style = configs.get_config("Render.Markdown.to_Image.Default_Styles", "light").get_value(str)
         # 获取图片渲染风格
         style = config.get('render_style', default_style)
     

@@ -23,7 +23,7 @@ async def _read_style(style_file_path: Path) -> str:
 
 async def get_style(style_name: str, use_base: bool = True) -> str:
     style_name = sanitize_filename(style_name)
-    basepath = configs.get_config("Render.Markdown.to_Image.Styles", "./styles").get_value(Path)
+    basepath = configs.get_config("Render.Markdown.to_Image.Styles_DIR", "./styles").get_value(Path)
     style_file_path = basepath / f"{style_name}.css"
 
     if not validate_path(base_path = basepath, new_path = style_file_path):
@@ -42,7 +42,7 @@ async def get_style(style_name: str, use_base: bool = True) -> str:
             
 
 async def get_style_names() -> list[str]:
-    basepath = configs.get_config("Render.Markdown.to_Image.Styles", "./styles").get_value(Path)
+    basepath = configs.get_config("Render.Markdown.to_Image.Styles_DIR", "./styles").get_value(Path)
     style_names = [f.stem for f in basepath.glob('*.css')]
     return style_names
 
