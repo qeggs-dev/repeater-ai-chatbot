@@ -153,7 +153,7 @@ class Core:
         )
 
         log_dir = configs.get_config("logger.log_file_dir", "./logs").get_value(Path)
-        max_log_file_size = configs.get_config("logger.max_log_file_size", "10MB").get_value(str)
+        rotation = configs.get_config("logger.rotation", "10MB").get_value(str)
         log_retention = configs.get_config("logger.log_retention", "10 days").get_value(str)
         if not log_dir.exists():
             log_dir.mkdir(parents=True, exist_ok=True)
@@ -165,7 +165,7 @@ class Core:
             level = log_level,
             enqueue = True,
             delay = True,
-            rotation = max_log_file_size,
+            rotation = rotation,
             retention = log_retention,
             compression = "zip"
         )
