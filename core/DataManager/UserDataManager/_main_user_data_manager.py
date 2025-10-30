@@ -43,17 +43,8 @@ class MainManager(UserMainManagerInterface):
         )
         try:
             metadata = await manager.load_metadata()
-        except FileNotFoundError:
-            logger.error(f"Read User Metadata File Does Not Exist", user_id = user_id)
-            raise
-        except PermissionError:
-            logger.error(f"Read User Metadata File Permission Denied", user_id = user_id)
-            raise
-        except IsADirectoryError:
-            logger.error(f"Read User Metadata File Is A Directory", user_id = user_id)
-            raise
-        except OSError as e:
-            logger.error(f"Read User Metadata File Other OS Error: {e}", user_id = user_id)
+        except Exception as e:
+            logger.error(f"Read User Metadata File Error: {e}", user_id = user_id)
             raise
         
         if isinstance(metadata, dict):
@@ -63,17 +54,8 @@ class MainManager(UserMainManagerInterface):
         
         try:
             return await manager.load(item, default)
-        except FileNotFoundError:
-            logger.error(f"Read User File Does Not Exist", user_id = user_id)
-            raise
-        except PermissionError:
-            logger.error(f"Read User File Permission Denied", user_id = user_id)
-            raise
-        except IsADirectoryError:
-            logger.error(f"Read User File Is A Directory", user_id = user_id)
-            raise
-        except OSError as e:
-            logger.error(f"Read User File Other OS Error: {e}", user_id = user_id)
+        except Exception as e:
+            logger.error(f"Read User File Error: {e}", user_id = user_id)
             raise
     
     async def save(self, user_id: str, data: Any) -> None:
@@ -89,17 +71,8 @@ class MainManager(UserMainManagerInterface):
         )
         try:
             metadata = await manager.load_metadata()
-        except FileNotFoundError:
-            logger.error(f"Read User Metadata File Does Not Exist", user_id = user_id)
-            raise
-        except PermissionError:
-            logger.error(f"Read User Metadata File Permission Denied", user_id = user_id)
-            raise
-        except IsADirectoryError:
-            logger.error(f"Read User Metadata File Is A Directory", user_id = user_id)
-            raise
-        except OSError as e:
-            logger.error(f"Read User Metadata File Other OS Error: {e}", user_id = user_id)
+        except Exception as e:
+            logger.error(f"Read User Metadata File Error: {e}", user_id = user_id)
             raise
 
         if isinstance(metadata, dict):
@@ -108,14 +81,8 @@ class MainManager(UserMainManagerInterface):
             item = 'default'
         try:
             await manager.save(item, data)
-        except PermissionError:
-            logger.error(f"Write User File Permission Denied", user_id = user_id)
-            raise
-        except IsADirectoryError:
-            logger.error(f"Write User File Is A Directory", user_id = user_id)
-            raise
-        except OSError as e:
-            logger.error(f"Write User File Other OS Error: {e}", user_id = user_id)
+        except Exception as e:
+            logger.error(f"Write User File Error: {e}", user_id = user_id)
             raise
     
     async def delete(self, user_id: str) -> None:
@@ -132,17 +99,8 @@ class MainManager(UserMainManagerInterface):
 
         try:
             metadata = await manager.load_metadata()
-        except FileNotFoundError:
-            logger.error(f"Read User Metadata File Not Found")
-            raise
-        except PermissionError:
-            logger.error(f"Read User Metadata File Permission Denied", user_id = user_id)
-            raise
-        except IsADirectoryError:
-            logger.error(f"Read User Metadata File Is A Directory", user_id = user_id)
-            raise
-        except OSError as e:
-            logger.error(f"Read User Metadata File Other OS Error: {e}", user_id = user_id)
+        except Exception as e:
+            logger.error(f"Read User Metadata File Error: {e}", user_id = user_id)
             raise
 
         if isinstance(metadata, dict):
@@ -151,14 +109,8 @@ class MainManager(UserMainManagerInterface):
             item = 'default'
         try:
             await manager.delete(item)
-        except PermissionError:
-            logger.error(f"Delete User File Permission Denied", user_id = user_id)
-            raise
-        except IsADirectoryError:
-            logger.error(f"Delete User File Is A Directory", user_id = user_id)
-            raise
-        except OSError as e:
-            logger.error(f"Delete User File Other OS Error: {e}", user_id = user_id)
+        except Exception as e:
+            logger.error(f"Delete User File Error: {e}", user_id = user_id)
             raise
     
     async def set_default_item_id(self, user_id: str, item: str) -> None:
@@ -175,17 +127,8 @@ class MainManager(UserMainManagerInterface):
 
         try:
             metadata = await manager.load_metadata()
-        except FileExistsError:
-            logger.error(f"Read User Metadata File Not Found", user_id = user_id)
-            raise
-        except PermissionError:
-            logger.error(f"Read User Metadata File Permission Denied", user_id = user_id)
-            raise
-        except IsADirectoryError:
-            logger.error(f"Read User Metadata File Is A Directory", user_id = user_id)
-            raise
         except OSError as e:
-            logger.error(f"Read User Metadata File Other OS Error: {e}", user_id = user_id)
+            logger.error(f"Read User Metadata File Error: {e}", user_id = user_id)
             raise
 
         if isinstance(metadata, dict):
@@ -194,14 +137,8 @@ class MainManager(UserMainManagerInterface):
             metadata = {'default_item': item}
         try:
             await manager.save_metadata(metadata)
-        except PermissionError:
-            logger.error(f"Write User Metadata File Permission Denied", user_id = user_id)
-            raise
-        except IsADirectoryError:
-            logger.error(f"Write User Metadata File Is A Directory", user_id = user_id)
-            raise
-        except OSError as e:
-            logger.error(f"Write User Metadata File Other OS Error: {e}", user_id = user_id)
+        except Exception as e:
+            logger.error(f"Write User Metadata File Error: {e}", user_id = user_id)
             raise
 
     async def get_default_item_id(self, user_id: str) -> str:
@@ -217,17 +154,8 @@ class MainManager(UserMainManagerInterface):
         )
         try:
             metadata = await manager.load_metadata()
-        except FileExistsError:
-            logger.error(f"Read User Metadata File Not Found", user_id = user_id)
-            raise
-        except PermissionError:
-            logger.error(f"Read User Metadata File Permission Denied", user_id = user_id)
-            raise
-        except IsADirectoryError:
-            logger.error(f"Read User Metadata File Is A Directory", user_id = user_id)
-            raise
-        except OSError as e:
-            logger.error(f"Read User Metadata File Other OS Error: {e}", user_id = user_id)
+        except Exception as e:
+            logger.error(f"Read User Metadata File Error: {e}", user_id = user_id)
             raise
         if isinstance(metadata, dict):
             return metadata.get('default_item', 'default')

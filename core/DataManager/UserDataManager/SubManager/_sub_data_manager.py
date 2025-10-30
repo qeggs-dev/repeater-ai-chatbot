@@ -43,8 +43,8 @@ class SubManager:
     
     def _get_file_path(self, name: str) -> Path:
         """获取文件路径"""
-        if not self._default_base_file.exists():
-            self._default_base_file.mkdir(parents=True, exist_ok=True)
+        # if not self._default_base_file.exists():
+        #     self._default_base_file.mkdir(parents=True, exist_ok=True)
         name = sanitize_filename(name)
         return self._default_base_file / f"{name}.json"
     
