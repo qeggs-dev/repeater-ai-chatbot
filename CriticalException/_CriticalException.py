@@ -1,4 +1,5 @@
-from typing import Callable
+from __future__ import annotations
+from typing import Callable, Awaitable
 
 class CriticalException(Exception):
     """
@@ -20,5 +21,5 @@ class CriticalException(Exception):
 
         :return: None
         """
-        self.message = message
-        self.wait = wait
+        self.message: str = message
+        self.wait: float | Callable[[CriticalException], Awaitable[float] | float] | None = wait
