@@ -144,8 +144,9 @@ class SubManager:
             None
         """
         async with self._global_lock:
-            if not self.base_path.exists():
-                self.base_path.mkdir(parents=True, exist_ok=True)
+            path = self._get_file_path(item)
+            if not path.parent.exists():
+                path.parent.mkdir(parents=True, exist_ok=True)
             async with aiofiles.open(self._get_file_path(item), "wb") as f:
                 await f.write(await asyncio.to_thread(orjson.dumps, data))
             if self.cache_data:
