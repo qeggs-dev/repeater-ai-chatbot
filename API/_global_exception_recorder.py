@@ -31,8 +31,8 @@ async def catch_exceptions_middleware(request: Request, call_next):
         )
     except Exception as e:
         # 记录异常日志
-        traceback = traceback.format_exc()
-        logger.exception("An Exception occurred:\n{traceback}", user_id = "[Global Exception Recorder]", traceback = traceback)
+        traceback_info = traceback.format_exc()
+        logger.exception("An Exception occurred:\n{traceback}", user_id = "[Global Exception Recorder]", traceback = traceback_info)
         return JSONResponse(
             status_code=500,
             content={
