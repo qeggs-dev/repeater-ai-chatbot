@@ -140,6 +140,8 @@ class StreamingResponseGenerationLayer:
         # 记录token使用情况
         if delta_data.token_usage:
             self.response.token_usage = delta_data.token_usage
+        
+        file_logger = logger.bind(donot_send_console=True)
 
         # 记录模型推理响应内容
         if delta_data.reasoning_content:
@@ -148,7 +150,7 @@ class StreamingResponseGenerationLayer:
                     self._print_file.write('\n\n')
                 self._print_file.write(f"\033[7m{delta_data.reasoning_content}\033[0m")
                 self._print_file.flush()
-                logger.bind(donot_send_console=True).debug("Received Reasoning_Content chunk: {reasoning_content}", user_id = self.user_id, reasoning_content = repr(delta_data.reasoning_content))
+                file_logger.trace("Received Reasoning_Content chunk: {reasoning_content}", user_id = self.user_id, reasoning_content = repr(delta_data.reasoning_content))
             self.model_response_content_unit.reasoning_content += delta_data.reasoning_content
         
         # 记录模型响应内容
@@ -158,7 +160,7 @@ class StreamingResponseGenerationLayer:
                     self._print_file.write('\n\n')
                 self._print_file.write(delta_data.content)
                 self._print_file.flush()
-                logger.bind(donot_send_console=True).debug("Received Content chunk: {content}", user_id = self.user_id, content = repr(delta_data.content))
+                file_logger.trace("Received Content chunk: {content}", user_id = self.user_id, content = repr(delta_data.content))
             self.model_response_content_unit.content += delta_data.content
         
         # 记录模型工具调用内容
