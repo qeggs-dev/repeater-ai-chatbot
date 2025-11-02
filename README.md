@@ -159,7 +159,7 @@ PS: `run.py`启动器会在完成所有操作后启动主程序，而这只需�
 | `LOGGER.LOG_LEVEL` | 日志级别 | *选填* | `INFO` | str | |
 | `LOGGER.LOG_FILE_DIR` | 日志文件位置 | *选填* | `./log` | str | |
 | `LOGGER.LOG_FILE_PREFIX` | 日志文件前缀 | *选填* | `repeater_log_` | str | |
-| `LOGGER.MAX_LOG_FILE_SIZE` | 日志文件最大大小 | *选填* | `10 MB` | str | 日志大小 |
+| `LOGGER.ROTATION` | 日志文件轮换配置 | *选填* | `10 MB` | str | 日志大小、时间长度等 |
 | `LOGGER.LOG_RETENTION` | 日志文件保留时间 | *选填* | `14 days` | str | 时间 |
 | `README.FILE_PATH` | README文件位置 | *选填* | `./README.md` | str | |
 | `RENDER.DEFAULT_IMAGE_TIMEOUT` | 渲染图片的默认保留时间(图片生成后给予客户端的图片链接有效时间) | *选填* | 60 | float | 秒 |
