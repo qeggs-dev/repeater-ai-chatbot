@@ -153,7 +153,7 @@ class Core:
         )
 
         log_dir = configs.get_config("logger.log_file_dir", "./logs").get_value(Path)
-        rotation = configs.get_config("logger.rotation", "10MB").get_value(str)
+        rotation = configs.get_config("logger.rotation", "1 MB").get_value(str)
         log_retention = configs.get_config("logger.log_retention", "10 days").get_value(str)
         log_compression = configs.get_config("logger.compression", "zip").get_value(str)
         if not log_dir.exists():
