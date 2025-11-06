@@ -710,6 +710,7 @@ class SlovesStarter:
         self.print_return_code: bool = True
         self.print_runtime: bool = True
         self.automatic_exit: bool = False
+        self.allow_print: bool = False
 
         set_title(self.title)
 
@@ -920,6 +921,9 @@ class SlovesStarter:
         
         if exists_and_is_designated_type("automatic_exit", bool):
             self.automatic_exit = config["automatic_exit"]
+        
+        if exists_and_is_designated_type("allow_print", bool):
+            self.allow_print = config["allow_print"]
     # endregion
     
     # region > create configuration
@@ -956,6 +960,7 @@ class SlovesStarter:
             "print_return_code": self.print_return_code,
             "print_runtime": self.print_runtime,
             "automatic_exit": self.automatic_exit,
+            "allow_print": self.allow_print,
         }
         if output is None:
             return config
@@ -965,8 +970,7 @@ class SlovesStarter:
     # endregion
 
     # region > pause program
-    @classmethod
-    def pause_program(cls, code: ExitCode | int = ExitCode.SUCCESS, prompt: str | None = None, wait: bool = True):
+    def pause_program(self, code: ExitCode | int = ExitCode.SUCCESS, prompt: str | None = None, wait: bool = True):
         """
         Pause the program and wait for user input to continue.
 
@@ -974,26 +978,33 @@ class SlovesStarter:
         :param prompt: The prompt to display to the user.
         :raise SystemExit: If the user presses Ctrl+C and the code is not ExitCode.ONLY_PAUSE.
         """
-        if isinstance(code, ExitCode) and code == ExitCode.ONLY_PAUSE:
-            print(prompt or "Press Ctrl+C to continue.")
-        else:
-            print(prompt or f"Press Ctrl+C to Exit with code {code.value if isinstance(code, ExitCode) else code}{f'({code.name})' if isinstance(code, ExitCode) else ''}.")
+        if self.allow_print:
+            if isinstance(code, ExitCode) and code == ExitCode.ONLY_PAUSE:
+                print(prompt or "Press Ctrl+C to continue.")
+            else:
+                if isinstance(code, ExitCode):
+                    print(prompt or f"Press Ctrl+C to Exit with code {code.value}{f'({code.name})'}.")
+                else:
+                    print(prompt or f"Press Ctrl+C to Exit with code {code}.")
         if wait:
             try:
                 while True:
                     time.sleep(60)
             except KeyboardInterrupt:
-                cls._exit(code)
+                self._exit(code)
         else:
-            cls._exit(code)
+            self._exit(code)
     # endregion
 
     # region > exit
-    @staticmethod
-    def _exit(code: ExitCode | int | None = None) -> None:
+    def _exit(self, code: ExitCode | int | None = None) -> None:
         if isinstance(code, ExitCode) and code != ExitCode.ONLY_PAUSE:
+            if self.allow_print:
+                print(f"Exit with code {code.value}({code.name}).")
             exit(code.value)
         if isinstance(code, int):
+            if self.allow_print:
+                print(f"Exit with code {code}.")
             exit(code)
         else:
             return
@@ -1025,8 +1036,9 @@ class SlovesStarter:
         :return: The result of the command. (Return None when the user has not approved.)
         """
         cwd = absolute_path(cwd)
-        askfile.write(reason + "\n")
-        askfile.flush()
+        if self.allow_print:
+            askfile.write(reason + "\n")
+            askfile.flush()
         run = self.ask(
             id = "run_cmd",
             prompt = f"Running:\n{shlex.join(cmd)}\nwith cwd: \"{cwd}\"\nRun this command?",
@@ -1040,6 +1052,8 @@ class SlovesStarter:
                 askfile.flush()
                 return None
             try:
+                if self.allow_print:
+                    self.print_divider_line()
                 start = time.monotonic_ns()
                 result: subprocess.CompletedProcess[bytes] = subprocess.run(
                     cmd,
@@ -1047,15 +1061,21 @@ class SlovesStarter:
                     env = env,
                     capture_output = capture_output
                 )
+                if self.allow_print:
+                    self.print_divider_line()
                 if print_return_code:
                     askfile.write(f"Command returned with code {result.returncode}\n")
                     askfile.flush()
                 return result
             except FileNotFoundError as e:
+                if self.allow_print:
+                    self.print_divider_line()
                 askfile.write(f"Error: Command not found: {e}\n")
                 askfile.flush()
                 raise
             except Exception as e:
+                if self.allow_print:
+                    self.print_divider_line()
                 askfile.write(f"Error running command: {e}\n")
                 askfile.flush()
                 raise
@@ -1144,13 +1164,13 @@ class SlovesStarter:
                             [str(self.venv_bin_path / self.pip_name.value), "install", "-r", self.requirements_file.value],
                             reason="Installing requirements",
                             cwd=self.work_directory,
-                            print_return_code = self.print_return_code,
-                            print_runtime = self.print_runtime,
+                            print_return_code = self.print_return_code and not self.allow_print,
+                            print_runtime = self.print_runtime and not self.allow_print,
                         ) is None:
-                        print("Failed to install requirements.")
+                        print("Error: Failed to install requirements.")
                 
             else:
-                print("Failed to initialize virtual environment.")
+                print("Error: Failed to initialize virtual environment.")
     # endregion
     
     # region > Run the program
@@ -1169,8 +1189,8 @@ class SlovesStarter:
                 if file != self_path:
                     suspected_script_file.append(file)
             if len(suspected_script_file) == 0:
-                print("No Python script files found in the current directory.")
-                sys.exit(1)
+                print("Error: No Python script files found in the current directory.")
+                self.pause_program(ExitCode.SCRIPT_NOT_FOUND)
             find_file = FindFile(
                 self.work_directory,
                 "*.py",
@@ -1215,13 +1235,15 @@ class SlovesStarter:
 
         if self.argument:
             start.extend(self.argument)
-            print("Use argument:")
-            print(shlex.join(self.argument))
+            if self.allow_print:
+                print("Use argument:")
+                print(shlex.join(self.argument))
         else:
             if len(sys.argv) > 1:
                 argument = sys.argv[1:]
-                print("Use argument:")
-                print(shlex.join(argument))
+                if self.allow_print:
+                    print("Use argument:")
+                    print(shlex.join(argument))
                 start.extend(argument)
         return start
     # endregion
@@ -1251,13 +1273,16 @@ class SlovesStarter:
         """
         Main function
         """
-        center_print(self.console_title)
-        if is_venv():
+        if self.allow_print:
+            center_print(self.console_title)
+            self.print_divider_line()
+        if is_venv() and self.allow_print:
             print("Starter Run in Virtual Environment")
         set_title(self.title)
         if self.use_venv:
             self.init_venv()
-        print(f"Run With Python {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}")
+        if self.allow_print:
+            print(f"Run With Python {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}")
         return_code = ExitCode.SUCCESS
         first_run = True
         reselect = self.reselect
@@ -1265,25 +1290,22 @@ class SlovesStarter:
             try:
                 if reselect or first_run:
                     start = self.get_start_cmd()
-                self.print_divider_line()
                 set_title(self.process_title)
                 result = self.run_cmd(
                     start,
                     reason = "Running the program",
                     cwd = self.work_directory,
                     env = self.inject_environment_variables,
-                    print_return_code = self.print_return_code,
-                    print_runtime = self.print_runtime,
+                    print_return_code = self.print_return_code and self.allow_print,
+                    print_runtime = self.print_runtime and self.allow_print,
                     runtime_handler = self._print_runtime_handler
                 )
-                self.print_divider_line()
                 if result is not None:
                     if result.returncode != 0:
                         print("An error occurred while running the program.")
                         return_code = result.returncode
             except KeyboardInterrupt:
-                self.print_divider_line()
-                print("Program terminated by user.")
+                    print("Program terminated by user.")
             except Exception as e:
                 print(f"An error occurred while running the program.\nError: {e}")
             finally:
