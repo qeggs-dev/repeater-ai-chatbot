@@ -12,7 +12,7 @@ configs = ConfigLoader()
 async def markdown_to_image(
     markdown_text: str,
     output_path: str,
-    width: int = 800,
+    width: int = None,
     css: str | None = None,
     style: str = "light",
     preprocess_map_before: dict[str, str] | None = None,
@@ -47,7 +47,16 @@ async def markdown_to_image(
         css = await get_style(style)
     
     # 添加自适应宽度
-    css += f"\nbody {{ width: {width - 60}px; }}"
+    if width is not None:
+        css += f"\nbody {{ width: {max(width, 60) - 60}px; }}"
+    else:
+        width = max(
+            max(
+                len(line) for line in html_content.split('\n')
+            ),
+            60
+        )
+        css += f"\nbody {{ width: {width - 60}px; }}"
     
     full_html = f"""
     <!DOCTYPE html>
@@ -76,7 +85,7 @@ async def markdown_to_image(
     
     # 4. 转换并保存图片
     wkhtmltoimage_path = configs.get_config("render.markdown.wkhtmltoimage_path").get_value(Path)
-    config = imgkit.config(wkhtmltoimage=wkhtmltoimage_path)
+    config = imgkit.config(wkhtmltoimage = wkhtmltoimage_path)
     await asyncio.to_thread(
         imgkit.from_string,
         string = full_html,
