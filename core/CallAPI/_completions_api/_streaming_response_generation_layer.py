@@ -46,7 +46,6 @@ class StreamingResponseGenerationLayer:
             raise ValueError("context is required")
         
         # 请求流式连接
-        logger.info(f"Start Connecting to the API", user_id = self.user_id)
         self.request_start_time = TimeStamp()
         self.request_end_time = TimeStamp()
 
@@ -60,12 +59,10 @@ class StreamingResponseGenerationLayer:
         self.empty_chunk_count:int = 0
 
         # 开始处理流式响应
-        logger.info(f"Start Streaming", user_id = self.user_id)
         self._print_file.write("\n")
         self._print_file.flush()
         # 记录流开始时间
         # 记录上次chunk时间
-        self.last_chunk_time:TimeStamp = TimeStamp(0,0)
         self.created:TimeStamp = TimeStamp()
         # chunk耗时列表
         self.chunk_times:list[TimeStamp] = []
@@ -121,13 +118,8 @@ class StreamingResponseGenerationLayer:
             self.response.created = delta_data.created
         
         # 记录chunk时间
-        if self.last_chunk_time == TimeStamp(0,0):
-            self.last_chunk_time = TimeStamp()
-        else:
-            this_chunk_time = TimeStamp()
-            time_difference = this_chunk_time - self.last_chunk_time
-            self.chunk_times.append(time_difference)
-            self.last_chunk_time = this_chunk_time
+        this_chunk_time = TimeStamp()
+        self.chunk_times.append(this_chunk_time)
         
         # 记录会话ID
         if not self.response.id:
@@ -140,8 +132,6 @@ class StreamingResponseGenerationLayer:
         # 记录token使用情况
         if delta_data.token_usage:
             self.response.token_usage = delta_data.token_usage
-        
-        file_logger = logger.bind(donot_send_console=True)
 
         # 记录模型推理响应内容
         if delta_data.reasoning_content:
@@ -150,7 +140,7 @@ class StreamingResponseGenerationLayer:
                     self._print_file.write('\n\n')
                 self._print_file.write(f"\033[7m{delta_data.reasoning_content}\033[0m")
                 self._print_file.flush()
-                file_logger.trace("Received Reasoning_Content chunk: {reasoning_content}", user_id = self.user_id, reasoning_content = repr(delta_data.reasoning_content))
+                logger.trace("Received Reasoning_Content chunk: {reasoning_content}", user_id = self.user_id, reasoning_content = repr(delta_data.reasoning_content))
             self.model_response_content_unit.reasoning_content += delta_data.reasoning_content
         
         # 记录模型响应内容
@@ -160,7 +150,7 @@ class StreamingResponseGenerationLayer:
                     self._print_file.write('\n\n')
                 self._print_file.write(delta_data.content)
                 self._print_file.flush()
-                file_logger.trace("Received Content chunk: {content}", user_id = self.user_id, content = repr(delta_data.content))
+                logger.trace("Received Content chunk: {content}", user_id = self.user_id, content = repr(delta_data.content))
             self.model_response_content_unit.content += delta_data.content
         
         # 记录模型工具调用内容
