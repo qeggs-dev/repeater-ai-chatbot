@@ -1,36 +1,18 @@
 # ==== 标准库 ==== #
-import asyncio
-import inspect
-from typing import (
-    Any,
-    Awaitable,
-    AsyncIterator,
-    Callable,
-)
-import time
+import math
 from datetime import datetime, timezone
 from abc import ABC, abstractmethod
 
 # ==== 第三方库 ==== #
 import openai
 from loguru import logger
+import numpy as np
 
 # ==== 自定义库 ==== #
 from .._object import (
     Request,
     Response,
-    Top_Logprob,
-    Logprob,
-    Delta,
-    TokensCount
 )
-from ....Context import (
-    FunctionResponseUnit,
-    ContextObject,
-    ContentUnit,
-    ContextRole
-)
-from ....CallLog import CallLog
 from ....CoroutinePool import CoroutinePool
 from TimeParser import (
     format_deltatime,
@@ -45,7 +27,6 @@ from .._utils import (
     remove_keys_from_dicts,
     sum_string_lengths
 )
-import math
 
 class ClientBase(ABC):
     def __init__(self, max_concurrency: int = 1000):
@@ -67,9 +48,19 @@ class ClientBase(ABC):
     # region 预处理响应数据
     async def _preprocess_response(self, user_id: str, request: Request, response: Response):
         if response.context.last_content.reasoning_content:
-            logger.bind(donot_send_console=True).info("Reasoning_Content: \n{reasoning_content}", reasoning_content = request.context.last_content.reasoning_content, user_id = user_id)
+            logger.info(
+                "Reasoning_Content: \n{reasoning_content}",
+                reasoning_content = request.context.last_content.reasoning_content,
+                user_id = user_id,
+                donot_send_console = True
+            )
         if response.context.last_content.content:
-            logger.bind(donot_send_console=True).info("Content: \n{content}", content = request.context.last_content.content, user_id = user_id)
+            logger.info(
+                "Content: \n{content}",
+                content = request.context.last_content.content,
+                user_id = user_id,
+                donot_send_console = True
+            )
         
         await self._print_log(
             user_id = user_id,
@@ -101,6 +92,22 @@ class ClientBase(ABC):
             logger.error(f"Error: {e}", user_id = user_id)
             raise CallApiException(e)
     # endregion
+
+    @staticmethod
+    def _calculate_stability_cv(intervals: np.ndarray):
+        """使用变异系数衡量数据稳定度"""
+        if len(intervals) == 0:
+            return np.inf  # 无穷大表示不稳定
+        
+        std_dev = np.std(intervals)
+        mean_val = np.mean(intervals)
+        
+        if mean_val == 0:
+            return np.inf  # 防止除以零错误
+        
+        cv = std_dev / mean_val  # 变异系数
+        stability = 1 / (1 + cv)  # 转换为稳定度分数 (0-1之间，越大越稳定)
+        return float(stability)
 
     # region 打印日志
     async def _print_log(self, user_id: str, request: Request, response: Response):
@@ -145,21 +152,27 @@ class ClientBase(ABC):
         logger.info(f"Stream Processing Time: {stream_processing_time / 10**9:.2f}s({format_deltatime_ns(stream_processing_time, '%H:%M:%S.%f.%u.%n')})", user_id = user_id)
 
         created_utc_dt = datetime.fromtimestamp(response.created, tz=timezone.utc)
-        created_utc_str = created_utc_dt.strftime('%Y-%m-%d %H:%M:%S UTC')
+        created_utc_str = created_utc_dt.strftime('%Y-%m-%d %H:%M:%S (UTC)')
         logger.info(f"Created Time: {created_utc_str}", user_id = user_id)
 
         created_local_dt = datetime.fromtimestamp(response.created)
-        created_local_str = created_local_dt.strftime("%Y-%m-%d %H:%M:%S")
+        created_local_str = created_local_dt.strftime("%Y-%m-%d %H:%M:%S (Local)")
         logger.info(f"Created Time: {created_local_str}", user_id = user_id)
 
         if response.calling_log.total_chunk > 0:
-            chunk_nozero_times = [time.monotonic for time in response.calling_log.chunk_times if time.monotonic != 0]
-            chunk_average_spawn_time = sum(chunk_nozero_times) // len(chunk_nozero_times)
-            max_chunk_spawn_time = max(chunk_nozero_times)
-            min_chunk_spawn_time = min(chunk_nozero_times)
-            logger.info(f"Chunk Average Spawn Time: {chunk_average_spawn_time / 10**6:.2f}ms({format_deltatime_ns(chunk_average_spawn_time, '%H:%M:%S.%f.%u.%n')})", user_id = user_id)
+            timestamps = np.array([time.monotonic for time in response.calling_log.chunk_times], dtype=np.int64)
+            time_differences = np.diff(timestamps)
+            non_zero_time_differences = time_differences[time_differences != 0]
+            max_chunk_spawn_time = int(np.max(time_differences))
+            min_chunk_spawn_time = int(np.min(non_zero_time_differences))
+            ave_chunk_spawn_time = int(np.mean(time_differences))
+            chunk_generation_rate = 10**9 / ave_chunk_spawn_time
+            chunk_stability_cv = self._calculate_stability_cv(time_differences)
+            logger.info(f"Chunk Generation Rate: {chunk_generation_rate:.2f} Chunks/s", user_id = user_id)
+            logger.info(f"Chunk Average Spawn Time: {ave_chunk_spawn_time / 10**6:.2f}ms({format_deltatime_ns(ave_chunk_spawn_time, '%H:%M:%S.%f.%u.%n')})", user_id = user_id)
             logger.info(f"Chunk Max Spawn Time: {max_chunk_spawn_time / 10**6:.2f}ms({format_deltatime_ns(max_chunk_spawn_time, '%H:%M:%S.%f.%u.%n')})", user_id = user_id)
             logger.info(f"Chunk Min Spawn Time: {min_chunk_spawn_time / 10**6:.2f}ms({format_deltatime_ns(min_chunk_spawn_time, '%H:%M:%S.%f.%u.%n')})", user_id = user_id)
+            logger.info(f"Chunk time stability (Coefficient of Variation): {chunk_stability_cv}", user_id = user_id)
 
         logger.info("=========== Token Count ============", user_id = user_id)
         logger.info(f"Total Tokens: {response.token_usage.total_tokens}", user_id = user_id)
