@@ -1,3 +1,4 @@
+from __future__ import annotations
 from dataclasses import dataclass, field
 from typing import overload
 from enum import Enum
@@ -160,7 +161,7 @@ class ContextObject:
         ...
 
     @overload
-    def __getitem__(self, index: slice) -> "ContextObject":
+    def __getitem__(self, index: slice) -> ContextObject:
         ...
     
     def __getitem__(self, index: int | slice):
@@ -239,6 +240,62 @@ class ContextObject:
             context_list = self.prompt.as_content + context_list
         return context_list
     
+    def withdraw(self, length: int | None = None):
+        """
+        撤销指定长度的内容
+
+        :param length: 撤销长度
+        :return: 撤销的内容
+        """
+        if length > len(self):
+            raise ValueError("length is too long")
+        if length <= 0:
+            raise ValueError("length is too short")
+        
+        if length is None:
+            pop_items: list[ContentUnit] = []
+            
+            # 安全检查
+            if not self.context_list:
+                return pop_items
+            
+            # 第一步：pop直到找到助手消息
+            while (self.context_list and 
+                self.last_content.role != ContextRole.ASSISTANT):
+                pop_items.append(self.pop())
+            
+            # 第二步：pop助手消息
+            while (self.context_list and 
+                self.last_content.role == ContextRole.ASSISTANT):
+                pop_items.append(self.pop())
+            
+            # 第三步：pop相关联的用户消息
+            while (self.context_list and 
+                self.last_content.role != ContextRole.ASSISTANT):
+                pop_items.append(self.pop())
+            
+        else:
+            # 检查索引是否在上下文范围内
+            if 0 <= length < len(self.context_list):
+                pop_items = self.pop_last_n(length)
+            else:
+                raise IndexError("Index out of range")
+    
+    def insert(self, content_unit: ContentUnit, index: int | None = None):
+        """
+        插入内容单元到上下文列表中
+
+        :param content_unit: 内容单元
+        :param index: 插入位置，默认为None，表示插入到末尾
+        """
+        if index is None:
+            self.context_list.append(content_unit)
+        elif abs(index) <= len(self.context_list):
+            raise IndexError("Index out of range")
+        else:
+            self.context_list.insert(index, content_unit)
+        return self
+    
     @property
     def last_content(self) -> ContentUnit:
         """
@@ -268,13 +325,13 @@ class ContextObject:
         添加上下文内容
         """
         self.append(ContentUnit(
-            reasoning_content=reasoning_content,
-            content=content,
-            role=role,
-            role_name=role_name,
-            prefix=prefix,
-            funcResponse=funcResponse,
-            tool_call_id=tool_call_id,
+            reasoning_content = reasoning_content,
+            content = content,
+            role = role,
+            role_name = role_name,
+            prefix = prefix,
+            funcResponse = funcResponse,
+            tool_call_id = tool_call_id,
         ))
     
     def pop(self, index: int = -1) -> ContentUnit:
@@ -289,7 +346,7 @@ class ContextObject:
             raise IndexOutOfRangeError("index out of range")
         return self.context_list.pop(index)
     
-    def pop_last_n(self, n: int) -> "ContextObject":
+    def pop_last_n(self, n: int) -> ContextObject:
         """
         弹出最后n个上下文单元
 
@@ -366,8 +423,18 @@ class ContextObject:
                     self.pop_left_n(i)
                     break
     
+    def copy(self) -> ContextObject:
+        """
+        复制对象
+        :return: 复制后的对象
+        """
+        return ContextObject(
+            prompt = self.prompt,
+            context_list = self.context_list.copy(),
+        )
+    
     @classmethod
-    def from_context(cls, context: list[dict]) -> "ContextObject":
+    def from_context(cls, context: list[dict]) -> ContextObject:
         """
         从上下文列表构建对象
         
@@ -379,3 +446,4 @@ class ContextObject:
         for content in context:
             contextObj.context_list.append(ContentUnit().from_content(content))
         return contextObj
+        
