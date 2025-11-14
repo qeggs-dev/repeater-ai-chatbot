@@ -247,11 +247,6 @@ class ContextObject:
         :param length: 撤销长度
         :return: 撤销的内容
         """
-        if length > len(self):
-            raise ValueError("length is too long")
-        if length <= 0:
-            raise ValueError("length is too short")
-        
         if length is None:
             pop_items: list[ContentUnit] = []
             
@@ -274,12 +269,20 @@ class ContextObject:
                 self.last_content.role != ContextRole.ASSISTANT):
                 pop_items.append(self.pop())
             
-        else:
+            return pop_items
+        elif isinstance(length, int):
+            if length > len(self.context_list):
+                raise ValueError("length is too long")
+            if length <= 0:
+                raise ValueError("length is too short")
+            
             # 检查索引是否在上下文范围内
             if 0 <= length < len(self.context_list):
-                pop_items = self.pop_last_n(length)
+                return self.pop_last_n(length)
             else:
                 raise IndexError("Index out of range")
+        else:
+            raise TypeError("length must be int or None")
     
     def insert(self, content_unit: ContentUnit, index: int | None = None):
         """
