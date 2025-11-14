@@ -12,6 +12,7 @@ async def index_web():
     if index_web_file.exists() and index_web_file.is_file():
         return FileResponse(index_web_file)
     else:
+        # 该默认网页由AI生成
         return HTMLResponse(
             "<html>\n"
             "    <head>\n"
@@ -74,7 +75,7 @@ async def index_web():
             "                \n"
             "                return count;\n"
             "            }\n"
-            "\n"
+            "            \n"
             "            function createRandomTriangle() {\n"
             "                const container = document.getElementById('triangles-container');\n"
             "                const triangle = document.createElement('div');\n"
@@ -107,7 +108,7 @@ async def index_web():
             "                \n"
             "                container.appendChild(triangle);\n"
             "            }\n"
-            "\n"
+            "            \n"
             "            \n"
             "            function createTriangles() {\n"
             "                const count = calculateTriangleCount();\n"
@@ -121,7 +122,7 @@ async def index_web():
             "                    createRandomTriangle();\n"
             "                }\n"
             "            }\n"
-            "\n"
+            "            \n"
             "            \n"
             "            document.addEventListener('DOMContentLoaded', function() {\n"
             "                createTriangles();\n"
