@@ -49,6 +49,9 @@ from ._index_web import (
     index_web,
 )
 from ._static_api import (
-    favicon,
+    favicon_ico,
+    favicon_png,
+    favicon_svg,
+    robots,
     static,
 )
