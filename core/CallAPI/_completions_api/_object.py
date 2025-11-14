@@ -2,7 +2,7 @@ from dataclasses import dataclass, asdict, field
 from typing import Callable, Literal, Any
 
 from ...Context import ContextObject, CallingFunctionRequest
-from ...CallLog import CallLog, TimeStamp
+from ...RequestLog import RequestLog, TimeStamp
 import math
 
 @dataclass
@@ -116,7 +116,7 @@ class Response:
     finish_reason: Literal["stop", "length", "content_filter", "tool_calls", "insufficient_system_resource"] = "stop"
     system_fingerprint: str = ""
     logprobs: list[Logprob] | None = None
-    calling_log: CallLog = field(default_factory=CallLog)
+    calling_log: RequestLog = field(default_factory=RequestLog)
 
     @property
     def finish_reason_cause(self) -> str:

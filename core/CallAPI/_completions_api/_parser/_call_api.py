@@ -31,7 +31,7 @@ from ....Context import (
     ContentUnit,
     ContextRole
 )
-from ....CallLog import CallLog, TimeStamp
+from ....RequestLog import RequestLog, TimeStamp
 from ....CoroutinePool import CoroutinePool
 from TimeParser import (
     format_deltatime,
@@ -71,7 +71,7 @@ class CallAPI(CallNstreamAPIBase):
         # 创建模型响应对象
         model_response = Response()
         # 创建调用日志对象
-        model_response.calling_log = CallLog()
+        model_response.calling_log = RequestLog()
 
         # 创建OpenAI Client
         logger.info(f"Created OpenAI Client", user_id = user_id)

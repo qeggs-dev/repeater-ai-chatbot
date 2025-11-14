@@ -3,9 +3,9 @@ from typing import Any
 from ._TimeStamp_Obj import TimeStamp
 
 @dataclass
-class CallLogObject:
+class RequestLogObject:
     """
-    Class to represent a call log object.
+    Class to represent a request log object.
     """
     id: str = ""
     url: str = ""

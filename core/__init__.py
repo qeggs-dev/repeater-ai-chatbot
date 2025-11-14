@@ -4,5 +4,5 @@ from . import UserConfigManager
 from . import ApiInfo
 from . import DataManager
 from . import CallAPI
-from . import CallLog
+from . import RequestLog
 from . import Context

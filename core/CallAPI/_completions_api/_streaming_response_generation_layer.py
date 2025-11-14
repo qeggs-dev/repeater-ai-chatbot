@@ -1,9 +1,9 @@
 import sys
 from typing import AsyncGenerator, Self, TextIO
 from ._object import Request, Delta, Response
-from ...CallLog import CallLog
+from ...RequestLog import RequestLog
 from ...Context import ContentUnit, ContextRole, FunctionResponseUnit
-from ...CallLog import TimeStamp
+from ...RequestLog import TimeStamp
 from loguru import logger
 
 class StreamingResponseGenerationLayer:
@@ -28,7 +28,7 @@ class StreamingResponseGenerationLayer:
         # 创建响应对象
         self.response = Response()
         # 创建调用日志
-        self.response.calling_log = CallLog()
+        self.response.calling_log = RequestLog()
 
         # 设置用户ID
         self.user_id = user_id

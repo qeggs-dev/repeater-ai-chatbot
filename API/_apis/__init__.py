@@ -34,9 +34,9 @@ from ._config_api import (
 from ._userfile_api import (
     get_userdata_file,
 )
-from ._calllog_api import (
-    get_calllog,
-    stream_call_logs
+from ._request_log_api import (
+    get_request_log,
+    stream_request_log
 )
 from ._tempfiles_api import (
     get_render_file

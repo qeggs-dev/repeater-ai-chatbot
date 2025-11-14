@@ -33,7 +33,7 @@ from .ApiInfo import (
     ApiInfo,
     ApiGroup,
 )
-from . import CallLog
+from . import RequestLog
 from TextProcessors import (
     PromptVP,
     SafeFormatter,
@@ -119,9 +119,9 @@ class Core:
         self.namespace_locks = AsyncLockPool()
 
         # 初始化调用日志管理器
-        self.calllog = CallLog.CallLogManager(
-            configs.get_config('CallLog.Path', "./workspace/calllog").get_value(Path),
-            auto_save = configs.get_config('CallLog.Auto_Save', True).get_value(bool)
+        self.request_log = RequestLog.RequestLogManager(
+            configs.get_config('RequestLog.Path', "./workspace/request_log").get_value(Path),
+            auto_save = configs.get_config('RequestLog.Auto_Save', True).get_value(bool)
         )
 
         # 黑名单
@@ -140,8 +140,8 @@ class Core:
             退出时执行的任务
             """
             # 保存调用日志
-            if configs.get_config("CallLog.Auto_Save", True).get_value(bool):
-                self.calllog.save_call_log()
+            if configs.get_config("RequestLog.Auto_Save", True).get_value(bool):
+                self.request_log.save_request_log()
             logger.info("Exiting...")
         
         # 注册退出函数
@@ -483,7 +483,7 @@ class Core:
         """
         try:
             # 记录开始时间
-            task_start_time = CallLog.TimeStamp()
+            task_start_time = RequestLog.TimeStamp()
 
             # 获取用户锁对象
             lock = await self._get_namespace_lock(user_id)
@@ -600,7 +600,7 @@ class Core:
                 request.print_chunk = print_chunk
 
                 # 记录预处理结束时间
-                call_prepare_end_time = CallLog.TimeStamp()
+                call_prepare_end_time = RequestLog.TimeStamp()
 
                 # 输出 (为了自动填充输出内容)
                 output = Response()
@@ -692,8 +692,8 @@ class Core:
         response: CompletionsAPI.Response,
         user_input: Context.ContentUnit,
         context_loader:Context.ContextLoader,
-        task_start_time: CallLog.TimeStamp,
-        call_prepare_end_time: CallLog.TimeStamp,
+        task_start_time: RequestLog.TimeStamp,
+        call_prepare_end_time: RequestLog.TimeStamp,
         output: Response = Response(),
         save_context: bool = True,
         reference_context_id: str | None = None
@@ -725,10 +725,10 @@ class Core:
             logger.warning("Context not saved", user_id = user_id)
 
         # 记录任务结束时间
-        response.calling_log.task_end_time = CallLog.TimeStamp()
+        response.calling_log.task_end_time = RequestLog.TimeStamp()
 
         # 记录调用日志
-        await self.calllog.add_call_log(response.calling_log)
+        await self.request_log.add_request_log(response.calling_log)
 
         # 记录API调用成功
         logger.success(f"API call successful", user_id = user_id)
