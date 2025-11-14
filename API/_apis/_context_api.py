@@ -105,8 +105,8 @@ async def withdraw_context(user_id: str, length: int | None = Form(None, ge=0)):
     )
 
 class InjectContext(BaseModel):
-    user_context: str
-    assistant_context: str
+    user_content: str
+    assistant_content: str
 
 @app.post("/userdata/context/inject/{user_id}")
 async def inject_context(user_id: str, request: InjectContext):
@@ -119,17 +119,22 @@ async def inject_context(user_id: str, request: InjectContext):
     context.append(
         core.Context.ContentUnit(
             role = core.Context.ContextRole.USER,
-            content = request.user_context
+            content = request.user_content
         )
     )
     context.append(
         core.Context.ContentUnit(
             role = core.Context.ContextRole.ASSISTANT,
-            content = request.assistant_context,
+            content = request.assistant_content,
         )
     )
     await context_loader.save(user_id, context)
-
+    return JSONResponse(
+        {
+            "status": "success",
+            "context": context.context
+        }
+    )
 
 
 class RewriteContext(BaseModel):
