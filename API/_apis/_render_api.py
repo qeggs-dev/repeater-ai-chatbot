@@ -41,7 +41,7 @@ async def render(
     # 生成图片ID
     fuuid = uuid4()
     filename = f"{fuuid}.png"
-    render_output_image_dir = configs.get_config("render.output_image_dir", "./temp/render").get_value(Path)
+    render_output_image_dir = configs.get_config("render.output_image_dir", "./workspace/temp/render").get_value(Path)
 
     # 延迟删除函数
     async def _wait_delete(sleep_time: float, filename: str):
