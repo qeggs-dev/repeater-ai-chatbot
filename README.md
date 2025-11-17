@@ -344,26 +344,6 @@ PS: `原始昵称`到`模型看到的昵称`的映射关系，键可以是`昵�
 
 ---
 
-## 模型
-
-| 模型 | 描述 |
-| :---: | :---: |
-| `deepseek-chat` | Deepseek 聊天 |
-| `deepseek-reasoner` | Deepseek 推理 |
-| `deepseek-r1` | DeepSeek R1 模型 |
-| `deepseek-v3` | DeepSeek V3 模型 |
-| `kimi-k2` | Kimi K2 模型 |
-| `ernie-4.5-turbo` | Ernie 4.5 Turbo 模型 |
-| `ernie-x1.1` | Ernie X1.1 模型 |
-| `qwen3-235b-thinking` | Qwen3 235B Thinking 模型 |
-| `qwen3-next-thinking` | Qwen3 Next Thinking 模型 |
-| `qwen3-235b-instruct` | Qwen3 235B Instruct 模型 |
-
-PS: 模型由`config/api_info.json`定义
-使用`/userdata/config/set/default_model/str`带着模型ID设置你需要的模型。
-
----
-
 ## 变量表
 
 | 变量 | 描述 | 参数 |
