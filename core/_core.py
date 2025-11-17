@@ -53,7 +53,7 @@ from RegexChecker import RegexChecker
 # ==== 本模块代码 ==== #
 configs = ConfigLoader()
 
-__version__ = configs.get_config("Core.Version", "4.2.6.0").get_value(str)
+__version__ = configs.get_config("Core.Version", "4.2.6.1").get_value(str)
 
 @dataclass
 class Response:
@@ -381,7 +381,7 @@ class Core:
         :return: 上下文对象
         """
         if reference_context_id:
-            if reference_context_id.lower() == "[Random]":
+            if reference_context_id.lower() == "[random]":
                 reference_context_id = random.choice(
                     await self.context_manager.get_all_user_id()
                 )
@@ -390,6 +390,11 @@ class Core:
                     user_id = user_id,
                     reference_context_id = reference_context_id
                 )
+            logger.info(
+                "Use Reference Context ID: {reference_context_id}",
+                user_id = user_id,
+                reference_context_id = reference_context_id
+            )
             context = await context_loader.load(
                 user_id = reference_context_id,
                 message = message,
@@ -400,6 +405,11 @@ class Core:
                 prompt_vp = prompt_vp
             )
         else:
+            logger.info(
+                "Use Current Context ID: {reference_context_id}",
+                user_id = user_id,
+                reference_context_id = reference_context_id
+            )
             context = await context_loader.load(
                 user_id = user_id,
                 message = message,
