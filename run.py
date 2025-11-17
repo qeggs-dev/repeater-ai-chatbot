@@ -709,7 +709,7 @@ class SlovesStarter:
         self.print_return_code: bool = True
         self.print_runtime: bool = True
         self.automatic_exit: bool = False
-        self.allow_print: bool = False
+        self.allow_print: bool = True
 
         set_title(self.title)
 
