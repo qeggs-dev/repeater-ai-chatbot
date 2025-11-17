@@ -7,6 +7,7 @@ from typing import (
     Any,
 )
 import random
+import uuid
 from pathlib import Path
 from dataclasses import dataclass, asdict
 import traceback
@@ -42,27 +43,12 @@ from TimeParser import (
 from ConfigManager import ConfigLoader
 from RegexChecker import RegexChecker
 from .LoggerInit import logger_init
+from .CoreResponse import Response
 
 # ==== 本模块代码 ==== #
 configs = ConfigLoader()
 
 __version__ = configs.get_config("Core.Version", "4.2.6.3").get_value(str)
-
-@dataclass
-class Response:
-    reasoning_content: str = ""
-    content: str = ""
-    model_name: str = ""
-    model_type: str = ""
-    model_id: str = ""
-    create_time: int = 0
-    id: str = ""
-    finish_reason_cause: str = ""
-    status: int = 200
-
-    @property
-    def as_dict(self):
-        return asdict(self)
 
 class Core:
     # region > init
@@ -153,12 +139,6 @@ class Core:
         return await self.namespace_locks.get_lock(user_id)
     # endregion
     
-    # region > generate uuid4
-    def _Generate_UUID4(self) -> str:
-        import uuid
-        return str(uuid.uuid4())
-    # endregion
-    
     # region > get prompt_vp
     async def get_prompt_vp(
             self,
@@ -203,7 +183,7 @@ class Core:
             random = lambda min, max: random.randint(int(min), int(max)),
             randfloat = lambda min, max: random.uniform(float(min), float(max)),
             randchoice = lambda *args: random.choice(args),
-            generate_uuid = lambda **kw: self._Generate_UUID4()
+            generate_uuid = lambda **kw: uuid.uuid4(),
         )
     # endregion
     
