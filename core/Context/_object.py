@@ -252,24 +252,29 @@ class ContextObject:
             
             # 安全检查
             if not self.context_list:
-                return pop_items
+                return ContextObject()
+            try:
+                # 第一步：pop直到找到助手消息
+                while (self.context_list and 
+                    self.last_content.role != ContextRole.ASSISTANT):
+                    pop_items.append(self.context_list.pop())
+                
+                # 第二步：pop助手消息
+                while (self.context_list and 
+                    self.last_content.role == ContextRole.ASSISTANT):
+                    pop_items.append(self.context_list.pop())
+                
+                # 第三步：pop相关联的用户消息
+                while (self.context_list and 
+                    self.last_content.role != ContextRole.ASSISTANT):
+                    pop_items.append(self.context_list.pop())
+            except IndexError:
+                pass
             
-            # 第一步：pop直到找到助手消息
-            while (self.context_list and 
-                self.last_content.role != ContextRole.ASSISTANT):
-                pop_items.append(self.pop())
-            
-            # 第二步：pop助手消息
-            while (self.context_list and 
-                self.last_content.role == ContextRole.ASSISTANT):
-                pop_items.append(self.pop())
-            
-            # 第三步：pop相关联的用户消息
-            while (self.context_list and 
-                self.last_content.role != ContextRole.ASSISTANT):
-                pop_items.append(self.pop())
-            
-            return pop_items
+            return ContextObject(
+                prompt = None,
+                context_list = pop_items[::-1],
+            )
         elif isinstance(length, int):
             if length > len(self.context_list):
                 raise ValueError("length is too long")
@@ -362,7 +367,10 @@ class ContextObject:
         pop_list:list[ContentUnit] = []
         for _ in range(n):
             pop_list.append(self.pop())
-        return ContextObject(prompt=self.prompt, context_list=pop_list)
+        return ContextObject(
+            prompt = self.prompt,
+            context_list = pop_list
+        )
     
     def pop_left_n(self, n: int = 0) -> ContentUnit:
         """
