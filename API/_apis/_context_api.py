@@ -74,7 +74,7 @@ async def get_context_userlist():
     return JSONResponse(userid_list)
 
 @app.post("/userdata/context/withdraw/{user_id}")
-async def withdraw_context(user_id: str, length: int | None = Form(None, ge=0)):
+async def withdraw_context(user_id: str, context_pair_num: int = Form(1, gt=0)):
     """
     Endpoint for withdrawing context
 
@@ -88,19 +88,31 @@ async def withdraw_context(user_id: str, length: int | None = Form(None, ge=0)):
     # 从context_loader中加载用户ID为user_id的上下文
     context_loader = await chat.get_context_loader()
     context = await context_loader.get_context_object(user_id)
+    pop_items: list[core.Context.ContextObject] = []
     
     try:
-        pop_items = context.withdraw(length = length)
+        for _ in range(context_pair_num):
+            pop_items.append(
+                context.withdraw()
+            )
     except (ValueError, IndexError) as e:
         raise HTTPException(400, str(e)) from e
+    
+    pop_context = core.Context.ContextObject()
+    for item in pop_items[::-1]:
+        pop_context.context_list.extend(
+            item.context_list
+        )
     
     # 返回JSONResponse，新的上下文内容
     await context_loader.save(user_id, context)
     return JSONResponse(
         {
             "status": "success",
-            "deleted": len(pop_items),
-            "context": context.context
+            "deleted": len(pop_context),
+            "deleted_context": pop_context.context,
+            "delete_context_pair": len(pop_items),
+            "context": context.context,
         }
     )
 
