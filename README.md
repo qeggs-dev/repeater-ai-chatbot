@@ -382,7 +382,7 @@ PS: `原始昵称`到`模型看到的昵称`的映射关系，键可以是`昵�
 | `GET` | `/userdata/context/get/{user_id:str}` | | | 获取上下文 | `JSON列表` |
 | `GET` | `/userdata/context/length/{user_id:str}` | | | 获取上下文长度 | `JSON对象` |
 | `GET` | `/userdata/context/userlist` | | | 获取用户列表 | `JSON列表` |
-| `POST` | `/userdata/context/withdraw/{user_id:str}` | 表单 | `index(int)` | 撤回上下文 | `JSON对象` |
+| `POST` | `/userdata/context/withdraw/{user_id:str}` | 表单 | `context_pair_num(int)` | 撤回上下文(按照上下文对) | `JSON对象` |
 | `POST` | `/userdata/context/inject/{user_id:str}` | JSON请求体 | `user_content(str)`<br/>`assistant_content(str)` | 注入上下文 | `JSON对象` |
 | `POST` | `/userdata/context/rewrite/{user_id:str}` | 表单 | `index(int)`<br/>`content(str)`<br/>*`reasoning_content(str)`* | 重写上下文 | `JSON列表` |
 | `GET` | `/userdata/context/branchs/{user_id:str}` | | | 获取用户分支ID列表 | `JSON列表` |
@@ -397,7 +397,7 @@ PS: `原始昵称`到`模型看到的昵称`的映射关系，键可以是`昵�
 | `PUT` | `/userdata/prompt/change/{user_id:str}` | 表单 | `new_branch_id(str)` | 切换提示词 | `纯文本` |
 | `DELETE` | `/userdata/prompt/delete/{user_id:str}` | | | 删除提示词 | `纯文本` |
 | `GET` | `/userdata/config/get/{user_id:str}` | | | 获取配置 | `JSON对象` |
-| `PUT` | `/userdata/config/set/{user_id:str}/{value_type:str}` | 表单 | `config(str)` | 设置配置 | `JSON对象` |
+| `PUT` | `/userdata/config/set/{user_id:str}/{value_type:str}` | 表单 | `key(str)`<br/>`value(Any)` | 设置配置 | `JSON对象` |
 | `PUT` | `/userdata/config/delkey/{user_id:str}` | 表单 | `key(str)` | 删除配置 | `JSON对象` |
 | `GET` | `/userdata/config/userlist` | | | 获取用户列表 | `JSON列表` |
 | `GET` | `/userdata/config/branchs/{user_id:str}` | | | 获取用户分支ID列表 | `JSON列表` |
@@ -411,7 +411,7 @@ PS: `原始昵称`到`模型看到的昵称`的映射关系，键可以是`昵�
 | `GET` | `/file/render/{file_uuid:str}.png` | | | 获取图片渲染输出文件 | `PNG图片` |
 | `POST` | `/admin/reload/apiinfo` | 请求头 | `X-Admin-API-Key(str)` | 刷新API信息 | `JSON对象` |
 | `POST` | `/admin/regenerate/admin_key` | 请求头 | `X-Admin-API-Key(str)` | 重新生成管理密钥 | `JSON对象` |
-| `POST` | `/admin/configs/reload` | 请求头 | `X-Admin-API-Key(str)` | 重新加载配置 (警告：某些模块可能缓存配置结果，这可能导致模块之间的配置差异！) | `JSON对象` |
+| `POST` | `/admin/configs/reload` | 请求头 | `X-Admin-API-Key(str)` | 重新加载配置 (警告：某些模块会缓存配置结果，这可能导致模块之间的配置差异！) | `JSON对象` |
 | `POST` | `/admin/configs/{name:str}/seek/{index:int}` | 请求头 | `X-Admin-API-Key(str)` | 移动指针在指定配置栈中的位置 | `JSON对象` |
 | `POST` | `/admin/regenerate/admin_key` | 请求头 | `X-Admin-API-Key(str)` | 重新生成管理密钥 | `JSON对象` |
 
