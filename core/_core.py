@@ -9,7 +9,6 @@ from typing import (
 import random
 import uuid
 from pathlib import Path
-from dataclasses import dataclass, asdict
 import traceback
 
 # ==== 第三方库 ==== #
@@ -42,19 +41,24 @@ from TimeParser import (
 )
 from ConfigManager import ConfigLoader
 from RegexChecker import RegexChecker
-from .LoggerInit import logger_init
+from .LoggerInit import (
+    logger_init,
+    ConfigLoader as LoggerConfigLoader
+)
 from .CoreResponse import Response
 
 # ==== 本模块代码 ==== #
 configs = ConfigLoader()
 
-__version__ = configs.get_config("Core.Version", "4.2.6.3").get_value(str)
+__version__ = configs.get_config("Core.Version", "4.2.6.4").get_value(str)
 
 class Core:
     # region > init
     def __init__(self, max_concurrency: int | None = None):
         # 初始化日志
-        logger_init()
+        logger_init(
+            LoggerConfigLoader.load_config()
+        )
 
         # 全局锁(用于获取会话锁)
         self.lock = asyncio.Lock()
