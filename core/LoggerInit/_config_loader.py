@@ -17,6 +17,6 @@ class ConfigLoader:
             log_retention = cls.configs.get_config("logger.log_retention", "10 days").get_value(str),
             log_compression = cls.configs.get_config("logger.compression", "zip").get_value(str),
             log_prefix = cls.configs.get_config("logger.log_file_prefix", "repeater_log_").get_value(str),
-            log_suffix = cls.configs.get_config("logger.log_file_suffix", "").get_value(str),
+            log_suffix = cls.configs.get_config("logger.log_file_suffix", ".log").get_value(str),
         )
         return cls.last_loaded_config
