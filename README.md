@@ -284,7 +284,7 @@ JSON同理，配置管理器同时支持JSON和YAML两种格式。
 ]
 ```
 YAML同理
-PS: 目前仅支持LLM Chat的任务类型(其他类型会忽略)
+PS: 目前仅支持LLM Chat的任务类型(系统不会检查该字段，但APIINFO模块会收集相关组)
 models中定义该模型的url时会覆盖上层的url
 支持任意OpenAI兼容接口的模型
 
