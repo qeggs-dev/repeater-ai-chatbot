@@ -3,7 +3,7 @@ from __future__ import annotations
 # Python Simple Launcher For Virtual Environment Scripts
 # Sloves Starter !!!
 
-__version__ = "0.4.4"
+__version__ = "0.4.5"
 
 # region Imports
 import re
@@ -14,6 +14,7 @@ import json
 import shlex
 import atexit
 import platform
+import traceback
 import subprocess
 from enum import Enum
 from pathlib import Path
@@ -398,6 +399,9 @@ class PipInstaller:
 
 # region  Ask
 # region > BaseAsk
+
+# The purpose of this base class is to have a uniform base class for all four ASK classes
+# To facilitate follow-up to do type judgments
 class BaseAsk(ABC):
     """
     Interface for asking questions
@@ -702,7 +706,7 @@ class SlovesStarter:
         self.restart:bool = False
         self.reselect: bool = False
         self.run_cmd_need_to_ask: bool = True
-        self.run_cmd_ask_default_values: dict[str, bool] = {}
+        self.ask_default_values: dict[str, bool] = {}
         self.divider_line_char: str = "="
         self.inject_environment_variables: dict[str, str] = os.environ.copy()
         self.text_encoding:str = "utf-8"
@@ -897,9 +901,9 @@ class SlovesStarter:
         if exists_and_is_designated_type("run_cmd_need_to_ask", bool):
             self.run_cmd_need_to_ask = config["run_cmd_need_to_ask"]
         
-        if exists_and_is_designated_type("run_cmd_ask_default_values", dict):
-            if check_all_dict_types(config["run_cmd_ask_default_values"], str, bool):
-                self.run_cmd_ask_default_values = config["run_cmd_ask_default_values"]
+        if exists_and_is_designated_type("ask_default_values", dict):
+            if check_all_dict_types(config["ask_default_values"], str, bool):
+                self.ask_default_values = config["ask_default_values"]
         
         if exists_and_is_designated_type("divider_line_char", str):
             if len(config["divider_line_char"]) == 1:
@@ -952,7 +956,7 @@ class SlovesStarter:
             "restart": self.restart,
             "reselect": self.reselect,
             "run_cmd_need_to_ask": self.run_cmd_need_to_ask,
-            "run_cmd_ask_default_values": self.run_cmd_ask_default_values,
+            "ask_default_values": self.ask_default_values,
             "divider_line_char": self.divider_line_char,
             "inject_environment_variables": self.inject_environment_variables,
             "text_encoding": self.text_encoding,
@@ -1039,7 +1043,7 @@ class SlovesStarter:
             askfile.write(reason + "\n")
             askfile.flush()
         run = self.ask(
-            id = "run_cmd",
+            id = "Run Cmd",
             prompt = f"Running:\n{shlex.join(cmd)}\nwith cwd: \"{cwd}\"\nRun this command?",
             default = default,
             askfile = askfile
@@ -1115,12 +1119,12 @@ class SlovesStarter:
             askfile.flush()
         
         if self.run_cmd_need_to_ask:
-            if id in self.run_cmd_ask_default_values:
+            if id in self.ask_default_values:
                 automatic_skip_prompt_print()
-                return self.run_cmd_ask_default_values[id]
-            elif prompt in self.run_cmd_ask_default_values:
+                return self.ask_default_values[id]
+            elif prompt in self.ask_default_values:
                 automatic_skip_prompt_print()
-                return self.run_cmd_ask_default_values[prompt]
+                return self.ask_default_values[prompt]
             else:
                 return Ask(prompt, default=default, file=askfile).ask()
         else:
@@ -1319,14 +1323,20 @@ class SlovesStarter:
 
 # region Start
 if __name__ == "__main__":
+    # This is supposed to be read from the inside
+    # However, it is possible to have undefined variables here
+    # So we've chosen to use the method of external variable + internal value override
+    text_encoding = "utf-8"
     try:
         starter = SlovesStarter()
+        text_coding = starter.text_encoding
         starter.main()
     except KeyboardInterrupt:
         print("Program terminated by user.")
         exit(ExitCode.USER_TERMINATED)
     except Exception as e:
-        import traceback
+        with open("Traceback.txt", "w", encoding=text_encoding) as f:
+            f.write(traceback.format_exc())
         traceback.print_exc()
         SlovesStarter.pause_program(ExitCode.UNKNOWN_ERROR)
 # endregion
