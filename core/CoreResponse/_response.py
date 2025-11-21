@@ -6,7 +6,7 @@ class Response:
     content: str = ""
     model_name: str = ""
     model_type: str = ""
-    model_id: str = ""
+    model_uid: str = ""
     create_time: int = 0
     id: str = ""
     finish_reason_cause: str = ""
