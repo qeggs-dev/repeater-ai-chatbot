@@ -192,40 +192,40 @@ JSON同理，配置管理器同时支持JSON和YAML两种格式。
 ```json
 [
     {
-        "Name": "Deepseek",
-        "ApiKeyEnv": "DEEPSEEK_API_KEY",
-        "URL": "https://api.deepseek.com",
+        "name": "Deepseek",
+        "api_key_env": "DEEPSEEK_API_KEY",
+        "url": "https://api.deepseek.com",
         "models": [
             {
-                "Name": "Deepseek Think Model",
-                "Id": "deepseek-reasoner",
-                "Uid": "deepseek-reasoner",
-                "TaskType": "LLM Chat"
+                "name": "Deepseek Think Model",
+                "id": "deepseek-reasoner",
+                "uid": "deepseek-reasoner",
+                "type": "chat"
             },
             {
-                "Name": "Deepseek Chat Model",
-                "Id": "deepseek-chat",
-                "Uid": "deepseek-chat",
-                "TaskType": "LLM Chat"
+                "name": "Deepseek Chat Model",
+                "id": "deepseek-chat",
+                "uid": "deepseek-chat",
+                "type": "chat"
             }
         ]
     },
     {
-        "Name": "Open AI",
-        "ApiKeyEnv": "OPENAI_API_KEY",
-        "URL": "https://api.openai.com/v1",
+        "name": "Open AI",
+        "api_key_env": "OPENAI_API_KEY",
+        "url": "https://api.openai.com/v1",
         "models": [
             {
-                "Name": "GPT-3.5 Turbo",
-                "Id": "gpt-3.5-turbo",
-                "Uid": "gpt-3.5-turbo",
-                "TaskType": "LLM Chat"
+                "name": "GPT-3.5 Turbo",
+                "id": "gpt-3.5-turbo",
+                "uid": "gpt-3.5-turbo",
+                "type": "chat"
             },
             {
-                "Name": "GPT-4",
-                "Id": "gpt-4",
-                "Uid": "gpt-4",
-                "TaskType": "LLM Chat"
+                "name": "GPT-4",
+                "id": "gpt-4",
+                "uid": "gpt-4",
+                "type": "chat"
             }
         ]
     }
