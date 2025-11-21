@@ -89,6 +89,7 @@ class Request:
     frequency_penalty: float = 0.0
     max_tokens: int = 0
     max_completion_tokens: int = 0
+    timeout: float = 600.0
     stream: bool = False
     stop: list[str] | None = None
     context: ContextObject | None = None

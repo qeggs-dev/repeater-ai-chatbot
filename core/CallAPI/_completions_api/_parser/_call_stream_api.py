@@ -6,7 +6,7 @@ from typing import (
 # ==== 第三方库 ==== #
 import openai
 from openai.types.chat import ChatCompletion
-from environs import Env
+from openai import NOT_GIVEN
 from loguru import logger
 
 # ==== 自定义库 ==== #
@@ -34,7 +34,11 @@ class StreamAPI(CallStreamAPIBase):
         try:
             # 创建OpenAI Client
             logger.info(f"Created OpenAI Client", user_id = user_id)
-            client = openai.AsyncOpenAI(base_url=request.url, api_key=request.key)
+            client = openai.AsyncOpenAI(
+                base_url = request.url,
+                api_key = request.key,
+                timeout = request.timeout,
+            )
 
             # 如果context为空，则抛出异常
             if not request.context:
@@ -52,7 +56,10 @@ class StreamAPI(CallStreamAPIBase):
                 max_completion_tokens=request.max_completion_tokens,
                 stop = request.stop,
                 stream = True,
-                messages = remove_keys_from_dicts(request.context.full_context, {"reasoning_content"}) if not request.context.last_content.prefix else request.context.full_context,
+                messages = remove_keys_from_dicts(
+                    request.context.full_context,
+                    {"reasoning_content"}
+                ) if not request.context.last_content.prefix else request.context.full_context,
                 tools = request.function_calling.tools if request.function_calling else None,
             )
             logger.info("Start Streaming", user_id = user_id)

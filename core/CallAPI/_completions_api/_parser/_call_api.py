@@ -1,19 +1,10 @@
 # ==== 标准库 ==== #
-import sys
-import asyncio
-import inspect
-from typing import (
-    Any,
-    Awaitable,
-    Callable,
-    TextIO,
-)
-from datetime import datetime, timezone
+...
 
 # ==== 第三方库 ==== #
 import openai
 from openai.types.chat import ChatCompletion
-from environs import Env
+from openai import NOT_GIVEN
 from loguru import logger
 
 # ==== 自定义库 ==== #
@@ -22,24 +13,16 @@ from .._object import (
     Response,
     Top_Logprob,
     Logprob,
-    Delta,
     TokensCount
 )
 from ....Context import (
     FunctionResponseUnit,
-    ContextObject,
     ContentUnit,
     ContextRole
 )
 from ....RequestLog import RequestLog, TimeStamp
-from ....CoroutinePool import CoroutinePool
-from TimeParser import (
-    format_deltatime,
-    format_deltatime_ns
-)
 from .._utils import (
     remove_keys_from_dicts,
-    sum_string_lengths
 )
 from ._call_api_base import CallNstreamAPIBase
 from .._exceptions import *
@@ -75,7 +58,11 @@ class CallAPI(CallNstreamAPIBase):
 
         # 创建OpenAI Client
         logger.info(f"Created OpenAI Client", user_id = user_id)
-        client = openai.AsyncOpenAI(base_url=request.url, api_key=request.key)
+        client = openai.AsyncOpenAI(
+            base_url = request.url,
+            api_key = request.key,
+            timeout = request.timeout,
+        )
 
         # 写入调用日志基础数据
         model_response.calling_log.url = request.url
@@ -101,7 +88,10 @@ class CallAPI(CallNstreamAPIBase):
             max_completion_tokens=request.max_completion_tokens,
             stop = request.stop,
             stream = False,
-            messages = remove_keys_from_dicts(request.context.full_context, {"reasoning_content"}) if not request.context.last_content.prefix else request.context.full_context,
+            messages = remove_keys_from_dicts(
+                request.context.full_context,
+                {"reasoning_content"}
+            ) if not request.context.last_content.prefix else request.context.full_context,
             tools = request.function_calling.tools if request.function_calling else None,
         )
         request_end_time = TimeStamp()
