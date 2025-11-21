@@ -50,7 +50,7 @@ from .CoreResponse import Response
 # ==== 本模块代码 ==== #
 configs = ConfigLoader()
 
-__version__ = configs.get_config("Core.Version", "4.2.6.4").get_value(str)
+__version__ = configs.get_config("Core.Version", "4.2.6.5").get_value(str)
 
 class Core:
     # region > init
@@ -466,41 +466,87 @@ class Core:
                 request.context = context
                 
                 # 获取API信息
-                apilist = self.apiinfo.find_uid(model_uid = model_uid)
+                apilist = self.apiinfo.find(model_uid = model_uid)
                 # 取第一个API
                 if len(apilist) == 0:
-                    logger.error(f"API not found: {model_uid}")
+                    logger.error(
+                        "API not found: {model_uid}",
+                        user_id = user_id,
+                        model_uid = model_uid
+                    )
                     output = Response(
                         content = f"API not found: {model_uid}",
                         status = 404
                     )
                     return output
+                elif len(apilist) > 1:
+                    logger.warning(
+                        "Multiple API found: {length}, using the first one",
+                        user_id = user_id,
+                        length = len(apilist)
+                    )
                 api = apilist[0]
                 
                 # 设置请求对象的API信息
                 request.url = api.url
-                request.model = api.model_id
+                request.model = api.id
                 request.key = api.api_key
-                logger.info(f"API URL: {api.url}", user_id = user_id)
-                logger.info(f"API Model: {api.model_name}", user_id = user_id)
+                logger.info(
+                    "API URL: {url}",
+                    user_id = user_id,
+                    url = api.url
+                )
+                logger.info(
+                    "API Model: {parent}.{model_name}",
+                    user_id = user_id,
+                    parent = api.parent,
+                    model_name = api.name
+                )
 
                 # 打印上下文信息
                 if user_input.content:
-                    logger.info("Message:\n{message}", message = user_input.content, user_id = user_id)
+                    logger.info(
+                        "Message:\n{message}",
+                        message = user_input.content,
+                        user_id = user_id
+                    )
                 else:
-                    logger.warning("No message to send", user_id = user_id)
+                    logger.warning(
+                        "No message to send",
+                        user_id = user_id
+                    )
 
                 # 如果有设置用户信息，则打印日志
                 if user_info.username:
-                    logger.info(f"User Name: {user_info.username}", user_id = user_id)
+                    logger.info(
+                        "User Name: {username}",
+                        user_id = user_id,
+                        username = user_info.username
+                    )
                 if user_info.nickname:
-                    logger.info(f"User Nickname: {user_info.nickname}", user_id = user_id)
+                    logger.info(
+                        "User Nickname: {nickname}",
+                        user_id = user_id,
+                        nickname = user_info.nickname
+                    )
                 if user_info.gender:
-                    logger.info(f"User Gender: {user_info.gender}", user_id = user_id)
+                    logger.info(
+                        "User Gender: {gender}",
+                        user_id = user_id,
+                        gender = user_info.gender
+                    )
                 if user_info.age:
-                    logger.info(f"User Age: {user_info.age}", user_id = user_id)
+                    logger.info(
+                        "User Age: {age}",
+                        user_id = user_id,
+                        age = user_info.age
+                    )
                 if role_name:
-                    logger.info(f"Role Name: {role_name}", user_id = user_id)
+                    logger.info(
+                        "Role Name: {role_name}",
+                        user_id = user_id,
+                        role_name = role_name
+                    )
 
                 # 设置请求对象的参数信息
                 request.user_name = user_info.nickname
@@ -519,9 +565,9 @@ class Core:
 
                 # 输出 (为了自动填充输出内容)
                 output = Response()
-                output.model_name = api.group_name
-                output.model_type = api.model_uid
-                output.model_id = api.model_id
+                output.model_name = api.parent
+                output.model_type = api.type.value
+                output.model_uid = api.uid
 
                 # region >> 提交请求
                 try:
