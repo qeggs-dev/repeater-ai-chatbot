@@ -315,16 +315,18 @@ PS: 首行必须是`[REGEX PARALLEL FILE]`或`[REGEX SERIES FILE]`，表示该�
 | `zodiac` | Bot星座 | 无 |
 | `time` | 当前时间 | 无 |
 | `age` | Bot年龄 | 无 |
-| `random` | 随机数 | 随机数范围 |
-| `randfloat` | 随机浮点数 | 随机数范围 |
-| `randchoice` | 随机选择 | 项目内容 |
+| `random` | 随机数 | 随机数下限，随机数上下限 |
+| `randfloat` | 随机浮点数 | 随机数下限，随机数上下限 |
+| `randchoice` | 随机选择 | 抽取内容 |
 | `generate_uuid` | 生成UUID | 无 |
+| `copytext` | 重复文本 | 重复文本， 重复次数, 间隔符 |
 
 变量传参方式：
 使用空格分割
 ```Plaintext
 {random 1 10}
 {randchoice a b c d e}
+{copytext a 5 " "}
 ```
 
 ---
