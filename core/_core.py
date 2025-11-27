@@ -15,6 +15,7 @@ import traceback
 from loguru import logger
 import aiofiles
 import orjson
+import numpy as np
 
 # ==== 自定义库 ==== #
 from .CallAPI import (
@@ -50,7 +51,7 @@ from .CoreResponse import Response
 # ==== 本模块代码 ==== #
 configs = ConfigLoader()
 
-__version__ = configs.get_config("Core.Version", "4.2.6.6").get_value(str)
+__version__ = configs.get_config("Core.Version", "4.2.7.0").get_value(str)
 
 class Core:
     # region > init
@@ -155,8 +156,8 @@ class Core:
         获取指定用户的PromptVP实例
 
         :param user_id: 用户ID
-        :param user_name: 用户名
         :param model_uid: 模型UID
+        :param user_info: 用户信息
         :param config: 用户配置
         :return: PromptVP实例
         """
@@ -173,7 +174,7 @@ class Core:
                 bot_birthday_day,
                 name=bot_name
             ),
-            model_uid = model_uid if model_uid else config.get("model_type"),
+            model_uid = model_uid if model_uid else config.get("model_uid"),
             botname = bot_name,
             username = user_info.username or "None",
             nickname = user_info.nickname or "None",
@@ -188,7 +189,8 @@ class Core:
             randfloat = lambda min, max: random.uniform(float(min), float(max)),
             randchoice = lambda *args: random.choice(args),
             generate_uuid = lambda **kw: uuid.uuid4(),
-            copytext = lambda text, number, spacers: str(spacers).join([str(text)] * int(number)),
+            copytext = lambda text, number, spacers = "": str(spacers).join([str(text)] * int(number)),
+            random_matrix = lambda rows, cols: np.random.rand(int(rows), int(cols)),
         )
     # endregion
     
@@ -233,7 +235,6 @@ class Core:
         加载用户配置
 
         :param user_id: 用户ID
-        :param default: 默认配置
         :return: 用户配置
         """
         config = await self.user_config_manager.load(user_id=user_id)
@@ -241,16 +242,9 @@ class Core:
     # endregion
 
     # region > get context
-    async def get_context_loader(
-            self,
-        ) -> Context.ContextLoader:
+    async def get_context_loader(self) -> Context.ContextLoader:
         """
         加载上下文
-
-        :param user_id: 用户ID
-        :param user_name: 用户名
-        :param model_type: 模型类型
-        :param user_config: 用户配置
         :return: 上下文加载器
         """
         context_loader = Context.ContextLoader(
@@ -285,6 +279,7 @@ class Core:
         :param load_prompt: 是否加载提示
         :param continue_completion: 是否继续完成
         :param reference_context_id: 引用上下文ID
+        :param prompt_vp: PromptVP模板解析器
         :return: 上下文对象
         """
         if reference_context_id:
@@ -388,7 +383,7 @@ class Core:
         :param user_name: 用户名
         :param role: 角色
         :param role_name: 角色名
-        :param model_type: 模型类型
+        :param model_uid: 模型UID
         :param load_prompt: 是否加载提示
         :param print_chunk: 是否打印片段
         :param save_context: 是否保存上下文
