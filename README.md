@@ -322,6 +322,8 @@ PS: 首行必须是`[REGEX PARALLEL FILE]`或`[REGEX SERIES FILE]`，表示该�
 | `randchoice` | 随机选择 | 抽取内容 |
 | `generate_uuid` | 生成UUID | 无 |
 | `copytext` | 重复文本 | 重复文本， 重复次数, 间隔符 |
+| `text_matrix` | 文本矩阵 | 重复文本，列数，行数，间隔符，换行符 |
+| `random_matrix` | 0~1随机矩阵 | 矩阵行数，矩阵列数 |
 
 ### 变量传参方式
 
@@ -330,6 +332,7 @@ PS: 首行必须是`[REGEX PARALLEL FILE]`或`[REGEX SERIES FILE]`，表示该�
 {random 1 10}
 {randchoice a b c d e}
 {copytext a 5 " "}
+{text_matrix a 5 5 " " "<esc:"\n">"}
 ```
 
 ### 转义序列
@@ -351,6 +354,8 @@ PS: 首行必须是`[REGEX PARALLEL FILE]`或`[REGEX SERIES FILE]`，表示该�
 <esc:"\oOOO">8进制字符
 <esc:"\dDDD">10进制字符
 ```
+PS: 转义必须保证转义处理器一字不漏，否则会以普通文本输出
+引号必须存在，它和其他部分共同组成转义序列的边界
 
 ---
 
