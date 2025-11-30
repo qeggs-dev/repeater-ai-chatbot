@@ -565,6 +565,8 @@ class Core:
                 output.model_name = api.parent
                 output.model_type = api.type.value
                 output.model_uid = api.uid
+                output.user_raw_input = message
+                output.user_input = user_input.content
 
                 # region >> 提交请求
                 try:
