@@ -28,10 +28,12 @@ class ContentUnit:
     tool_call_id: str = ""
 
     def __len__(self):
+        length = 0
         if self.reasoning_content:
-            return len(self.reasoning_content)
+            length += len(self.reasoning_content)
         else:
-            return len(self.content)
+            length += len(self.content)
+        return length
     
     def update_from_content(self, content: dict) -> None:
         """
@@ -233,6 +235,11 @@ class ContextObject:
     
     @property
     def context_item_length(self):
+        """
+        获取上下文列表的长度
+        
+        :return: 上下文列表的长度
+        """
         return len(self.context_list)
 
     @property
@@ -242,7 +249,15 @@ class ContextObject:
         
         :return: 上下文总长度
         """
-        return sum([len(content) for content in self.context_list]) + (len(self.prompt) if self.prompt else 0)
+        return (
+            sum(
+                [len(content) for content in self.context_list]
+            )
+            +
+            (
+                len(self.prompt) if self.prompt else 0
+            )
+        )
     
     @property
     def average_length(self) -> float:
