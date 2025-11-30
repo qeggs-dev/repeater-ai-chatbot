@@ -37,7 +37,7 @@ class ContentUnit:
         """
         更新上下文内容
         :param content: 上下文内容
-        :return:
+        :return: None
         """
         other = self.from_content(content)
         self.reasoning_content = other.reasoning_content
@@ -49,10 +49,12 @@ class ContentUnit:
         self.tool_call_id = other.tool_call_id
     
     # 导出为列表
-    @property
-    def as_content(self) -> list[dict]:
+    def to_content(self, remove_resoning_prompt: bool = False) -> list[dict]:
         """
         OpenAI Message兼容格式列表单元
+
+        :param remove_reasoner_prompt: 是否移除reasoner提示
+        :return: OpenAI Message兼容格式列表单元
         """
         content_list = []
         if self.content:
@@ -74,7 +76,7 @@ class ContentUnit:
                     assistant_content["name"] = self.role_name
                 if self.prefix:
                     assistant_content["prefix"] = self.prefix
-                if self.reasoning_content:
+                if not remove_resoning_prompt and self.reasoning_content:
                     assistant_content["reasoning_content"] = self.reasoning_content
                 if self.funcResponse:
                     assistant_content["tool_calls"] = self.funcResponse.as_content
@@ -89,6 +91,15 @@ class ContentUnit:
                 content_list.append(tool_content)
         
         return content_list
+    
+    @property
+    def as_content(self):
+        """
+        获取Context的OpenAI Message兼容格式列表单元
+
+        :return: OpenAI Message兼容格式列表单元
+        """
+        self.to_content(False)
     
     # 从列表中加载内容
     @classmethod
@@ -165,6 +176,12 @@ class ContextObject:
         ...
     
     def __getitem__(self, index: int | slice):
+        """
+        获取上下文列表中的指定项
+        
+        :param index: 索引
+        :return: 指定项
+        """
         if isinstance(index, int):
             return self.context_list[index]
         elif isinstance(index, slice):
@@ -173,12 +190,29 @@ class ContextObject:
             raise TypeError("index must be int or slice")
     
     def __setitem__(self, index: int, value: ContentUnit):
+        """
+        设置上下文列表中的指定项
+        
+        :param index: 索引
+        :param value: 值
+        :return: 构建的对象
+        """
         self.context_list[index] = value
 
     def __len__(self):
+        """
+        获取上下文列表的长度
+
+        :return: 上下文列表的长度
+        """
         return self.context_item_length
     
     def __iter__(self):
+        """
+        迭代上下文列表
+        
+        :return: 上下文列表的迭代器
+        """
         # 先 yield 提示词
         yield self.prompt
         # 再正常遍历 context_list
@@ -219,15 +253,34 @@ class ContextObject:
         """
         return self.total_length / len(self.context_list)
 
+    def to_context(self, remove_resoning_prompt: bool = False) -> list[dict]:
+        """
+        获取上下文
+
+        :param remove_reasoner_prompt: 是否移除reasoner提示词
+        """
+        context_list = []
+        if self.context_list:
+            for content in self.context_list:
+                context_list += content.to_content(remove_resoning_prompt)
+        return context_list
+    
     @property
     def context(self) -> list[dict]:
         """
         获取上下文
         """
-        context_list = []
-        if self.context_list:
-            for content in self.context_list:
-                context_list += content.as_content
+        return self.to_context(False)
+    
+    def to_full_context(self, remove_resoning_prompt: bool = False) -> list[dict]:
+        """
+        获取上下文，如果有提示词，则添加到最前面
+
+        :param remove_reasoner_prompt: 是否移除reasoner提示词
+        """
+        context_list = self.to_context(remove_resoning_prompt)
+        if self.prompt:
+            context_list = self.prompt.to_content(remove_resoning_prompt) + context_list
         return context_list
     
     @property
@@ -235,10 +288,7 @@ class ContextObject:
         """
         获取上下文，如果有提示词，则添加到最前面
         """
-        context_list = self.context
-        if self.prompt:
-            context_list = self.prompt.as_content + context_list
-        return context_list
+        return self.to_full_context(False)
     
     def withdraw(self, length: int | None = None):
         """
@@ -325,19 +375,27 @@ class ContextObject:
         content: str = "",
         role: ContextRole = ContextRole.USER,
         role_name: str |  None = None,
-        prefix: bool | None = None,
+        is_prefix: bool | None = None,
         funcResponse: CallingFunctionResponse | None = None,
         tool_call_id: str = "",
     ):
         """
         添加上下文内容
+
+        :param reasoning_content: Resoning 内容
+        :param content: 内容
+        :param role: 角色
+        :param role_name: 角色名称
+        :param is_prefix: 是否为前缀(用于提交给模型用于续写)
+        :param funcResponse: 函数响应
+        :param tool_call_id: 工具调用ID
         """
         self.append(ContentUnit(
             reasoning_content = reasoning_content,
             content = content,
             role = role,
             role_name = role_name,
-            prefix = prefix,
+            prefix = is_prefix,
             funcResponse = funcResponse,
             tool_call_id = tool_call_id,
         ))
