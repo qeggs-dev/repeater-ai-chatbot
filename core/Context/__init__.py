@@ -1,8 +1,8 @@
 from ._object import ContextObject, ContentUnit, ContextRole
 from ._func_calling_obj import (
     FunctionResponseUnit,
-    CallingFunction,
-    FunctionParameters,
+    RequestCallingFunctionUnit,
+    RequestFunctionParameters,
     CallingFunctionRequest,
     CallingFunctionResponse
 )

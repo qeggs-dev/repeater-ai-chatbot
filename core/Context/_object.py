@@ -81,7 +81,7 @@ class ContentUnit:
                 if not remove_resoning_prompt and self.reasoning_content:
                     assistant_content["reasoning_content"] = self.reasoning_content
                 if self.funcResponse:
-                    assistant_content["tool_calls"] = self.funcResponse.as_content
+                    assistant_content["tool_calls"] = self.funcResponse.as_calling_func_content
                 content_list.append(assistant_content)
         if self.funcResponse:
             if self.role == ContextRole.FUNCTION:

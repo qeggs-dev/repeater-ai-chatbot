@@ -1,3 +1,4 @@
+from __future__ import annotations
 from dataclasses import dataclass, field
 import orjson
 from enum import Enum
@@ -5,9 +6,9 @@ from typing import Any
 from ._exceptions import *
 
 @dataclass
-class FunctionParameters:
+class RequestFunctionParameters:
     """
-    FunctionCalling的函数参数对象
+    FunctionCalling Request 中的函数参数对象
     """
     name: str = ''
     type: str = ''
@@ -15,16 +16,16 @@ class FunctionParameters:
     required: bool = False
 
 @dataclass
-class CallingFunction:
+class RequestCallingFunctionUnit:
     """
-    FunctionCalling的函数对象
+    FunctionCalling Request 中的函数对象单元
     """
     name: str = ''
     description: str = ''
-    parameters: list[FunctionParameters] = field(default_factory=list)
+    parameters: list[RequestFunctionParameters] = field(default_factory=list)
 
     @property
-    def as_dict(self) -> dict:
+    def as_calling_func_struct(self) -> dict:
         """
         获取函数对象字典
         """
@@ -51,9 +52,9 @@ class CallingFunction:
             }
         }
 
-class FunctionChoice(Enum):
+class RequestFunctionChoice(Enum):
     """
-    FunctionCalling选择对象
+    FunctionCalling Request 中的选择对象
     """
     NONE = 'none'
     AUTO = 'auto'
@@ -64,18 +65,18 @@ class FunctionChoice(Enum):
 @dataclass
 class CallingFunctionRequest:
     """
-    FunctionCalling请求对象
+    FunctionCalling Request对象
     """
-    functions: list[CallingFunction] = field(default_factory=list)
-    func_choice: FunctionChoice | None = None
+    functions: list[RequestCallingFunctionUnit] = field(default_factory=list)
+    func_choice: RequestFunctionChoice | None = None
     func_choice_name: str | None = None
 
     @property
-    def tool_choice(self) -> str | dict | None:
+    def as_tool_choice(self) -> str | dict | None:
         """
         tool_choice字段值
         """
-        if self.func_choice == FunctionChoice.SPECIFY:
+        if self.func_choice == RequestFunctionChoice.SPECIFY:
             return {
                 'type': 'function',
                 'function': {
@@ -87,40 +88,30 @@ class CallingFunctionRequest:
     
     @property
     def tools(self) -> list[dict]:
-        return [f.as_dict() for f in self.functions]
+        return [f.as_calling_func_struct() for f in self.functions]
 
 @dataclass
 class FunctionResponseUnit:
     """
-    FunctionCalling响应对象单元
+    FunctionCalling Response 对象单元
     """
     id: str = ''
     type: str = ''
     name: str = ''
     arguments_str: str = ''
-
-    def update_from_dict(self, data: dict):
-        """
-        从字典更新对象
-        """
-        other = self.from_dict(data)
-        self.id = other.id
-        self.type = other.type
-        self.name = other.name
-        self.arguments_str = other.arguments_str
-
-    @property
-    def arguments(self) -> Any:
+    
+    def load_arguments(self) -> Any:
         """
         从模型输出的参数字符串中解析出对象
+
+        :raise ContextSyntaxError: 参数字符串格式错误
         """
         try:
             return orjson.loads(self.arguments_str)
         except orjson.JSONDecodeError:
             raise ContextSyntaxError('Invalid JSON format in function response arguments.')
     
-    @property
-    def as_dict(self) -> dict:
+    def to_calling_func_unit(self) -> dict:
         """
         OpenAI兼容的FunctionCalling响应对象单元格式
         """
@@ -129,12 +120,19 @@ class FunctionResponseUnit:
             'type': self.type,
             'function':{
                 'name': self.name,
-                'arguments': self.arguments
+                'arguments': self.load_arguments()
             }
         }
     
+    @property
+    def as_calling_func_unit(self) -> dict:
+        """
+        OpenAI兼容的FunctionCalling响应对象单元格式
+        """
+        return self.to_calling_func_unit()
+    
     @classmethod
-    def from_dict(cls, data: dict) -> "FunctionResponseUnit":
+    def from_dict(cls, data: dict) -> FunctionResponseUnit:
         """
         从字典创建对象
 
@@ -196,7 +194,7 @@ class FunctionResponseUnit:
 @dataclass
 class CallingFunctionResponse:
     """
-    FunctionCalling响应对象
+    FunctionCalling Response 对象
     """
     callingFunctionResponse:list[FunctionResponseUnit] = field(default_factory=list)
 
@@ -204,12 +202,18 @@ class CallingFunctionResponse:
         other = self.from_content(content)
         self.callingFunctionResponse = other.callingFunctionResponse
     
-    @property
-    def as_content(self) -> list[dict]:
+    def to_calling_func_content(self) -> list[dict]:
         """
         模型响应对象列表
         """
-        return [f.as_dict for f in self.callingFunctionResponse]
+        return [f.as_calling_func_unit for f in self.callingFunctionResponse]
+    
+    @property
+    def as_calling_func_content(self) -> list[dict]:
+        """
+        模型响应对象列表
+        """
+        return self.to_calling_func_content()
     
     @classmethod
     def from_content(cls, content: list[dict]):
@@ -220,7 +224,7 @@ class CallingFunctionResponse:
         :return: 响应对象
         """
         return cls(
-            callingFunctionResponse = [FunctionResponseUnit().from_dict(f) for f in content]
+            callingFunctionResponse = [FunctionResponseUnit.from_dict(f) for f in content]
         )
     
     def update_from_content(self, content: list[dict]):

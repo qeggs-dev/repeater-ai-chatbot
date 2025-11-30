@@ -98,12 +98,11 @@ class ContextLoader:
             user_id: str
         ) -> ContextObject:
         try:
-            context_list = await self.context.load(user_id=user_id, default=[])
+            context_data = await self.context.load(user_id=user_id, default=[])
         except orjson.JSONDecodeError:
             raise ContextLoadingSyntaxError(f"Context File Syntax Error: {user_id}")
         # 构建上下文对象
-        contextObj = ContextObject()
-        contextObj.update_from_context(context_list)
+        contextObj = ContextObject.from_context(context_data)
 
         logger.info(f"Load Context: {len(contextObj.context_list)}", user_id = user_id)
         return contextObj
