@@ -14,10 +14,6 @@ from .._object import (
     Request,
     Delta,
 )
-from .._utils import (
-    remove_keys_from_dicts,
-    sum_string_lengths
-)
 from ._translation_chunk import translation_chunk
 from ._call_api_base import CallStreamAPIBase
 from .._exceptions import *
@@ -56,10 +52,7 @@ class StreamAPI(CallStreamAPIBase):
                 max_completion_tokens=request.max_completion_tokens,
                 stop = request.stop,
                 stream = True,
-                messages = remove_keys_from_dicts(
-                    request.context.full_context,
-                    {"reasoning_content"}
-                ) if not request.context.last_content.prefix else request.context.full_context,
+                messages = request.context.to_full_context(remove_resoning_prompt=True),
                 tools = request.function_calling.tools if request.function_calling else None,
             )
             logger.info("Start Streaming", user_id = user_id)

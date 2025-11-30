@@ -23,10 +23,6 @@ from .._parser import (
     StreamAPI
 )
 from .._exceptions import *
-from .._utils import (
-    remove_keys_from_dicts,
-    sum_string_lengths
-)
 
 class ClientBase(ABC):
     def __init__(self, max_concurrency: int = 1000):
@@ -189,7 +185,7 @@ class ClientBase(ABC):
 
         logger.info("============= Content ==============", user_id = user_id)
         logger.info(f"Total Content Length: {response.context.total_length}", user_id = user_id)
-        response.calling_log.total_context_length = sum_string_lengths(response.context.full_context, "content")
+        response.calling_log.total_context_length = response.context.total_length
         logger.info(f"Reasoning Content Length: {len(response.context.last_content.reasoning_content)}", user_id = user_id)
         response.calling_log.reasoning_content_length = len(response.context.last_content.reasoning_content)
         logger.info(f"New Content Length: {len(response.context.last_content.content)}", user_id = user_id)

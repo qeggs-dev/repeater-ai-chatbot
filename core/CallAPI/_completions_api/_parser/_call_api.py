@@ -21,9 +21,6 @@ from ....Context import (
     ContextRole
 )
 from ....RequestLog import RequestLog, TimeStamp
-from .._utils import (
-    remove_keys_from_dicts,
-)
 from ._call_api_base import CallNstreamAPIBase
 from .._exceptions import *
 
@@ -88,10 +85,7 @@ class CallAPI(CallNstreamAPIBase):
             max_completion_tokens=request.max_completion_tokens,
             stop = request.stop,
             stream = False,
-            messages = remove_keys_from_dicts(
-                request.context.full_context,
-                {"reasoning_content"}
-            ) if not request.context.last_content.prefix else request.context.full_context,
+            messages = request.context.to_full_context(remove_resoning_prompt = True),
             tools = request.function_calling.tools if request.function_calling else None,
         )
         request_end_time = TimeStamp()
