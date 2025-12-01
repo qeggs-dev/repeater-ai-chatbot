@@ -2,10 +2,10 @@ import sys
 import logging
 from pathlib import Path
 from loguru import logger
-from ConfigManager import ConfigLoader
 from ._intercept_handler import InterceptHandler
-from ._logger_config import LoggerConfig
-def logger_init(config: LoggerConfig):
+from ..Global_Config_Manager import Logger_Config
+
+def logger_init(config: Logger_Config):
     logging.root.handlers = [InterceptHandler()]
     logging.root.setLevel(logging.INFO)
 
@@ -21,24 +21,24 @@ def logger_init(config: LoggerConfig):
         sys.stderr,
         format = "<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | <level>{level: <8}</level> | <cyan>{extra[user_id]}</cyan> - <level>{message}</level>",
         filter = lambda record: "donot_send_console" not in record["extra"],
-        level = config.log_level.value
+        level = config.level.value
     )
 
-    if not config.log_dir.exists():
-        config.log_dir.mkdir(parents=True, exist_ok=True)
     
-    log_prefix = config.log_prefix
-    log_suffix = config.log_suffix
-    log_file = config.log_dir / (log_prefix + "{time:YYYY-MM-DD_HH-mm-ss.SSS}" + log_suffix)
+    log_file = Path(config.file_path)
+
+    if not log_file.parent.exists():
+        log_file.parent.mkdir(parents=True, exist_ok=True)
+
     logger.add(
         log_file,
         format = "{time:YYYY-MM-DD HH:mm:ss.SSS} | {level: <8} | {extra[user_id]} - {message}",
-        level = config.log_level.value,
+        level = config.level.value,
         enqueue = True,
         delay = True,
         rotation = config.rotation,
-        retention = config.log_retention,
-        compression = config.log_compression,
+        retention = config.retention,
+        compression = config.compression,
     )
 
     logger.configure(
