@@ -21,18 +21,18 @@ import numpy as np
 from .CallAPI import (
     CompletionsAPI
 )
-from . import Context
-from . import DataManager
-from . import UserConfigManager
+from . import Context_Manager
+from . import Data_Manager
+from . import User_Config_Manager
 from .ApiInfo import (
     ApiInfo,
 )
-from . import RequestLog
+from . import Request_Log
 from TextProcessors import (
     PromptVP,
 )
-from .RequestUserInfo import UserInfo
-from .LockPool import AsyncLockPool
+from .Request_User_Info import UserInfo
+from .Lock_Pool import AsyncLockPool
 from TimeParser import (
     format_timestamp,
     get_birthday_countdown,
@@ -42,16 +42,16 @@ from TimeParser import (
 )
 from ConfigManager import ConfigLoader
 from RegexChecker import RegexChecker
-from .LoggerInit import (
+from .Logger_Init import (
     logger_init,
     ConfigLoader as LoggerConfigLoader
 )
-from .CoreResponse import Response
+from .Core_Response import Response
 
 # ==== 本模块代码 ==== #
 configs = ConfigLoader()
 
-__version__ = configs.get_config("core.version", "4.2.8.2").get_value(str)
+__version__ = configs.get_config("core.version", "4.2.9.0").get_value(str)
 
 class Core:
     # region > init
@@ -65,12 +65,12 @@ class Core:
         self.lock = asyncio.Lock()
 
         # 初始化用户数据管理器
-        self.context_manager = DataManager.ContextManager()
-        self.prompt_manager = DataManager.PromptManager()
-        self.user_config_manager = UserConfigManager.ConfigManager()
+        self.context_manager = Data_Manager.ContextManager()
+        self.prompt_manager = Data_Manager.PromptManager()
+        self.user_config_manager = User_Config_Manager.ConfigManager()
 
         # 初始化变量加载器
-        self.promptvariable = Context.LoadPromptVariable(
+        self.promptvariable = Context_Manager.LoadPromptVariable(
             version = __version__
         )
         # 初始化Client并设置并发大小
@@ -103,7 +103,7 @@ class Core:
         self.namespace_locks = AsyncLockPool()
 
         # 初始化调用日志管理器
-        self.request_log = RequestLog.RequestLogManager(
+        self.request_log = Request_Log.RequestLogManager(
             configs.get_config('request_log.path', "./workspace/request_log").get_value(Path),
             auto_save = configs.get_config('request_log.auto_save', True).get_value(bool)
         )
@@ -150,7 +150,7 @@ class Core:
             user_id: str,
             model_uid: str = "",
             user_info: UserInfo = UserInfo(),
-            config: UserConfigManager.Configs = UserConfigManager.Configs(),
+            config: User_Config_Manager.Configs = User_Config_Manager.Configs(),
         ) -> PromptVP:
         """
         获取指定用户的PromptVP实例
@@ -231,7 +231,7 @@ class Core:
     # endregion
 
     # region > get config
-    async def get_config(self, user_id: str) -> UserConfigManager.Configs:
+    async def get_config(self, user_id: str) -> User_Config_Manager.Configs:
         """
         加载用户配置
 
@@ -243,12 +243,12 @@ class Core:
     # endregion
 
     # region > get context
-    async def get_context_loader(self) -> Context.ContextLoader:
+    async def get_context_loader(self) -> Context_Manager.ContextLoader:
         """
         加载上下文
         :return: 上下文加载器
         """
-        context_loader = Context.ContextLoader(
+        context_loader = Context_Manager.ContextLoader(
             config=self.user_config_manager,
             prompt=self.prompt_manager,
             context=self.context_manager,
@@ -257,7 +257,7 @@ class Core:
     
     async def get_context(
             self,
-            context_loader: Context.ContextLoader,
+            context_loader: Context_Manager.ContextLoader,
             user_id: str,
             message: str,
             user_name: str,
@@ -267,7 +267,7 @@ class Core:
             continue_completion: bool = False,
             reference_context_id: str | None = None,
             prompt_vp: PromptVP = PromptVP()
-        ) -> Context.ContextObject:
+        ) -> Context_Manager.ContextObject:
         """
         获取上下文
 
@@ -394,7 +394,7 @@ class Core:
         """
         try:
             # 记录开始时间
-            task_start_time = RequestLog.TimeStamp()
+            task_start_time = Request_Log.TimeStamp()
 
             # 获取用户锁对象
             lock = await self._get_namespace_lock(user_id)
@@ -558,7 +558,7 @@ class Core:
                 request.print_chunk = print_chunk
 
                 # 记录预处理结束时间
-                call_prepare_end_time = RequestLog.TimeStamp()
+                call_prepare_end_time = Request_Log.TimeStamp()
 
                 # 输出 (为了自动填充输出内容)
                 output = Response()
@@ -650,10 +650,10 @@ class Core:
         user_id: str,
         prompt_vp: PromptVP,
         response: CompletionsAPI.Response,
-        user_input: Context.ContentUnit,
-        context_loader:Context.ContextLoader,
-        task_start_time: RequestLog.TimeStamp,
-        call_prepare_end_time: RequestLog.TimeStamp,
+        user_input: Context_Manager.ContentUnit,
+        context_loader:Context_Manager.ContextLoader,
+        task_start_time: Request_Log.TimeStamp,
+        call_prepare_end_time: Request_Log.TimeStamp,
         output: Response = Response(),
         save_context: bool = True,
         reference_context_id: str | None = None
@@ -685,7 +685,7 @@ class Core:
             logger.warning("Context not saved", user_id = user_id)
 
         # 记录任务结束时间
-        response.calling_log.task_end_time = RequestLog.TimeStamp()
+        response.calling_log.task_end_time = Request_Log.TimeStamp()
 
         # 记录调用日志
         await self.request_log.add_request_log(response.calling_log)
