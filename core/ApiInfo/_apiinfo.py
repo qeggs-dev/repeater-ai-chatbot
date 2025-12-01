@@ -1,3 +1,4 @@
+import os
 import asyncio
 import aiofiles
 import threading
@@ -44,8 +45,9 @@ class ApiInfo:
                     self._api_objs[api_obj.uid].append(api_obj)
 
 
-    def load(self, path: Path) -> None:
+    def load(self, path: str | os.PathLike) -> None:
         """Load and parse API groups from a JSON/YAML file."""
+        path = Path(path)
         if not path.exists():
             raise FileNotFoundError(f"File '{path}' does not exist")
         with self._api_info_lock:
