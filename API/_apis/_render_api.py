@@ -71,7 +71,7 @@ async def render(
         # 获取用户配置
         config = await chat.user_config_manager.load(user_id)
         # 获取环境变量中的图片渲染风格
-        default_style = configs.get_config("Render.Markdown.to_Image.Default_Styles", "light").get_value(str)
+        default_style = configs.get_config("render.markdown.to_image.default_styles", "light").get_value(str)
         # 获取图片渲染风格
         style: str = config.get('render_style', default_style)
     
@@ -81,13 +81,20 @@ async def render(
     # 日志打印文件名和渲染风格
     logger.info(f'Rendering image {filename} for "{style}" style', user_id=user_id)
 
+    wkhtmltoimage_path = configs.get_config("render.markdown.wkhtmltoimage_path").get_value(Path)
+    style_file_encoding = configs.get_config("render.markdown.to_image.style_file_encoding", "utf-8").get_value(str)
+    preprocess_map_before = configs.get_config("render.markdown.to_image.preprocess_map.before", {}).get_value(dict)
+    preprocess_map_end = configs.get_config("render.markdown.to_image.preprocess_map.after", {}).get_value(dict)
+
     # 调用markdown_to_image函数生成图片
     await markdown_to_image(
         markdown_text = render_request.text,
         output_path = render_output_image_dir / filename,
+        wkhtmltoimage_path = wkhtmltoimage_path,
         style = style,
-        preprocess_map_before = configs.get_config("render.markdown.to_image.preprocess_map.before", {}).get_value(dict),
-        preprocess_map_end = configs.get_config("render.markdown.to_image.preprocess_map.after", {}).get_value(dict),
+        style_file_encoding = style_file_encoding,
+        preprocess_map_before = preprocess_map_before,
+        preprocess_map_end = preprocess_map_end,
     )
     create_ms = time.time_ns() // 10**6
     create = create_ms // 1000

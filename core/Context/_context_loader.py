@@ -64,6 +64,7 @@ class ContextLoader:
                 
                 # 获取默认提示词文件名
                 parset_prompt_name = config.get("parset_prompt_name", configs.get_config("prompt.parset_name", "default").get_value(str))
+                parset_prompt_encoding = config.get("parset_prompt_encoding", configs.get_config("prompt.encoding", "utf-8").get_value(str))
                 suffix = configs.get_config("Prompt.Default_Suffix", "md").get_value(str)
 
                 # 加载默认提示词文件
@@ -72,7 +73,7 @@ class ContextLoader:
                     raise InvalidPromptPathError(f"Invalid Prompt Path: {default_prompt_file}")
                 if default_prompt_file.exists():
                     logger.info(f"Load Default Prompt File: {default_prompt_file}", user_id = user_id)
-                    async with aiofiles.open(default_prompt_file, mode="r", encoding="utf-8") as f:
+                    async with aiofiles.open(default_prompt_file, mode="r", encoding=parset_prompt_encoding) as f:
                         prompt = await f.read()
                 else:
                     logger.warning(f"Default Prompt File Not Found: {default_prompt_file}", user_id = user_id)
