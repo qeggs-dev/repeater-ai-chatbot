@@ -1,4 +1,4 @@
-from ..DataManager import PromptManager, ContextManager
+from ..Data_Manager import PromptManager, ContextManager
 from TimeParser import (
     format_deltatime,
     format_deltatime_ns,

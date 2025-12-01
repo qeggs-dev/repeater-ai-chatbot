@@ -1,6 +1,6 @@
 import asyncio
 from typing import Any, Callable, Awaitable, Protocol, runtime_checkable
-from ..Context import CallingFunctionResponse, ContextSyntaxError, ContentUnit, ContextRole
+from ..Context_Manager import CallingFunctionResponse, ContextSyntaxError, ContentUnit, ContextRole
 from ._exceptions import *
 
 @runtime_checkable

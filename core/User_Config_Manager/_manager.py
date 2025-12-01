@@ -1,7 +1,7 @@
 import asyncio
 from typing import Any
 from loguru import logger
-from ..DataManager import UserConfigManager
+from ..Data_Manager import UserConfigManager
 from ._exceptions import *
 from ._object import Configs
 from ConfigManager import ConfigLoader
