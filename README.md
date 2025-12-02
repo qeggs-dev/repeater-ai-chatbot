@@ -490,23 +490,6 @@ PS: 首行必须是`[REGEX PARALLEL FILE]`或`[REGEX SERIES FILE]`，表示该�
 
 ---
 
-## 人格预设
-
-| 预设 | 描述 |
-| :---: | :---: |
-| `default` | 默认 |
-| `sister` | 姐姐 |
-| `english` | 英语 |
-| `japanese` | 日语 |
-| `french` | 法语 |
-| `russian` | 俄语 |
-| `arabic` | 阿拉伯语 |
-| `spanish` | 西班牙语 |
-
-(求翻译，我只会中文一个语言)
-
----
-
 ## 模板展开系统
 
 模板展开系统用于将模板中的变量替换为实际值
@@ -522,6 +505,7 @@ PS: 首行必须是`[REGEX PARALLEL FILE]`或`[REGEX SERIES FILE]`，表示该�
 
 | 变量 | 描述 | 参数 |
 | :---: | :---: | :---: |
+| `reprs` | 显示对象的字符串表示 | 任何内容(*Any) |
 | `user_id` | 用户ID | 无 |
 | `user_name` | 用户名 | 无 |
 | `nickname` | 昵称 | 无 |
@@ -530,18 +514,18 @@ PS: 首行必须是`[REGEX PARALLEL FILE]`或`[REGEX SERIES FILE]`，表示该�
 | `user_gender` | 用户性别 | 无 |
 | `user_info` | 用户信息 | 无 |
 | `birthday` | 生日 | 无 |
-| `BirthdayCountdown` | 生日倒计时 | 无 |
+| `birthday_countdown` | 生日倒计时 | 启用详细信息(bool) |
 | `model_uid` | 模型类型 | 无 |
 | `zodiac` | Bot星座 | 无 |
-| `time` | 当前时间 | 无 |
+| `time` | 当前时间 | 格式字符串(str) |
 | `age` | Bot年龄 | 无 |
-| `random` | 随机数 | 随机数下限，随机数上下限 |
-| `randfloat` | 随机浮点数 | 随机数下限，随机数上下限 |
-| `randchoice` | 随机选择 | 抽取内容 |
+| `random` | 随机数 | 随机数下限(int)，随机数上下限(int) |
+| `randfloat` | 随机浮点数 | 随机数下限(float)，随机数上下限(float) |
+| `randchoice` | 随机选择 | 抽取内容(*str) |
 | `generate_uuid` | 生成UUID | 无 |
-| `copytext` | 重复文本 | 重复文本， 重复次数, 间隔符 |
-| `text_matrix` | 文本矩阵 | 重复文本，列数，行数，间隔符，换行符 |
-| `random_matrix` | 0~1随机矩阵 | 矩阵行数，矩阵列数 |
+| `copytext` | 重复文本 | 重复文本(str)， 重复次数(int), 间隔符(str) |
+| `text_matrix` | 文本矩阵 | 重复文本(int)，列数(int)，行数(int)，间隔符(str)，换行符(str) |
+| `random_matrix` | 0~1随机矩阵 | 矩阵行数(int)，矩阵列数(int) |
 
 ### 变量传参方式
 

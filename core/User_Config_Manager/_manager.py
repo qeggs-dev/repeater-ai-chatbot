@@ -3,7 +3,7 @@ from typing import Any
 from loguru import logger
 from ..Data_Manager import UserConfigManager
 from ._exceptions import *
-from ._object import Configs
+from ._object import UserConfigs
 from ..Global_Config_Manager import ConfigManager as GlobalConfigManager
 
 class ConfigManager:
@@ -11,7 +11,7 @@ class ConfigManager:
     _user_config_manager = UserConfigManager()
 
     # 全局配置缓存
-    _global_config_cache:dict[str, Configs] = {}
+    _global_config_cache:dict[str, UserConfigs] = {}
     
     def __init__(
             self,
@@ -20,7 +20,7 @@ class ConfigManager:
             downgrade_wait_time: float | None = None,
             debonce_save_wait_time: float | None = None
         ):
-        self._cache:dict[str, Configs] = {}
+        self._cache:dict[str, UserConfigs] = {}
 
         self._cache_switch = cache
         self._use_global_cache = use_global_cache
@@ -33,13 +33,13 @@ class ConfigManager:
 
         self._lock = asyncio.Lock()
 
-    async def _get_cache(self):
+    async def _get_cache(self) -> dict[str, UserConfigs]:
         if self._use_global_cache:
             return self._global_config_cache
         else:
             return self._cache
     
-    async def load(self, user_id: str) -> Configs:
+    async def load(self, user_id: str) -> UserConfigs:
         """
         获取用户配置
         
@@ -54,10 +54,7 @@ class ConfigManager:
                     logger.info("Get config form cache", user_id = user_id)
                     config = cache[user_id]
                 else:
-                    config = Configs(
-                        user_id = user_id,
-                        configs = await self._user_config_manager.load(user_id)
-                    )
+                    config = await self._load_configs(user_id)
                     cache[user_id] = config
                     logger.info("Get config from database and save to cache", user_id = user_id)
                 
@@ -74,12 +71,9 @@ class ConfigManager:
             return config
         else:
             logger.info("Get config from database", user_id = user_id)
-            return Configs(
-                user_id = user_id,
-                configs = await self._user_config_manager.load(user_id)
-            )
+            return await self._load_configs(user_id)
     
-    async def save(self, user_id: str, configs: Configs) -> None:
+    async def save(self, user_id: str, configs: UserConfigs) -> None:
         """
         保存用户配置
 
@@ -91,7 +85,7 @@ class ConfigManager:
 
         if self._cache_switch:
             if user_id in cache:
-                if isinstance(configs, Configs):
+                if isinstance(configs, UserConfigs):
                     async with self._lock:
                         logger.info("Save config to cache", user_id = user_id)
                         cache[user_id] = configs
@@ -108,7 +102,7 @@ class ConfigManager:
                     raise TypeError("configs must be Configs object")
         else:
             logger.info("Save config to database", user_id = user_id)
-            await self._user_config_manager.save(user_id, configs.configs)
+            await self._save_configs(user_id, configs)
     
     async def _wait_and_downgrade(self, user_id: str, wait_time: float = 5) -> None:
         """
@@ -140,17 +134,17 @@ class ConfigManager:
         try:
             await asyncio.sleep(wait_time)
             async with self._lock:
-                cache = await self._get_cache()
+                cache: dict[str, UserConfigs] = await self._get_cache()
                 if user_id in cache:
                     logger.info("Save config", user_id = user_id)
-                    await self._user_config_manager.save(user_id, cache[user_id].configs)
+                    await self._save_configs(user_id, cache[user_id])
                     del cache[user_id]
         except asyncio.CancelledError:
             logger.info("User config save task cancelled", user_id = user_id)
      
-    async def get_default_item(self, user_id: str) -> str:
+    async def get_default_item_id(self, user_id: str) -> str:
         """
-        获取默认配置项
+        获取默认配置项ID
 
         :param user_id: 用户ID
         :param item: 配置项
@@ -159,9 +153,9 @@ class ConfigManager:
         async with self._lock:
             return await self._user_config_manager.get_default_item_id(user_id)
     
-    async def set_default_item(self, user_id: str, item: str) -> None:
+    async def set_default_item_id(self, user_id: str, item: str) -> None:
         """
-        设置默认配置项
+        设置默认配置项ID
 
         :param user_id: 用户ID
         :param item: 配置项
@@ -191,7 +185,7 @@ class ConfigManager:
         """
         (await self._get_cache()).clear()
         
-    async def force_write(self, user_id: str, configs: Configs) -> None:
+    async def force_write(self, user_id: str, configs: UserConfigs) -> None:
         """
         强制写入配置
 
@@ -201,7 +195,7 @@ class ConfigManager:
         """
         async with self._lock:
             cache = await self._get_cache()
-            await self._user_config_manager.save(user_id, configs.configs)
+            await self._save_configs(user_id, configs)
             cache[user_id] = configs
             logger.info("Force write config", user_id = user_id)
 
@@ -215,7 +209,7 @@ class ConfigManager:
             cache = await self._get_cache()
 
             for user_id, configs in cache.items():
-                await self._user_config_manager.save(user_id, configs.configs)
+                await self._save_configs(user_id, configs)
                 if clear_all_tasks:
                     self._downgrade_tasks[user_id].cancel()
                     self._debonce_save_tasks[user_id].cancel()
@@ -234,12 +228,36 @@ class ConfigManager:
 
             userlist = await self._user_config_manager.get_all_user_id()
             for user_id in userlist:
-                cache[user_id] = Configs(
+                cache[user_id] = UserConfigs(
                     user_id = user_id,
-                    configs = await self._user_config_manager.load(user_id)
+                    configs = await self._load_configs(user_id)
                 )
             logger.info(f"Loaded {len(cache)} configs")
             return cache
+    
+    async def _load_configs(self, user_id: str) -> UserConfigs:
+        """
+        读取用户配置
+
+        :param user_id: 用户ID
+        :return: 用户配置数据
+        """
+        return UserConfigs(
+            **await self._user_config_manager.load(
+                user_id
+            )
+        )
+    
+    async def _save_configs(self, user_id: str, configs: UserConfigs):
+        """
+        写入用户配置
+
+        :param user_id: 用户ID
+        :param configs: 配置数据
+        """
+        await self._user_config_manager.save(
+            user_id, configs.model_dump()
+        )
     
     async def get_all_user_id(self):
         """
