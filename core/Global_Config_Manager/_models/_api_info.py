@@ -5,3 +5,4 @@ class API_Info_Config(BaseModel):
     
     api_file_path: str = "./config/api_info.json"
     default_model_uid: str = "chat"
+    case_sensitive: bool = False

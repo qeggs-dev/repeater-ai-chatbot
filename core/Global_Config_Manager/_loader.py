@@ -34,7 +34,7 @@ class ConfigManager:
     @classmethod
     def _scan_dir(cls, globs: Iterable[str]) -> Generator[Path, None, None]:
         for glob in globs:
-            for path in cls._base_path.glob(glob):
+            for path in cls._base_path.rglob(glob):
                 yield path
     
     @classmethod
@@ -47,7 +47,7 @@ class ConfigManager:
                     "*.json",
                 ]
             ),
-            key=lambda path: path.name
+            key=lambda path: str(path)
         )
     
     @staticmethod
