@@ -1,9 +1,9 @@
 from .._resource import app
 from fastapi.responses import FileResponse
 
-from ...Global_Config_Manager import configs
+from ...Global_Config_Manager import ConfigManager
 
-static_dir = configs.static.static_dir
+static_dir = ConfigManager.get_configs().static.static_dir
 
 @app.get('/favicon.ico')
 async def favicon_ico():

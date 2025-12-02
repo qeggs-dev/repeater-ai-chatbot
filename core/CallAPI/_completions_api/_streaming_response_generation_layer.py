@@ -4,7 +4,7 @@ from ._object import Request, Delta, Response
 from ...Request_Log import RequestLog
 from ...Context_Manager import ContentUnit, ContextRole, FunctionResponseUnit
 from ...Request_Log import TimeStamp
-from ...Global_Config_Manager import configs
+from ...Global_Config_Manager import ConfigManager
 from ...Logger_Init import config_to_log_level, LogLevel
 from loguru import logger
 
@@ -69,7 +69,7 @@ class StreamingResponseGenerationLayer:
         # chunk耗时列表
         self.chunk_times:list[TimeStamp] = []
 
-        self._print_chunk = config_to_log_level(configs.logger.level) > LogLevel.TRACE
+        self._print_chunk = config_to_log_level(ConfigManager.get_configs().logger.level) > LogLevel.TRACE
     
     def finally_stream(self):
         self._print_file.write('\n\n')

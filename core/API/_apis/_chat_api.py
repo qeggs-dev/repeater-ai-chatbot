@@ -53,7 +53,7 @@ async def chat_endpoint(
             user_id = user_id,
             message = request.message,
             user_info = (
-                Request_User_Info.UserInfo(
+                Request_User_Info(
                     username = request.user_info.username,
                     nickname = request.user_info.nickname,
                     age = request.user_info.age,

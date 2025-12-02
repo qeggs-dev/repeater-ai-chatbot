@@ -1,23 +1,25 @@
 from __future__ import annotations
 import os
-from box import Box
 import yaml
+import shutil
 import orjson
-from typing import Generator, Iterable
+from box import Box
 from pathlib import Path
 from ._base_model import Base_Config
-import shutil
+from typing import Generator, Iterable
 
-configs = Base_Config()
-
-class ConfigLoader:
-    _instance: ConfigLoader | None = None
+class ConfigManager:
+    _configs: Base_Config = Base_Config()
+    _instance: ConfigManager | None = None
     _base_path: Path
+
+    @classmethod
+    def get_configs(cls) -> Base_Config:
+        return cls._configs
 
     def __new__(cls):
         if cls._instance is None:
             cls._instance = super().__new__(cls)
-            cls._instance.load()
         return cls._instance
 
     @classmethod
@@ -54,7 +56,7 @@ class ConfigLoader:
             return orjson.loads(f.read())
     
     @classmethod
-    def load(cls, write_when_it_fails: bool = False) -> Base_Config:
+    def load(cls, create_if_missing: bool = False) -> Base_Config:
         """
         Load the configs from the config files.
 
@@ -69,23 +71,23 @@ class ConfigLoader:
                     configs.append(Box(cls._load_json(path)))
             
             if not configs:
-                return {}
+                cls._configs = Base_Config()
+                if create_if_missing:
+                    cls.save(cls._configs)
+                    return cls._configs
             
             base_config = configs[0]
             for config in configs[1:]:
                 base_config.merge_update(config)
             
-            return Base_Config(**base_config.to_dict())
+            merge_config = base_config.to_dict()
+            cls._configs = Base_Config(**merge_config)
+            return cls._configs
         except Exception as e:
-            if write_when_it_fails:
-                cls.save(config)
+            if create_if_missing:
+                cls.save(cls._configs)
             else:
                 raise
-    
-    @staticmethod
-    def update_config(config: Base_Config) -> None:
-        global configs
-        configs = config
     
     @staticmethod
     def _dump_yaml(path: Path, data: Base_Config) -> None:
@@ -108,13 +110,16 @@ class ConfigLoader:
             )
     
     @classmethod
-    def save(cls, config: Base_Config, filename: str = "config.json") -> None:
+    def save(cls, config: Base_Config | None = None, filename: str = "config.json") -> None:
         """
         Save the config to the config files.
         
         :param config: The config to save
         """
-        shutil.rmtree(cls._base_path)
+        if config is None:
+            config = cls._configs
+        if cls._base_path.exists():
+            shutil.rmtree(cls._base_path)
         cls._base_path.mkdir(parents=True, exist_ok=True)
         config_file_path = cls._base_path / filename
         if config_file_path.suffix in [".yaml", ".yml"]:

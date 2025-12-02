@@ -7,7 +7,7 @@ import datetime
 import numpy as np
 from pathlib import Path
 from loguru import logger
-from ..Global_Config_Manager import configs
+from ..Global_Config_Manager import ConfigManager
 from typing import List, AsyncIterator, Generator, Iterable
 from ._RequestLogObject import RequestLogObject, CallAPILogObject
 
@@ -24,12 +24,12 @@ class RequestLogManager:
 
         # 防抖保存等待时间
         if debonce_save_wait_time is None:
-            debonce_save_wait_time = configs.request_log.debonce_save_wait_time
+            debonce_save_wait_time = ConfigManager.get_configs().request_log.debonce_save_wait_time
         self._debonce_save_wait_time:float = debonce_save_wait_time
 
         # 最大缓存大小
         if max_cache_size is None:
-            max_cache_size = configs.request_log.max_cache_size
+            max_cache_size = ConfigManager.get_configs().request_log.max_cache_size
         self._max_cache_size = max_cache_size
 
         # 日志文件路径

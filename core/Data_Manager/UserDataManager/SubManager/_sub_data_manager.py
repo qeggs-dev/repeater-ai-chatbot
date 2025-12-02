@@ -11,7 +11,7 @@ import aiofiles
 
 # ==== 项目库 ==== #
 from PathProcessors import validate_path, sanitize_filename
-from ....Global_Config_Manager import configs
+from ....Global_Config_Manager import ConfigManager
 
 class SubManager:
     def __init__(self, base_path: Path, sub_dir_name: str, cache_metadata:bool = False, cache_data:bool = False):
@@ -21,7 +21,7 @@ class SubManager:
         self._global_lock: asyncio.Lock = asyncio.Lock()
         self._item_locks: weakref.WeakValueDictionary[str, asyncio.Lock] = weakref.WeakValueDictionary()
         
-        self._metadata_filename = configs.user_data.metadata_file_name
+        self._metadata_filename = ConfigManager.get_configs().user_data.metadata_file_name
         
         self.cache_metadata:bool = cache_metadata
         self._metadata_cache: Any | None = None

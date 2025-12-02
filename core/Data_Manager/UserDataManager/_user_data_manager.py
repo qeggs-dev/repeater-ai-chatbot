@@ -1,23 +1,23 @@
 
 from ._main_user_data_manager import MainManager as UserDataManager
 from typing import Any
-from ...Global_Config_Manager import configs, Change_Data_Config
+from ...Global_Config_Manager import ConfigManager, Change_Data_Config
 
 class ContextManager(UserDataManager):
     def __init__(self):
         super().__init__(
             "Context_UserData",
             cache_metadata = (
-                configs.user_data.cache_medadata.context
-                if isinstance(configs.user_data.cache_medadata, Change_Data_Config)
-                else configs.user_data.cache_medadata
+                ConfigManager.get_configs().user_data.cache_medadata.context
+                if isinstance(ConfigManager.get_configs().user_data.cache_medadata, Change_Data_Config)
+                else ConfigManager.get_configs().user_data.cache_medadata
             ),
             cache_data = (
-                configs.user_data.cache_data.context
-                if isinstance(configs.user_data.cache_data, Change_Data_Config)
-                else configs.user_data.cache_data
+                ConfigManager.get_configs().user_data.cache_data.context
+                if isinstance(ConfigManager.get_configs().user_data.cache_data, Change_Data_Config)
+                else ConfigManager.get_configs().user_data.cache_data
             ),
-            branches_dir_name = configs.user_data.branches_dir_name
+            branches_dir_name = ConfigManager.get_configs().user_data.branches_dir_name
         )
     
     async def load(self, user_id: str, default: list = []):
@@ -31,16 +31,16 @@ class PromptManager(UserDataManager):
         super().__init__(
             "Prompt_UserData",
             cache_metadata = (
-                configs.user_data.cache_medadata.prompt
-                if isinstance(configs.user_data.cache_medadata, Change_Data_Config)
-                else configs.user_data.cache_medadata
+                ConfigManager.get_configs().user_data.cache_medadata.prompt
+                if isinstance(ConfigManager.get_configs().user_data.cache_medadata, Change_Data_Config)
+                else ConfigManager.get_configs().user_data.cache_medadata
             ),
             cache_data = (
-                configs.user_data.cache_data.prompt
-                if isinstance(configs.user_data.cache_data, Change_Data_Config)
-                else configs.user_data.cache_data
+                ConfigManager.get_configs().user_data.cache_data.prompt
+                if isinstance(ConfigManager.get_configs().user_data.cache_data, Change_Data_Config)
+                else ConfigManager.get_configs().user_data.cache_data
             ),
-            branches_dir_name = configs.user_data.branches_dir_name
+            branches_dir_name = ConfigManager.get_configs().user_data.branches_dir_name
         )
     
     async def load(self, user_id: str, default: str = ""):
@@ -54,16 +54,16 @@ class UserConfigManager(UserDataManager):
         super().__init__(
             "UserConfig_UserData",
             cache_metadata = (
-                configs.user_data.cache_medadata.config
-                if isinstance(configs.user_data.cache_medadata, Change_Data_Config)
-                else configs.user_data.cache_medadata
+                ConfigManager.get_configs().user_data.cache_medadata.config
+                if isinstance(ConfigManager.get_configs().user_data.cache_medadata, Change_Data_Config)
+                else ConfigManager.get_configs().user_data.cache_medadata
             ),
             cache_data = (
-                configs.user_data.cache_data.config
-                if isinstance(configs.user_data.cache_data, Change_Data_Config)
-                else configs.user_data.cache_data
+                ConfigManager.get_configs().user_data.cache_data.config
+                if isinstance(ConfigManager.get_configs().user_data.cache_data, Change_Data_Config)
+                else ConfigManager.get_configs().user_data.cache_data
             ),
-            branches_dir_name = configs.user_data.branches_dir_name
+            branches_dir_name = ConfigManager.get_configs().user_data.branches_dir_name
         )
     
     async def load(self, user_id: str, default: dict = {}):

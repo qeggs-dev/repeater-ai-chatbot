@@ -16,7 +16,7 @@ import time
 from loguru import logger
 from uuid import uuid4
 from pathlib import Path
-from ...Global_Config_Manager import configs
+from ...Global_Config_Manager import ConfigManager
 
 class RenderRequest(BaseModel):
     text: str
@@ -40,7 +40,7 @@ async def render(
     # 生成图片ID
     fuuid = uuid4()
     filename = f"{fuuid}.png"
-    render_output_image_dir = configs.render.markdown.to_image.output_dir
+    render_output_image_dir = Path(ConfigManager.get_configs().render.markdown.to_image.output_dir)
 
     # 延迟删除函数
     async def _wait_delete(sleep_time: float, filename: str):
@@ -62,7 +62,7 @@ async def render(
             await _delete(filename)
         
     if render_request.style:
-        style_path = configs.render.markdown.to_image.styles_dir
+        style_path = ConfigManager.get_configs().render.markdown.to_image.styles_dir
         styles = Styles(
             style_path
         )
@@ -74,20 +74,20 @@ async def render(
         # 获取用户配置
         config = await chat.user_config_manager.load(user_id)
         # 获取环境变量中的图片渲染风格
-        default_style = configs.render.markdown.to_image.default_style
+        default_style = ConfigManager.get_configs().render.markdown.to_image.default_style
         # 获取图片渲染风格
         style: str = config.get('render_style', default_style)
     
     if not render_request.timeout:
-        render_request.timeout = configs.render.default_image_timeout
+        render_request.timeout = ConfigManager.get_configs().render.default_image_timeout
     
     # 日志打印文件名和渲染风格
     logger.info(f'Rendering image {filename} for "{style}" style', user_id=user_id)
 
-    wkhtmltoimage_path = configs.render.markdown.to_image.wkhtmltoimage_path
-    style_file_encoding = configs.render.markdown.to_image.style_file_encoding
-    preprocess_map_before = configs.render.markdown.to_image.preprocess_map.before
-    preprocess_map_end = configs.render.markdown.to_image.preprocess_map.after
+    wkhtmltoimage_path = Path(ConfigManager.get_configs().render.markdown.to_image.wkhtmltoimage_path)
+    style_file_encoding = ConfigManager.get_configs().render.markdown.to_image.style_file_encoding
+    preprocess_map_before = ConfigManager.get_configs().render.markdown.to_image.preprocess_map.before
+    preprocess_map_end = ConfigManager.get_configs().render.markdown.to_image.preprocess_map.after
 
     # 调用markdown_to_image函数生成图片
     await markdown_to_image(
@@ -123,7 +123,7 @@ async def render(
 
 @app.get("/render_styles")
 async def get_render_styles():
-    styles_path = configs.render.markdown.to_image.styles_dir
+    styles_path = ConfigManager.get_configs().render.markdown.to_image.styles_dir
     styles = Styles(
         styles_path = styles_path,
     )
