@@ -55,7 +55,7 @@ from .Core_Response import Response
 # 如果一次修改涉及了接口的修改，或是需要客户端对此做兼容，就增加INTERFACE
 # 如果一次修改仅实现了内部修改，而不影响外部接口，就增加INTERNAL
 # 上一级别的变化会清零后面的所有版本号
-__version__ = "4.3.0.0"
+__version__ = "4.3.1.0"
 
 # ==== 本模块代码 ==== #
 
@@ -89,9 +89,11 @@ class Core:
             if max_concurrency is None else max_concurrency
         )
 
-        # 初始化API信息管理器
-        self.apiinfo = ApiInfo()
-        # 从指定文件加载API信息
+        # 初始化API INFO
+        self.apiinfo = ApiInfo(
+            ConfigManager.get_configs().api_info.case_sensitive
+        )
+        # 从指定文件加载API数据
         self.apiinfo.load(
             ConfigManager.get_configs().api_info.api_file_path
         )
@@ -107,7 +109,7 @@ class Core:
 
         # 黑名单
         self.blacklist: RegexChecker = RegexChecker()
-        blacklist_file_path = ConfigManager.get_configs().blacklist.file_path
+        blacklist_file_path = Path(ConfigManager.get_configs().blacklist.file_path)
         try:
             with open(blacklist_file_path, 'r', encoding='utf-8') as f:
                 self.blacklist.load_strstream(f)
@@ -204,9 +206,8 @@ class Core:
         :param user_info: 用户信息
         :return: 昵称
         """
-        user_nickname_mapping_file_path = ConfigManager.get_configs().user_nickname_mapping.file_path
-        unm_path = Path(user_nickname_mapping_file_path)
-        if not unm_path.exists():
+        user_nickname_mapping_file_path = Path(ConfigManager.get_configs().user_nickname_mapping.file_path)
+        if not user_nickname_mapping_file_path.exists():
             return user_info
         async with aiofiles.open(user_nickname_mapping_file_path, 'rb') as f:
             fdata = await f.read()
@@ -323,7 +324,7 @@ class Core:
         :param path: 黑名单文件路径
         """
         if not path:
-            blacklist_file_path = ConfigManager.get_configs().blacklist.file_path
+            blacklist_file_path = Path(ConfigManager.get_configs().blacklist.file_path)
         else:
             blacklist_file_path = Path(path)
         
@@ -410,6 +411,13 @@ class Core:
                         content = "Error: Sorry, you are in blacklist.",
                         finish_reason_cause = "User in blacklist",
                         status = 403
+                    )
+                
+                if not ConfigManager.get_configs().model.stream and stream:
+                    return Response(
+                        content = "Error: The streaming response feature is turned off in the server configuration.",
+                        finish_reason_cause = "Streaming response feature is turned off",
+                        status = 503
                     )
 
                 # 获取配置
@@ -549,12 +557,12 @@ class Core:
                 request.user_name = user_info.nickname
                 request.temperature = config.get("temperature", ConfigManager.get_configs().model.default_temperature)
                 request.top_p = config.get("top_p", ConfigManager.get_configs().model.default_top_p)
+                request.frequency_penalty = config.get("frequency_penalty", ConfigManager.get_configs().model.default_frequency_penalty)
+                request.presence_penalty = config.get("presence_penalty", ConfigManager.get_configs().model.default_presence_penalty)
                 request.max_tokens = config.get("max_tokens", ConfigManager.get_configs().model.default_max_tokens)
                 request.max_completion_tokens = config.get("model.max_completion_tokens", ConfigManager.get_configs().model.default_max_completion_tokens)
                 request.stop = config.get("stop", ConfigManager.get_configs().model.default_stop)
                 request.stream = ConfigManager.get_configs().model.stream
-                request.frequency_penalty = config.get("frequency_penalty", ConfigManager.get_configs().model.default_frequency_penalty)
-                request.presence_penalty = config.get("presence_penalty", ConfigManager.get_configs().model.default_presence_penalty)
                 request.print_chunk = print_chunk
 
                 # 记录预处理结束时间
@@ -562,7 +570,8 @@ class Core:
 
                 # 输出 (为了自动填充输出内容)
                 output = Response()
-                output.model_name = api.parent
+                output.model_group = api.parent
+                output.model_name = api.name
                 output.model_type = api.type.value
                 output.model_uid = api.uid
                 output.user_raw_input = message
@@ -705,7 +714,7 @@ class Core:
     # endregion
     # region > 重新加载API信息
     async def reload_apiinfo(self):
-        await self.apiinfo.load_async(ConfigManager.get_configs().api_info.api_file_path)
+        await self.apiinfo.load_async(Path(ConfigManager.get_configs().api_info.api_file_path))
     # endregion
 
     # region > 加载指定API INFO文件
