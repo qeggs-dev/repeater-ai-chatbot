@@ -14,8 +14,8 @@ from PathProcessors import validate_path, sanitize_filename
 from ....Global_Config_Manager import ConfigManager
 
 class SubManager:
-    def __init__(self, base_path: Path, sub_dir_name: str, cache_metadata:bool = False, cache_data:bool = False):
-        self.base_path: Path = base_path
+    def __init__(self, base_path: str | os.PathLike, sub_dir_name: str, cache_metadata:bool = False, cache_data:bool = False):
+        self.base_path: Path = Path(base_path)
         sub_dir_name: str = sanitize_filename(sub_dir_name)
         self.sub_dir_name: str = sub_dir_name
         self._global_lock: asyncio.Lock = asyncio.Lock()
