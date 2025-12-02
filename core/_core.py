@@ -23,7 +23,10 @@ from .CallAPI import (
 )
 from . import Data_Manager
 from . import Context_Manager
-from . import User_Config_Manager
+from . User_Config_Manager import (
+    ConfigManager as UserConfigManager,
+    UserConfigs
+)
 from .Core_Response import Response
 from .Lock_Pool import AsyncLockPool
 from RegexChecker import RegexChecker
@@ -74,7 +77,7 @@ class Core:
         # 初始化用户数据管理器
         self.context_manager = Data_Manager.ContextManager()
         self.prompt_manager = Data_Manager.PromptManager()
-        self.user_config_manager = User_Config_Manager.ConfigManager()
+        self.user_config_manager = UserConfigManager()
 
         # 初始化变量加载器
         self.promptvariable = Context_Manager.LoadPromptVariable(
@@ -152,7 +155,7 @@ class Core:
             user_id: str,
             model_uid: str = "",
             user_info: Request_User_Info = Request_User_Info(),
-            config: User_Config_Manager.UserConfigs = User_Config_Manager.UserConfigs(),
+            config: UserConfigs = UserConfigs(),
         ) -> PromptVP:
         """
         获取指定用户的PromptVP实例
@@ -235,7 +238,7 @@ class Core:
     # endregion
 
     # region > get config
-    async def get_config(self, user_id: str) -> User_Config_Manager.UserConfigs:
+    async def get_config(self, user_id: str) -> UserConfigs:
         """
         加载用户配置
 
@@ -372,10 +375,10 @@ class Core:
             user_info: Request_User_Info = Request_User_Info(),
             role: str = "user",
             role_name:  str = "",
-            model_uid: str | None = None,
-            load_prompt: bool = True,
             print_chunk: bool = True,
-            save_context: bool = True,
+            model_uid: str | None = None,
+            load_prompt: bool | None = None,
+            save_context: bool | None = None,
             reference_context_id: str | None = None,
             continue_completion: bool = False,
             stream: bool = False,
@@ -474,7 +477,7 @@ class Core:
                     user_name = user_info.nickname or user_info.username,
                     role = role,
                     role_name = role_name,
-                    load_prompt = load_prompt,
+                    load_prompt = load_prompt if load_prompt is not None else config.load_prompt,
                     continue_completion = continue_completion,
                     reference_context_id = reference_context_id,
                     prompt_vp = prompt_vp
@@ -593,16 +596,16 @@ class Core:
                             """
                             nonlocal output
                             output = await self._post_treatment(
+                                output = output,
                                 user_id = user_id,
                                 response = response,
                                 prompt_vp = prompt_vp,
                                 user_input = user_input,
                                 context_loader = context_loader,
                                 task_start_time = task_start_time,
-                                call_prepare_end_time = call_prepare_end_time,
-                                output = output,
-                                save_context = save_context,
                                 reference_context_id = reference_context_id,
+                                call_prepare_end_time = call_prepare_end_time,
+                                save_context = save_context if save_context is not None else config.save_context,
                             )
                         response_iterator = await self.stream_api_client.submit_Request(
                             user_id = user_id,
@@ -618,16 +621,16 @@ class Core:
                         )
                         
                         output = await self._post_treatment(
+                            output = output,
                             user_id = user_id,
                             response = response,
                             prompt_vp = prompt_vp,
                             user_input = user_input,
                             context_loader = context_loader,
                             task_start_time = task_start_time,
-                            call_prepare_end_time = call_prepare_end_time,
-                            output = output,
-                            save_context = save_context,
                             reference_context_id = reference_context_id,
+                            call_prepare_end_time = call_prepare_end_time,
+                            save_context = save_context if save_context is not None else config.save_context,
                         )
                         return output
                 
@@ -662,12 +665,12 @@ class Core:
         user_id: str,
         prompt_vp: PromptVP,
         response: CompletionsAPI.Response,
+        task_start_time: Request_Log.TimeStamp,
         user_input: Context_Manager.ContentUnit,
         context_loader:Context_Manager.ContextLoader,
-        task_start_time: Request_Log.TimeStamp,
         call_prepare_end_time: Request_Log.TimeStamp,
         output: Response = Response(),
-        save_context: bool = True,
+        save_context: bool | None = None,
         reference_context_id: str | None = None
     ) -> Response:
         # 补充调用日志的时间信息

@@ -18,3 +18,5 @@ class UserConfigs(BaseModel):
     presence_penalty: float | None = Field(None, ge=-2.0, le=2.0)
     auto_shrink_length: int | None = None
     render_style: str | None = None
+    load_prompt: bool = True
+    save_context: bool = True

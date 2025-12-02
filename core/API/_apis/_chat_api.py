@@ -32,8 +32,8 @@ class ChatRequest(BaseModel):
     role: str = "user"
     role_name: str | None = None
     model_uid: str | None = None
-    load_prompt: bool = True
-    save_context: bool = True
+    load_prompt: bool | None = None
+    save_context: bool | None = None
     reference_context_id: str | None = None
     continue_completion: bool = False
     stream: bool = False
