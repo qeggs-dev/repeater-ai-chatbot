@@ -1,0 +1,103 @@
+{
+    "api_info": {
+        "api_file_path": "./config/api_info.json",
+        "default_model_uid": "chat"
+    },
+    "blacklist": {
+        "file_path": "./config/blacklist.regex",
+        "match_timeout": 10
+    },
+    "bot_info": {
+        "name": "Repeater",
+        "birthday": {
+            "day": 28,
+            "month": 6,
+            "year": 2024
+        }
+    },
+    "callapi": {
+        "max_concurrency": 1000
+    },
+    "context": {
+        "auto_shrink_length": null
+    },
+    "core": {
+        "version": ""
+    },
+    "logger": {
+        "file_path": "./logs/repeater-log-{time:YYYY-MM-DD_HH-mm-ss.SSS}.log",
+        "level": "INFO",
+        "rotation": "10 MB",
+        "retention": "7 days",
+        "compression": "zip"
+    },
+    "model": {
+        "default_model_uid": "chat",
+        "default_temperature": 1.0,
+        "default_top_p": 1.0,
+        "default_max_tokens": 4096,
+        "default_max_completion_tokens": 4096,
+        "default_frequency_penalty": 0.0,
+        "default_presence_penalty": 0.0,
+        "default_stop": [],
+        "stream": true
+    },
+    "prompt": {
+        "dir": "./config/prompt/presets",
+        "suffix": ".md",
+        "encoding": "utf-8",
+        "preset_name": "default"
+    },
+    "render": {
+        "default_image_timeout": 60.0,
+        "markdown": {
+            "to_image": {
+                "default_style": "light",
+                "styles_dir": "./config/styles",
+                "style_file_encoding": "utf-8",
+                "preprocess_map": {
+                    "before": {},
+                    "after": {}
+                },
+                "wkhtmltoimage_path": "wkhtmltoimage",
+                "output_dir": "./workspace/temp/render"
+            }
+        }
+    },
+    "request_log": {
+        "dir": "./workspace/request_log",
+        "auto_save": true,
+        "debonce_save_wait_time": 1200.0,
+        "max_cache_size": 1000
+    },
+    "server": {
+        "host": null,
+        "port": null,
+        "workers": null,
+        "reload": null
+    },
+    "static": {
+        "readme_file_path": "./README.md",
+        "static_dir": "./static"
+    },
+    "time": {
+        "time_offset": 0.0
+    },
+    "user_config_cache": {
+        "downgrade_wait_time": 600.0,
+        "debounce_save_wait_time": 1000.0
+    },
+    "user_data": {
+        "dir": "./workspace/data/user_data",
+        "branches_dir_name": "branches",
+        "metadata_file_name": "metadata.json",
+        "cache_medadata": false,
+        "cache_data": false
+    },
+    "user_nickname_mapping": {
+        "file_path": "./config/user_nickname_mapping.json"
+    },
+    "web": {
+        "index_web_file": "./static/index.html"
+    }
+}
