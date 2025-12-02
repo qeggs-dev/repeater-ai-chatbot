@@ -48,6 +48,7 @@
 | python-multipart  | 0.0.20   | Apache Software License              | [Apache-2.0](https://github.com/Kludex/python-multipart/blob/master/LICENSE.txt)    | `core.DataManager` & `API`         | Support for form data                 |
 | uvicorn           | 0.34.3   | BSD License                          | [BSD-3-Clause](https://github.com/Kludex/uvicorn/blob/main/LICENSE.md)              | `run_fastapi.py`                   | Run FastAPI                           |
 | numpy             | 2.3.4    | BSD License                          | [BSD-3-Clause](https://github.com/numpy/numpy/blob/main/LICENSE.txt)                | *Entire Project*                   | Speed up batch computing of data      |
+| python-box        | 7.3.2    | MIT License                          | [MIT](https://github.com/cdgriffith/Box/blob/master/LICENSE)                        | `core.Global_Config_Manager`       | Mixed configuration files             |
 
 ---
 
@@ -84,111 +85,134 @@ PS: `run.py`启动器会在完成所有操作后启动主程序，而这只需�
 | :---: | :---: | :---: | :---: |
 | `*API_KEY` | API_Key (具体变量名由`API_INFO.API_FILE_PATH`指向 文件中`ApiKeyEnv`字段的名称) | **必填** | *\*可从[Deepseek开放平台/API Keys](https://platform.deepseek.com/api_keys)页面获取* |
 | `ADMIN_API_KEY` | 管理员API_Key (用于框架的管理员操作身份验证) | **选填但生产环境建议填写** | *\*自动生成随机 API Key* |
-| `CONFIG_FILE_PATH` | 配置文件路径 | **选填** | `./config/project_config.json` |
+| `CONFIG_DIR` | 配置文件夹路径 | **选填** | `./config/project_config` |
+| `CONFIG_FORCE_LOAD_LIST` | 配置文件强制加载列表(元素为配置文件路径) | **选填** | *`["./config/project_config/configs.json", "./config/project_config/configs2.json"]`* |
 | `CONFIG_ENVIRONMENT` | 配置文件环境 | **选填** | `DEV` |
 | `HOST` | 服务监听的IP | **选填** | `0.0.0.0` |
 | `PORT` | 服务监听的端口 | **选填** | `8080` |
 | `WORKERS` | 服务监听的进程数 | **选填** | `1` |
 | `RELOAD` | 是否自动重启 | **选填** | `false` |
 
-## 配置选项表
+## 配置文件
 
-| 选项 | 描述 | 是否必填 | **默认值**(*示例值*) | 类型 | 单位 |
-| :---: | :---: | :---: | :---: | :---: | :---: |
-| `RENDER.MARKDOWN.WKHTMLTOIMAGE_PATH` | 渲染图片依赖的[`Wkhtmltopdf`](https://wkhtmltopdf.org/downloads.html)中`wkhtmltoimage`的路径 | **必填** | *`/usr/local/bin/wkhtmltoimage`* | str | |
-| `RENDER.OUTPUT_IMAGE_DIR` | 渲染图片的缓存位置 | **必填** | *`./workspace/temp/render`* | str | |
-| `STATIC.BASE_PATH` | 静态资源位置 | **必填** | *`./static`* | str | |
-| `API_INFO.API_FILE_PATH` | API信息文件路径 | *选填* | `./config/apiconfig.json` | str | |
-| `API_INFO.DEFAULT_MODEL_UID` | 调用时默认使用的模型UID | *选填* | `deepseek-chat` | str | |
-| `BLACKLIST.FILE_PATH` | 黑名单文件位置 | *选填* | `./config/blacklist.regex` | str | |
-| `BLACKLIST.MATCH_TIMEOUT` | 黑名单匹配超时时间 | *选填* | `10` | int | 秒 |
-| `BOT_INFO.NAME` | 机器人名字 | *选填* | `Bot` | str | |
-| `BOT_INFO.BIRTHDAY.YEAR` | 机器人出生年份 | *选填* | *`2024`* | int | 年 |
-| `BOT_INFO.BIRTHDAY_MONTH` | 机器人出生月份 | *选填* | *`01`* | int | 月 |
-| `BOT_INFO.BIRTHDAY_DAY` | 机器人出生日期 | *选填* | *`01`* | int | 日 |
-| `CALLAPI.MAX_CONCURRENCY` | 最大并发数(仅适用于主请求API，也就是Chat API) | *选填* | `1000` | int | 请求数 |
-| `CONFIG_CACHE.DEBONCE_SAVE_WAIT_TIME` | 配置管理器缓存延迟保存时间 | *选填* | `600.0` | float | 秒 |
-| `CONFIG_CACHE.DOWNGRADE_WAIT_TIME` | 配置管理器缓存降级等待时间 | *选填* | `600.0` | float | 秒 |
-| `CORE.VERSION` | 版本号(用于替换Core中的版本号数据，以及提示词变量中的版本号) | *选填* | \*由代码自动生成 | str | |
-| `LOGGER.LOG_LEVEL` | 日志级别 | *选填* | `INFO` | str | |
-| `LOGGER.LOG_FILE_DIR` | 日志文件位置 | *选填* | `./logs` | str | |
-| `LOGGER.LOG_FILE_PREFIX` | 日志文件前缀 | *选填* | `repeater_log_` | str | |
-| `LOGGER.LOG_FILE_SUFFIX` | 日志文件后缀 | *选填* | `.log` | str | |
-| `LOGGER.ROTATION` | 日志文件轮换配置 | *选填* | `10 MB` | str | 日志大小、时间长度等 |
-| `LOGGER.LOG_RETENTION` | 日志文件保留时间 | *选填* | `14 days` | str | 时间 |
-| `MODEL.DEFAULT_TEMPERATURE` | 默认模型温度 | *选填* | `1.0` | float | |
-| `MODEL.DEFAULT_TOP_P` | 默认模型`Top_P` | *选填* | `1.0` | float | |
-| `MODEL.DEFAULT_FREQUENCY_PENALTY` | 默认模型频率惩罚 | *选填* | `0.0` | float | |
-| `MODEL.DEFAULT_PRESENCE_PENALTY` | 默认模型存在惩罚 | *选填* | `0.0` | float | |
-| `MODEL.DEFAULT_MAX_TOKENS` | 默认模型最大输出token<br/>(部分API不支持 `DEFAULT_MAX_COMPLETION_TOKENS`设置 提供此项以兼容) | *选填* | `1024` | int | Token |
-| `MODEL.DEFAULT_MAX_COMPLETION_TOKENS` | 默认模型最大生成token | *选填* | `1024` | int | Token |
-| `MODEL.DEFAULT_STOP` | 默认模型停止词 | *选填* | [] | list[str] | |
-| `MODEL.STREAM` | 是否内部启用流式输出(此选项仅告知框架是否启用流式生成，但框架内部存在缓冲区，开启此选项后如果请求时没有设置`stream`参数，会等待生成完毕) | *选填* | `true` | bool |
-| `MODEL.AUTO_SHRINK_LENGTH` | 默认的自动Shrink阈值上下文长度 | *选填* | 0 | int | 上下文条数(为0时不自动限制长度) |
-| `README.FILE_PATH` | README文件位置 | *选填* | `./README.md` | str | |
-| `RENDER.DEFAULT_IMAGE_TIMEOUT` | 渲染图片的默认保留时间(图片生成后给予客户端的图片链接有效时间) | *选填* | 60 | float | 秒 |
-| `RENDER.MARKDOWN.TO_IMAGE.DEFAULT_STYLES` | Markdown默认渲染图片的样式 | *选填* | `light` | str | |
-| `RENDER.MARKDOWN.TO_IMAGE.STYLES_DIR` | Markdown渲染图片的样式文件夹 | *选填* | `./styles` | str | |
-| `RENDER.MARKDOWN.TO_IMAGE.PREPROCESS_MAP.BEFORE` | Markdown渲染预处理映射（键会被替换为值的内容） | *选填* | *`{"\n": "<br/>"}`* | str | |
-| `RENDER.MARKDOWN.TO_IMAGE.PREPROCESS_MAP.AFTER` | Markdown渲染后处理映射（键会被替换为值的内容） | *选填* | *`{"<code>": "<pre><code>", "</code>": "</code></pre>"}`* | str | |
-| `REQUESTLOG.AUTO_SAVE` | 是否将记录到主API的请求日志自动保存到文件 | *选填* | `True` | bool | |
-| `REQUESTLOG.DEBONCE.SAVE_WAIT_TIME` | 请求日志持久化存储的防抖时间 | *选填* | `1200.0` | float | 秒 |
-| `REQUESTLOG.MAX_CACHE_SIZE` | 请求日志缓存的最大数量 | *选填* | `1000` | int | 日志数量 |
-| `REQUESTLOG.PATH` | 主API请求日志的持久化存储目录 | *选填* | *`./workspace/request_log`* | str | |
-| `SERVER.HOST` | 服务监听的IP(此选项会覆盖环境变量中的配置) | *选填* | 环境变量`HOST` | str | |
-| `SERVER.PORT` | 服务监听端口(此选项会覆盖环境变量中的配置) | *选填* | 环境变量`PORT` | int | |
-| `SERVER.WORKERS` | 服务工作进程数(此选项会覆盖环境变量中的配置) | *选填* | 环境变量`WORKERS` | int | |
-| `SERVER.RELOAD` | 是否自动重启 | *选填* | 环境变量`RELOAD` | bool | |
-| `PROMPT.DEFAULT_DIR` | 默认提示词文件夹 | *选填* | `./Prompt/Presets` | str | |
-| `PROMPT.PARSET_NAME` | 默认提示词文件名(不包括文件后缀) | *选填* | `default` | str | |
-| `PROMPT.DEFAULT_SUFFIX` | 默认提示词文件后缀 | *选填* | `.md` | str | |
-| `TIME.TIMEZONE` | 时区 | *选填* | `8` | int | 偏移小时数 |
-| `USER_DATA.SUB_DIR_NAME` | 用户子数据文件夹名称 | *选填* | `ParallelData` | str | |
-| `USER_DATA.DIR` | 用户数据存放位置 | *选填* | `./data/userdata` | str | |
-| `USER_DATA.METADATA_FILENAME` | 用户数据元数据文件名 | *选填* | `metadata.json` | str | |
-| `USER_DATA.CACHE_METADATA` | 是否缓存用户数据元数据 | *选填* | `False` | bool | |
-| `USER_DATA.CONTEXT_USERDATA.CACHE_METADATA` | 控制用户数据元数据缓存是否开启 | *选填* | \*`USER_DATA.CACHE_METADATA`的值 | bool | |
-| `USER_DATA.PROMPT_USERDATA.CACHE_METADATA` | 控制提示词数据元数据缓存是否开启 | *选填* | \*`USER_DATA.CACHE_METADATA`的值 | bool | |
-| `USER_DATA.USERCONFIG_USERDATA.CACHE_METADATA` | 配置用户数据元数据缓存是否开启 | *选填* | \*`USER_DATA.CACHE_METADATA`的值 | bool | |
-| `USER_DATA.CACHE_DATA` | 是否缓存用户数据 | *选填* | `False` | bool | |
-| `USER_DATA.CONTEXT_USERDATA.CACHE_DATA` | 控制用户数据缓存是否开启 | *选填* | \*`USER_DATA.CACHE_DATA`的值 | bool | |
-| `USER_DATA.PROMPT_USERDATA.CACHE_DATA` | 控制提示词数据缓存是否开启 | *选填* | \*`USER_DATA.CACHE_DATA`的值 | bool | |
-| `USER_DATA.USERCONFIG_USERDATA.CACHE_DATA` | 配置用户数据缓存是否开启 | *选填* | \*`USER_DATA._CACHE_DATA`的值 | bool | |
-| `USER_NICKNAME_MAPPING.FILE_PATH` | 用户昵称映射表文件位置 | *选填* | `./config/UserNicknameMapping.json` | str | |
-| `WEB.INDEX_WEB_FILE` | 首页文件位置 | *选填* | | str | |
+**默认值：**
+```json
+{
+    "api_info": {
+        "api_file_path": "./config/api_info.json",
+        "default_model_uid": "chat"
+    },
+    "blacklist": {
+        "file_path": "./config/blacklist.regex",
+        "match_timeout": 10
+    },
+    "bot_info": {
+        "name": "Repeater",
+        "birthday": {
+            "day": 28,
+            "month": 6,
+            "year": 2024
+        }
+    },
+    "callapi": {
+        "max_concurrency": 1000
+    },
+    "context": {
+        "auto_shrink_length": null
+    },
+    "core": {
+        "version": ""
+    },
+    "logger": {
+        "file_path": "./logs/repeater-log-{time:YYYY-MM-DD_HH-mm-ss.SSS}.log",
+        "level": "INFO",
+        "rotation": "10 MB",
+        "retention": "7 days",
+        "compression": "zip"
+    },
+    "model": {
+        "default_model_uid": "chat",
+        "default_temperature": 1.0,
+        "default_top_p": 1.0,
+        "default_max_tokens": 4096,
+        "default_max_completion_tokens": 4096,
+        "default_frequency_penalty": 0.0,
+        "default_presence_penalty": 0.0,
+        "default_stop": [],
+        "stream": true
+    },
+    "prompt": {
+        "dir": "./config/prompt/presets",
+        "suffix": ".md",
+        "encoding": "utf-8",
+        "preset_name": "default"
+    },
+    "render": {
+        "default_image_timeout": 60.0,
+        "markdown": {
+            "to_image": {
+                "default_style": "light",
+                "styles_dir": "./config/styles",
+                "style_file_encoding": "utf-8",
+                "preprocess_map": {
+                    "before": {},
+                    "after": {}
+                },
+                "wkhtmltoimage_path": "wkhtmltoimage",
+                "output_dir": "./workspace/temp/render"
+            }
+        }
+    },
+    "request_log": {
+        "dir": "./workspace/request_log",
+        "auto_save": true,
+        "debonce_save_wait_time": 1200.0,
+        "max_cache_size": 1000
+    },
+    "server": { // 这里的几个字段为null或不填则会使用环境变量中定义的配置
+        "host": null,
+        "port": null,
+        "workers": null,
+        "reload": null
+    },
+    "static": {
+        "readme_file_path": "./README.md",
+        "static_dir": "./static"
+    },
+    "time": {
+        "time_offset": 0.0
+    },
+    "user_config_cache": {
+        "downgrade_wait_time": 600.0,
+        "debounce_save_wait_time": 1000.0
+    },
+    "user_data": {
+        "dir": "./workspace/data/user_data",
+        "branches_dir_name": "branches",
+        "metadata_file_name": "metadata.json",
+        "cache_medadata": false,
+        "cache_data": false
+    },
+    "user_nickname_mapping": {
+        "file_path": "./config/user_nickname_mapping.json"
+    },
+    "web": {
+        "index_web_file": "./static/index.html"
+    }
+}
+```
 
-PS: 配置读取时默认不区分大小写
+PS: 配置读取时键名不区分大小写，但建议使用小写格式
+配置管理器会扫描环境变量`CONFIG_DIR`下的所有json/yaml文件
+并按照路径名顺序排列，后加载配置中的字段会覆盖之前的配置
+你也可以使用环境变量`CONFIG_FORCE_LOAD_LIST`来强制按照指定的顺序加载配置
+
 ---
 
 ## 各种配置文件的数据格式
 
 1. 配置文件格式：
-```yaml
-- name: LOG_LEVEL
-  values:
-    - type: str
-      environment: DEV # 此字段可以让配置加载器根据是否与`CONFIG_ENVIRONMENT`环境变量相同来限制加载
-      value: DEBUG
-    - type: str
-      environment: PROD
-      value: INFO
-    - type: str
-      value: INFO
-
-- name: RENDER.MARKDOWN.WKHTMLTOIMAGE_PATH
-  values:
-    - type: path
-      system: Windows # 此字段可以控制该值在指定系统下生效
-      value: C:\Program Files\wkhtmltopdf\bin\wkhtmltoimage.exe
-    - type: path
-      system: Linux
-      value: /usr/local/bin/wkhtmltoimage
-    - type: path
-      system: '*'
-      value: ./wkhtmltopdf/wkhtmltoimage
-  annotations: 需要写明Wkhhtmltopdf的路径 # 此字段为预留字段，可填写任意内容，与程序运行逻辑无关。
-```
-JSON同理，配置管理器同时支持JSON和YAML两种格式。
+参考[配置文件](#配置文件)
 
 2. api_info文件格式：
 ```json
