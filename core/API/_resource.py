@@ -16,3 +16,5 @@ chat = Core()
 
 # 生成或读取API Key
 admin_api_key = AdminKeyManager()
+
+__version__ = "2.0.0.0"

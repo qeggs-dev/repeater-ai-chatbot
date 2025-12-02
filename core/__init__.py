@@ -10,6 +10,7 @@ config_loader.load(
     create_if_missing=True
 )
 from . import API
+__api_version__ = API.__version__
 from . import Logger_Init
 from ._core import Core, Response, __version__
 from . import Request_User_Info

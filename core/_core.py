@@ -47,8 +47,17 @@ from .Logger_Init import (
 )
 from .Core_Response import Response
 
+# ==== 模块信息 ==== #
+# 版本号规则
+# { PARADIGM } . { DEPLOYMENT } . { INTERFACE } . { INTERNAL } 
+# 如果一次修改涉及了主要使用范式的变化，就更新PARADIGM
+# 如果一次修改涉及了部署方面的巨大变化，就增加DEPLOYMENT
+# 如果一次修改涉及了接口的修改，就增加INTERFACE
+# 如果一次修改仅实现了内部修改，而不影响外部接口，就增加INTERNAL
+# 上一级别的变化会清零后面的所有版本号
+__version__ = "4.3.0.0"
+
 # ==== 本模块代码 ==== #
-__version__ = ConfigManager.get_configs().core.version or "4.3.0.0"
 
 class Core:
     # region > init
@@ -164,6 +173,7 @@ class Core:
                 bot_birthday_day,
                 name=bot_name
             ),
+            version = ConfigManager.get_configs().core.version or __version__,
             model_uid = model_uid if model_uid else config.get("model_uid"),
             botname = bot_name,
             username = user_info.username or "None",
