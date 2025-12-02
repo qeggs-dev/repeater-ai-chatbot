@@ -48,7 +48,7 @@ from .Logger_Init import (
 from .Core_Response import Response
 
 # ==== 本模块代码 ==== #
-__version__ = ConfigManager.get_configs().core.version or "4.2.9.0"
+__version__ = ConfigManager.get_configs().core.version or "4.3.0.0"
 
 class Core:
     # region > init

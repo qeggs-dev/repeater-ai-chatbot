@@ -3,9 +3,12 @@ from . import Global_Config_Manager
 _env = _Env()
 config_loader = Global_Config_Manager.ConfigManager()
 config_loader.update_base_path(
-    _env.path("CONFIG_DIR", "./configs/project_configs")
+    _env.path("CONFIG_DIR", "./configs/project_configs"),
+    _env.json("CONFIG_FORCE_LOAD_LIST", None)
 )
-config_loader.load(create_if_missing=True)
+config_loader.load(
+    create_if_missing=True
+)
 from . import API
 from . import Logger_Init
 from ._core import Core, Response, __version__

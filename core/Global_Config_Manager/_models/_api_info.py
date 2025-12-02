@@ -4,4 +4,4 @@ class API_Info_Config(BaseModel):
     model_config = ConfigDict(case_sensitive=False)
     
     api_file_path: str = "./config/api_info.json"
-    default_model_uid: str = "deepseek-chat"
+    default_model_uid: str = "chat"

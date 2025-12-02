@@ -12,6 +12,7 @@ class ConfigManager:
     _configs: Base_Config = Base_Config()
     _instance: ConfigManager | None = None
     _base_path: Path
+    _force_load_list: list[Path] = []
 
     @classmethod
     def get_configs(cls) -> Base_Config:
@@ -23,8 +24,12 @@ class ConfigManager:
         return cls._instance
 
     @classmethod
-    def update_base_path(cls, path: str | os.PathLike) -> None:
+    def update_base_path(cls, path: str | os.PathLike, force_load_list: list[str | os.PathLike] | None = None) -> None:
         cls._base_path = Path(path)
+        if isinstance(force_load_list, list):
+            cls._force_load_list = [Path(f) for f in force_load_list]
+        else:
+            cls._force_load_list = []
     
     @classmethod
     def _scan_dir(cls, globs: Iterable[str]) -> Generator[Path, None, None]:
@@ -63,8 +68,13 @@ class ConfigManager:
         :param use_cache: If True, use the cached config, otherwise reload the config
         """
         try:
+            if cls._force_load_list:
+                load_list = cls._force_load_list
+            else:
+                load_list = cls._config_files()
+            
             configs: list[Box] = []
-            for path in cls._config_files():
+            for path in load_list:
                 if path.suffix in [".yaml", ".yml"]:
                     configs.append(Box(cls._load_yaml(path)))
                 elif path.suffix == ".json":
