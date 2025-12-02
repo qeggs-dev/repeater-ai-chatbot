@@ -50,8 +50,8 @@ async def get_userdata_file(user_id: str):
         zipf.writestr("user_context_readable.txt", readable_context(context))
         zipf.writestr("user_prompt.json", orjson.dumps(prompt))
         zipf.writestr("user_prompt_readable.txt", prompt)
-        zipf.writestr("user_config.json", orjson.dumps(config.configs))
-        zipf.writestr("user_config_readable.yaml", (yaml.dump(config.configs, indent = 2, allow_unicode = True) if config.configs else ""))
+        zipf.writestr("user_config.json", orjson.dumps(config.model_dump()))
+        zipf.writestr("user_config_readable.yaml", (yaml.dump(config.model_dump(), indent = 2, allow_unicode = True) if config.model_dump() else ""))
     buffer.seek(0)
 
     logger.info(f"downloaded userdata file", user_id = user_id)

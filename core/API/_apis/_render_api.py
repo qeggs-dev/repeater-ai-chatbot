@@ -76,7 +76,7 @@ async def render(
         # 获取环境变量中的图片渲染风格
         default_style = ConfigManager.get_configs().render.markdown.to_image.default_style
         # 获取图片渲染风格
-        style: str = config.get('render_style', default_style)
+        style: str = config.render_style or default_style
     
     if not render_request.timeout:
         render_request.timeout = ConfigManager.get_configs().render.default_image_timeout

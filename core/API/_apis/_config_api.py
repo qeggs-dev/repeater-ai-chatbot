@@ -15,6 +15,8 @@ from fastapi import (
 )
 from loguru import logger
 
+from pydantic import BaseModel, ValidationError
+
 @app.get("/userdata/config/get/{user_id}")
 async def change_config(user_id: str):
     """
@@ -26,10 +28,14 @@ async def change_config(user_id: str):
     logger.info(f"Get user config", user_id = user_id)
 
     # 返回配置
-    return JSONResponse(config.configs)
+    return JSONResponse(config.model_dump())
+
+class SetConfigRequest(BaseModel):
+    key: str
+    value: Any
 
 @app.put("/userdata/config/set/{user_id}/{value_type}")
-async def set_config(user_id: str, value_type: str, key: str = Form(...), value: Any = Form(...)):
+async def set_config(user_id: str, value_type: str, request: SetConfigRequest):
     """
     Endpoint for setting config
 
@@ -59,22 +65,38 @@ async def set_config(user_id: str, value_type: str, key: str = Form(...), value:
         value = None
     else:
         # 将值转换为指定类型
-        value = TYPES[value_type](value)
+        value = TYPES[value_type](request.value)
     
     # 读取配置
     config = await chat.user_config_manager.load(user_id=user_id)
     
     # 更新配置
-    config[key] = value
+    if request.key in type(config).model_fields.keys():
+        try:
+            setattr(config, request.key, value)
+        except ValidationError as e:
+            errors = e.errors()
+            text_buffer:list[str] = []
+            for error in errors:
+                text_buffer.append(f"{'.'.join(error['loc'])}: {error['msg']}")
+            raise HTTPException(400, "\n".join(text_buffer))
+    else:
+        raise HTTPException(400, "Invalid config key")
 
     # 保存配置
     # await chat.user_config_manager.save(user_id=user_id, configs=config)
     await chat.user_config_manager.force_write(user_id=user_id, configs=config)
     
-    logger.info("Set user config {key}={value}(type:{value_type})", user_id = user_id, key = key, value = value, value_type = value_type)
+    logger.info(
+        "Set user config {key}={value}(type:{value_type})",
+        user_id = user_id,
+        key = request.key,
+        value = value,
+        value_type = value_type
+    )
 
     # 返回新配置内容
-    return JSONResponse(config.configs)
+    return JSONResponse(config.model_dump())
 
 @app.put("/userdata/config/delkey/{user_id}")
 async def delkey_config(user_id: str, key: str = Form(...)):
@@ -92,12 +114,11 @@ async def delkey_config(user_id: str, key: str = Form(...)):
     # 读取配置
     config = await chat.user_config_manager.load(user_id=user_id)
     
-    # 如果项不存在，则抛出错误
-    if key not in config:
-        raise HTTPException(400, "Key not found")
-
-    # 删除项
-    del config[key]
+    # 更新配置
+    if key in type(config).model_fields.keys():
+        setattr(config, key, None)
+    else:
+        raise HTTPException(400, "Invalid config key")
 
     # 保存配置
     await chat.user_config_manager.save(user_id=user_id, configs=config)
@@ -105,7 +126,7 @@ async def delkey_config(user_id: str, key: str = Form(...)):
     logger.info("Del user config {key}", user_id = user_id, key = key)
 
     # 返回新配置内容
-    return JSONResponse(config)
+    return JSONResponse(config.model_dump())
 
 @app.get("/userdata/config/userlist")
 async def get_config_userlist():
@@ -157,7 +178,7 @@ async def get_config_now_branch_id(user_id: str):
     """
 
     # 获取当前配置路由ID
-    branch_id = await chat.user_config_manager.get_default_item(user_id)
+    branch_id = await chat.user_config_manager.get_default_item_id(user_id)
 
     logger.info(f"Get user now branch id", user_id = user_id)
 
@@ -178,7 +199,7 @@ async def change_config(user_id: str, new_branch_id: str = Form(...)):
     """
 
     # 设置平行配置路由
-    await chat.user_config_manager.set_default_item(user_id, item = new_branch_id)
+    await chat.user_config_manager.set_default_item_id(user_id, item = new_branch_id)
 
     logger.info("Change user config branch id to {new_branch_id}", user_id = user_id, new_branch_id = new_branch_id)
 
