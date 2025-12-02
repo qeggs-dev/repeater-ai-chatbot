@@ -1,7 +1,7 @@
 from .._resource import chat, app
 import orjson
 from typing import AsyncIterator
-from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi.responses import ORJSONResponse, StreamingResponse
 
 @app.get("/request_log")
 @app.get("/request_log/list")
@@ -13,10 +13,10 @@ async def get_request_log():
         filter: Optional list of filters
     
     Returns:
-        JSONResponse: Filtered log object dictionary
+        ORJSONResponse: Filtered log object dictionary
     """
     logs = await chat.request_log.read_request_log()
-    return JSONResponse([log.as_dict for log in logs])
+    return ORJSONResponse([log.as_dict for log in logs])
 
 @app.get("/request_log/stream")
 async def stream_request_log():

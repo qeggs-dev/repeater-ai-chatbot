@@ -9,7 +9,7 @@ from ...Context_Manager import (
 )
 from fastapi import Form
 from fastapi.responses import (
-    JSONResponse,
+    ORJSONResponse,
     PlainTextResponse
 )
 from pydantic import BaseModel
@@ -25,7 +25,7 @@ async def get_context(user_id: str):
         user_id (str): User ID
     
     Returns:
-        JSONResponse: User context
+        ORJSONResponse: User context
     """
     # 从chat.context_manager中加载用户ID为user_id的上下文
     context = await chat.context_manager.load(user_id, [])
@@ -33,7 +33,7 @@ async def get_context(user_id: str):
     logger.info(f"Get Context", user_id = user_id)
 
     # 返回JSON格式的上下文
-    return JSONResponse(context)
+    return ORJSONResponse(context)
 
 @app.get("/userdata/context/length/{user_id}")
 async def get_context_length(user_id: str):
@@ -44,7 +44,7 @@ async def get_context_length(user_id: str):
         user_id (str): The user ID
     
     Returns:
-        JSONResponse: The JSON response containing the context length
+        ORJSONResponse: The JSON response containing the context length
     """
     # 从chat.context_manager中加载用户ID为user_id的上下文
     context_loader = await chat.get_context_loader()
@@ -52,8 +52,8 @@ async def get_context_length(user_id: str):
     
     logger.info(f"Get Context length", user_id = user_id)
 
-    # 返回JSONResponse，包含上下文的总长度和上下文的长度
-    return JSONResponse(
+    # 返回ORJSONResponse，包含上下文的总长度和上下文的长度
+    return ORJSONResponse(
         {
             "total_context_length": context.total_length,
             "context_length": len(context),
@@ -67,15 +67,15 @@ async def get_context_userlist():
     Endpoint for getting context
 
     Returns:
-        JSONResponse: A JSONResponse containing a list of user IDs
+        ORJSONResponse: A ORJSONResponse containing a list of user IDs
     """
     # 从chat.context_manager中获取所有用户ID
     userid_list = await chat.context_manager.get_all_user_id()
 
     logger.info(f"Get Context userlist")
 
-    # 返回JSONResponse，包含所有用户ID
-    return JSONResponse(userid_list)
+    # 返回ORJSONResponse，包含所有用户ID
+    return ORJSONResponse(userid_list)
 
 @app.post("/userdata/context/withdraw/{user_id}")
 async def withdraw_context(user_id: str, context_pair_num: int = Form(1, gt=0)):
@@ -87,7 +87,7 @@ async def withdraw_context(user_id: str, context_pair_num: int = Form(1, gt=0)):
         length (int | None): The number of messages to withdraw
 
     Returns:
-        JSONResponse: New context
+        ORJSONResponse: New context
     """
     # 从context_loader中加载用户ID为user_id的上下文
     context_loader = await chat.get_context_loader()
@@ -108,9 +108,9 @@ async def withdraw_context(user_id: str, context_pair_num: int = Form(1, gt=0)):
             item.context_list
         )
     
-    # 返回JSONResponse，新的上下文内容
+    # 返回ORJSONResponse，新的上下文内容
     await context_loader.save(user_id, context)
-    return JSONResponse(
+    return ORJSONResponse(
         {
             "status": "success",
             "deleted": len(pop_context),
@@ -145,7 +145,7 @@ async def inject_context(user_id: str, request: InjectContext):
         )
     )
     await context_loader.save(user_id, context)
-    return JSONResponse(
+    return ORJSONResponse(
         {
             "status": "success",
             "context": context.context
@@ -168,7 +168,7 @@ async def rewrite_context(user_id: str, rewrite_context: RewriteContext):
         rewrite_context (RewriteContext): Context to rewrite
 
     Returns:
-        JSONResponse: New context
+        ORJSONResponse: New context
     """
     # 从context_loader中加载用户ID为user_id的上下文
     context_loader = await chat.get_context_loader()
@@ -189,8 +189,8 @@ async def rewrite_context(user_id: str, rewrite_context: RewriteContext):
     
     logger.info(f"Rewrite {rewrite_context.index} Context", user_id = user_id)
     
-    # 返回JSONResponse，新的上下文内容
-    return JSONResponse(context)
+    # 返回ORJSONResponse，新的上下文内容
+    return ORJSONResponse(context)
 
 @app.get("/userdata/context/branchs/{user_id}")
 async def get_context_branch_id(user_id: str):
@@ -201,7 +201,7 @@ async def get_context_branch_id(user_id: str):
         user_id (str): User ID
 
     Returns:
-        JSONResponse: A JSON response containing the context branch ID list
+        ORJSONResponse: A JSON response containing the context branch ID list
     """
     # 获取用户ID为user_id的上下文分支ID
     branchs = await chat.context_manager.get_all_item_id(user_id)
@@ -209,7 +209,7 @@ async def get_context_branch_id(user_id: str):
     logger.info(f"Get Context branch id list", user_id = user_id)
 
     # 返回上下文分支ID
-    return JSONResponse(branchs)
+    return ORJSONResponse(branchs)
 
 @app.get("/userdata/context/now_branch/{user_id}")
 async def get_context_now_branch_id(user_id: str):
@@ -220,7 +220,7 @@ async def get_context_now_branch_id(user_id: str):
         user_id (str): User ID
 
     Returns:
-        JSONResponse: Context branch id
+        ORJSONResponse: Context branch id
     """
     # 获取用户ID为user_id的上下文分支ID
     branch_id = await chat.context_manager.get_default_item_id(user_id)

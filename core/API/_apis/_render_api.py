@@ -8,7 +8,7 @@ from fastapi import (
     BackgroundTasks,
     Request
 )
-from fastapi.responses import JSONResponse
+from fastapi.responses import ORJSONResponse
 from pydantic import BaseModel
 import asyncio
 import os
@@ -109,7 +109,7 @@ async def render(
     # 生成图片的URL
     fileurl = request.url_for("render_file", file_uuid=fuuid)
 
-    return JSONResponse(
+    return ORJSONResponse(
         {
             "image_url": str(fileurl),
             "file_uuid": str(fuuid),
@@ -128,4 +128,4 @@ async def get_render_styles():
         styles_path = styles_path,
     )
     style_names = styles.get_style_names()
-    return JSONResponse(style_names)
+    return ORJSONResponse(style_names)

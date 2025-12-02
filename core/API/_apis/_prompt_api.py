@@ -4,7 +4,7 @@ from .._resource import (
 )
 from fastapi import Form
 from fastapi.responses import (
-    JSONResponse,
+    ORJSONResponse,
     PlainTextResponse
 )
 from loguru import logger
@@ -54,7 +54,7 @@ async def get_prompt_userlist():
     Endpoint for getting prompt user list
 
     Returns:
-        JSONResponse: User ID list
+        ORJSONResponse: User ID list
     """
     # 获取所有用户ID
     userid_list = await chat.prompt_manager.get_all_user_id()
@@ -62,7 +62,7 @@ async def get_prompt_userlist():
     logger.info("Get prompt user list")
 
     # 返回用户ID列表
-    return JSONResponse(userid_list)
+    return ORJSONResponse(userid_list)
 
 @app.get("/userdata/prompt/branchs/{user_id}")
 async def get_prompt_branch_id(user_id: str):
@@ -73,7 +73,7 @@ async def get_prompt_branch_id(user_id: str):
         user_id (str): User ID
 
     Returns:
-        JSONResponse: Prompt branch ID
+        ORJSONResponse: Prompt branch ID
     """
     # 获取用户ID为user_id的提示词分支ID
     branchs = await chat.prompt_manager.get_all_item_id(user_id)
@@ -81,7 +81,7 @@ async def get_prompt_branch_id(user_id: str):
     logger.info("Get prompt branch", user_id=user_id)
 
     # 返回分支ID
-    return JSONResponse(branchs)
+    return ORJSONResponse(branchs)
 
 @app.get("/userdata/prompt/now_branch/{user_id}")
 async def get_prompt_now_branch_id(user_id: str):
@@ -92,7 +92,7 @@ async def get_prompt_now_branch_id(user_id: str):
         user_id (str): User ID
 
     Returns:
-        JSONResponse: Now Branch ID
+        ORJSONResponse: Now Branch ID
     """
     # 获取用户ID为user_id的提示词分支ID
     branch_id = await chat.prompt_manager.get_default_item_id(user_id)

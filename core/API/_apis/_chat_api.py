@@ -5,7 +5,7 @@ env = Env()
 env.read_env()
 from fastapi.responses import (
     FileResponse,
-    JSONResponse,
+    ORJSONResponse,
     PlainTextResponse,
     StreamingResponse
 )
@@ -72,7 +72,7 @@ async def chat_endpoint(
             stream = request.stream
         )
         if isinstance(context, Response):
-            return JSONResponse(context.as_dict, status_code=200)
+            return ORJSONResponse(context.as_dict, status_code=200)
         else:
             async def generator_wrapper(context: AsyncIterator[CompletionsAPI.Delta]) -> AsyncIterator[bytes]:
                 async for chunk in context:

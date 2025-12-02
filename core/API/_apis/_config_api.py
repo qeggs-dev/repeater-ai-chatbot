@@ -4,7 +4,7 @@ from .._resource import (
 )
 from typing import Any
 from fastapi.responses import (
-    JSONResponse,
+    ORJSONResponse,
     PlainTextResponse
 )
 from fastapi import (
@@ -28,7 +28,7 @@ async def change_config(user_id: str):
     logger.info(f"Get user config", user_id = user_id)
 
     # 返回配置
-    return JSONResponse(config.model_dump())
+    return ORJSONResponse(config.model_dump())
 
 class SetConfigRequest(BaseModel):
     key: str
@@ -46,7 +46,7 @@ async def set_config(user_id: str, value_type: str, request: SetConfigRequest):
         value (Any): Config Value
     
     Returns:
-        JSONResponse: Config
+        ORJSONResponse: Config
     """
     # 允许的值类型
     TYPES = {
@@ -96,7 +96,7 @@ async def set_config(user_id: str, value_type: str, request: SetConfigRequest):
     )
 
     # 返回新配置内容
-    return JSONResponse(config.model_dump())
+    return ORJSONResponse(config.model_dump())
 
 @app.put("/userdata/config/delkey/{user_id}")
 async def delkey_config(user_id: str, key: str = Form(...)):
@@ -108,7 +108,7 @@ async def delkey_config(user_id: str, key: str = Form(...)):
         key (str): User config key
 
     Returns:
-        JSONResponse: New config content
+        ORJSONResponse: New config content
     """
 
     # 读取配置
@@ -126,7 +126,7 @@ async def delkey_config(user_id: str, key: str = Form(...)):
     logger.info("Del user config {key}", user_id = user_id, key = key)
 
     # 返回新配置内容
-    return JSONResponse(config.model_dump())
+    return ORJSONResponse(config.model_dump())
 
 @app.get("/userdata/config/userlist")
 async def get_config_userlist():
@@ -134,7 +134,7 @@ async def get_config_userlist():
     Endpoint for getting config userlist
 
     Returns:
-        JSONResponse: A JSON response containing the list of user IDs
+        ORJSONResponse: A JSON response containing the list of user IDs
     """
 
     # 获取所有用户ID
@@ -143,7 +143,7 @@ async def get_config_userlist():
     logger.info(f"Get user config userlist")
 
     # 返回用户ID列表
-    return JSONResponse(userid_list)
+    return ORJSONResponse(userid_list)
 
 @app.get("/userdata/config/branchs/{user_id}")
 async def get_config_branch_id(user_id: str):
@@ -154,7 +154,7 @@ async def get_config_branch_id(user_id: str):
         user_id (str): The user id
     
     Returns:
-        JSONResponse: Current user's branch list
+        ORJSONResponse: Current user's branch list
     """
 
     # 获取平行配置路由ID列表
@@ -163,7 +163,7 @@ async def get_config_branch_id(user_id: str):
     logger.info(f"Get user branchs list", user_id = user_id)
 
     # 返回分支ID列表
-    return JSONResponse(branchs)
+    return ORJSONResponse(branchs)
 
 @app.get("/userdata/config/now_branch/{user_id}")
 async def get_config_now_branch_id(user_id: str):
@@ -174,7 +174,7 @@ async def get_config_now_branch_id(user_id: str):
         user_id (str): User id
 
     Returns:
-        JSONResponse: Now Branch id
+        ORJSONResponse: Now Branch id
     """
 
     # 获取当前配置路由ID

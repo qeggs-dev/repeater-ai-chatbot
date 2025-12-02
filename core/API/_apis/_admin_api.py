@@ -9,7 +9,7 @@ from fastapi import (
     Header
 )
 from fastapi.responses import (
-    JSONResponse
+    ORJSONResponse
 )
 from loguru import logger
 from ...Global_Config_Manager import ConfigManager
@@ -26,7 +26,7 @@ async def reload_apiinfo(api_key: str = Header(..., alias="X-Admin-API-Key")):
         raise HTTPException(detail="Invalid API key", status_code=401)
     logger.info("Reloading apiinfo", user_id="[Admin API]")
     await chat.reload_apiinfo()
-    return JSONResponse({"detail": "Apiinfo reloaded"})
+    return ORJSONResponse({"detail": "Apiinfo reloaded"})
 
 @app.post("/admin/blacklist/reload")
 async def reload_blacklist(api_key: str = Header(..., alias="X-Admin-API-Key")):
@@ -40,7 +40,7 @@ async def reload_blacklist(api_key: str = Header(..., alias="X-Admin-API-Key")):
         raise HTTPException(detail="Invalid API key", status_code=401)
     logger.info("Reloading blacklist", user_id="[Admin API]")
     await chat.load_blacklist()
-    return JSONResponse({"detail": "Blacklist reloaded"})
+    return ORJSONResponse({"detail": "Blacklist reloaded"})
 
 @app.post("/admin/configs/reload")
 async def reload_configs(api_key: str = Header(..., alias="X-Admin-API-Key")):
@@ -55,7 +55,7 @@ async def reload_configs(api_key: str = Header(..., alias="X-Admin-API-Key")):
         raise HTTPException(detail="Invalid API key", status_code=401)
     logger.info("Reloading configs", user_id="[Admin API]")
     await asyncio.to_thread(ConfigManager.load)
-    return JSONResponse({"detail": "Apiinfo reloaded"})
+    return ORJSONResponse({"detail": "Apiinfo reloaded"})
 
 @app.post("/admin/regenerate/admin_key")
 async def regenerate_admin_key(api_key: str = Header(..., alias="X-Admin-API-Key")):
@@ -66,4 +66,4 @@ async def regenerate_admin_key(api_key: str = Header(..., alias="X-Admin-API-Key
         raise HTTPException(detail="Invalid API key", status_code=401)
     logger.info("Regenerating admin key", user_id="[Admin API]")
     admin_api_key.generate()
-    return JSONResponse({"message": "Admin key regenerated", "admin_key": admin_api_key.api_key})
+    return ORJSONResponse({"message": "Admin key regenerated", "admin_key": admin_api_key.api_key})

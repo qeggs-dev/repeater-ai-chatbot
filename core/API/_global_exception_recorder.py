@@ -1,5 +1,5 @@
 from fastapi import FastAPI, Request, BackgroundTasks
-from fastapi.responses import JSONResponse
+from fastapi.responses import ORJSONResponse
 from loguru import logger
 import traceback
 import asyncio
@@ -24,7 +24,7 @@ async def catch_exceptions_middleware(request: Request, call_next):
         # 触发后台任务关闭应用（非阻塞）
         background_tasks = BackgroundTasks()
         background_tasks.add_task(shutdown_server, exception = e)
-        return JSONResponse(
+        return ORJSONResponse(
             status_code=500,
             content={"error": "A serious error has occurred, the service is about to shut down.", "detail": e.message},
             background=background_tasks,
@@ -33,7 +33,7 @@ async def catch_exceptions_middleware(request: Request, call_next):
         # 记录异常日志
         traceback_info = traceback.format_exc()
         logger.exception("An Exception occurred:\n{traceback}", user_id = "[Global Exception Recorder]", traceback = traceback_info)
-        return JSONResponse(
+        return ORJSONResponse(
             status_code=500,
             content={
                 "message": "Internal server error",

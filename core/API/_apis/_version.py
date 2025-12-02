@@ -1,7 +1,7 @@
 from .._resource import app, __version__
 from ..._core import __version__ as __core_version__
 from fastapi.responses import (
-    JSONResponse,
+    ORJSONResponse,
     PlainTextResponse
 )
 
@@ -10,7 +10,7 @@ def version():
     """
     Return the version of the API and the core
     """
-    return JSONResponse(
+    return ORJSONResponse(
         {
         'core': __core_version__,
         'api': __version__
