@@ -7,6 +7,9 @@ from fastapi.responses import (
 
 @app.route('/version')
 def version():
+    """
+    Return the version of the API and the core
+    """
     return JSONResponse(
         {
         'core': __core_version__,
@@ -16,12 +19,18 @@ def version():
 
 @app.route('/version/core')
 def core_version():
+    """
+    Return the version of the core
+    """
     return PlainTextResponse(
         __core_version__
     )
 
 @app.route('/version/api')
 def api_version():
+    """
+    Return the version of the API
+    """
     return PlainTextResponse(
         __version__
     )
