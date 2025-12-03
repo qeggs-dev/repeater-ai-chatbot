@@ -292,6 +292,8 @@ PS: `run.py`启动器会在完成所有操作后启动主程序，而这只需�
     },
     "time": {
         // 时间偏移量，单位为小时
+        // 如果为0，则是UTC时间
+        // 此参数仅影响文本展开器的部分变量
         "time_offset": 0.0
     },
     "user_config_cache": {
@@ -408,7 +410,7 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
                 "name": "Deepseek Think Model", // 显示在日志上的模型名称
                 "id": "deepseek-reasoner", // 面向API厂商的模型ID
                 "uid": "deepseek-reasoner", // 面向Repeater和用户的模型ID
-                "type": "chat" // 保留字段，必须为chat
+                "type": "chat" // 模型类型，用于告诉Repeater这个模型可以干什么
             },
             {
                 "name": "Deepseek Chat Model",
@@ -445,7 +447,8 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
 YAML同理
 PS: 目前仅支持LLM Chat的任务类型(系统不会检查该字段，但APIINFO模块会收集相关组)
 models中定义该模型的url时会覆盖上层的url
-支持兼容OpenAI接口的Chat.Completion模型
+目前type=chat的表示该模型为兼容OpenAI接口的Chat.Completion模型
+暂不支持其他类型的模型
 
 3. blacklist.regex (或其他任何RegexChecker处理的文件格式)文件:
 ```re
@@ -464,6 +467,7 @@ PS: 首行必须是`[REGEX PARALLEL FILE]`或`[REGEX SERIES FILE]`，表示该�
 ```
 `原始昵称`到`模型看到的昵称`的映射关系
 键可以是`昵称`或`user_id`，值是`新的昵称`
+这可以避开异常的昵称导致模型出错
 
 ---
 
@@ -472,7 +476,6 @@ PS: 首行必须是`[REGEX PARALLEL FILE]`或`[REGEX SERIES FILE]`，表示该�
 | 风格 | 译名 |
 | :---: | :---: |
 | **`light`** | 亮色 |
-| `dark` | 暗色 |
 | `red` | 红色 |
 | `pink` | 粉色 |
 | `blue` | 蓝色 |
@@ -480,6 +483,7 @@ PS: 首行必须是`[REGEX PARALLEL FILE]`或`[REGEX SERIES FILE]`，表示该�
 | `purple` | 紫色 |
 | `yellow` | 黄色 |
 | `orange` | 橙色 |
+| `dark` | 暗色 |
 | `dark-red` | 暗红色 |
 | `dark-pink` | 暗粉色 |
 | `dark-blue` | 暗蓝色 |
@@ -505,27 +509,27 @@ PS: 首行必须是`[REGEX PARALLEL FILE]`或`[REGEX SERIES FILE]`，表示该�
 
 | 变量 | 描述 | 参数 |
 | :---: | :---: | :---: |
-| `reprs` | 显示对象的字符串表示 | 任何内容(*Any) |
-| `user_id` | 用户ID | 无 |
-| `user_name` | 用户名 | 无 |
-| `nickname` | 昵称 | 无 |
-| `botname` | Bot名称 | 无 |
-| `user_age` | 用户年龄 | 无 |
-| `user_gender` | 用户性别 | 无 |
-| `user_info` | 用户信息 | 无 |
-| `birthday` | 生日 | 无 |
-| `birthday_countdown` | 生日倒计时 | 启用详细信息(bool) |
-| `model_uid` | 模型类型 | 无 |
-| `zodiac` | Bot星座 | 无 |
-| `time` | 当前时间 | 格式字符串(str) |
 | `age` | Bot年龄 | 无 |
-| `random` | 随机数 | 随机数下限(int)，随机数上下限(int) |
-| `randfloat` | 随机浮点数 | 随机数下限(float)，随机数上下限(float) |
-| `randchoice` | 随机选择 | 抽取内容(*str) |
+| `nickname` | 昵称 | 无 |
+| `birthday` | 生日 | 无 |
+| `user_id` | 用户ID | 无 |
+| `zodiac` | Bot星座 | 无 |
+| `botname` | Bot名称 | 无 |
+| `user_name` | 用户名 | 无 |
+| `user_age` | 用户年龄 | 无 |
+| `model_uid` | 模型类型 | 无 |
+| `user_info` | 用户信息 | 无 |
+| `user_gender` | 用户性别 | 无 |
 | `generate_uuid` | 生成UUID | 无 |
+| `time` | 当前时间 | 格式字符串(str) |
+| `randchoice` | 随机选择 | 抽取内容(*str) |
+| `reprs` | 显示对象的字符串表示 | 任何内容(*Any) |
+| `random` | 随机数 | 随机数下限(int)，随机数上下限(int) |
+| `birthday_countdown` | 生日倒计时 | 启用详细信息(bool) |
+| `random_matrix` | 0~1随机矩阵 | 矩阵行数(int)，矩阵列数(int) |
+| `randfloat` | 随机浮点数 | 随机数下限(float)，随机数上下限(float) |
 | `copytext` | 重复文本 | 重复文本(str)， 重复次数(int), 间隔符(str) |
 | `text_matrix` | 文本矩阵 | 重复文本(int)，列数(int)，行数(int)，间隔符(str)，换行符(str) |
-| `random_matrix` | 0~1随机矩阵 | 矩阵行数(int)，矩阵列数(int) |
 
 ### 变量传参方式
 
@@ -612,20 +616,41 @@ PS: 转义必须保证转义处理器一字不漏，否则会以普通文本输�
 
 ---
 
-## 用户配置表
+## 用户配置
 
-| 配置项 | 类型 | 默认值 | 说明 |
-| --- | --- | --- | --- |
-| `parset_prompt_name` | `str` | 项目配置中`PROMPT.PARSET_NAME`的值 | 在启动时如果没有检查到自定义提示词，默认选择的预设提示词文件名(此处没有文件后缀，如`default`，实际文件名中会与`PROMPT.DEFAULT_SUFFIX`拼接) |
-| `model_uid` | `str` | 项目配置中`MODEL.DEFAULT_MODEL_UID`的值 | 模型UID |
-| `temperature` | `float` | 项目配置中`MODEL.DEFAULT_TEMPERATURE`的值 | 模型温度 |
-| `top_p` | `float` | 项目配置中`MODEL.DEFAULT_TOP_P`的值 | 模型top_p |
-| `max_tokens` | `int` | 项目配置中`MODEL.DEFAULT_MAX_TOKENS`的值 | 模型最大生成长度(OpenAI计划丢弃此参数，但为了兼容性，此处仍然保留) |
-| `max_completion_tokens` | `int` | 项目配置中`MODEL.DEFAULT_MAX_COMPLETION_TOKENS`的值 | 模型最大补全长度 |
-| `stop` | `list[str]` | 项目配置中`MODEL.DEFAULT_STOP`的值 | 模型停止词 |
-| `frequency_penalty` | `float` | 项目配置中`MODEL.DEFAULT_FREQUENCY_PENALTY`的值 | 模型频率惩罚 |
-| `presence_penalty` | `float` | 项目配置中`MODEL.DEFAULT_PRESENCE_PENALTY`的值 | 模型存在性惩罚 |
-| `auto_shrink_length` | `int` | 项目配置中`MODEL.AUTO_SHRINK_LENGTH`的值 | 自动上下文长度限制的最大值(为0时不自动限制长度) |
+```json
+{
+    // 时区设置，单位为小时，为0表示UTC时区
+    "timezone": null,
+    // 预设提示词，用于快速路由定义好的提示词文件
+    "parset_prompt_name": null,
+    // 模型UID，用于指定消息处理模型
+    "model_uid": null,
+    // 模型温度参数，温度越高模型输出的随机性就越高
+    "temperature": null,
+    // 模型Top-p参数，Top-p参数越低，模型在采样的时候就更倾向于使用更高概率的词
+    "top_p": null,
+    // 最大生成长度，模型新生成的文本长度不能超过这个值
+    "max_tokens": null,
+    // 模型最大生成长度，模型生成文本长度不能超过这个值
+    "max_completion_tokens": null,
+    // 模型停止生成文本的标志词，当生成的文本中包含这些词时，模型会停止生成
+    "stop": null,
+    // 模型频率惩罚参数，频率惩罚参数越高，模型在生成文本时越倾向于使用新的词
+    "frequency_penalty": null,
+    // 模型存在性惩罚参数，存在性惩罚参数越高，模型越倾向于讨论新话题
+    "presence_penalty": null,
+    // 自动缩短长度，当生成的文本长度超过最大生成长度时，自动缩短文本长度
+    "auto_shrink_length": null,
+    // 渲染风格，用于指定文本转图片时的CSS样式文件
+    "render_style": null,
+    // 是否加载提示词，此选项会被API接口中传入的load_prompt参数覆盖
+    "load_prompt": true,
+    // 是否保存上下文，此选项会被API接口中传入的save_context参数覆盖
+    "save_context": true
+}
+```
+PS: 这里用户配置为null的表示使用主配置里写的默认值
 
 ---
 
