@@ -17,7 +17,7 @@ class PromptVP:
 
     提示词变量处理器
 
-    一个面向大模型System Prompt文本处理的变量处理器
+    一个面向大模型 System Prompt 文本处理的变量处理器
     
     提示词变量格式：
     {variable_name}
@@ -27,13 +27,15 @@ class PromptVP:
     敏感块内容
     :::
 
+    PromptVP 在文本中使用敏感块(用:::包裹的文本)时，如果敏感块中含有未命中的变量，整个敏感块将被删除。
+
     条件块的使用：
     {var}->```...```
     当变量var存在且其值不为空、不为False、执行后内容非空时，显示后面的内容块
     否则整个内容块将被去除
 
     允许部分内容进行转义操作：
-    <esc:\033[92mHello World\033[0m>  # 转义内容为：\033[92mHello World\033[0m
+    <esc:"\033[92mHello World\033[0m">  # 转义内容为：\033[92mHello World\033[0m
 
     变量可以被传参，格式：
     {variable_name arg1 arg2 arg3}
@@ -42,7 +44,6 @@ class PromptVP:
     1. 直接注册变量值
     2. 注册变量函数，函数参数为kwargs，返回变量值
     
-    PromptVP 允许在文本中使用敏感块(用:::包裹的文本)，敏感块中的变量一旦没有命中，整个敏感块将被删除。
 
     没有命中的变量不会被取值，函数变量也不会被执行。
 
@@ -60,13 +61,15 @@ class PromptVP:
     sensitive block content
     :::
 
+    PromptVP will delete the entire sensitive block if the sensitive block contains an unmatched variable.
+
     Conditional block usage:
     {var}->```...```
     When the variable var exists and its value is not empty, not False, and not empty after execution, 
     the content block is displayed. Otherwise, the entire content block is removed.
 
     Partial content can be escaped:
-    <esc:\033[92mHello World\033[0m>  # Escaped content is: \033[92mHello World\033[0m
+    <esc:"\033[92mHello World\033[0m">  # Escaped content is: \033[92mHello World\033[0m
 
     Variables can be passed in the format:
     {variable_name arg1 arg2 arg3}
@@ -74,8 +77,6 @@ class PromptVP:
     PromptVP supports two ways to register variables:
     1. Register variable values directly
     2. Register variable functions, the function parameter is kwargs, and the return value is the variable value
-
-    PromptVP allows sensitive blocks (text wrapped in :::) to be used in the text. Once a variable in a sensitive block is not hit, the entire sensitive block will be deleted.
 
     Variables that are not hit will not be taken, and function variables will not be executed.
     '''
