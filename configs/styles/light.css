@@ -1,146 +1,574 @@
+:root {
+    --primary: #3498db;
+    --primary-light: #5dade2;
+    --primary-dark: #2980b9;
+    --secondary: #2c3e50;
+    --secondary-light: #34495e;
+    --accent: #9b59b6;
+    --success: #2ecc71;
+    --warning: #f1c40f;
+    --danger: #e74c3c;
+    --light: #f8fafc;
+    --dark: #1a202c;
+    --gray-100: #f7fafc;
+    --gray-200: #edf2f7;
+    --gray-300: #e2e8f0;
+    --gray-400: #cbd5e0;
+    --gray-500: #a0aec0;
+    --gray-600: #718096;
+    --gray-700: #4a5568;
+    --gray-800: #2d3748;
+    --gray-900: #1a202c;
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
 body {
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
-  background-color: #ffffff;
-  color: #333333;
-  padding: 30px;
-  border-radius: 12px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
-  line-height: 1.7;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    color: var(--gray-800);
+    min-height: 100vh;
+    padding: 16px;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    align-items: center;
+    line-height: 1.7;
+    position: relative;
+    overflow: hidden;
 }
 
-h1 {
-  color: #2c3e50;
-  margin-top: 1.2em;
-  margin-bottom: 0.6em;
-  font-weight: 600;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 0.3em;
-  font-size: 2em;
+.geometric-bg {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    z-index: 0;
+    pointer-events: none;
 }
 
-h2 {
-  color: #2c3e50;
-  margin-top: 1.2em;
-  margin-bottom: 0.6em;
-  font-weight: 600;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 0.3em;
-  font-size: 1.5em;
+/* Title区域 - 为动态插入的标题预留 */
+.title-area {
+    width: 100%;
+    max-width: 900px;
+    min-height: 60px;
+    margin-bottom: 16px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    position: relative;
+    z-index: 1;
 }
 
-h3 {
-  color: #2c3e50;
-  margin-top: 1.2em;
-  margin-bottom: 0.6em;
-  font-weight: 600;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 0.3em;
-  font-size: 1.17em;
+/* 如果动态插入标题，这里提供基础样式 */
+.title-area h1.title-header {
+    font-size: 2.5rem;
+    font-weight: 800;
+    background: linear-gradient(135deg, var(--secondary), var(--primary-dark));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-align: center;
+    margin: 0;
+    padding: 10px 0;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    width: 100%;
 }
 
-h4 {
-  color: #2c3e50;
-  margin-top: 1.2em;
-  margin-bottom: 0.6em;
-  font-weight: 600;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 0.3em;
-  font-size: 1em;
+.content-container {
+    width: 100%;
+    max-width: 900px;
+    background: linear-gradient(145deg, #ffffff, #f8fafc);
+    border-radius: 24px;
+    padding: 40px 50px;
+    box-shadow: 
+        0 20px 60px rgba(0, 0, 0, 0.08),
+        0 5px 15px rgba(0, 0, 0, 0.05),
+        inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    position: relative;
+    z-index: 1;
+    border: 1px solid rgba(255, 255, 255, 0.9);
+    backdrop-filter: blur(10px);
+    /* 优化文本换行策略 */
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    word-break: normal;
+    hyphens: auto;
 }
 
-h5 {
-  color: #2c3e50;
-  margin-top: 1.2em;
-  margin-bottom: 0.6em;
-  font-weight: 600;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 0.3em;
-  font-size: 0.83em;
+.content-container::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 6px;
+    background: linear-gradient(90deg, var(--primary), var(--accent));
+    border-radius: 24px 24px 0 0;
 }
 
-h6 {
-  color: #2c3e50;
-  margin-top: 1.2em;
-  margin-bottom: 0.6em;
-  font-weight: 600;
-  border-bottom: 1px solid #eee;
-  padding-bottom: 0.3em;
-  font-size: 0.67em;
+/* === 重点修改：让文本内容优先占据宽度 === */
+
+/* 标题样式 - 减少不必要的宽度限制 */
+.content-container h1,
+.content-container h2,
+.content-container h3,
+.content-container h4,
+.content-container h5,
+.content-container h6 {
+    text-align: center;
+    margin: 0 auto;
+    font-weight: 700;
+    line-height: 1.3;
+    letter-spacing: -0.02em;
+    /* 移除宽度限制，让文本自然流动 */
+    width: auto;
+    max-width: none;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    word-break: keep-all;
 }
 
-a {
-  color: #3498db;
-  text-decoration: none;
+.content-container h1 {
+    color: var(--gray-900);
+    font-size: 2.5rem;
+    margin-top: 0.8em;
+    margin-bottom: 0.5em;
+    background: linear-gradient(135deg, var(--secondary), var(--primary-dark));
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    position: relative;
+    padding-bottom: 15px;
+    /* 允许标题占据更多宽度 */
+    width: 100%;
+    display: block;
 }
 
-a:hover {
-  text-decoration: underline;
+.content-container h1::after {
+    content: '';
+    position: absolute;
+    bottom: 0;
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80px;
+    height: 4px;
+    background: linear-gradient(90deg, var(--primary), var(--accent));
+    border-radius: 2px;
 }
 
-code {
-  background-color: #f8f9fa;
-  padding: 2px 6px;
-  border-radius: 4px;
-  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+.content-container h2 {
+    color: var(--gray-800);
+    font-size: 2rem;
+    margin-top: 1.2em;
+    margin-bottom: 0.8em;
+    padding-bottom: 8px;
+    border-bottom: 2px solid var(--gray-300);
+    width: 100%;
 }
 
-pre {
-  background-color: #f8f9fa;
-  padding: 16px;
-  border-radius: 8px;
-  overflow: auto;
-  border-left: 4px solid #3498db;
+.content-container h3 {
+    color: var(--gray-800);
+    font-size: 1.6rem;
+    margin-top: 1.5em;
+    margin-bottom: 0.8em;
+    width: 100%;
 }
 
-blockquote {
-  background-color: #f9f9f9;
-  border-left: 4px solid #ddd;
-  padding: 12px 20px;
-  margin: 0;
-  color: #555;
+.content-container h4 {
+    color: var(--gray-700);
+    font-size: 1.3rem;
+    margin-top: 1.3em;
+    margin-bottom: 0.7em;
+    width: 100%;
 }
 
-ul,
-ol {
-  padding-left: 28px;
+.content-container h5,
+.content-container h6 {
+    color: var(--gray-700);
+    margin-top: 1.2em;
+    margin-bottom: 0.6em;
+    width: 100%;
 }
 
-li {
-  margin-bottom: 8px;
+/* 段落和文本 - 优化宽度设置 */
+.content-container p {
+    margin: 1.2em auto;
+    text-align: left; /* 改为左对齐，让文本自然流动 */
+    color: var(--gray-700);
+    font-size: 1.125rem;
+    line-height: 1.8;
+    /* 移除宽度限制，让文本占据可用空间 */
+    width: 100%;
+    max-width: none;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    word-break: normal;
+    text-align-last: left;
 }
 
-img {
-  max-width: 100%;
-  border-radius: 6px;
-  margin: 10px 0;
+/* 链接 */
+.content-container a {
+    color: var(--primary);
+    text-decoration: none;
+    position: relative;
+    transition: all 0.2s ease;
+    font-weight: 500;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    word-break: break-all; /* 链接可以强制断行 */
 }
 
-table {
-  border-collapse: collapse;
-  width: 100%;
-  margin: 20px 0;
+.content-container a:hover {
+    color: var(--primary-dark);
 }
 
-th,
-td {
-  border: 1px solid #e1e4e8;
-  padding: 12px 15px;
-  text-align: left;
+.content-container a::after {
+    content: '';
+    position: absolute;
+    bottom: -2px;
+    left: 0;
+    width: 100%;
+    height: 2px;
+    background: linear-gradient(90deg, var(--primary), var(--primary-light));
+    transform: scaleX(0);
+    transform-origin: right;
+    transition: transform 0.3s ease;
 }
 
-th {
-  background-color: #f6f8fa;
-  font-weight: 600;
+.content-container a:hover::after {
+    transform: scaleX(1);
+    transform-origin: left;
 }
 
-hr {
-  border: 0;
-  height: 1px;
-  background: linear-gradient(
-    to right,
-    rgba(0, 0, 0, 0),
-    rgba(0, 0, 0, 0.1),
-    rgba(0, 0, 0, 0)
-  );
-  margin: 30px 0;
+/* 列表 - 优化宽度 */
+.content-container ul,
+.content-container ol {
+    text-align: left;
+    margin: 1.5em auto;
+    padding-left: 2em;
+    width: 100%;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+}
+
+.content-container li {
+    margin-bottom: 0.8em;
+    color: var(--gray-700);
+    line-height: 1.6;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    word-break: normal;
+}
+
+.content-container ul li::marker {
+    color: var(--primary);
+}
+
+.content-container ol li::marker {
+    color: var(--primary);
+    font-weight: 600;
+}
+
+/* 代码块 - 优化宽度和换行 */
+.content-container code {
+    background: linear-gradient(135deg, var(--gray-100), var(--gray-200));
+    color: var(--danger);
+    padding: 0.2em 0.5em;
+    border-radius: 6px;
+    font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+    font-size: 0.9em;
+    border: 1px solid var(--gray-300);
+    /* 代码可以换行 */
+    white-space: pre-wrap;
+    word-break: break-all;
+    overflow-wrap: break-word;
+    display: inline-block;
+    max-width: 100%;
+}
+
+.content-container pre {
+    background: linear-gradient(135deg, var(--gray-900), var(--gray-800));
+    color: var(--gray-100);
+    padding: 1.2em 1.5em;
+    border-radius: 12px;
+    margin: 1.5em auto;
+    text-align: left;
+    width: 100%;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+    border-left: 5px solid var(--primary);
+    position: relative;
+    /* 代码块完全换行 */
+    white-space: pre-wrap;
+    word-break: break-all;
+    overflow-wrap: break-word;
+    overflow-x: auto;
+}
+
+.content-container pre code {
+    background: none;
+    color: inherit;
+    border: none;
+    padding: 0;
+    font-size: 0.95em;
+    line-height: 1.6;
+    white-space: pre-wrap;
+    word-break: break-all;
+    overflow-wrap: break-word;
+    display: block;
+}
+
+/* 引用块 */
+.content-container blockquote {
+    background: linear-gradient(90deg, var(--gray-100), transparent);
+    border-left: 4px solid var(--accent);
+    padding: 1.2em 1.8em;
+    margin: 1.5em auto;
+    font-style: italic;
+    color: var(--gray-700);
+    border-radius: 0 12px 12px 0;
+    text-align: left;
+    position: relative;
+    width: 100%;
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    word-break: normal;
+}
+
+.content-container blockquote::before {
+    content: '"';
+    font-size: 3em;
+    color: var(--accent);
+    opacity: 0.2;
+    position: absolute;
+    left: 10px;
+    top: -10px;
+    font-family: Georgia, serif;
+}
+
+/* 图片 */
+.content-container img {
+    max-width: 100%;
+    height: auto;
+    border-radius: 12px;
+    margin: 1.5em auto;
+    display: block;
+    box-shadow: 0 15px 35px rgba(0, 0, 0, 0.1);
+    border: 1px solid rgba(255, 255, 255, 0.8);
+    width: auto;
+}
+
+/* 表格 - 优化宽度 */
+.content-container table {
+    border-collapse: separate;
+    border-spacing: 0;
+    width: 100%;
+    margin: 1.5em auto;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 5px 15px rgba(0, 0, 0, 0.05);
+    background: white;
+    text-align: left;
+    /* 表格自动布局 */
+    table-layout: auto;
+    word-break: normal;
+}
+
+.content-container th,
+.content-container td {
+    overflow-wrap: break-word;
+    word-wrap: break-word;
+    word-break: normal;
+    /* 单元格自动调整宽度 */
+    min-width: 50px;
+    max-width: none;
+}
+
+.content-container th {
+    background: linear-gradient(135deg, var(--primary), var(--primary-dark));
+    color: white;
+    font-weight: 600;
+    padding: 1em 1.2em;
+    text-align: left;
+    white-space: nowrap;
+}
+
+.content-container td {
+    padding: 0.8em 1.2em;
+    border-bottom: 1px solid var(--gray-200);
+    color: var(--gray-700);
+    /* 允许表格内容换行 */
+    white-space: normal;
+}
+
+.content-container tr:last-child td {
+    border-bottom: none;
+}
+
+.content-container tr:nth-child(even) {
+    background-color: var(--gray-100);
+}
+
+/* 水平线 */
+.content-container hr {
+    border: none;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--gray-300), transparent);
+    margin: 2em auto;
+    width: 100%;
+}
+
+/* 其他元素 */
+.content-container kbd {
+    background: linear-gradient(135deg, var(--gray-800), var(--gray-900));
+    color: white;
+    padding: 0.2em 0.5em;
+    border-radius: 4px;
+    font-family: monospace;
+    font-size: 0.9em;
+    border: 1px solid var(--gray-700);
+    box-shadow: 0 2px 0 var(--gray-700);
+    white-space: nowrap;
+    display: inline-block;
+}
+
+.content-container mark {
+    background: linear-gradient(120deg, rgba(241, 196, 15, 0.3) 0%, rgba(241, 196, 15, 0.1) 100%);
+    color: var(--gray-900);
+    padding: 0.1em 0.3em;
+    border-radius: 3px;
+    display: inline;
+}
+
+/* === 新增：文本宽度优化类 === */
+
+/* 长文本和URL自动换行处理 - 更智能的换行策略 */
+.content-container .long-text,
+.content-container .long-url,
+.content-container .break-words {
+    word-break: break-word;
+    overflow-wrap: anywhere;
+    hyphens: auto;
+}
+
+/* 不换行的文本（如代码、缩写） */
+.content-container .no-wrap {
+    white-space: nowrap;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    body {
+        padding: 12px;
+    }
+    
+    .title-area {
+        min-height: 50px;
+        margin-bottom: 12px;
+    }
+    
+    .title-area h1.title-header {
+        font-size: 2rem;
+    }
+    
+    .content-container {
+        padding: 30px 25px;
+        border-radius: 20px;
+    }
+    
+    .content-container h1 {
+        font-size: 2rem;
+    }
+    
+    .content-container h2 {
+        font-size: 1.6rem;
+    }
+    
+    .content-container pre {
+        padding: 1em;
+    }
+    
+    .content-container table {
+        display: block;
+        overflow-x: auto;
+        /* 移动端表格自动布局 */
+        table-layout: auto;
+    }
+    
+    /* 移动端优化文本换行 */
+    .content-container p,
+    .content-container li,
+    .content-container td {
+        word-break: break-word;
+    }
+}
+
+/* 特殊文本样式 */
+.content-container .lead {
+    font-size: 1.25rem;
+    font-weight: 300;
+    color: var(--gray-600);
+    margin: 1.5em auto;
+    width: 100%;
+}
+
+.content-container .muted {
+    color: var(--gray-500);
+    font-size: 0.95rem;
+}
+
+.content-container .text-success {
+    color: var(--success);
+}
+
+.content-container .text-warning {
+    color: var(--warning);
+}
+
+.content-container .text-danger {
+    color: var(--danger);
+}
+
+.content-container .text-primary {
+    color: var(--primary);
+}
+
+/* === 文本布局优化 === */
+
+/* 确保内容容器内的所有元素都能充分利用宽度 */
+.content-container > * {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+/* 内联元素的宽度优化 */
+.content-container span,
+.content-container strong,
+.content-container em,
+.content-container small {
+    display: inline;
+}
+
+/* 段落内元素不会破坏布局 */
+.content-container p > * {
+    display: inline;
+}
+
+/* 列表项内的内容优化 */
+.content-container li > *:not(ul):not(ol) {
+    display: inline;
+}
+
+/* 修复嵌套列表的宽度 */
+.content-container li ul,
+.content-container li ol {
+    width: 100%;
+    margin-top: 0.5em;
+    margin-bottom: 0.5em;
 }

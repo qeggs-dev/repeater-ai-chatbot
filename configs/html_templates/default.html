@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <style>{css}</style>
+</head>
+<body>
+    <div class="geometric-bg"></div>
+    <header class="title-area">
+        <h1>{title}</h1>
+    </header>
+    <main class="content-container">
+        {html_content}
+    </main>
+    <script>
+        // 生成几何背景
+        document.addEventListener('DOMContentLoaded', function() {
+            const bgContainer = document.querySelector('.geometric-bg');
+            const colors = [
+                'rgba(52, 152, 219, 0.08)',
+                'rgba(155, 89, 182, 0.06)',
+                'rgba(46, 204, 113, 0.05)',
+                'rgba(241, 196, 15, 0.04)'
+            ];
+            
+            for (let i = 0; i < 25; i++) {
+                const shape = document.createElement('div');
+                const size = Math.random() * 100 + 30;
+                const x = Math.random() * 100;
+                const y = Math.random() * 100;
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                
+                shape.style.position = 'absolute';
+                shape.style.width = `${size}px`;
+                shape.style.height = `${size}px`;
+                shape.style.left = `${x}%`;
+                shape.style.top = `${y}%`;
+                shape.style.backgroundColor = color;
+                shape.style.borderRadius = Math.random() > 0.5 ? '50%' : '0';
+                shape.style.transform = `rotate(${Math.random() * 360}deg)`;
+                shape.style.filter = 'blur(15px)';
+                shape.style.opacity = '0.4';
+                
+                bgContainer.appendChild(shape);
+            }
+        });
+    </script>
+</body>
+</html>
