@@ -55,7 +55,7 @@ async def reload_configs(api_key: str = Header(..., alias="X-Admin-API-Key")):
         raise HTTPException(detail="Invalid API key", status_code=401)
     logger.info("Reloading configs", user_id="[Admin API]")
     await asyncio.to_thread(ConfigManager.load)
-    return ORJSONResponse({"detail": "Apiinfo reloaded"})
+    return ORJSONResponse({"detail": "Configs reloaded"})
 
 @app.post("/admin/regenerate/admin_key")
 async def regenerate_admin_key(api_key: str = Header(..., alias="X-Admin-API-Key")):
