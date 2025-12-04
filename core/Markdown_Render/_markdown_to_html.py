@@ -1,8 +1,6 @@
-import os
+import html
 import markdown
-from pathlib import Path
 from ._br_extension import BrExtension
-from ._styles import Styles
 from TextProcessors import PromptVP
 
 # 修改 markdown_to_image 函数
@@ -55,7 +53,7 @@ async def markdown_to_html(
     )
     template_handler.register_variable(
         name = "title",
-        value = title
+        value = html.escape(title)
     )
 
     # 5. 生成 HTML 文本
