@@ -8,7 +8,8 @@ import signal
 import os
 
 from ._resource import app
-from CriticalException import CriticalException
+from ..CriticalException import CriticalException
+from ..Global_Config_Manager import ConfigManager
 
 @app.middleware("http")
 async def catch_exceptions_middleware(request: Request, call_next):
@@ -24,21 +25,28 @@ async def catch_exceptions_middleware(request: Request, call_next):
         # 触发后台任务关闭应用（非阻塞）
         background_tasks = BackgroundTasks()
         background_tasks.add_task(shutdown_server, exception = e)
+        error_time = time.time_ns()
         return ORJSONResponse(
             status_code=500,
-            content={"error": "A serious error has occurred, the service is about to shut down.", "detail": e.message},
-            background=background_tasks,
+            content={
+                "message": ConfigManager.get_configs().server.critical_error_message,
+                "error": str(e),
+                "time": error_time / 1e9,
+                "time_ns": error_time,
+            },
         )
     except Exception as e:
         # 记录异常日志
         traceback_info = traceback.format_exc()
         logger.exception("An Exception occurred:\n{traceback}", user_id = "[Global Exception Recorder]", traceback = traceback_info)
+        error_time = time.time_ns()
         return ORJSONResponse(
             status_code=500,
             content={
-                "message": "Internal server error",
+                "message": ConfigManager.get_configs().server.error_message,
                 "error": str(e),
-                "time": time.time_ns() // 10**6,
+                "time": error_time / 1e9,
+                "time_ns": error_time,
             },
         )
 
