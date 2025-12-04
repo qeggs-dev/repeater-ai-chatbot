@@ -2,9 +2,9 @@ from __future__ import annotations
 import asyncio
 from typing import Callable, Awaitable
 
-class StartHander:
+class StartHandler:
     _functions: asyncio.Queue[Callable[[], Awaitable[None]]] = asyncio.Queue()
-    _instance: StartHander | None = None
+    _instance: StartHandler | None = None
     
     def __new__(cls, *args, **kwargs):
         if not cls._instance:
