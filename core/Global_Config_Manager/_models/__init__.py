@@ -33,7 +33,6 @@ from ._web import Web_Config
 __all__ = [
     "API_Info_Config",
     "Backlist_Config",
-    "Bot_Birthday_Config",
     "Bot_Info_Config",
     "CallAPI_Config",
     "Context_Config",
