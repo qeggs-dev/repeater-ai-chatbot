@@ -42,6 +42,18 @@
         "default_stop": [],
         "stream": true
     },
+    "prompt_template": {
+        "version": "",
+        "name": "Repeater",
+        "birthday": {
+            "day": 28,
+            "month": 6,
+            "year": 2024
+        },
+        "time": {
+            "time_offset": 0.0
+        }
+    },
     "prompt": {
         "dir": "./configs/prompt/presets",
         "suffix": ".md",
@@ -51,17 +63,31 @@
     "render": {
         "default_image_timeout": 60.0,
         "markdown": {
-            "to_image": {
-                "default_style": "light",
-                "styles_dir": "./configs/styles",
-                "style_file_encoding": "utf-8",
-                "preprocess_map": {
-                    "before": {},
-                    "after": {}
-                },
-                "wkhtmltoimage_path": "wkhtmltoimage",
-                "output_dir": "./workspace/temp/render"
-            }
+            "default_style": "light",
+            "styles_dir": "./configs/styles",
+            "style_file_encoding": "utf-8",
+            "html_template_dir": "./configs/html_templates",
+            "html_template_file_encoding": "utf-8",
+            "default_html_template": "default.html",
+            "preprocess_map": {
+                "before": {},
+                "after": {
+                    "<code>": "<pre><code>",
+                    "</code>": "</code></pre>"
+                }
+            },
+            "title": "Repeater Image Generator"
+        },
+        "to_image": {
+            "max_pages_per_browser": 5,
+            "max_browsers": 2,
+            "browser_type": "chrome",
+            "headless": true,
+            "output_dir": "./workspace/temp/render",
+            "output_suffix": ".png",
+            "executable_path": "",
+            "width": 1200,
+            "height": 600
         }
     },
     "request_log": {
