@@ -126,19 +126,6 @@ PS: `run.py`启动器会在完成所有操作后启动主程序，而这只需�
         // 黑名单匹配超时时间，单位为秒
         "match_timeout": 10.0 // 匹配超时时间，单位为秒
     },
-    "bot_info": {
-        // BotInfo 配置
-        // 这些字段仅影响模板展开器
-
-        // Bot 的名称
-        "name": "Repeater",
-        // Bot 的生日
-        "birthday": {
-            "day": 28,
-            "month": 6,
-            "year": 2024
-        }
-    },
     "callapi": {
         // CallAPI 配置
 
@@ -153,16 +140,8 @@ PS: `run.py`启动器会在完成所有操作后启动主程序，而这只需�
         // 这个设置可以让Repeater为你自动裁剪最久的消息
         // 让你可以继续聊天
         // 默认值：null，表示不启用
-        // 你可以在这里填写一个整数，表示自动裁剪的长度，单位为消息条数
-        "auto_shrink_length": null
-    },
-    "core": {
-        // Core 模块申请的配置
-
-        // 默认版本
-        // 此选项不为空时会覆盖模板展开器中的version字段
-        // 注：此选项不会改变实际版本，而只会改变模板展开器中的version变量
-        "version": ""
+        // 你可以在这里填写一个整数，表示自动裁剪的长度，单位为字符数量
+        "context_shrink_limit": null
     },
     "logger": {
         // Logger 配置
@@ -211,6 +190,27 @@ PS: `run.py`启动器会在完成所有操作后启动主程序，而这只需�
         // 那么/chat/completion接口调用时stream参数可以为true或false
         // 且控制台和日志会打印当前chunk，并生成chunk统计数据
         "stream": true
+    },
+    "prompt_template": {
+        // template 提示词文本模板展开器配置
+        // 注：此选项不会改变实际的其他系统内容，而只会改变模板展开器中的变量
+
+        // 模板展开器中显示的程序版本
+        "version": "",
+        // 模板展开器中显示的 Bot 名称
+        "name": "Repeater",
+        // Bot 的生日
+        "birthday": {
+            "day": 28,
+            "month": 6,
+            "year": 2024
+        },
+        "time": {
+            // 时间偏移量，单位为小时
+            // 如果为0，则是UTC时间
+            // 此参数仅影响文本展开器的部分变量
+            "time_offset": 0.0
+        }
     },
     "prompt": {
         // Prompt 配置
@@ -309,12 +309,6 @@ PS: `run.py`启动器会在完成所有操作后启动主程序，而这只需�
         "readme_file_path": "./README.md",
         // 静态文件目录
         "static_dir": "./static"
-    },
-    "time": {
-        // 时间偏移量，单位为小时
-        // 如果为0，则是UTC时间
-        // 此参数仅影响文本展开器的部分变量
-        "time_offset": 0.0
     },
     "user_config_cache": {
         // 用户配置缓存配置
@@ -660,8 +654,8 @@ PS: 转义必须保证转义处理器一字不漏，否则会以普通文本输�
     "frequency_penalty": null,
     // (float) 模型存在性惩罚参数，存在性惩罚参数越高，模型越倾向于讨论新话题
     "presence_penalty": null,
-    // (bool) 自动缩短长度，当生成的文本长度超过最大生成长度时，自动缩短文本长度
-    "auto_shrink_length": null,
+    // (int) 定义上下文问的极限字数，Repeater会以一对消息为单位去删除过多的部分。
+    "context_shrink_limit": null,
     // (str) 渲染风格，用于指定文本转图片时的CSS样式文件
     "render_style": null,
     // (str) 渲染HTML模板，用于指定文本转图片时的HTML模板文件
