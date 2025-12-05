@@ -178,11 +178,11 @@ class Core:
         :param config: 用户配置
         :return: PromptVP实例
         """
-        bot_name = ConfigManager.get_configs().bot_info.name
-        bot_birthday_year = ConfigManager.get_configs().bot_info.birthday.year
-        bot_birthday_month = ConfigManager.get_configs().bot_info.birthday.month
-        bot_birthday_day = ConfigManager.get_configs().bot_info.birthday.day
-        timezone = ConfigManager.get_configs().time.time_offset
+        bot_name = ConfigManager.get_configs().prompt_template.bot_info.name
+        bot_birthday_year = ConfigManager.get_configs().prompt_template.bot_info.birthday.year
+        bot_birthday_month = ConfigManager.get_configs().prompt_template.bot_info.birthday.month
+        bot_birthday_day = ConfigManager.get_configs().prompt_template.bot_info.birthday.day
+        timezone = ConfigManager.get_configs().prompt_template.time.time_offset
         
         return await self.promptvariable.get_prompt_variable(
             user_id = user_id,
@@ -193,7 +193,7 @@ class Core:
                 detailed_mode = str_to_bool(detailed_mode),
             ),
             reprs = lambda *args: "\n".join([repr(arg) for arg in args]),
-            version = ConfigManager.get_configs().core.version or __version__,
+            version = ConfigManager.get_configs().prompt_template.version or __version__,
             model_uid = model_uid if model_uid else config.model_uid,
             botname = bot_name,
             username = user_info.username or "None",
@@ -496,11 +496,24 @@ class Core:
                 )
 
                 # 如果上下文需要收缩，则进行收缩(为零或类型不对则不进行操作)
-                max_context_length = config.auto_shrink_length or ConfigManager.get_configs().context.auto_shrink_length
+                max_context_length = config.context_shrink_limit or ConfigManager.get_configs().context.context_shrink_limit
                 if isinstance(max_context_length, int) and max_context_length > 0:
                     if len(context) > max_context_length:
                         logger.info(f"Context length exceeds {max_context_length}, auto shrink", user_id = user_id)
-                        context.shrink(max_context_length)
+                        try:
+                            context.shrink(max_context_length)
+                        except Exception as e:
+                            logger.error(f"Failed to shrink context: {e}", user_id = user_id)
+                            return Response(
+                                content = (
+                                    "Sorry, I failed to shrink the context.\n"
+                                    "This can be caused by an incorrect parameter input.\n"
+                                    "Please check that the context field is working properly in your configuration.\n"
+                                    "Or whether the Context data does not contain the specified header Role."
+                                ),
+                                status_code = 400,
+                                finish_reason_cause = "shrink_context_failed",
+                            )
 
                 user_input = context.last_content
                 
