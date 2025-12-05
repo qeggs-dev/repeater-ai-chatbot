@@ -16,7 +16,7 @@ class UserConfigs(BaseModel):
     stop: list[str] | None = None
     frequency_penalty: float | None = Field(None, ge=-2.0, le=2.0)
     presence_penalty: float | None = Field(None, ge=-2.0, le=2.0)
-    auto_shrink_length: int | None = None
+    context_shrink_limit: int | None = None
     render_style: str | None = None
     render_html_template: str | None = None
     render_title: str | None = None
