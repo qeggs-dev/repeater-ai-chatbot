@@ -11,7 +11,7 @@ import openai
 from loguru import logger
 
 # ==== 自定义库 ==== #
-from .._object import (
+from .._objects import (
     Request,
     Response,
     Delta

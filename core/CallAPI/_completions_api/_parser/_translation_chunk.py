@@ -1,4 +1,4 @@
-from .._object import Delta, TokensCount
+from .._objects import Delta, TokensCount, FinishReason
 from openai.types.chat import ChatCompletion
 
 async def translation_chunk(
@@ -55,7 +55,7 @@ async def translation_chunk(
                             delta_data.function_arguments = tool.function.arguments
         
         if hasattr(choice, "finish_reason"):
-            delta_data.finish_reason = choice.finish_reason
+            delta_data.finish_reason = FinishReason(choice.finish_reason)
             
     if hasattr(chunk, "system_fingerprint"):
         delta_data.system_fingerprint = chunk.system_fingerprint

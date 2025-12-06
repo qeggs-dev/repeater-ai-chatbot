@@ -1,6 +1,6 @@
 import sys
 from typing import AsyncGenerator, Self, TextIO
-from ._object import Request, Delta, Response
+from ._objects import Request, Delta, Response
 from ...Request_Log import RequestLog
 from ...Context_Manager import ContentUnit, ContextRole, FunctionResponseUnit
 from ...Request_Log import TimeStamp

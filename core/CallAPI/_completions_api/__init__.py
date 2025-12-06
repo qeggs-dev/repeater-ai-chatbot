@@ -4,7 +4,7 @@ from ._client import (
     ClientStream
 )
 from ._parser import StreamingResponseGenerationLayer
-from ._object import (
+from ._objects import (
     Request,
     TokensCount,
     Response,

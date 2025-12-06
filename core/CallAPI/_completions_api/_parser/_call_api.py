@@ -8,12 +8,13 @@ from openai import NOT_GIVEN
 from loguru import logger
 
 # ==== 自定义库 ==== #
-from .._object import (
+from .._objects import (
     Request,
     Response,
     Top_Logprob,
     Logprob,
-    TokensCount
+    TokensCount,
+    FinishReason
 )
 from ....Context_Manager import (
     FunctionResponseUnit,
@@ -122,7 +123,7 @@ class CallAPI(CallNstreamAPIBase):
             choices = response.choices[0]
             # 写入完成原因
             if hasattr(choices, "finish_reason"):
-                model_response.finish_reason = choices.finish_reason
+                model_response.finish_reason = FinishReason(choices.finish_reason)
             # 
             if hasattr(choices, "message"):
                 # 处理输出内容

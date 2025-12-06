@@ -1,7 +1,7 @@
 import sys
 from typing import overload, Literal, AsyncIterator, TextIO
 from abc import ABC, abstractmethod
-from .._object import Request, Response, Delta
+from .._objects import Request, Response, Delta
 
 class BaseCallAPI(ABC):
     """

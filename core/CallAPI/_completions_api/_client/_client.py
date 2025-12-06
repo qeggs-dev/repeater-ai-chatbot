@@ -9,7 +9,7 @@ from loguru import logger
 import numpy as np
 
 # ==== 自定义库 ==== #
-from .._object import (
+from .._objects import (
     Request,
     Response,
 )
@@ -128,7 +128,7 @@ class ClientBase(ABC):
         logger.info("============= Response =============", user_id = user_id)
         if response.system_fingerprint:
             logger.info(f"System Fingerprint: {response.system_fingerprint}", user_id = user_id)
-        logger.info(f"Finish Reason: {response.finish_reason}", user_id = user_id)
+        logger.info(f"Finish Reason: {response.finish_reason.value}", user_id = user_id)
         logger.info(f"Finish Reason Cause: {response.finish_reason_cause}", user_id = user_id)
 
         if response.calling_log.total_chunk > 0:
