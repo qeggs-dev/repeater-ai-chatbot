@@ -106,7 +106,9 @@ async def render(
         )
     
     if not render_request.timeout:
-        render_request.timeout = ConfigManager.get_configs().render.default_image_timeout
+        render_request_timeout = ConfigManager.get_configs().render.default_image_timeout
+    else:
+        render_request_timeout = render_request.timeout
     
     # 日志打印文件名和渲染风格
     logger.info(f'Rendering image {filename} for "{style_name}" style', user_id=user_id)
@@ -161,7 +163,7 @@ async def render(
     logger.info(f'Created image {filename}', user_id = user_id)
 
     # 添加一个后台任务，时间到后删除图片
-    background_tasks.add_task(_wait_delete, render_request.timeout, filename)
+    background_tasks.add_task(_wait_delete, render_request_timeout, filename)
 
     # 生成图片的URL
     fileurl = request.url_for("render_file", file_uuid=fuuid)
@@ -173,7 +175,7 @@ async def render(
             "style": style_name,
             "status": result.status.value,
             "browser_used": result.browser_used,
-            "timeout": render_request.timeout,
+            "timeout": render_request_timeout,
             "error": result.error,
             "text": render_request.text,
             "image_render_time_ms": result.render_time_ms,
