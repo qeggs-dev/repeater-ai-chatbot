@@ -1,7 +1,7 @@
 from pydantic import BaseModel, ConfigDict, Field
 from ._models import *
 
-class Base_Config(BaseModel):
+class Global_Config(BaseModel):
     model_config = ConfigDict(case_sensitive=False)
 
     api_info: API_Info_Config = Field(default_factory=API_Info_Config)
