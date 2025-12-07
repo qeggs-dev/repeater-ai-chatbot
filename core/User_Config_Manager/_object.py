@@ -25,6 +25,7 @@ class UserConfigs(BaseModel):
     render_title: str | None = None
     load_prompt: bool = True
     save_context: bool = True
+    user_profile: str | None = None
     timezone: float | str = "UTC"
 
     @field_validator("timezone")

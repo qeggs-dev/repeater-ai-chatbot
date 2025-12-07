@@ -4,6 +4,10 @@ from fastapi import Form
 from fastapi.responses import PlainTextResponse
 from loguru import logger
 from pydantic import BaseModel
+from ...Text_Template_Processer import PromptVP_Loader
+from ...User_Config_Manager import ConfigManager
+
+prompt_vp_loader = PromptVP_Loader()
 
 class ExpandRequest(BaseModel):
     user_name: str | None = None
@@ -17,8 +21,11 @@ async def expand_variables(user_id: str, request: ExpandRequest):
     """
     Endpoint for expanding variables
     """
+    # 初始化加载器
+    config_loader = ConfigManager()
+
     # 获取用户配置
-    config = await chat.user_config_manager.load(user_id=user_id)
+    config = await config_loader.load(user_id=user_id)
 
     if request.user_name is None:
         user_name = user_id
@@ -26,7 +33,7 @@ async def expand_variables(user_id: str, request: ExpandRequest):
         user_name = request.user_name
     
     # 调用PromptVP类处理文本
-    prompt_vp = await chat.get_prompt_vp(
+    prompt_vp = prompt_vp_loader.get_prompt_vp_ex(
         user_id = user_id,
         user_info = Request_User_Info(
             username = user_name,
