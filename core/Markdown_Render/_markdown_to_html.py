@@ -1,9 +1,7 @@
 import html
 import markdown
 from ._br_extension import BrExtension
-from Text_Template_Processer import PromptVP_Loader
-
-prompt_pv_loader = PromptVP_Loader()
+from TextProcessors import PromptVP
 
 async def markdown_to_html(
     markdown_text: str,
@@ -42,11 +40,12 @@ async def markdown_to_html(
     
     # 4. 添加自适应宽度
     css += f"\nbody {{ width: {max(width, 60) - 60}px; }}"
-    
-    template_handler = prompt_pv_loader.get_prompt_vp(
+
+    template_handler = PromptVP()
+    template_handler.bulk_register_variable(
         html_content = html_content,
         css = css,
-        title = title
+        title = html.escape(title)
     )
 
     # 5. 生成 HTML 文本

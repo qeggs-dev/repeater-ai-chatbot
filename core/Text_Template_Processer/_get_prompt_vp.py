@@ -1,8 +1,8 @@
-from ..Global_Config_Manager import ConfigManager
+from ..Global_Config_Manager import Global_Config
 from ..User_Config_Manager import UserConfigs
 from ..Request_User_Info import Request_User_Info
 from TextProcessors import PromptVP, str_to_bool
-from .. import __version__
+from .._info import __version__
 from ._value_comparison import value_comparison
 
 from datetime import datetime, timedelta
@@ -44,6 +44,7 @@ class PromptVP_Loader:
             user_id: str,
             model_uid: str = "",
             user_info: Request_User_Info = Request_User_Info(),
+            global_config: Global_Config = Global_Config(),
             config: UserConfigs = UserConfigs(),
             **kwargs
         ) -> PromptVP:
@@ -56,11 +57,11 @@ class PromptVP_Loader:
         :param config: 用户配置
         :return: PromptVP实例
         """
-        bot_name = ConfigManager.get_configs().prompt_template.bot_info.name
-        bot_birthday_year = ConfigManager.get_configs().prompt_template.bot_info.birthday.year
-        bot_birthday_month = ConfigManager.get_configs().prompt_template.bot_info.birthday.month
-        bot_birthday_day = ConfigManager.get_configs().prompt_template.bot_info.birthday.day
-        timezone = config.timezone or ConfigManager.get_configs().prompt_template.time.timezone
+        bot_name = global_config.prompt_template.bot_info.name
+        bot_birthday_year = global_config.prompt_template.bot_info.birthday.year
+        bot_birthday_month = global_config.prompt_template.bot_info.birthday.month
+        bot_birthday_day = global_config.prompt_template.bot_info.birthday.day
+        timezone = config.timezone or global_config.prompt_template.time.timezone
         now = datetime.now()
 
         if isinstance(timezone, str):
@@ -81,7 +82,7 @@ class PromptVP_Loader:
                 detailed_mode = str_to_bool(detailed_mode),
             ),
             reprs = lambda *args: "\n".join([repr(arg) for arg in args]),
-            version = ConfigManager.get_configs().prompt_template.version or __version__,
+            version = global_config.prompt_template.version or __version__,
             model_uid = model_uid if model_uid else config.model_uid,
             botname = bot_name,
             username = user_info.username or "None",

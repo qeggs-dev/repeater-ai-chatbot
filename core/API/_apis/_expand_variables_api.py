@@ -5,6 +5,7 @@ from fastapi.responses import PlainTextResponse
 from loguru import logger
 from pydantic import BaseModel
 from ...Text_Template_Processer import PromptVP_Loader
+from ...Global_Config_Manager import ConfigManager as Global_Config_Manager
 from ...User_Config_Manager import ConfigManager
 
 prompt_vp_loader = PromptVP_Loader()
@@ -42,6 +43,7 @@ async def expand_variables(user_id: str, request: ExpandRequest):
             gender = request.user_sex
         ),
         model_uid = "nomodel",
+        global_config = Global_Config_Manager.get_configs(),
         config = config
     )
     output = prompt_vp.process(request.text)
