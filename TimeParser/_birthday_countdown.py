@@ -1,3 +1,5 @@
+from datetime import datetime, timedelta
+
 def get_birthday_countdown(
         birth_month:int,
         birth_day:int,
@@ -7,7 +9,6 @@ def get_birthday_countdown(
     '''
     获取距离生日还有多少天
     '''
-    from datetime import datetime, timedelta
     now = datetime.now()
     current_year = now.year
     
@@ -20,7 +21,7 @@ def get_birthday_countdown(
     
     # 判断当前是否在生日当天
     if now.date() == birthday_this_year.date():
-        return f"今天是{name}生日，Happy Birthday!"
+        return f"Today is {name} Birthday Happy Birthday!"
     
     # 计算下一次生日的年份
     if now > birthday_this_year:
@@ -53,6 +54,6 @@ def get_birthday_countdown(
         days += 1
     
     if precise:
-        return f"距离{name}生日还有：{days}天 {hours}时 {minutes}分 {seconds}秒"
+        return f"And to {name}'s birthday: {days} days {hours} minutes {seconds} seconds"
     else:
-        return f"距离{name}生日还有：{days}天"
+        return f"And to {name}'s birthday: {days} days"
