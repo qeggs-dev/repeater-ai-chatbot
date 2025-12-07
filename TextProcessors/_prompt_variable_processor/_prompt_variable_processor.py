@@ -2,7 +2,7 @@ import re
 import json
 import types
 import shlex
-from typing import Literal
+from typing import Callable, Any
 from ._escape import escape_string
 from ._exceptions import *
 from ._serialization_mode import SerializationMode
@@ -30,7 +30,7 @@ class PromptVP:
     PromptVP 在文本中使用敏感块(用:::包裹的文本)时，如果敏感块中含有未命中的变量，整个敏感块将被删除。
 
     条件块的使用：
-    {var}->```...```
+    [var]->```...```
     当变量var存在且其值不为空、不为False、执行后内容非空时，显示后面的内容块
     否则整个内容块将被去除
 
@@ -64,7 +64,7 @@ class PromptVP:
     PromptVP will delete the entire sensitive block if the sensitive block contains an unmatched variable.
 
     Conditional block usage:
-    {var}->```...```
+    [var]->```...```
     When the variable var exists and its value is not empty, not False, and not empty after execution, 
     the content block is displayed. Otherwise, the entire content block is removed.
 
@@ -92,21 +92,21 @@ class PromptVP:
     _VAR_EXTRACT_PATTERN = re.compile(r'(?<!\\)(?:\\\\)*\{([a-zA-Z0-9_]+)')
     # 条件块正则表达式
     _CONDITIONAL_BLOCK_PATTERN = re.compile(
-        r'\{([a-zA-Z0-9_]+)\}\s*->\s*```(.*?)```',
+        r'\[([a-zA-Z0-9_]+)\]\s*->\s*```(.*?)```',
         re.DOTALL
     )
     # 转义块正则表达式
     _ESCAPE_BLOCK_PATTERN = re.compile(r'<esc:"(.*?)">', re.DOTALL)
 
     def __init__(self, indent: int | None = 4, mode: SerializationMode = SerializationMode.STR):
-        self.variables = {}
+        self.variables: dict[str, str | Callable] = {}
         # 命中计数器
         self.discovered_variable = 0
         self.hit_variable = 0
         self.indent = indent
         self.mode = mode
 
-    def register_variable(self, name: str, value: str | types.FunctionType):
+    def register_variable(self, name: str, value: str | Callable):
         '''注册变量'''
         if ' ' in name:
             raise InvalidVariableName(f'Variable name cannot contain spaces, but got "{name}"')
@@ -122,11 +122,6 @@ class PromptVP:
 
         # 处理转义块
         text = self._process_escape_blocks(text)
-
-        # 处理条件块
-        text = self._process_conditional_blocks(text, **kwargs)
-        parts = self._SENSITIVE_BLOCK_PATTERN.split(text)
-        
 
         # 分割敏感块和普通内容
         parts = self._SENSITIVE_BLOCK_PATTERN.split(text)
@@ -159,7 +154,11 @@ class PromptVP:
                 # 处理普通内容
                 processed.append(self._replace_vars(part, check_exists=True, **kwargs))
 
-        return ''.join(processed)
+        # 处理条件块
+        processed_text = "".join(processed)
+        output = self._process_conditional_blocks(processed_text, **kwargs)
+
+        return output
     
     def _process_escape_blocks(self, text: str) -> str:
         '''处理转义块'''
@@ -176,16 +175,18 @@ class PromptVP:
     def _process_conditional_blocks(self, text: str, **kwargs) -> str:
         '''处理条件块'''
         def replacer(match: re.Match[str]):
-            var_name = match.group(1)
+            variable = match.group(1)
             content_block = match.group(2).strip()
+
+            var_name, var_args = self._parse_var_and_args(variable)
             
             # 检查变量是否存在
-            if var_name in self.variables:
+            if variable in self.variables:
                 value = self.variables[var_name]
                 
                 # 如果是函数变量，执行函数获取值
-                if isinstance(value, types.FunctionType):
-                    value = value(**kwargs)
+                if callable(value):
+                    value = value(*var_args, **kwargs)
                 
                 # 检查值是否应该显示内容块
                 if self._should_display(value):
@@ -196,24 +197,17 @@ class PromptVP:
         
         return self._CONDITIONAL_BLOCK_PATTERN.sub(replacer, text)
     
-    def _should_display(self, value) -> bool:
+    def _should_display(self, value: Any) -> bool:
         '''检查值是否应该显示内容块'''
-        if value is None:
+        try:
+            return bool(value)
+        except Exception:
             return False
-        if isinstance(value, bool):
-            return value
-        if isinstance(value, (int, float)):
-            return value != 0
-        if isinstance(value, str):
-            return value.strip() != ''
-        if isinstance(value, (list, tuple, dict, set)):
-            return len(value) > 0
-        return True
     
-    def _parse_var_and_args(self, s: str) -> tuple:
+    def _parse_var_and_args(self, variable_str: str) -> tuple[str, list[str]]:
         '''解析变量名和参数列表'''
         try:
-            tokens = shlex.split(s)
+            tokens = shlex.split(variable_str)
             if not tokens:
                 return None, []
             var_name = tokens[0]
@@ -221,7 +215,7 @@ class PromptVP:
             return var_name, args
         except Exception:
             # 解析失败时回退到简单方法
-            tokens = [t.strip() for t in s.split(' ') if t.strip()]
+            tokens = [t.strip() for t in variable_str.split(' ') if t.strip()]
             return (tokens[0], tokens[1:]) if tokens else (None, [])
     
     def discover_var(self) -> int:
