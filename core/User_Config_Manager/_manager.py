@@ -1,5 +1,6 @@
 import asyncio
 from typing import Any
+from pydantic import ValidationError
 from loguru import logger
 from ..Data_Manager import UserConfigManager
 from ._exceptions import *
@@ -242,11 +243,20 @@ class ConfigManager:
         :param user_id: 用户ID
         :return: 用户配置数据
         """
-        return UserConfigs(
-            **await self._user_config_manager.load(
-                user_id
+        try:
+            return UserConfigs(
+                **await self._user_config_manager.load(
+                    user_id
+                )
             )
-        )
+        except ValidationError as e:
+            errors = e.errors()
+            text_buffer:list[str] = []
+            for error in errors:
+                text_buffer.append(
+                    f"{error['loc'][0]}: {error['msg']}"
+                )
+            raise Exception("\n".join(text_buffer))
     
     async def _save_configs(self, user_id: str, configs: UserConfigs):
         """

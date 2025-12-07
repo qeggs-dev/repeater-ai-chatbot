@@ -10,19 +10,6 @@ class KeyNotFoundError(ConfigManagerException):
     """Raised when a key is not found."""
     pass
 
-class EnvError(ConfigManagerException):
-    """Base class for exceptions in this module."""
-    pass
-
-
-class EnvNotFoundError(EnvError):
-    """Exception raised when environment variable is not found."""
-    pass
-
-class UnintelligibleBatchFormat(EnvError):
-    """Exception raised when batch format is not intelligible."""
-    pass
-
-class EnvTypeError(EnvError):
-    """Exception raised when environment variable type is not supported."""
+class ConfigFieldError(ConfigManagerException):
+    """Raised when a config field is not in the correct format."""
     pass

@@ -26,7 +26,7 @@ class UserConfigs(BaseModel):
     load_prompt: bool = True
     save_context: bool = True
     user_profile: str | None = None
-    timezone: float | str = "UTC"
+    timezone: float | str | None = None
 
     @field_validator("timezone")
     def check_timezone(cls, v):
@@ -38,6 +38,8 @@ class UserConfigs(BaseModel):
         elif isinstance(v, int) or isinstance(v, float):
             if not -12 <= v <= 14:
                 raise ValueError(f"Invalid time offset {v}")
+        elif v is None:
+            pass
         else:
             raise ValueError("Invalid time offset type")
         return v
