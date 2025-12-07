@@ -1,11 +1,11 @@
 # ==== 标准库 ==== #
-import time
 import uuid
 import atexit
 import random
 import asyncio
 import traceback
 from pathlib import Path
+from datetime import datetime, timedelta
 from typing import (
     AsyncIterator,
     Any,
@@ -42,6 +42,7 @@ from TimeParser import (
     date_to_zodiac,
     format_timestamp,
     calculate_age,
+    get_timezone_offset,
 )
 from .Logger_Init import (
     logger_init
@@ -71,7 +72,7 @@ from TextProcessors import (
 # 上一级别的变化会清零后面的所有版本号
 # 接口版本号与核心版本号是两个独立的版本号
 # 接口版本号不变的情况下接口大概率是不变的
-__version__ = "4.3.3.3"
+__version__ = "4.3.3.4"
 
 # ==== 本模块代码 ==== #
 
@@ -182,7 +183,17 @@ class Core:
         bot_birthday_year = ConfigManager.get_configs().prompt_template.bot_info.birthday.year
         bot_birthday_month = ConfigManager.get_configs().prompt_template.bot_info.birthday.month
         bot_birthday_day = ConfigManager.get_configs().prompt_template.bot_info.birthday.day
-        timezone = ConfigManager.get_configs().prompt_template.time.time_offset
+        timezone = config.timezone or ConfigManager.get_configs().prompt_template.time.timezone
+        now = datetime.now()
+
+        if isinstance(timezone, str):
+            time_offset = get_timezone_offset(
+                timezone = timezone,
+                dt = now
+            )
+        else:
+            time_offset = timedelta(hours=timezone)
+
         
         return await self.promptvariable.get_prompt_variable(
             user_id = user_id,
@@ -203,8 +214,8 @@ class Core:
             user_info = user_info.as_dict,
             birthday = f"{bot_birthday_year}-{bot_birthday_month}-{bot_birthday_day}",
             zodiac = lambda **kw: date_to_zodiac(bot_birthday_month, bot_birthday_day),
-            time = lambda time_format = "%Y-%m-%d %H:%M:%S %Z": format_timestamp(time.time(), config.timezone or timezone, time_format),
-            age = lambda **kw: calculate_age(bot_birthday_year, bot_birthday_month, bot_birthday_day, offset_timezone = config.timezone or timezone),
+            time = lambda time_format = "%Y-%m-%d %H:%M:%S %Z": format_timestamp(now, time_offset, time_format),
+            age = lambda **kw: calculate_age(bot_birthday_year, bot_birthday_month, bot_birthday_day, offset_timezone = time_offset),
             random = lambda min, max: random.randint(int(min), int(max)),
             randfloat = lambda min, max: random.uniform(float(min), float(max)),
             randchoice = lambda *args: random.choice(args),

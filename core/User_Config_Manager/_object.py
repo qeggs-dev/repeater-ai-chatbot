@@ -1,4 +1,5 @@
-from pydantic import BaseModel, ConfigDict, Field
+from pydantic import BaseModel, ConfigDict, field_validator, Field
+from zoneinfo import ZoneInfo, available_timezones
 
 class UserConfigs(BaseModel):
     """
@@ -9,7 +10,6 @@ class UserConfigs(BaseModel):
         validate_assignment=True
     )
 
-    timezone: int | None = Field(None, ge=-12, le=14)
     parset_prompt_name: str | None = None
     model_uid: str | None = None
     temperature: float | None = Field(None, ge=0.0, le=2.0)
@@ -25,3 +25,18 @@ class UserConfigs(BaseModel):
     render_title: str | None = None
     load_prompt: bool = True
     save_context: bool = True
+    timezone: float | str = "UTC"
+
+    @field_validator("timezone")
+    def check_timezone(cls, v):
+        if isinstance(v, str):
+            if v not in available_timezones():
+                raise ValueError(f"Invalid time zone {v}")
+        elif isinstance(v, ZoneInfo):
+            pass
+        elif isinstance(v, int) or isinstance(v, float):
+            if not -12 <= v <= 14:
+                raise ValueError(f"Invalid time offset {v}")
+        else:
+            raise ValueError("Invalid time offset type")
+        return v

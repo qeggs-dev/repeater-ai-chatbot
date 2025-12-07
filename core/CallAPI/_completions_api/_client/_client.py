@@ -16,7 +16,8 @@ from .._objects import (
 from ....Coroutine_Pool import CoroutinePool
 from TimeParser import (
     format_deltatime,
-    format_deltatime_ns
+    format_deltatime_ns,
+    format_time_duration_ns
 )
 from .._parser import (
     CallAPI,
@@ -141,11 +142,11 @@ class ClientBase(ABC):
         
         logger.info("========== Time Statistics =========", user_id = user_id)
         total_time = response.calling_log.stream_processing_end_time.monotonic - response.calling_log.request_start_time.monotonic
-        logger.info(f"Total Time: {total_time / 10**9:.2f}s({format_deltatime_ns(total_time, '%H:%M:%S.%f.%u.%n')})", user_id = user_id)
+        logger.info(f"Total Time: {total_time / 10**9:.2f}s({format_time_duration_ns(total_time, use_abbreviation=True)})", user_id = user_id)
         requests_time = response.calling_log.request_end_time.monotonic - response.calling_log.request_start_time.monotonic
-        logger.info(f"API Request Time: {requests_time / 10**9:.2f}s({format_deltatime_ns(requests_time, '%H:%M:%S.%f.%u.%n')})", user_id = user_id)
+        logger.info(f"API Request Time: {requests_time / 10**9:.2f}s({format_time_duration_ns(requests_time, use_abbreviation=True)})", user_id = user_id)
         stream_processing_time = response.calling_log.stream_processing_end_time.monotonic - response.calling_log.stream_processing_start_time.monotonic
-        logger.info(f"Stream Processing Time: {stream_processing_time / 10**9:.2f}s({format_deltatime_ns(stream_processing_time, '%H:%M:%S.%f.%u.%n')})", user_id = user_id)
+        logger.info(f"Stream Processing Time: {stream_processing_time / 10**9:.2f}s({format_time_duration_ns(stream_processing_time, use_abbreviation=True)})", user_id = user_id)
 
         created_utc_dt = datetime.fromtimestamp(response.created, tz=timezone.utc)
         created_utc_str = created_utc_dt.strftime('%Y-%m-%d %H:%M:%S (UTC)')
@@ -165,9 +166,9 @@ class ClientBase(ABC):
             chunk_generation_rate = 10**9 / ave_chunk_spawn_time
             chunk_stability_cv = self._calculate_stability_cv(time_differences)
             logger.info(f"Chunk Generation Rate: {chunk_generation_rate:.2f} Chunks/s", user_id = user_id)
-            logger.info(f"Chunk Average Spawn Time: {ave_chunk_spawn_time / 10**6:.2f}ms({format_deltatime_ns(ave_chunk_spawn_time, '%H:%M:%S.%f.%u.%n')})", user_id = user_id)
-            logger.info(f"Chunk Max Spawn Time: {max_chunk_spawn_time / 10**6:.2f}ms({format_deltatime_ns(max_chunk_spawn_time, '%H:%M:%S.%f.%u.%n')})", user_id = user_id)
-            logger.info(f"Chunk Min Spawn Time: {min_chunk_spawn_time / 10**6:.2f}ms({format_deltatime_ns(min_chunk_spawn_time, '%H:%M:%S.%f.%u.%n')})", user_id = user_id)
+            logger.info(f"Chunk Average Spawn Time: {ave_chunk_spawn_time / 10**6:.2f}ms({format_time_duration_ns(ave_chunk_spawn_time, use_abbreviation=True)})", user_id = user_id)
+            logger.info(f"Chunk Max Spawn Time: {max_chunk_spawn_time / 10**6:.2f}ms({format_time_duration_ns(max_chunk_spawn_time, use_abbreviation=True)})", user_id = user_id)
+            logger.info(f"Chunk Min Spawn Time: {min_chunk_spawn_time / 10**6:.2f}ms({format_time_duration_ns(min_chunk_spawn_time, use_abbreviation=True)})", user_id = user_id)
             logger.info(f"Chunk time stability (Coefficient of Variation): {chunk_stability_cv}", user_id = user_id)
 
         logger.info("=========== Token Count ============", user_id = user_id)
