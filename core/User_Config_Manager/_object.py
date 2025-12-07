@@ -4,9 +4,12 @@ class UserConfigs(BaseModel):
     """
     Configs for user.
     """
-    model_config = ConfigDict(validate_assignment=True)
+    model_config = ConfigDict(
+        case_sensitive=False,
+        validate_assignment=True
+    )
 
-    timezone: int | None = Field(None, ge=-12, le=12)
+    timezone: int | None = Field(None, ge=-12, le=14)
     parset_prompt_name: str | None = None
     model_uid: str | None = None
     temperature: float | None = Field(None, ge=0.0, le=2.0)
