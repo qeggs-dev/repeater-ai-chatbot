@@ -51,6 +51,9 @@ from TextProcessors import (
     PromptVP,
     str_to_bool
 )
+from .Text_Template_Processer import (
+    PromptVP_Loader
+)
 
 # ==== 模块信息 ==== #
 # 版本号规则
@@ -93,7 +96,7 @@ class Core:
         self.user_config_manager = UserConfigManager()
 
         # 初始化变量加载器
-        self.promptvariable = Context_Manager.LoadPromptVariable(
+        self.prompt_pv_loader = PromptVP_Loader(
             version = __version__
         )
         # 初始化Client并设置并发大小
@@ -160,70 +163,6 @@ class Core:
         """
         
         return await self.namespace_locks.get_lock(user_id)
-    # endregion
-    
-    # region > get prompt_vp
-    async def get_prompt_vp(
-            self,
-            user_id: str,
-            model_uid: str = "",
-            user_info: Request_User_Info = Request_User_Info(),
-            config: UserConfigs = UserConfigs(),
-        ) -> PromptVP:
-        """
-        获取指定用户的PromptVP实例
-
-        :param user_id: 用户ID
-        :param model_uid: 模型UID
-        :param user_info: 用户信息
-        :param config: 用户配置
-        :return: PromptVP实例
-        """
-        bot_name = ConfigManager.get_configs().prompt_template.bot_info.name
-        bot_birthday_year = ConfigManager.get_configs().prompt_template.bot_info.birthday.year
-        bot_birthday_month = ConfigManager.get_configs().prompt_template.bot_info.birthday.month
-        bot_birthday_day = ConfigManager.get_configs().prompt_template.bot_info.birthday.day
-        timezone = config.timezone or ConfigManager.get_configs().prompt_template.time.timezone
-        now = datetime.now()
-
-        if isinstance(timezone, str):
-            time_offset = get_timezone_offset(
-                timezone = timezone,
-                dt = now
-            )
-        else:
-            time_offset = timedelta(hours=timezone)
-
-        
-        return await self.promptvariable.get_prompt_variable(
-            user_id = user_id,
-            birthday_countdown = lambda detailed_mode = False: get_birthday_countdown(
-                bot_birthday_month,
-                bot_birthday_day,
-                name=bot_name,
-                detailed_mode = str_to_bool(detailed_mode),
-            ),
-            reprs = lambda *args: "\n".join([repr(arg) for arg in args]),
-            version = ConfigManager.get_configs().prompt_template.version or __version__,
-            model_uid = model_uid if model_uid else config.model_uid,
-            botname = bot_name,
-            username = user_info.username or "None",
-            nickname = user_info.nickname or "None",
-            user_age = user_info.age or "None",
-            user_gender = user_info.gender or "None",
-            user_info = user_info.as_dict,
-            birthday = f"{bot_birthday_year}-{bot_birthday_month}-{bot_birthday_day}",
-            zodiac = lambda **kw: date_to_zodiac(bot_birthday_month, bot_birthday_day),
-            time = lambda time_format = "%Y-%m-%d %H:%M:%S %Z": format_timestamp(now, time_offset, time_format),
-            age = lambda **kw: calculate_age(bot_birthday_year, bot_birthday_month, bot_birthday_day, offset_timezone = time_offset),
-            random = lambda min, max: random.randint(int(min), int(max)),
-            randfloat = lambda min, max: random.uniform(float(min), float(max)),
-            randchoice = lambda *args: random.choice(args),
-            generate_uuid = lambda **kw: uuid.uuid4(),
-            copytext = lambda text, number, spacers = "": spacers.join([text] * int(number)),
-            text_matrix = lambda text, columns, lines, spacers = " ", line_breaks = "\n": line_breaks.join(spacers.join([text] * int(columns)) for _ in range(int(lines))),
-            random_matrix = lambda rows, cols: np.random.rand(int(rows), int(cols)),
-        )
     # endregion
     
     # region > nickname mapping
@@ -482,7 +421,7 @@ class Core:
                 user_info = await self.nickname_mapping(user_id, user_info)
 
                 # 获取Prompt_vp以展开变量内容
-                prompt_vp = await self.get_prompt_vp(
+                prompt_vp = self.prompt_pv_loader.get_prompt_vp_ex(
                     user_id = user_id,
                     user_info = user_info,
                     model_uid = model_uid,
