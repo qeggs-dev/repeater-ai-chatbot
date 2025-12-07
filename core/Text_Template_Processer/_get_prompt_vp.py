@@ -3,7 +3,7 @@ from ..User_Config_Manager import UserConfigs
 from ..Request_User_Info import Request_User_Info
 from TextProcessors import PromptVP, str_to_bool
 from .._info import __version__
-from ._value_comparison import value_comparison
+from ._value_comparison import value_comparison, ComparisonOperator
 
 from datetime import datetime, timedelta
 from TimeParser import (
@@ -71,9 +71,8 @@ class PromptVP_Loader:
             )
         else:
             time_offset = timedelta(hours=timezone)
-
         
-        return self.get_prompt_vp(
+        prompt_vp = self.get_prompt_vp(
             user_id = user_id,
             birthday_countdown = lambda detailed_mode = False: get_birthday_countdown(
                 bot_birthday_month,
@@ -103,3 +102,8 @@ class PromptVP_Loader:
             random_matrix = lambda rows, cols: np.random.rand(int(rows), int(cols)),
             **kwargs
         )
+
+        # if 是 Python 关键字，所以需要单独处理
+        prompt_vp.register_variable("if", lambda value_1, compare_operator, value_2: value_comparison(value_1, value_2, ComparisonOperator(compare_operator), True))
+
+        return prompt_vp
