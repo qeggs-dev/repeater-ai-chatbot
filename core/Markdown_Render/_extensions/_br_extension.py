@@ -1,6 +1,6 @@
-import markdown
 from markdown.extensions import Extension
 from markdown.preprocessors import Preprocessor
+from typing import Iterable
 import re
 
 class BrExtension(Extension):
@@ -10,7 +10,8 @@ class BrExtension(Extension):
 class BrPreprocessor(Preprocessor):
     FIND_PATTERN = re.compile(r'```.*?```', re.DOTALL)
     SUB_PATTERN = re.compile(r'\n+')
-    def run(self, lines):
+    def run(self, lines:Iterable[str]):
+        # 将所有行合并为一个字符串
         text = '\n'.join(lines)
         
         # 使用正则表达式匹配代码块

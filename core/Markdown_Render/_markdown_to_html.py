@@ -1,6 +1,9 @@
 import html
 import markdown
-from ._br_extension import BrExtension
+from ._extensions import (
+    BrExtension,
+    CodeBlockExtension,
+)
 from TextProcessors import PromptVP
 
 async def markdown_to_html(
@@ -31,7 +34,13 @@ async def markdown_to_html(
             markdown_text = markdown_text.replace(key, value)
     
     # 2. 渲染 Markdown 为 HTML
-    html_content = markdown.markdown(markdown_text, extensions=[BrExtension()])
+    html_content = markdown.markdown(
+        markdown_text,
+        extensions=[
+            CodeBlockExtension(),
+            BrExtension()
+        ]
+    )
 
     # 3. 预处理 HTML 文本
     if preprocess_map_after:
