@@ -8,22 +8,11 @@
         "file_path": "./configs/blacklist.regex",
         "match_timeout": 10.0
     },
-    "bot_info": {
-        "name": "Repeater",
-        "birthday": {
-            "day": 28,
-            "month": 6,
-            "year": 2024
-        }
-    },
     "callapi": {
         "max_concurrency": 1000
     },
     "context": {
         "auto_shrink_length": null
-    },
-    "core": {
-        "version": ""
     },
     "logger": {
         "file_path": "./logs/repeater-log-{time:YYYY-MM-DD_HH-mm-ss.SSS}.log",
@@ -51,7 +40,7 @@
             "year": 2024
         },
         "time": {
-            "time_offset": 0.0
+            "timezone": "Asia/Shanghai"
         }
     },
     "prompt": {
@@ -68,20 +57,18 @@
             "style_file_encoding": "utf-8",
             "html_template_dir": "./configs/html_templates",
             "html_template_file_encoding": "utf-8",
-            "default_html_template": "default.html",
+            "default_html_template": "default",
+            "html_template_suffix": ".html",
             "preprocess_map": {
                 "before": {},
-                "after": {
-                    "<code>": "<pre><code>",
-                    "</code>": "</code></pre>"
-                }
+                "after": {}
             },
             "title": "Repeater Image Generator"
         },
         "to_image": {
             "max_pages_per_browser": 5,
             "max_browsers": 2,
-            "browser_type": "chrome",
+            "browser_type": "",
             "headless": true,
             "output_dir": "./workspace/temp/render",
             "output_suffix": ".png",
@@ -105,9 +92,6 @@
     "static": {
         "readme_file_path": "./README.md",
         "static_dir": "./static"
-    },
-    "time": {
-        "time_offset": 0.0
     },
     "user_config_cache": {
         "downgrade_wait_time": 600.0,
