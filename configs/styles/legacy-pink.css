@@ -1,0 +1,135 @@
+body {
+  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+  background-color: #fff0f5;
+  color: #5a1a37;
+  padding: 30px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.05);
+  line-height: 1.7;
+}
+
+h1 {
+  color: #8a1c4a;
+  margin-top: 1.2em;
+  margin-bottom: 0.6em;
+  font-weight: 600;
+  border-bottom: 1px solid #ffd1dc;
+  font-size: 2em;
+}
+
+h2 {
+  color: #8a1c4a;
+  margin-top: 1.2em;
+  margin-bottom: 0.6em;
+  font-weight: 600;
+  border-bottom: 1px solid #ffd1dc;
+  font-size: 1.5em;
+}
+
+h3 {
+  color: #8a1c4a;
+  margin-top: 1.2em;
+  margin-bottom: 0.6em;
+  font-weight: 600;
+  border-bottom: 1px solid #ffd1dc;
+  font-size: 1.17em;
+}
+
+h4 {
+  color: #8a1c4a;
+  margin-top: 1.2em;
+  margin-bottom: 0.6em;
+  font-weight: 600;
+  border-bottom: 1px solid #ffd1dc;
+  font-size: 1em;
+}
+
+h5 {
+  color: #8a1c4a;
+  margin-top: 1.2em;
+  margin-bottom: 0.6em;
+  font-weight: 600;
+  border-bottom: 1px solid #ffd1dc;
+  font-size: 0.83em;
+}
+
+h6 {
+  color: #8a1c4a;
+  margin-top: 1.2em;
+  margin-bottom: 0.6em;
+  font-weight: 600;
+  border-bottom: 1px solid #ffd1dc;
+  font-size: 0.67em;
+}
+
+a {
+  color: #d81b60;
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: underline;
+}
+
+code {
+  background-color: #ffeef4;
+  padding: 2px 6px;
+  border-radius: 4px;
+  font-family: "SFMono-Regular", Consolas, "Liberation Mono", Menlo, monospace;
+}
+
+pre {
+  background-color: #ffeef4;
+  padding: 16px;
+  border-radius: 8px;
+  overflow: auto;
+  border-left: 4px solid #ff9ebd;
+}
+
+blockquote {
+  background-color: #ffeef4;
+  border-left: 4px solid #ff9ebd;
+  padding: 12px 20px;
+  margin: 0;
+  color: #7a2a4c;
+}
+
+ul,
+ol {
+  padding-left: 28px;
+}
+
+li {
+  margin-bottom: 8px;
+}
+
+img {
+  max-width: 100%;
+  border-radius: 6px;
+  margin: 10px 0;
+}
+
+table {
+  border-collapse: collapse;
+  width: 100%;
+  margin: 20px 0;
+}
+
+th,
+td {
+  border: 1px solid #ffd1dc;
+  padding: 12px 15px;
+  text-align: left;
+}
+
+th {
+  background-color: #ffeef4;
+  font-weight: 600;
+}
+
+hr {
+  border: 0;
+  height: 1px;
+  background: #ffd1dc;
+  margin: 30px 0;
+}
