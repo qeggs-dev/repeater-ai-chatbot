@@ -100,6 +100,7 @@ class PromptVP_Loader:
             copytext = lambda text, number, spacers = "": spacers.join([text] * int(number)),
             text_matrix = lambda text, columns, lines, spacers = " ", line_breaks = "\n": line_breaks.join(spacers.join([text] * int(columns)) for _ in range(int(lines))),
             random_matrix = lambda rows, cols: np.random.rand(int(rows), int(cols)),
+            user_profile = lambda: config.user_profile if config.user_profile is not None else global_config.prompt_template.default_user_profile,
             **kwargs
         )
 

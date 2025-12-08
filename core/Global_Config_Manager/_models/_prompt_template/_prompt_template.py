@@ -9,3 +9,4 @@ class Prompt_Template_Config(BaseModel):
     version: str = ""
     bot_info: Bot_Info_Config = Field(default_factory=Bot_Info_Config)
     time: Time_Config = Field(default_factory=Time_Config)
+    default_user_profile: str = "The user has not filled out the field for the time being."
