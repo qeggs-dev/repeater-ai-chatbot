@@ -23,6 +23,14 @@ from loguru import logger
 from uuid import uuid4
 from pathlib import Path
 from ...Global_Config_Manager import ConfigManager
+from ...Lifespan import (
+    StartHandler,
+    ExitHandler
+)
+from ...Delayed_Tasks_Pool import DelayedTasksPool
+
+delayed_tasks_pool = DelayedTasksPool()
+ExitHandler.add_function(delayed_tasks_pool.cancel_all())
 
 class RenderRequest(BaseModel):
     text: str
@@ -52,25 +60,12 @@ async def render(
     fuuid = uuid4()
     filename = f"{fuuid}{ConfigManager.get_configs().render.to_image.output_suffix}"
     render_output_image_dir = Path(ConfigManager.get_configs().render.to_image.output_dir)
-
-    # 延迟删除函数
-    async def _wait_delete(sleep_time: float, filename: str):
+    async def _delete(filename: str):
         """
-        等待一段时间后删除图片
+        删除图片
         """
-        async def _delete(filename: str):
-            """
-            删除图片
-            """
-            await asyncio.to_thread(os.remove, render_output_image_dir / filename)
-            logger.info(f'Deleted image {filename}', user_id = user_id)
-        
-        try:
-            await asyncio.sleep(sleep_time)
-            await _delete(filename)
-        except asyncio.CancelledError:
-            logger.info("Image delete task cancelled", user_id = user_id)
-            await _delete(filename)
+        await asyncio.to_thread(os.remove, render_output_image_dir / filename)
+        logger.info(f'Deleted image {filename}', user_id = user_id)
         
     style_path = ConfigManager.get_configs().render.markdown.styles_dir
     styles = Styles(
@@ -164,7 +159,11 @@ async def render(
     logger.info(f'Created image {filename}', user_id = user_id)
 
     # 添加一个后台任务，时间到后删除图片
-    background_tasks.add_task(_wait_delete, render_request_timeout, filename)
+    await delayed_tasks_pool.add_task(
+        render_request_timeout,
+        _delete(filename),
+        id = "Markdown Render Image Timing Deleter"
+    )
 
     # 生成图片的URL
     fileurl = request.url_for("render_file", file_uuid=fuuid)
