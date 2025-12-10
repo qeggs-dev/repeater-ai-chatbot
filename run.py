@@ -1044,7 +1044,7 @@ class SlovesStarter:
             default: bool = True,
             print_return_code: bool = True,
             print_runtime: bool = True,
-            runtime_handler: Callable[[int, int], str] = lambda start, end: format_carry_duration(end - start, use_abbreviation=True, levels=TIME_LEVELS),
+            runtime_handler: Callable[[int, int], str] = lambda start, end: format_carry_duration(end - start, use_abbreviation=True, levels=TIME_LEVELS, final_level=("century", "cent")),
             env: dict[str, str] | None = None,
             askfile: TextIO = sys.stdout,
             capture_output: bool = False,
