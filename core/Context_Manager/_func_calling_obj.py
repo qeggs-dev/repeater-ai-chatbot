@@ -10,9 +10,9 @@ class RequestFunctionParameters:
     """
     FunctionCalling Request 中的函数参数对象
     """
-    name: str = ''
-    type: str = ''
-    description: str = ''
+    name: str = ""
+    type: str = ""
+    description: str = ""
     required: bool = False
 
 @dataclass
@@ -20,8 +20,8 @@ class RequestCallingFunctionUnit:
     """
     FunctionCalling Request 中的函数对象单元
     """
-    name: str = ''
-    description: str = ''
+    name: str = ""
+    description: str = ""
     parameters: list[RequestFunctionParameters] = field(default_factory=list)
 
     @property
@@ -33,21 +33,21 @@ class RequestCallingFunctionUnit:
         required = []
         for param in self.parameters:
             properties[param.name] = {
-                'type': param.type,
-                'description': param.description
+                "type": param.type,
+                "description": param.description
             }
             if param.required:
                 required.append(param.name)
         
         return {
-            'type': 'function',
-            'function': {
-                'name': self.name,
-                'description': self.description,
-                'parameters': {
-                    'type': 'object',
-                    'properties': properties,
-                    'required': required
+            "type": "function",
+            "function": {
+                "name": self.name,
+                "description": self.description,
+                "parameters": {
+                    "type": "object",
+                    "properties": properties,
+                    "required": required
                 }
             }
         }
@@ -56,10 +56,10 @@ class RequestFunctionChoice(Enum):
     """
     FunctionCalling Request 中的选择对象
     """
-    NONE = 'none'
-    AUTO = 'auto'
-    REQUIRED = 'required'
-    SPECIFY = 'specify'
+    NONE = "none"
+    AUTO = "auto"
+    REQUIRED = "required"
+    SPECIFY = "specify"
 
 
 @dataclass
@@ -78,9 +78,9 @@ class CallingFunctionRequest:
         """
         if self.func_choice == RequestFunctionChoice.SPECIFY:
             return {
-                'type': 'function',
-                'function': {
-                    'name': self.func_choice_name
+                "type": "function",
+                "function": {
+                    "name": self.func_choice_name
                 }
             }
         else:
@@ -95,10 +95,10 @@ class FunctionResponseUnit:
     """
     FunctionCalling Response 对象单元
     """
-    id: str = ''
-    type: str = ''
-    name: str = ''
-    arguments_str: str = ''
+    id: str = ""
+    type: str = ""
+    name: str = ""
+    arguments_str: str = ""
     
     def load_arguments(self) -> Any:
         """
@@ -109,18 +109,18 @@ class FunctionResponseUnit:
         try:
             return orjson.loads(self.arguments_str)
         except orjson.JSONDecodeError:
-            raise ContextSyntaxError('Invalid JSON format in function response arguments.')
+            raise ContextSyntaxError("Invalid JSON format in function response arguments.")
     
     def to_calling_func_unit(self) -> dict:
         """
         OpenAI兼容的FunctionCalling响应对象单元格式
         """
         return {
-            'id': self.id,
-            'type': self.type,
-            'function':{
-                'name': self.name,
-                'arguments': self.load_arguments()
+            "id": self.id,
+            "type": self.type,
+            "function":{
+                "name": self.name,
+                "arguments": self.load_arguments()
             }
         }
     
@@ -139,42 +139,42 @@ class FunctionResponseUnit:
         :param data: OpenAI兼容的FunctionCalling响应对象单元格式
         """
         # 处理id字段
-        if 'id' not in data:
-            raise ContextNecessaryFieldsMissingError('"id" is a necessary field.')
-        elif not isinstance(data['id'], str):
-            raise ContextFieldTypeError('"id" must be a string.')
+        if "id" not in data:
+            raise ContextNecessaryFieldsMissingError("\"id\" is a necessary field.")
+        elif not isinstance(data["id"], str):
+            raise ContextFieldTypeError("\"id\" must be a string.")
         else:
-            id = data['id']
+            id = data["id"]
         
         # 处理type字段
-        if 'type' not in data:
-            raise ContextNecessaryFieldsMissingError('"type" is a necessary field.')
-        elif not isinstance(data['type'], str):
-            raise ContextFieldTypeError('"type" must be a string.')
+        if "type" not in data:
+            raise ContextNecessaryFieldsMissingError("\"type\" is a necessary field.")
+        elif not isinstance(data["type"], str):
+            raise ContextFieldTypeError("\"type\" must be a string.")
         else:
-            type = data['type']
+            type = data["type"]
         
         # 处理function字段
-        if 'function' not in data:
-            raise ContextNecessaryFieldsMissingError('"function" is a necessary field')
-        elif not isinstance(data['function'], dict):
-            raise ContextFieldTypeError('"function" must be a dictionary.')
+        if "function" not in data:
+            raise ContextNecessaryFieldsMissingError("\"function\" is a necessary field")
+        elif not isinstance(data["function"], dict):
+            raise ContextFieldTypeError("\"function\" must be a dictionary.")
         else:
             # 处理function.name字段
-            if 'name' not in data['function']:
-                raise ContextNecessaryFieldsMissingError('"function.name" is a necessary field')
-            elif not isinstance(data['function']['name'], str):
-                raise ContextFieldTypeError('"function.name" must be a string')
+            if "name" not in data["function"]:
+                raise ContextNecessaryFieldsMissingError("\"function.name\" is a necessary field")
+            elif not isinstance(data["function"]["name"], str):
+                raise ContextFieldTypeError("\"function.name\" must be a string")
             else:
-                name = data['function']['name']
+                name = data["function"]["name"]
             
             # 处理function.arguments字段
-            if 'arguments' not in data['function']:
-                raise ContextNecessaryFieldsMissingError('"function.arguments" is a necessary field')
-            elif not isinstance(data['function']['arguments'], str):
-                raise ContextFieldTypeError('"function.arguments" must be a string')
+            if "arguments" not in data["function"]:
+                raise ContextNecessaryFieldsMissingError("\"function.arguments\" is a necessary field")
+            elif not isinstance(data["function"]["arguments"], str):
+                raise ContextFieldTypeError("\"function.arguments\" must be a string")
             else:
-                arguments_str = data['function']['arguments']
+                arguments_str = data["function"]["arguments"]
         
         # 返回对象
         return cls(

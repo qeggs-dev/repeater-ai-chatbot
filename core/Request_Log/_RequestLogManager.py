@@ -103,12 +103,12 @@ class RequestLogManager:
         
         if path.exists():
             # 如果文件存在，以追加模式打开
-            with open(path, 'ab') as f:
+            with open(path, "ab") as f:
                 for chunk in self._log_bytestream(self._log_list):
                     f.write(chunk)
         else:
             # 如果文件不存在，以写入模式打开
-            with open(path, 'wb') as f:
+            with open(path, "wb") as f:
                 for chunk in self._log_bytestream(self._log_list):
                     f.write(chunk)
         
@@ -129,12 +129,12 @@ class RequestLogManager:
 
         if path.exists():
             # 如果文件存在，则以追加模式打开文件
-            async with aiofiles.open(path, 'ab') as f:
+            async with aiofiles.open(path, "ab") as f:
                 for chunk in self._log_bytestream(self._log_list):
                     await f.write(chunk)
         else:
             # 如果文件不存在，则以写入模式打开文件
-            async with aiofiles.open(path, 'wb') as f:
+            async with aiofiles.open(path, "wb") as f:
                 for chunk in self._log_bytestream(self._log_list):
                     await f.write(chunk)
         
@@ -177,7 +177,7 @@ class RequestLogManager:
         for file in sorted_request_log_files:
             path = Path(file)
             if path.exists():
-                async with aiofiles.open(path, 'rb') as f:
+                async with aiofiles.open(path, "rb") as f:
                     async for line in f:
                         data = await asyncio.to_thread(orjson.loads, line)
                         yield RequestLogObject.from_dict(data)  # 生成文件日志

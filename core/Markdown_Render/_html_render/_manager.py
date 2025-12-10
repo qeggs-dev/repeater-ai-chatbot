@@ -194,7 +194,7 @@ class BrowserPoolManager:
         
         finally:
             # 确保页面和浏览器被释放
-            if 'browser' in locals() and 'page' in locals():
+            if "browser" in locals() and "page" in locals():
                 await self._release_page(browser, page)
     
     async def _acquire_page_for_render(self, browser_type: BrowserType) -> tuple[Browser, Page, str]:

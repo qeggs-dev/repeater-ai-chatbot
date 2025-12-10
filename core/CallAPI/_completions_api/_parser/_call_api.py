@@ -195,16 +195,16 @@ class CallAPI(CallNstreamAPIBase):
         
         # 处理usage数据
         model_response.token_usage = TokensCount()
-        if hasattr(response, 'usage') and response.usage is not None:
-            if hasattr(response.usage, 'prompt_tokens') and response.usage.prompt_tokens is not None:
+        if hasattr(response, "usage") and response.usage is not None:
+            if hasattr(response.usage, "prompt_tokens") and response.usage.prompt_tokens is not None:
                 model_response.token_usage.prompt_tokens = response.usage.prompt_tokens
-            if hasattr(response.usage, 'completion_tokens') and response.usage.completion_tokens is not None:
+            if hasattr(response.usage, "completion_tokens") and response.usage.completion_tokens is not None:
                 model_response.token_usage.completion_tokens = response.usage.completion_tokens
-            if hasattr(response.usage, 'total_tokens') and response.usage.total_tokens is not None:
+            if hasattr(response.usage, "total_tokens") and response.usage.total_tokens is not None:
                 model_response.token_usage.total_tokens = response.usage.total_tokens
-            if hasattr(response.usage, 'prompt_cache_hit_tokens') and response.usage.prompt_cache_hit_tokens is not None:
+            if hasattr(response.usage, "prompt_cache_hit_tokens") and response.usage.prompt_cache_hit_tokens is not None:
                 model_response.token_usage.prompt_cache_hit_tokens = response.usage.prompt_cache_hit_tokens
-            if hasattr(response.usage, 'prompt_cache_miss_tokens') and response.usage.prompt_cache_miss_tokens is not None:
+            if hasattr(response.usage, "prompt_cache_miss_tokens") and response.usage.prompt_cache_miss_tokens is not None:
                 model_response.token_usage.prompt_cache_miss_tokens = response.usage.prompt_cache_miss_tokens
 
         self._print_file.write("\n\n")

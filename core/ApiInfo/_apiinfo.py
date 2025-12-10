@@ -23,7 +23,7 @@ class ApiInfo:
     def _parse_api_groups(self, raw_api_groups: list[dict]) -> None:
         """Parse raw API groups data and populate indexes."""
         if not isinstance(raw_api_groups, list):
-            raise ValueError('api_groups must be a list')
+            raise ValueError("api_groups must be a list")
         
         api_groups: ApiGroup = self._create_api_group(raw_api_groups)
         self._api_groups = api_groups
@@ -49,62 +49,62 @@ class ApiInfo:
         """Load and parse API groups from a JSON/YAML file."""
         path = Path(path)
         if not path.exists():
-            raise FileNotFoundError(f"File '{path}' does not exist")
+            raise FileNotFoundError(f"File \"{path}\" does not exist")
         with self._api_info_lock:
-            if path.suffix.lower() == '.json':
+            if path.suffix.lower() == ".json":
                 import orjson
                 try:
-                    with open(path, 'rb') as f:
+                    with open(path, "rb") as f:
                         fdata = f.read()
                         raw_api_groups: list[dict] = orjson.loads(fdata)
                         self._parse_api_groups(raw_api_groups)
                 except orjson.JSONDecodeError as e:
-                    raise ValueError(f'Invalid JSON format: {e}')
+                    raise ValueError(f"Invalid JSON format: {e}")
                 except OSError as e:
-                    raise IOError(f'Failed to read file: {e}')
-            elif path.suffix.lower() == '.yaml' or path.suffix.lower() == '.yml':
+                    raise IOError(f"Failed to read file: {e}")
+            elif path.suffix.lower() == ".yaml" or path.suffix.lower() == ".yml":
                 import yaml
                 try:
-                    with open(path, 'r', encoding='utf-8') as f:
+                    with open(path, "r", encoding="utf-8") as f:
                         fdata = f.read()
                         raw_api_groups: list[dict] = yaml.safe_load(fdata)
                         self._parse_api_groups(raw_api_groups)
                 except yaml.YAMLError as e:
-                    raise ValueError(f'Invalid YAML format: {e}')
+                    raise ValueError(f"Invalid YAML format: {e}")
                 except OSError as e:
-                    raise IOError(f'Failed to read file: {e}')
+                    raise IOError(f"Failed to read file: {e}")
             else:
-                raise ValueError(f'Invalid file format: {path.suffix}')
+                raise ValueError(f"Invalid file format: {path.suffix}")
 
     async def load_async(self, path: Path) -> None:
         """Load and parse API groups from a JSON/YAML file."""
         if not path.exists():
-            raise FileNotFoundError(f"File '{path}' does not exist")
+            raise FileNotFoundError(f"File \"{path}\" does not exist")
         async with self._api_info_async_lock:
-            if not path.suffix.lower() == '.json':
+            if not path.suffix.lower() == ".json":
                 import orjson
                 try:
-                    async with aiofiles.open(path, 'rb') as f:
+                    async with aiofiles.open(path, "rb") as f:
                         fdata = await f.read()
                         raw_api_groups: list[dict] = orjson.loads(fdata)
                         await self._parse_api_groups(raw_api_groups)
                 except orjson.JSONDecodeError as e:
-                    raise ValueError(f'Invalid JSON format: {e}')
+                    raise ValueError(f"Invalid JSON format: {e}")
                 except OSError as e:
-                    raise IOError(f'Failed to read file: {e}')
-            elif path.suffix.lower() == '.yaml' or path.suffix.lower() == '.yml':
+                    raise IOError(f"Failed to read file: {e}")
+            elif path.suffix.lower() == ".yaml" or path.suffix.lower() == ".yml":
                 import yaml
                 try:
-                    async with aiofiles.open(path, 'r', encoding='utf-8') as f:
+                    async with aiofiles.open(path, "r", encoding="utf-8") as f:
                         fdata = await f.read()
                         raw_api_groups: list[dict] = yaml.safe_load(fdata)
                         await self._parse_api_groups(raw_api_groups)
                 except yaml.YAMLError as e:
-                    raise ValueError(f'Invalid YAML format: {e}')
+                    raise ValueError(f"Invalid YAML format: {e}")
                 except OSError as e:
-                    raise IOError(f'Failed to read file: {e}')
+                    raise IOError(f"Failed to read file: {e}")
             else:
-                raise ValueError(f'Invalid file format: {path.suffix}')
+                raise ValueError(f"Invalid file format: {path.suffix}")
 
     def find(self, model_uid: str, default: list[ApiObject] | None = None) -> list[ApiObject]:
         """Find API groups by model uid."""

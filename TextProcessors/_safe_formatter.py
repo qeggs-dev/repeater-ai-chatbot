@@ -1,7 +1,7 @@
 from string import Formatter
 from typing import Any, TypeVar
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 class SafeFormatter(Formatter):
     def __init__(self, default_value:T | None = None, *args, **kwargs):

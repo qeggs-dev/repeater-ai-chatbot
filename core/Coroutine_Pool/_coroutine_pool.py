@@ -7,7 +7,7 @@ from typing import (
 from loguru import logger
 import inspect
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 class CoroutinePool:
     def __init__(self, max_concurrency: int = 1000):
@@ -21,13 +21,13 @@ class CoroutinePool:
         async with self._semaphore:  # 控制并发数
             task = asyncio.create_task(coro)
             self._tasks.add(task)
-            logger.debug(f'Created a new task for {inspect.currentframe().f_back.f_code.co_name} ({len(self._tasks)}/{self._max_concurrency})', user_id = user_id)
+            logger.debug(f"Created a new task for {inspect.currentframe().f_back.f_code.co_name} ({len(self._tasks)}/{self._max_concurrency})", user_id = user_id)
             try:
                 result = await task
                 return result
             finally:
                 self._tasks.remove(task)
-                logger.debug(f'Removed a task ({len(self._tasks)}/{self._max_concurrency})', user_id = user_id)
+                logger.debug(f"Removed a task ({len(self._tasks)}/{self._max_concurrency})", user_id = user_id)
         
     async def shutdown(self):
         """关闭池，等待所有任务完成"""

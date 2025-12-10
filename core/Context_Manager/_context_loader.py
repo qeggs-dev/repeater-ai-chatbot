@@ -48,7 +48,7 @@ class ContextLoader:
         self._config_manager: ConfigManager = config
     
     async def _load_prompt(self, context:ContextObject, user_id: str, prompt_vp: PromptVP) -> ContextObject:
-        user_prompt:str = await self._prompt_manager.load(user_id=user_id, default='')
+        user_prompt:str = await self._prompt_manager.load(user_id=user_id, default="")
         if user_prompt:
             # 使用用户提示词
             prompt = user_prompt
@@ -66,7 +66,7 @@ class ContextLoader:
                 suffix = GlobalConfigManager.get_configs().prompt.suffix
 
                 # 加载默认提示词文件
-                default_prompt_file = default_prompt_dir / f'{sanitize_filename(parset_prompt_name)}{suffix}'
+                default_prompt_file = default_prompt_dir / f"{sanitize_filename(parset_prompt_name)}{suffix}"
                 if not validate_path(default_prompt_dir, default_prompt_file):
                     raise InvalidPromptPathError(f"Invalid Prompt Path: {default_prompt_file}")
                 if default_prompt_file.exists():
@@ -111,7 +111,7 @@ class ContextLoader:
             context:ContextObject,
             user_id: str,
             new_message: str,
-            role: str = 'user',
+            role: str = "user",
             role_name: str | None = None,
             continue_completion: bool = False,
             prompt_vp: PromptVP | None = None
@@ -147,7 +147,7 @@ class ContextLoader:
             self,
             user_id: str,
             message: str,
-            role: str = 'user',
+            role: str = "user",
             role_name: str | None = None,
             load_prompt: bool = True,
             continue_completion: bool = False,

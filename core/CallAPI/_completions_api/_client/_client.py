@@ -151,7 +151,7 @@ class ClientBase(ABC):
         logger.info(f"Stream Processing Time: {stream_processing_time / 10**9:.2f}s({format_time_duration_ns(stream_processing_time, use_abbreviation=True)})", user_id = user_id)
 
         created_utc_dt = datetime.fromtimestamp(response.created, tz=timezone.utc)
-        created_utc_str = created_utc_dt.strftime('%Y-%m-%d %H:%M:%S (UTC)')
+        created_utc_str = created_utc_dt.strftime("%Y-%m-%d %H:%M:%S (UTC)")
         logger.info(f"Created Time: {created_utc_str}", user_id = user_id)
 
         created_local_dt = datetime.fromtimestamp(response.created)

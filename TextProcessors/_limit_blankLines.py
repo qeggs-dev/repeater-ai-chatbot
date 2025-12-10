@@ -28,7 +28,7 @@ def limit_blank_lines(base_str:str, minimum_consecutive_blank_lines:int = 1) -> 
                 result.append(line)
             blank_count += 1
     
-    return ''.join(result)
+    return "".join(result)
 
 if __name__ == "__main__":
     textstr = """

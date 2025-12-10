@@ -3,7 +3,7 @@ from typing import TypeVar
 from collections.abc import Coroutine
 from loguru import logger
 
-T = TypeVar('T')
+T = TypeVar("T")
 
 class DelayedTasksPool:
     def __init__(self):

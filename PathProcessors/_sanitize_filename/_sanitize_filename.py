@@ -36,9 +36,9 @@ def sanitize_filename(
 # 示例用法
 if __name__ == "__main__":
     # 测试文件名转义和缩短
-    test_filename = 'my/illegal:file?.name*with<long>path.txt'
+    test_filename = "my/illegal:file?.name*with<long>path.txt"
     print(sanitize_filename(test_filename, prefix="doc"))  # 输出: doc_my_illegal_file_name_with_long_path.txt
 
     # 测试文件名过长的情况
-    long_filename = 'a' * 300 + '.txt'
+    long_filename = "a" * 300 + ".txt"
     print(sanitize_filename(long_filename))  # 输出: 类似 "9835fa6bf4e20a9b.txt"

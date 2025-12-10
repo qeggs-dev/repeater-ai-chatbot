@@ -99,7 +99,7 @@ class Core:
         self.blacklist: RegexChecker = RegexChecker()
         blacklist_file_path = Path(ConfigManager.get_configs().blacklist.file_path)
         try:
-            with open(blacklist_file_path, 'r', encoding='utf-8') as f:
+            with open(blacklist_file_path, "r", encoding="utf-8") as f:
                 self.blacklist.load_strstream(f)
         except ValueError:
             logger.error("Invalid blacklist file")
@@ -145,7 +145,7 @@ class Core:
         user_nickname_mapping_file_path = Path(ConfigManager.get_configs().user_nickname_mapping.file_path)
         if not user_nickname_mapping_file_path.exists():
             return user_info
-        async with aiofiles.open(user_nickname_mapping_file_path, 'rb') as f:
+        async with aiofiles.open(user_nickname_mapping_file_path, "rb") as f:
             fdata = await f.read()
             try:
                 nickname_mapping = orjson.loads(fdata)
@@ -198,7 +198,7 @@ class Core:
             user_id: str,
             message: str,
             user_name: str,
-            role: str = 'user',
+            role: str = "user",
             role_name: str | None = None,
             load_prompt: bool = True,
             continue_completion: bool = False,
@@ -267,7 +267,7 @@ class Core:
         if blacklist_file_path.exists():
             self.blacklist.clear()
             try:
-                async with aiofiles.open(blacklist_file_path, 'r') as f:
+                async with aiofiles.open(blacklist_file_path, "r") as f:
                     self.blacklist.load(await f.read())
             except ValueError as e:
                 logger.warning(f"load blacklist failed: {e}")

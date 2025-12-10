@@ -72,7 +72,7 @@ class StreamingResponseGenerationLayer:
         self._print_chunk = config_to_log_level(ConfigManager.get_configs().logger.level) > LogLevel.TRACE
     
     def finally_stream(self):
-        self._print_file.write('\n\n')
+        self._print_file.write("\n\n")
         self._print_file.flush()
 
         # 添加日志统计数据
@@ -141,7 +141,7 @@ class StreamingResponseGenerationLayer:
         if delta_data.reasoning_content:
             if self.request.print_chunk:
                 if not self.model_response_content_unit.reasoning_content:
-                    self._print_file.write('\n\n')
+                    self._print_file.write("\n\n")
                 if self._print_chunk:
                     self._print_file.write(f"\033[7m{delta_data.reasoning_content}\033[0m")
                     self._print_file.flush()
@@ -152,7 +152,7 @@ class StreamingResponseGenerationLayer:
         if delta_data.content:
             if self.request.print_chunk:
                 if not self.model_response_content_unit.content:
-                    self._print_file.write('\n\n')
+                    self._print_file.write("\n\n")
                 if self._print_chunk:
                     self._print_file.write(delta_data.content)
                     self._print_file.flush()

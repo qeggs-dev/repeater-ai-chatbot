@@ -152,7 +152,7 @@ class ConfigManager:
         :return: 配置项
         """
         async with self._lock:
-            return await self._user_config_manager.get_default_item_id(user_id)
+            return await self._user_config_manager.get_default_branch_id(user_id)
     
     async def set_default_item_id(self, user_id: str, item: str) -> None:
         """
@@ -163,7 +163,7 @@ class ConfigManager:
         :return: None
         """
         async with self._lock:
-            await self._user_config_manager.set_default_item_id(user_id, item)
+            await self._user_config_manager.set_default_branch_id(user_id, item)
             logger.info("Set default config item", user_id = user_id, item = item)
     
     async def delete(self, user_id: str) -> None:
@@ -266,7 +266,7 @@ class ConfigManager:
         :param configs: 配置数据
         """
         await self._user_config_manager.save(
-            user_id, configs.model_dump()
+            user_id, configs.model_dump(exclude_defaults=True)
         )
     
     async def get_all_user_id(self):
@@ -283,7 +283,7 @@ class ConfigManager:
 
         :return: 配置项ID列表
         """
-        return await self._user_config_manager.get_all_item_id()
+        return await self._user_config_manager.get_all_branch_id()
     
     async def __aenter__(self):
         return self 
