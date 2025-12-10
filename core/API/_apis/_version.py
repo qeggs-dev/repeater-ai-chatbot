@@ -6,19 +6,19 @@ from fastapi.responses import (
     PlainTextResponse
 )
 
-@app.route('/version')
+@app.route("/version")
 def version():
     """
     Return the version of the API and the core
     """
     return ORJSONResponse(
         {
-        'core': __core_version__,
-        'api': __api_version__
+        "core": __core_version__,
+        "api": __api_version__
         }
     )
 
-@app.route('/version/core')
+@app.route("/version/core")
 def core_version():
     """
     Return the version of the core
@@ -27,7 +27,7 @@ def core_version():
         __core_version__
     )
 
-@app.route('/version/api')
+@app.route("/version/api")
 def api_version():
     """
     Return the version of the API
