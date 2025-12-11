@@ -88,7 +88,7 @@ class PromptVP_Loader:
             nickname = user_info.nickname or "None",
             user_age = user_info.age or "None",
             user_gender = user_info.gender or "None",
-            user_info = user_info.as_dict,
+            user_info = user_info.model_dump(exclude_none=True),
             birthday = f"{bot_birthday_year}-{bot_birthday_month}-{bot_birthday_day}",
             zodiac = lambda **kw: date_to_zodiac(bot_birthday_month, bot_birthday_day),
             time = lambda time_format = "%Y-%m-%d %H:%M:%S %Z": format_timestamp(now, time_offset, time_format),
