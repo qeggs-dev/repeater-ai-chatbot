@@ -57,7 +57,7 @@ async def translation_chunk(
         if hasattr(choice, "finish_reason"):
             # 我不知道为什么，这里就是会出现 None
             # 这 很 奇 怪
-            # 你这里是明明 Literal['stop', 'length', 'tool_calls', 'content_filter', 'function_call']
+            # 你这里是明明 Literal["stop", "length", "tool_calls", "content_filter", "function_call"]
             # 为什么会出现 None 呢
             # 你害的我这个 Enum 炸了
             # 所以我这里加了一个 if
@@ -69,17 +69,17 @@ async def translation_chunk(
         delta_data.system_fingerprint = chunk.system_fingerprint
 
     # 转录usage数据
-    if hasattr(chunk, 'usage') and chunk.usage is not None:
+    if hasattr(chunk, "usage") and chunk.usage is not None:
         # 只在最后一个chunk中获取usage数据
-        if hasattr(chunk.usage, 'prompt_tokens') and chunk.usage.prompt_tokens is not None:
+        if hasattr(chunk.usage, "prompt_tokens") and chunk.usage.prompt_tokens is not None:
             tokens_usage.prompt_tokens = chunk.usage.prompt_tokens
-        if hasattr(chunk.usage, 'completion_tokens') and chunk.usage.completion_tokens is not None:
+        if hasattr(chunk.usage, "completion_tokens") and chunk.usage.completion_tokens is not None:
             tokens_usage.completion_tokens = chunk.usage.completion_tokens
-        if hasattr(chunk.usage, 'total_tokens') and chunk.usage.total_tokens is not None:
+        if hasattr(chunk.usage, "total_tokens") and chunk.usage.total_tokens is not None:
             tokens_usage.total_tokens = chunk.usage.total_tokens
-        if hasattr(chunk.usage, 'prompt_cache_hit_tokens') and chunk.usage.prompt_cache_hit_tokens is not None:
+        if hasattr(chunk.usage, "prompt_cache_hit_tokens") and chunk.usage.prompt_cache_hit_tokens is not None:
             tokens_usage.prompt_cache_hit_tokens = chunk.usage.prompt_cache_hit_tokens
-        if hasattr(chunk.usage, 'prompt_cache_miss_tokens') and chunk.usage.prompt_cache_miss_tokens is not None:
+        if hasattr(chunk.usage, "prompt_cache_miss_tokens") and chunk.usage.prompt_cache_miss_tokens is not None:
             tokens_usage.prompt_cache_miss_tokens = chunk.usage.prompt_cache_miss_tokens
     
     delta_data.token_usage = tokens_usage

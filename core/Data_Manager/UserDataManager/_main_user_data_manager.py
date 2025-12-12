@@ -42,18 +42,26 @@ class MainManager(UserMainManagerInterface):
         try:
             metadata = await manager.load_metadata()
         except Exception as e:
-            logger.error(f"Read User Metadata File Error: {e}", user_id = user_id)
+            logger.error(
+                "Read User Metadata File Error: {error}",
+                user_id = user_id,
+                error = e
+            )
             raise
         
         if isinstance(metadata, dict):
-            item = metadata.get('default_item', 'default')
+            branch_name = metadata.get(ConfigManager.get_configs().user_data.metadata_fields.branch_field, "default")
         else:
-            item = 'default'
+            branch_name = "default"
         
         try:
-            return await manager.load(item, default)
+            return await manager.load(branch_name, default)
         except Exception as e:
-            logger.error(f"Read User File Error: {e}", user_id = user_id)
+            logger.error(
+                "Read User File Error: {error}",
+                user_id = user_id,
+                error = e
+            )
             raise
     
     async def save(self, user_id: str, data: Any) -> None:
@@ -70,17 +78,25 @@ class MainManager(UserMainManagerInterface):
         try:
             metadata = await manager.load_metadata()
         except Exception as e:
-            logger.error(f"Read User Metadata File Error: {e}", user_id = user_id)
+            logger.error(
+                "Read User Metadata File Error: {error}",
+                user_id = user_id,
+                error = e
+            )
             raise
 
         if isinstance(metadata, dict):
-            item = metadata.get('default_item', 'default')
+            branch_name = metadata.get(ConfigManager.get_configs().user_data.metadata_fields.branch_field, "default")
         else:
-            item = 'default'
+            branch_name = "default"
         try:
-            await manager.save(item, data)
+            await manager.save(branch_name, data)
         except Exception as e:
-            logger.error(f"Write User File Error: {e}", user_id = user_id)
+            logger.error(
+                "Write User File Error: {error}",
+                user_id = user_id,
+                error = e
+            )
             raise
     
     async def delete(self, user_id: str) -> None:
@@ -98,20 +114,28 @@ class MainManager(UserMainManagerInterface):
         try:
             metadata = await manager.load_metadata()
         except Exception as e:
-            logger.error(f"Read User Metadata File Error: {e}", user_id = user_id)
+            logger.error(
+                "Read User Metadata File Error: {error}",
+                user_id = user_id,
+                error = e
+            )
             raise
 
         if isinstance(metadata, dict):
-            item = metadata.get('default_item', 'default')
+            branch_name = metadata.get(ConfigManager.get_configs().user_data.metadata_fields.branch_field, "default")
         else:
-            item = 'default'
+            branch_name = "default"
         try:
-            await manager.delete(item)
+            await manager.delete(branch_name)
         except Exception as e:
-            logger.error(f"Delete User File Error: {e}", user_id = user_id)
+            logger.error(
+                "Delete User File Error: {error}",
+                user_id = user_id,
+                error = e
+            )
             raise
     
-    async def set_default_item_id(self, user_id: str, item: str) -> None:
+    async def set_default_branch_id(self, user_id: str, branch_name: str) -> None:
         user_id = sanitize_filename(user_id)
         manager = self.sub_managers.setdefault(
             user_id,
@@ -126,20 +150,24 @@ class MainManager(UserMainManagerInterface):
         try:
             metadata = await manager.load_metadata()
         except OSError as e:
-            logger.error(f"Read User Metadata File Error: {e}", user_id = user_id)
+            logger.error(
+                "Read User Metadata File Error: {error}",
+                user_id = user_id,
+                error = e
+            )
             raise
 
         if isinstance(metadata, dict):
-            metadata['default_item'] = item
+            metadata[ConfigManager.get_configs().user_data.metadata_fields.branch_field] = branch_name
         else:
-            metadata = {'default_item': item}
+            metadata = {ConfigManager.get_configs().user_data.metadata_fields.branch_field: branch_name}
         try:
             await manager.save_metadata(metadata)
         except Exception as e:
             logger.error(f"Write User Metadata File Error: {e}", user_id = user_id)
             raise
 
-    async def get_default_item_id(self, user_id: str) -> str:
+    async def get_default_branch_id(self, user_id: str) -> str:
         user_id = sanitize_filename(user_id)
         manager = self.sub_managers.setdefault(
             user_id,
@@ -153,15 +181,19 @@ class MainManager(UserMainManagerInterface):
         try:
             metadata = await manager.load_metadata()
         except Exception as e:
-            logger.error(f"Read User Metadata File Error: {e}", user_id = user_id)
+            logger.error(
+                "Read User Metadata File Error: {error}",
+                user_id = user_id,
+                error = e
+            )
             raise
         if isinstance(metadata, dict):
-            return metadata.get('default_item', 'default')
+            return metadata.get(ConfigManager.get_configs().user_data.metadata_fields.branch_field, "default")
         else:
-            return 'default'
+            return "default"
 
     async def get_all_user_id(self) -> list:
         return [f.name for f in (self.base_path).iterdir() if f.is_dir()]
 
-    async def get_all_item_id(self, user_id: str) -> list:
+    async def get_all_branch_id(self, user_id: str) -> list:
         return [f.stem for f in (self.base_path / user_id / self.sub_dir_name).iterdir() if f.is_file()]

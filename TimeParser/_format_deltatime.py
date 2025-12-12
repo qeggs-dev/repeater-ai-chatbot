@@ -5,7 +5,7 @@ def format_deltatime(
     offset: float = 0.0,
     format_str: str = "%Y-%m-%d_%H:%M:%S"
 ) -> str:
-    '''
+    """
     将时间差转换为指定格式的字符串（默认每年365天，每月30天）
     
     当更高级别的格式化符号不存在时，最高级别的单位不会进位
@@ -25,7 +25,7 @@ def format_deltatime(
 
     Returns: 
         str: 格式化后的时间字符串
-    '''
+    """
     DeltaTime = delta_time + offset
 
     # 定义时间常数（假设每年365天，每月30天）
@@ -45,7 +45,7 @@ def format_deltatime(
     has_millisecond = "%f" in format_str
 
     def _calculate_unit(remaining: float, unit_seconds: float, higher_units_exist: bool) -> tuple[int, float]:
-        '''
+        """
         计算时间单位的值和剩余时间
         
         Args:
@@ -55,7 +55,7 @@ def format_deltatime(
         
         Returns:
             (单位值, 新的剩余时间)
-        '''
+        """
         if higher_units_exist:
             # 如果高阶单位存在，则正常计算当前单位
             unit_value = int(remaining // unit_seconds)
@@ -226,7 +226,7 @@ def format_deltatime_high_precision(
     offset: float = 0.0,
     format_str: str = "%Y-%m-%d_%H:%M:%S"
 ) -> str:
-    '''
+    """
     将时间差转换为指定格式的字符串（默认每年365天，每月30天）
 
     当更高级别的格式化符号不存在时，最高级别的单位不会进位
@@ -248,7 +248,7 @@ def format_deltatime_high_precision(
 
     Returns: 
         str: 格式化后的时间字符串
-    '''
+    """
     with localcontext() as ctx:
         ctx.prec = 20
         DeltaTime = Decimal(str(delta_time)) + Decimal(str(offset))

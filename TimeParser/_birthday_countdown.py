@@ -1,14 +1,14 @@
-from datetime import datetime, timedelta
+from datetime import datetime
 
 def get_birthday_countdown(
         birth_month:int,
         birth_day:int,
-        name:str="",
-        precise:bool=False
+        name:str = "",
+        precise:bool = False
     ) -> str:
-    '''
+    """
     获取距离生日还有多少天
-    '''
+    """
     now = datetime.now()
     current_year = now.year
     

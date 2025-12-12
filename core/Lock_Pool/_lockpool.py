@@ -3,7 +3,7 @@ import threading
 from typing import TypeVar
 from loguru import logger
 
-T_KEY = TypeVar('T_KEY')
+T_KEY = TypeVar("T_KEY")
 
 class LockPool:
     def __init__(self):
@@ -40,21 +40,21 @@ class LockPool:
                 
                 def acquire(inner_self):
                     inner_self._increase_reference_counting()
-                    logger.debug(f'LockPool: Acquiring lock for {repr(key)}({inner_self.reference_count})')
+                    logger.debug(f"LockPool: Acquiring lock for {repr(key)}({inner_self.reference_count})")
                     try:
                         super().acquire()
                     except Exception as e:
                         inner_self._reduce_reference_counting()
-                        logger.warning(f'LockPool: Failed to acquire lock for {repr(key)}: {e}')
+                        logger.warning(f"LockPool: Failed to acquire lock for {repr(key)}: {e}")
                         raise
 
                 def release(inner_self):
                     try:
                         super().release()
                         inner_self._reduce_reference_counting()
-                        logger.debug(f'LockPool: Released lock for {repr(key)}({inner_self.reference_count})')
+                        logger.debug(f"LockPool: Released lock for {repr(key)}({inner_self.reference_count})")
                     except Exception as e:
-                        logger.warning(f'LockPool: Failed to release lock for {repr(key)}: {e}')
+                        logger.warning(f"LockPool: Failed to release lock for {repr(key)}: {e}")
                         raise
             
             lock = Packaged_Lock()

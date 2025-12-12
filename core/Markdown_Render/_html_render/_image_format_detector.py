@@ -9,25 +9,25 @@ class ImageFormatDetector:
     
     # 文件扩展名到格式的映射
     EXTENSION_MAP = {
-        '.png': ImageFormat.PNG,
-        '.jpg': ImageFormat.JPEG,
-        '.jpeg': ImageFormat.JPEG,
-        '.jfif': ImageFormat.JPEG,
-        '.webp': ImageFormat.WEBP,
-        '.bmp': ImageFormat.PNG,  # BMP转换为PNG
-        '.gif': ImageFormat.PNG,  # GIF转换为PNG
-        '.tiff': ImageFormat.PNG,  # TIFF转换为PNG
+        ".png": ImageFormat.PNG,
+        ".jpg": ImageFormat.JPEG,
+        ".jpeg": ImageFormat.JPEG,
+        ".jfif": ImageFormat.JPEG,
+        ".webp": ImageFormat.WEBP,
+        ".bmp": ImageFormat.PNG,  # BMP转换为PNG
+        ".gif": ImageFormat.PNG,  # GIF转换为PNG
+        ".tiff": ImageFormat.PNG,  # TIFF转换为PNG
     }
     
     # MIME类型到格式的映射
     MIME_MAP = {
-        'image/png': ImageFormat.PNG,
-        'image/jpeg': ImageFormat.JPEG,
-        'image/jpg': ImageFormat.JPEG,
-        'image/webp': ImageFormat.WEBP,
-        'image/bmp': ImageFormat.PNG,
-        'image/gif': ImageFormat.PNG,
-        'image/tiff': ImageFormat.PNG,
+        "image/png": ImageFormat.PNG,
+        "image/jpeg": ImageFormat.JPEG,
+        "image/jpg": ImageFormat.JPEG,
+        "image/webp": ImageFormat.WEBP,
+        "image/bmp": ImageFormat.PNG,
+        "image/gif": ImageFormat.PNG,
+        "image/tiff": ImageFormat.PNG,
     }
     
     @classmethod
@@ -60,7 +60,7 @@ class ImageFormatDetector:
             return cls.MIME_MAP[mime_type]
         
         # 默认使用PNG
-        logger.warning(f"Could not detect image format for '{output_path}', defaulting to PNG")
+        logger.warning(f"Could not detect image format for \"{output_path}\", defaulting to PNG")
         return ImageFormat.PNG
     
     @classmethod
@@ -74,12 +74,12 @@ class ImageFormatDetector:
         
         # 获取正确的扩展名
         format_extensions = {
-            ImageFormat.PNG: '.png',
-            ImageFormat.JPEG: '.jpg',
-            ImageFormat.WEBP: '.webp',
+            ImageFormat.PNG: ".png",
+            ImageFormat.JPEG: ".jpg",
+            ImageFormat.WEBP: ".webp",
         }
         
-        correct_ext = format_extensions.get(image_format, '.png')
+        correct_ext = format_extensions.get(image_format, ".png")
         
         # 如果扩展名不正确，修正它
         if path.suffix.lower() != correct_ext:

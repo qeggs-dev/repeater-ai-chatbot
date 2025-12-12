@@ -10,6 +10,7 @@ from loguru import logger
 from ..Global_Config_Manager import ConfigManager
 from typing import List, AsyncIterator, Generator, Iterable
 from ._RequestLogObject import RequestLogObject, CallAPILogObject
+from pydantic import ValidationError
 
 class RequestLogManager:
     def __init__(
@@ -89,7 +90,7 @@ class RequestLogManager:
     @staticmethod
     def _log_bytestream(log_list: Iterable[RequestLogObject | CallAPILogObject]) -> Generator[bytes, None, None]:
         for log in log_list:
-            yield orjson.dumps(log.as_dict) + b"\n"
+            yield orjson.dumps(log.model_dump()) + b"\n"
 
     def _save_request_log(self) -> None:
         """
@@ -103,12 +104,12 @@ class RequestLogManager:
         
         if path.exists():
             # 如果文件存在，以追加模式打开
-            with open(path, 'ab') as f:
+            with open(path, "ab") as f:
                 for chunk in self._log_bytestream(self._log_list):
                     f.write(chunk)
         else:
             # 如果文件不存在，以写入模式打开
-            with open(path, 'wb') as f:
+            with open(path, "wb") as f:
                 for chunk in self._log_bytestream(self._log_list):
                     f.write(chunk)
         
@@ -129,12 +130,12 @@ class RequestLogManager:
 
         if path.exists():
             # 如果文件存在，则以追加模式打开文件
-            async with aiofiles.open(path, 'ab') as f:
+            async with aiofiles.open(path, "ab") as f:
                 for chunk in self._log_bytestream(self._log_list):
                     await f.write(chunk)
         else:
             # 如果文件不存在，则以写入模式打开文件
-            async with aiofiles.open(path, 'wb') as f:
+            async with aiofiles.open(path, "wb") as f:
                 for chunk in self._log_bytestream(self._log_list):
                     await f.write(chunk)
         
@@ -177,10 +178,20 @@ class RequestLogManager:
         for file in sorted_request_log_files:
             path = Path(file)
             if path.exists():
-                async with aiofiles.open(path, 'rb') as f:
+                async with aiofiles.open(path, "rb") as f:
                     async for line in f:
                         data = await asyncio.to_thread(orjson.loads, line)
-                        yield RequestLogObject.from_dict(data)  # 生成文件日志
+                        try:
+                            yield RequestLogObject(**data)  # 生成文件日志
+                        except ValidationError as e:
+                            errors = e.errors()
+                            for error in errors:
+                                logger.error(
+                                    "Error in log file {file}/{error_field}: {error_message}",
+                                    file = file,
+                                    error_field = "/".join(error["loc"]),
+                                    error_message = error["msg"]
+                                )
                         readed_log_count += 1  # 日志计数
                 log_file_count += 1  # 文件计数
         logger.info(f"From {log_file_count} file read logs")

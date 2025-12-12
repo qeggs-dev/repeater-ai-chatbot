@@ -28,7 +28,7 @@ def adjust_indentation(text, indent_length=4, min_indent_level=0):
     # 第一遍：分析缩进级别
     for line in lines:
         stripped = line.lstrip()
-        is_empty = not stripped or stripped in ('\n', '\r\n')
+        is_empty = not stripped or stripped in ("\n", "\r\n")
         
         if is_empty:
             indent_levels.append(None)  # 空行标记
@@ -65,10 +65,10 @@ def adjust_indentation(text, indent_length=4, min_indent_level=0):
             
         # 重建行内容
         stripped = line.lstrip()
-        new_indent = ' ' * (new_level * indent_length)
+        new_indent = " " * (new_level * indent_length)
         result.append(f"{new_indent}{stripped}")
     
-    return ''.join(result)
+    return "".join(result)
 
 if __name__ == "__main__":
     text = """

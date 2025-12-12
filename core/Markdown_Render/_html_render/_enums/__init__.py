@@ -3,7 +3,7 @@ from ._image_format import ImageFormat
 from ._render_status import RenderStatus
 
 __all__ = [
-    'BrowserType',
-    'ImageFormat',
-    'RenderStatus',
+    "BrowserType",
+    "ImageFormat",
+    "RenderStatus",
 ]

@@ -1,6 +1,5 @@
 
 from ._main_user_data_manager import MainManager as UserDataManager
-from typing import Any
 from ...Global_Config_Manager import ConfigManager, Cache_Data_Config
 
 class ContextManager(UserDataManager):

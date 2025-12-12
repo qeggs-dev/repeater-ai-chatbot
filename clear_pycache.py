@@ -2,12 +2,12 @@ import os
 import re
 import shutil
 
-def find_and_remove_pycache(start_dir='.', exclude_pattern=None, ask_confirmation=True):
+def find_and_remove_pycache(start_dir=".", exclude_pattern=None, ask_confirmation=True):
     """
     递归查找并删除__pycache__文件夹，可排除符合正则的路径
     
     :param start_dir: 开始搜索的目录，默认为当前目录
-    :param exclude_pattern: 要排除路径的正则表达式（如 r'/venv/'）
+    :param exclude_pattern: 要排除路径的正则表达式（如 r"/venv/"）
     :param ask_confirmation: 是否询问确认删除
     """
     pycache_dirs = []
@@ -15,8 +15,8 @@ def find_and_remove_pycache(start_dir='.', exclude_pattern=None, ask_confirmatio
     
     # 递归查找所有__pycache__文件夹
     for root, dirs, files in os.walk(start_dir):
-        if '__pycache__' in dirs:
-            full_path = os.path.join(root, '__pycache__')
+        if "__pycache__" in dirs:
+            full_path = os.path.join(root, "__pycache__")
             
             # 检查是否在排除路径中
             if exclude_re and exclude_re.search(full_path):
@@ -40,7 +40,7 @@ def find_and_remove_pycache(start_dir='.', exclude_pattern=None, ask_confirmatio
         
         answer = input("是否要删除所有这些文件夹? [Y/n]: ")
         
-        if answer.strip().lower() in ['n', 'no', 'false', '0']:
+        if answer.strip().lower() in ["n", "no", "false", "0"]:
             print("取消删除操作。")
             return
     
@@ -56,7 +56,7 @@ def find_and_remove_pycache(start_dir='.', exclude_pattern=None, ask_confirmatio
     
     print(f"\n操作完成，共删除 {deleted_count} 个__pycache__文件夹")
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     print("=== __pycache__ 清理工具（增强版） ===")
     print("提示：可以输入正则表达式来排除特定路径（如 venv 目录）")
     

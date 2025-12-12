@@ -2,8 +2,8 @@ from dataclasses import dataclass
 from ._args import Args
 from typing import Callable, TypeVar, Generic
 
-T = TypeVar('T', bound=Callable)
-T_Args = TypeVar('T_Args', bound=Args)
+T = TypeVar("T", bound=Callable)
+T_Args = TypeVar("T_Args", bound=Args)
 
 @dataclass
 class FuncObject(Generic[T, T_Args]):

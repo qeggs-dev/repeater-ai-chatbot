@@ -1,12 +1,11 @@
-from dataclasses import dataclass, asdict
+from pydantic import BaseModel, ConfigDict
 
-@dataclass
-class Request_User_Info:
+class Request_User_Info(BaseModel):
+    model_config = ConfigDict(
+        validate_assignment=True,
+    )
+
     username: str | None = None
     nickname: str | None = None
     age: int | None = None
     gender: str | None = None
-
-    @property
-    def as_dict(self) -> dict:
-        return asdict(self)

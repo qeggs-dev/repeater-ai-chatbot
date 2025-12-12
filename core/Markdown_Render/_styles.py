@@ -20,7 +20,7 @@ class Styles:
         if not style_file_path.suffix == ".css":
             raise ValueError(f"Style file must be a .css file: {style_file_path}")
         
-        async with aiofiles.open(style_file_path, 'r', encoding=encoding) as f:
+        async with aiofiles.open(style_file_path, "r", encoding=encoding) as f:
             return await f.read()
 
 
@@ -45,7 +45,7 @@ class Styles:
 
     def get_style_names(self) -> list[str]:
         basepath = self._style_dir
-        style_names = [f.stem for f in basepath.glob('*.css')]
+        style_names = [f.stem for f in basepath.glob("*.css")]
         return style_names
 
 BASE_STYLE = r"""
