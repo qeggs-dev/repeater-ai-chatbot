@@ -1,6 +1,6 @@
 from .._resource import app
 from .._info import __version__ as __api_version__
-from ..._core import __version__ as __core_version__
+from ..._info import __version__ as __core_version__
 from fastapi.responses import (
     ORJSONResponse,
     PlainTextResponse
