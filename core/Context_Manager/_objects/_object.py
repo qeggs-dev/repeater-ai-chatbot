@@ -1,173 +1,23 @@
 from __future__ import annotations
-from dataclasses import dataclass, field
-from typing import overload, Iterable
-from enum import StrEnum
-from ._exceptions import *
-from ._func_calling_obj import CallingFunctionResponse
+from pydantic import BaseModel, Field, ConfigDict
+from typing import overload, Iterable, Any
+from .._exceptions import *
+from ._func_calling_objects import CallingFunctionResponse
+from ._content_role import ContentRole
+from ._content_unit import ContentUnit
 
-class ContextRole(StrEnum):
-    """
-    上下文角色
-    """
-    SYSTEM = "system"
-    USER = "user"
-    ASSISTANT = "assistant"
-    FUNCTION = "tool"
 
-@dataclass
-class ContentUnit:
-    """
-    上下文单元
-    """
-    reasoning_content:str = ""
-    content: str = ""
-    role: ContextRole = ContextRole.USER
-    role_name: str |  None = None
-    prefix: bool | None = None
-    funcResponse: CallingFunctionResponse | None = None
-    tool_call_id: str = ""
-
-    def __len__(self):
-        length = 0
-        if self.reasoning_content:
-            length += len(self.reasoning_content)
-        else:
-            length += len(self.content)
-        return length
-    
-    def update_from_content(self, content: dict) -> None:
-        """
-        更新上下文内容
-        :param content: 上下文内容
-        :return: None
-        """
-        other = self.from_content(content)
-        self.reasoning_content = other.reasoning_content
-        self.content = other.content
-        self.role = other.role
-        self.role_name = other.role_name
-        self.prefix = other.prefix
-        self.funcResponse = other.funcResponse
-        self.tool_call_id = other.tool_call_id
-    
-    # 导出为列表
-    def to_content(self, remove_resoning_prompt: bool = False) -> list[dict]:
-        """
-        OpenAI Message兼容格式列表单元
-
-        :param remove_reasoner_prompt: 是否移除reasoner提示
-        :return: OpenAI Message兼容格式列表单元
-        """
-        content_list = []
-        if self.content:
-            if self.role in {ContextRole.SYSTEM, ContextRole.USER}:
-                content = {
-                    "role": self.role.value,
-                    "content": self.content
-                }
-                if self.role_name:
-                    content["name"] = self.role_name
-                content_list.append(content)
-
-            elif self.role == ContextRole.ASSISTANT:
-                assistant_content = {
-                    "role": self.role.value,
-                    "content": self.content,
-                }
-                if self.role_name:
-                    assistant_content["name"] = self.role_name
-                if self.prefix:
-                    assistant_content["prefix"] = self.prefix
-                if not remove_resoning_prompt and self.reasoning_content:
-                    assistant_content["reasoning_content"] = self.reasoning_content
-                if self.funcResponse:
-                    assistant_content["tool_calls"] = self.funcResponse.as_calling_func_content
-                content_list.append(assistant_content)
-        if self.funcResponse:
-            if self.role == ContextRole.FUNCTION:
-                tool_content = {
-                    "role": self.role.value,
-                    "content": self.content,
-                    "tool_call_id": self.tool_call_id
-                }
-                content_list.append(tool_content)
-        
-        return content_list
-    
-    @property
-    def as_content(self):
-        """
-        获取Context的OpenAI Message兼容格式列表单元
-
-        :return: OpenAI Message兼容格式列表单元
-        """
-        self.to_content(False)
-    
-    # 从列表中加载内容
-    @classmethod
-    def from_content(cls, context: dict):
-        """
-        从Message列表单元中加载内容
-
-        :param context: OpenAI Message兼容格式列表单元
-        :return: Context
-        """
-        content = cls()
-
-        if "role" not in context:
-            raise ContextNecessaryFieldsMissingError("Not found role field")
-        elif not isinstance(context["role"], str):
-            raise ContextFieldTypeError("role field is not str")
-        elif context["role"] not in [role.value for role in ContextRole]:
-            raise ContextInvalidRoleError(f"Invalid role: {context['role']}")
-        else:
-            try:
-                content.role = ContextRole(context["role"])
-            except ValueError:
-                raise ContextInvalidRoleError(f"Invalid role: {context['role']}")
-        
-        if "content" not in context:
-            raise ContextNecessaryFieldsMissingError("Not found content field")
-        elif not isinstance(context["content"], str):
-            raise ContextFieldTypeError("content field is not str")
-        else:
-            content.content = context["content"]
-        
-        if "reasoning_content" in context:
-            if not isinstance(context["reasoning_content"], str):
-                raise ContextFieldTypeError("reasoning_content field is not str")
-            else:
-                content.reasoning_content = context["reasoning_content"]
-        
-        if "prefix" in context:
-            if not isinstance(context["prefix"], bool):
-                raise ContextFieldTypeError("prefix field is not bool")
-            else:
-                content.prefix = context["prefix"]
-        
-        if content.role == ContextRole.ASSISTANT:
-            if "tool_calls" in context:
-                if not content.funcResponse:
-                    content.funcResponse = CallingFunctionResponse()
-                content.funcResponse.update_from_dict(context["tool_calls"])
-        
-        if content.role == ContextRole.FUNCTION:
-            if "tool_call_id" not in context:
-                raise ContextNecessaryFieldsMissingError("Not found tool_call_id field")
-            elif not isinstance(context['tool_call_id'], str):
-                raise ContextFieldTypeError("tool_call_id field is not str")
-            else:
-                content.tool_call_id = context["tool_call_id"]
-        
-        return content
-
-@dataclass
-class ContextObject:
+class ContextObject(BaseModel):
     """
     上下文对象
     """
+    model_config = ConfigDict(
+        validate_assignment = True,
+        exclude_none = True
+    )
+
     prompt: ContentUnit | None = None
-    context_list: list[ContentUnit] = field(default_factory=list)
+    context_list: list[ContentUnit] = Field(default_factory=list)
 
     @overload
     def __getitem__(self, index: int) -> ContentUnit:
@@ -187,7 +37,10 @@ class ContextObject:
         if isinstance(index, int):
             return self.context_list[index]
         elif isinstance(index, slice):
-            return ContextObject(prompt=self.prompt, context_list=self.context_list[index])
+            return ContextObject(
+                prompt=self.prompt,
+                context_list=self.context_list[index]
+            )
         else:
             raise TypeError("index must be int or slice")
     
@@ -207,6 +60,8 @@ class ContextObject:
 
         :return: 上下文列表的长度
         """
+        if len(self.prompt) > 0:
+            return len(self.context_list) + 1
         return self.context_item_length
     
     def __iter__(self):
@@ -221,7 +76,6 @@ class ContextObject:
         # 再正常遍历 context_list
         for content in self.context_list:
             yield content
-
     
     def update_from_context(self, context: list[dict]) -> None:
         """
@@ -251,13 +105,9 @@ class ContextObject:
         :return: 上下文总长度
         """
         return (
-            sum(
-                [len(content) for content in self.context_list]
-            )
+            sum([len(content) for content in self.context_list])
             +
-            (
-                len(self.prompt) if self.prompt else 0
-            )
+            (len(self.prompt) if self.prompt else 0)
         )
     
     @property
@@ -267,7 +117,7 @@ class ContextObject:
 
         :return: 上下文平均长度
         """
-        return self.total_length / len(self.context_list)
+        return self.total_length / len(self)
 
     def to_context(self, remove_resoning_prompt: bool = False) -> list[dict]:
         """
@@ -278,7 +128,7 @@ class ContextObject:
         context_list = []
         if self.context_list:
             for content in self.context_list:
-                context_list += content.to_content(remove_resoning_prompt)
+                context_list.append(content.to_content(remove_resoning_prompt))
         return context_list
     
     @property
@@ -294,9 +144,10 @@ class ContextObject:
 
         :param remove_reasoner_prompt: 是否移除reasoner提示词
         """
-        context_list = self.to_context(remove_resoning_prompt)
+        context_list: list[dict[str, Any]] = []
         if self.prompt:
-            context_list = self.prompt.to_content(remove_resoning_prompt) + context_list
+            context_list.append(self.prompt.to_content(remove_resoning_prompt))
+        context_list.extend(self.to_context(remove_resoning_prompt))
         return context_list
     
     @property
@@ -322,17 +173,17 @@ class ContextObject:
             try:
                 # 第一步：pop直到找到助手消息
                 while (self.context_list and 
-                    self.last_content.role != ContextRole.ASSISTANT):
+                    self.last_content.role != ContentRole.ASSISTANT):
                     pop_items.append(self.context_list.pop())
                 
                 # 第二步：pop助手消息
                 while (self.context_list and 
-                    self.last_content.role == ContextRole.ASSISTANT):
+                    self.last_content.role == ContentRole.ASSISTANT):
                     pop_items.append(self.context_list.pop())
                 
                 # 第三步：pop相关联的用户消息
                 while (self.context_list and 
-                    self.last_content.role != ContextRole.ASSISTANT):
+                    self.last_content.role != ContentRole.ASSISTANT):
                     pop_items.append(self.context_list.pop())
             except IndexError:
                 pass
@@ -389,10 +240,9 @@ class ContextObject:
         self,
         reasoning_content:str = "",
         content: str = "",
-        role: ContextRole = ContextRole.USER,
+        role: ContentRole = ContentRole.USER,
         role_name: str |  None = None,
         is_prefix: bool | None = None,
-        funcResponse: CallingFunctionResponse | None = None,
         tool_call_id: str = "",
     ):
         """
@@ -406,15 +256,16 @@ class ContextObject:
         :param funcResponse: 函数响应
         :param tool_call_id: 工具调用ID
         """
-        self.append(ContentUnit(
-            reasoning_content = reasoning_content,
-            content = content,
-            role = role,
-            role_name = role_name,
-            prefix = is_prefix,
-            funcResponse = funcResponse,
-            tool_call_id = tool_call_id,
-        ))
+        self.append(
+            ContentUnit(
+                reasoning_content = reasoning_content,
+                content = content,
+                role = role,
+                role_name = role_name,
+                prefix = is_prefix,
+                tool_call_id = tool_call_id,
+            )
+        )
     
     def pop(self, index: int = -1) -> ContentUnit:
         """
@@ -474,7 +325,7 @@ class ContextObject:
         """
         return self.last_content.funcResponse is not None
     
-    def shrink(self, length: int, ensure_role_at_top: ContextRole = ContextRole.USER):
+    def shrink(self, length: int, ensure_role_at_top: ContentRole = ContentRole.USER):
         """
         缩小上下文长度
         
@@ -512,7 +363,7 @@ class ContextObject:
         )
     
     @classmethod
-    def from_context(cls, context: list[dict]) -> ContextObject:
+    def from_context(cls, context: list[dict[str, Any]]) -> ContextObject:
         """
         从上下文列表构建对象
         
@@ -522,6 +373,6 @@ class ContextObject:
         contextObj = cls()
         contextObj.context_list = []
         for content in context:
-            contextObj.context_list.append(ContentUnit().from_content(content))
+            contextObj.context_list.append(ContentUnit(**content))
         return contextObj
         

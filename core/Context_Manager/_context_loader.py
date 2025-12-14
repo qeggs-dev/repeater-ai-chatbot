@@ -22,10 +22,10 @@ from ..User_Config_Manager import (
     ConfigManager,
     UserConfigs
 )
-from ._object import (
+from ._objects import (
     ContextObject,
     ContentUnit,
-    ContextRole
+    ContentRole
 )
 from ._exceptions import *
 from TextProcessors import (
@@ -85,7 +85,7 @@ class ContextLoader:
 
         # 创建Content单元
         prompt = ContentUnit(
-            role = ContextRole.SYSTEM,
+            role = ContentRole.SYSTEM,
             content = prompt
         )
         # 将Content单元加入Context
@@ -133,7 +133,7 @@ class ContextLoader:
         if not continue_completion:
             content = ContentUnit()
             content.content = await self._expand_variables(new_message, variables = prompt_vp, user_id=user_id)
-            content.role = ContextRole(role)
+            content.role = ContentRole(role)
             content.role_name = role_name
 
             # 添加上下文
