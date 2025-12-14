@@ -19,7 +19,7 @@ from .._objects import (
 from ....Context_Manager import (
     FunctionResponseUnit,
     ContentUnit,
-    ContextRole
+    ContentRole
 )
 from ....Request_Log import RequestLog, TimeStamp
 from ._call_api_base import CallNstreamAPIBase
@@ -94,7 +94,7 @@ class CallAPI(CallNstreamAPIBase):
         # 创建响应内容单元
         model_response_content_unit:ContentUnit = ContentUnit()
         # 设置角色
-        model_response_content_unit.role = ContextRole.ASSISTANT
+        model_response_content_unit.role = ContentRole.ASSISTANT
         # chunk计数
         chunk_count:int = 0
         # 空chunk计数
