@@ -41,9 +41,6 @@ from TextProcessors import (
 from .Text_Template_Processer import (
     PromptVP_Loader
 )
-from ._info import (
-    __version__,
-)
 
 # ==== 本模块代码 ==== #
 
@@ -61,12 +58,10 @@ class Core:
         # 初始化用户数据管理器
         self.context_manager = Data_Manager.ContextManager()
         self.prompt_manager = Data_Manager.PromptManager()
-        self.user_config_manager = UserConfigManager()
+        self.user_config_manager: UserConfigManager = UserConfigManager()
 
         # 初始化变量加载器
-        self.prompt_pv_loader = PromptVP_Loader(
-            version = __version__
-        )
+        self.prompt_pv_loader = PromptVP_Loader()
         # 初始化Client并设置并发大小
         self.api_client = CompletionsAPI.ClientNoStream(
             ConfigManager.get_configs().callapi.max_concurrency
@@ -87,7 +82,7 @@ class Core:
         )
 
         # 初始化锁池
-        self.namespace_locks = AsyncLockPool()
+        self.namespace_locks: AsyncLockPool = AsyncLockPool()
 
         # 初始化调用日志管理器
         self.request_log = Request_Log.RequestLogManager(
@@ -175,7 +170,7 @@ class Core:
         :param user_id: 用户ID
         :return: 用户配置
         """
-        config = await self.user_config_manager.load(user_id=user_id)
+        config: UserConfigs = await self.user_config_manager.load(user_id=user_id)
         return config
     # endregion
 
@@ -578,21 +573,14 @@ class Core:
                         )
                         return output
                 
-                except CompletionsAPI.Exceptions.APIServerError as e:
-                    logger.error(f"API Server Error: {e}")
-                    output.content = f"Error:{e}"
-                    output.status = 500
-                    return output
-                
-                except CompletionsAPI.Exceptions.BadRequestError as e:
-                    logger.error(f"Bad Request Error: {e}")
-                    output.content = f"Error:{e}"
-                    output.status = 400
-                    return output
-
                 except CompletionsAPI.Exceptions.CallApiException as e:
-                    logger.error(f"CallAPI Error: {e}")
-                    output.content = f"Error:{e}"
+                    traceback_info = traceback.format_exc()
+                    logger.exception(
+                        "CallAPI Error: \n{traceback_info}",
+                        user_id = user_id,
+                        traceback_info = traceback_info,
+                    )
+                    output.content = f"API Error: {e}"
                     output.status = 500
                     return output
                 # endregion
