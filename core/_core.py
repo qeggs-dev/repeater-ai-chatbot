@@ -30,6 +30,7 @@ from .Global_Config_Manager import ConfigManager
 from .Request_User_Info import Request_User_Info
 from .ApiInfo import (
     ApiInfo,
+    ModelType
 )
 from . import Request_Log
 from .Logger_Init import (
@@ -359,7 +360,10 @@ class Core:
                     model_uid: str = config.model_uid or ConfigManager.get_configs().api_info.default_model_uid
                 
                 # 获取API信息
-                apilist = self.apiinfo.find(model_uid = model_uid)
+                apilist = self.apiinfo.find(
+                    model_type = ModelType.CHAT,
+                    model_uid = model_uid
+                )
                 # 取第一个API
                 if len(apilist) == 0:
                     logger.error(

@@ -5,15 +5,20 @@ import threading
 from pathlib import Path
 
 from ._pydantic_models import ApiInfoConfig, ApiGroup
+from ._model_type import ModelType
 from ._api_obj import ApiObject
 from ._exceptions import *
 
 class ApiInfo:
     def __init__(self, case_sensitive: bool = False):
-        self._api_objs: dict[str, list[ApiObject]] = {}
+        self._api_objs: dict[ModelType, dict[str, list[ApiObject]]] = {}
         self._case_sensitive: bool = case_sensitive
         self._api_info_async_lock = asyncio.Lock()
         self._api_info_lock = threading.Lock()
+
+        # Initialize the indexs
+        for model_type in ModelType:
+            self._api_objs[model_type] = {}
 
 
     def _create_api_group(self, api_data: list[dict]) -> ApiGroup:
@@ -40,9 +45,9 @@ class ApiInfo:
                     timeout = model.timeout or group.timeout or 60.0,
                 )
                 if api_obj.uid not in self._api_objs:
-                    self._api_objs[api_obj.uid] = [api_obj]
+                    self._api_objs[model.type][api_obj.uid] = [api_obj]
                 else:
-                    self._api_objs[api_obj.uid].append(api_obj)
+                    self._api_objs[model.type][api_obj.uid].append(api_obj)
 
 
     def load(self, path: str | os.PathLike) -> None:
@@ -106,14 +111,14 @@ class ApiInfo:
             else:
                 raise ValueError(f"Invalid file format: {path.suffix}")
 
-    def find(self, model_uid: str, default: list[ApiObject] | None = None) -> list[ApiObject]:
+    def find(self, model_type: ModelType, model_uid: str, default: list[ApiObject] | None = None) -> list[ApiObject]:
         """Find API groups by model uid."""
         if self._case_sensitive:
             key = model_uid
         else:
             key = model_uid.lower()
 
-        index_list = self._api_objs.get(key, default)
+        index_list = self._api_objs[model_type].get(key, default)
         if index_list is None:
             return []
         
