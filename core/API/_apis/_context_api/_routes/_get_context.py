@@ -19,9 +19,10 @@ async def get_context(user_id: str):
         ORJSONResponse: User context
     """
     # 从chat.context_manager中加载用户ID为user_id的上下文
-    context = await chat.context_manager.load(user_id, [])
+    context_loader = await chat.get_context_loader()
+    context = await context_loader.get_context_object(user_id)
 
     logger.info(f"Get Context", user_id = user_id)
 
     # 返回JSON格式的上下文
-    return ORJSONResponse(context)
+    return ORJSONResponse(context.context)
