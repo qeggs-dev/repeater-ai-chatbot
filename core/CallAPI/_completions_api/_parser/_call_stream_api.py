@@ -54,6 +54,7 @@ class StreamAPI(CallStreamAPIBase):
             stream = True,
             messages = request.context.to_full_context(remove_resoning_prompt=True),
             tools = request.function_calling.tools if request.function_calling else None,
+            stream_options=request.stream_options.model_dump(),
         )
         logger.info("Start Streaming", user_id = user_id)
         async for chunk in response:
