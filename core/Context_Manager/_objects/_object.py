@@ -19,6 +19,9 @@ class ContextObject(BaseModel):
     prompt: ContentUnit | None = None
     context_list: list[ContentUnit] = Field(default_factory=list)
 
+    def __bool__(self) -> bool:
+        return bool(self.prompt or self.context_list)
+
     @overload
     def __getitem__(self, index: int) -> ContentUnit:
         ...
