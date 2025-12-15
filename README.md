@@ -133,7 +133,17 @@ PS: `run.py`启动器会在完成所有操作后启动主程序，而这只需�
         // CallAPI 配置
 
         // 协程池最大并发数
-        "max_concurrency": 1000
+        "max_concurrency": 1000,
+
+        // 当为 true 时，将启用流混淆。
+        // 流混淆会在流 delta 事件的 `obfuscation` 字段中添加随机字符，
+        // 提高攻击者根据长度去推断模型输出内容的难度
+        "include_obfuscation":false,
+
+        // 用于在某些API下告诉服务方
+        // 自己是否需要返回Usage信息
+        // 默认值：true，因为 Fast Statistics 需要这部分数据
+        "include_usage": true
     },
     "context": {
         // Context 配置
