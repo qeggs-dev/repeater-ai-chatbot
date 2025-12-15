@@ -15,7 +15,7 @@ class ContentUnit(BaseModel):
     )
 
     reasoning_content:str = ""
-    content: str | ContentBlock = ""
+    content: str | list[ContentBlock] = ""
     role: ContentRole = ContentRole.USER
     role_name: str |  None = None
     prefix: bool | None = None
