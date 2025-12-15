@@ -1,6 +1,7 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from typing import Callable
 from ._delta import Delta
+from ._stream_options import StreamOptions
 
 from ....Context_Manager import ContextObject, CallingFunctionRequest
 
@@ -29,3 +30,4 @@ class Request:
     print_chunk: bool = True
     function_calling: CallingFunctionRequest | None = None
     continue_processing_callback_function: Callable[[str, Delta], bool] | None = None
+    stream_options: StreamOptions = field(default_factory=StreamOptions)
