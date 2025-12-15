@@ -2,7 +2,7 @@ from __future__ import annotations
 from pydantic import BaseModel, Field, ConfigDict
 from .._exceptions import *
 from ._content_role import ContentRole
-from ._content_block import ContentBlock
+from ._content_block import ContentBlock, TextBlock
 from typing import Any
 
 class ContentUnit(BaseModel):
@@ -31,3 +31,11 @@ class ContentUnit(BaseModel):
     
     def __bool__(self) -> bool:
         return bool(self.content) or bool(self.reasoning_content) or bool(self.tool_call_id)
+    
+    def reduce_to_text(self):
+        if isinstance(self.content, list):
+            buffer: list[str] = []
+            for block in self.content:
+                if isinstance(block, TextBlock):
+                    buffer.append(block.text)
+            self.content = "\n".join(buffer)

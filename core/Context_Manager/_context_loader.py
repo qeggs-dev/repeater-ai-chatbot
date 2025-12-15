@@ -241,6 +241,7 @@ class ContextLoader:
             self,
             user_id: str,
             context: ContextObject,
+            reduce_to_text:bool = False
         ) -> None:
         """
         保存上下文
@@ -248,5 +249,5 @@ class ContextLoader:
         :param user_id: 用户ID
         :param context: 上下文对象
         """
-        await self._context_manager.save(user_id, context.context)
+        await self._context_manager.save(user_id, context.to_context(reduce_to_text = reduce_to_text))
         logger.info(f"Save Context: {len(context)}", user_id = user_id)

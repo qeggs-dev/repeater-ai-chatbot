@@ -122,7 +122,7 @@ class ContextObject(BaseModel):
         """
         return self.total_length / len(self)
 
-    def to_context(self, remove_resoning_prompt: bool = False) -> list[dict]:
+    def to_context(self, remove_resoning_prompt: bool = False, reduce_to_text: bool = False) -> list[dict]:
         """
         获取上下文
 
@@ -131,6 +131,8 @@ class ContextObject(BaseModel):
         context_list = []
         if self.context_list:
             for content in self.context_list:
+                if reduce_to_text:
+                    content.reduce_to_text()
                 context_list.append(content.to_content(remove_resoning_prompt))
         return context_list
     
@@ -139,9 +141,9 @@ class ContextObject(BaseModel):
         """
         获取上下文
         """
-        return self.to_context(False)
+        return self.to_context(False, False)
     
-    def to_full_context(self, remove_resoning_prompt: bool = False) -> list[dict]:
+    def to_full_context(self, remove_resoning_prompt: bool = False, reduce_to_text: bool = False) -> list[dict]:
         """
         获取上下文，如果有提示词，则添加到最前面
 
@@ -149,8 +151,10 @@ class ContextObject(BaseModel):
         """
         context_list: list[dict[str, Any]] = []
         if self.prompt:
+            if reduce_to_text:
+                self.prompt.reduce_to_text()
             context_list.append(self.prompt.to_content(remove_resoning_prompt))
-        context_list.extend(self.to_context(remove_resoning_prompt))
+        context_list.extend(self.to_context(remove_resoning_prompt, reduce_to_text))
         return context_list
     
     @property
@@ -158,7 +162,7 @@ class ContextObject(BaseModel):
         """
         获取上下文，如果有提示词，则添加到最前面
         """
-        return self.to_full_context(False)
+        return self.to_full_context(False, False)
     
     def withdraw(self, length: int | None = None):
         """
