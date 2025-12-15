@@ -319,11 +319,30 @@ class Core:
 
         # 打印上下文信息
         if user_input.content:
-            logger.info(
-                "Message:\n{message}",
-                message = user_input.content,
-                user_id = user_id
-            )
+            if isinstance(user_input.content, str):
+                logger.info(
+                    "Message:\n{message}",
+                    message = user_input.content,
+                    user_id = user_id
+                )
+            else:
+                message_texts: list[str] = []
+                for block in user_input.content:
+                    if isinstance(block, Context_Manager.TextBlock):
+                        message_texts.append(block.text)
+                    elif isinstance(block, Context_Manager.ImageBlock):
+                        message_texts.append(f"[Image: {block.image_url.url}]")
+                    elif isinstance(block, Context_Manager.AudioBlock):
+                        message_texts.append(f"[Audio: {block.input_audio.data}]")
+                    elif isinstance(block, Context_Manager.FileBlock):
+                        message_texts.append(f"[File: {block.file.filename}]")
+                    else:
+                        message_texts.append(f"[Unknown Block: {block}]")
+                logger.info(
+                    "Message:\n{message}",
+                    message = "\n".join(message_texts),
+                    user_id = user_id
+                )
         else:
             logger.warning(
                 "No message to send",
@@ -534,6 +553,8 @@ class Core:
                 request.max_completion_tokens = config.max_completion_tokens or ConfigManager.get_configs().model.default_max_completion_tokens
                 request.stop = config.stop or ConfigManager.get_configs().model.default_stop
                 request.stream = ConfigManager.get_configs().model.stream
+                request.stream_options.include_obfuscation = ConfigManager.get_configs().callapi.include_obfuscation
+                request.stream_options.include_usage = ConfigManager.get_configs().callapi.include_usage
                 request.print_chunk = print_chunk
 
                 # 记录预处理结束时间
