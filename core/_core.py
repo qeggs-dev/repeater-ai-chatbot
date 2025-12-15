@@ -490,6 +490,11 @@ class Core:
                 context_loader = await self.get_context_loader()
 
                 # 获取上下文
+                if load_prompt is None:
+                    if config.load_prompt is None:
+                        load_prompt = ConfigManager.get_configs().prompt.load_prompt
+                    else:
+                        load_prompt = config.load_prompt
                 context = await self.get_context(
                     context_loader = context_loader,
                     user_id = user_id,
@@ -498,7 +503,7 @@ class Core:
                     role = role,
                     role_name = role_name,
                     image_url = image_url,
-                    load_prompt = load_prompt if load_prompt is not None else config.load_prompt,
+                    load_prompt = load_prompt,
                     continue_completion = continue_completion,
                     reference_context_id = reference_context_id,
                     prompt_vp = prompt_vp
@@ -571,6 +576,19 @@ class Core:
                 output.user_raw_input = message
                 output.user_input = user_input.content
 
+                # 是否保存上下文
+                if save_context is None:
+                    if config.save_context is not None:
+                        save_context = config.save_context
+                    else:
+                        save_context = ConfigManager.get_configs().context.save_context
+                
+                # 是否在保存时删除多模态内容
+                if config.save_text_only is not None:
+                    save_only_text: bool = config.save_text_only
+                else:
+                    save_only_text: bool = ConfigManager.get_configs().context.save_text_only
+
                 # region >> 提交请求
                 try:
                     response: CompletionsAPI.Response = CompletionsAPI.Response()
@@ -589,11 +607,12 @@ class Core:
                                 response = response,
                                 prompt_vp = prompt_vp,
                                 user_input = user_input,
+                                save_context = save_context,
                                 context_loader = context_loader,
                                 task_start_time = task_start_time,
                                 reference_context_id = reference_context_id,
                                 call_prepare_end_time = call_prepare_end_time,
-                                save_context = save_context if save_context is not None else config.save_context,
+                                save_only_text = save_only_text,
                             )
                         response_iterator = await self.stream_api_client.submit_Request(
                             user_id = user_id,
@@ -614,11 +633,12 @@ class Core:
                             response = response,
                             prompt_vp = prompt_vp,
                             user_input = user_input,
+                            save_context = save_context,
                             context_loader = context_loader,
                             task_start_time = task_start_time,
                             reference_context_id = reference_context_id,
                             call_prepare_end_time = call_prepare_end_time,
-                            save_context = save_context if save_context is not None else config.save_context,
+                            save_only_text = save_only_text,
                         )
                         return output
                 
@@ -652,7 +672,8 @@ class Core:
         call_prepare_end_time: Request_Log.TimeStamp,
         output: Response = Response(),
         save_context: bool | None = None,
-        reference_context_id: str | None = None
+        reference_context_id: str | None = None,
+        save_only_text: bool = False,
     ) -> Response:
         # 补充调用日志的时间信息
         response.calling_log.task_start_time = task_start_time
@@ -675,7 +696,8 @@ class Core:
                 context = historical_context
             await context_loader.save(
                 user_id = user_id,
-                context = context
+                context = context,
+                reduce_to_text = save_only_text,
             )
         else:
             logger.warning("Context not saved", user_id = user_id)
