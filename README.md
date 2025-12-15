@@ -144,7 +144,16 @@ PS: `run.py`启动器会在完成所有操作后启动主程序，而这只需�
         // 让你可以继续聊天
         // 默认值：null，表示不启用
         // 你可以在这里填写一个整数，表示自动裁剪的长度，单位为字符数量
-        "context_shrink_limit": null
+        "context_shrink_limit": null,
+        
+        // 是否在用户未指定的情况下
+        // 保存用户的上下文历史
+        "save_context": true,
+
+        // 是否只保存文本，不保存图片，音频等其他数据
+        // 默认为false
+        // 设为true可能会让你获得更快的解析速度
+        "save_only_text": false
     },
     "logger": {
         // Logger 配置
@@ -225,7 +234,11 @@ PS: `run.py`启动器会在完成所有操作后启动主程序，而这只需�
         // 预设提示词文件应该用什么编码打开
         "encoding": "utf-8",
         // 如果用户没设置路由到其他提示词，应该使用哪一个提示词
-        "preset_name": "default"
+        "preset_name": "default",
+
+        // 是否在用户未指定的情况下
+        // 加载提示词
+        "load_prompt": true
     },
     "render": {
         // Markdown 图片渲染器配置
