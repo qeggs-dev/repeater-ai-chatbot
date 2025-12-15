@@ -620,7 +620,7 @@ PS: 转义必须保证转义处理器一字不漏，否则会以普通文本输�
 | `GET` | `/` | 无 | 无 | 获取Index Web | `Web页面` |
 | `GET` | `/index.html` | 无 | 无 | (同上) 获取Index Web | `Web页面` |
 | `GET` | `/docs` | 无 | 无 | 获取接口文档 | `Web页面` |
-| `POST` | `/chat/completion/{user_id:str}` | JSON请求体 | *`message(str)`*<br/>*`user_name(str)`*<br/>*`role(str) = "user"`*<br/>*`role_name(str)`*<br/>*`model_uid(str)`*<br/>*`load_prompt(bool) = true`*<br/>*`save_context(bool) = true`*<br/>*`reference_context_id(str)`*<br/>*`continue_completion(bool)`*  | AI聊天 | `JSON响应对象` 或 `流式Delta对象` |
+| `POST` | `/chat/completion/{user_id:str}` | JSON请求体 | *`message(str)`*<br/>*`user_info.username(str)`*<br/>*`user_info.nickname(str)`*<br/>*`user_info.age(int)`*</br>*`user_info.gender(str)`*<br/>*`role(str) = "user"`*<br/>*`role_name(str)`*<br/>*`model_uid(str)`*<br/>*`load_prompt(bool) = true`*<br/>*`save_context(bool) = true`*<br/>*`image_url(str\|list[str])`*<br/>*`reference_context_id(str)`*<br/>*`continue_completion(bool)`*<br/>*`stream(bool)`*  | AI聊天 | `JSON响应对象` 或 `流式Delta对象` |
 | `POST` | `/render/{user_id:str}`| JSON请求体 | **`text(str)`**<br/>*`style(str)`*<br/>*`timeout(float)`* | 文本渲染 | `JSON对象` |
 | `POST` | `/userdata/variable/expand/{user_id:str}` | JSON请求体 | *`username(str)`*<br/>`text(str)` | 变量解析 | `JSON对象` |
 | `GET` | `/userdata/context/get/{user_id:str}` | | | 获取上下文 | `JSON列表` |
