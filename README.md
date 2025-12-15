@@ -153,7 +153,7 @@ PS: `run.py`启动器会在完成所有操作后启动主程序，而这只需�
         // 是否只保存文本，不保存图片，音频等其他数据
         // 默认为false
         // 设为true可能会让你获得更快的解析速度
-        "save_only_text": false
+        "save_text_only": false
     },
     "logger": {
         // Logger 配置
@@ -556,6 +556,7 @@ PS: `light`为默认风格，无需指定
 | `model_uid` | 模型类型 | 无 |
 | `user_info` | 用户信息 | 无 |
 | `user_gender` | 用户性别 | 无 |
+| `user_profile` | 用户资料 | 无 |
 | `generate_uuid` | 生成UUID | 无 |
 | `time` | 当前时间 | 格式字符串(str) |
 | `randchoice` | 随机选择 | 抽取内容(*str) |
@@ -685,12 +686,17 @@ PS: 转义必须保证转义处理器一字不漏，否则会以普通文本输�
     // (str) 渲染HTML标题，用于指定文本转图片时的图片标题
     "render_title": null,
     // (bool) 是否加载提示词，此选项会被API接口中传入的load_prompt参数覆盖
-    "load_prompt": true,
+    "load_prompt": null,
     // (bool) 是否保存上下文，此选项会被API接口中传入的save_context参数覆盖
-    "save_context": true
+    "save_context": null,
+    // (str) 用户资料，如果提示词中含有{user_profile}变量，将会展开为该值
+    "user_profile": null,
+    // (bool) 是否在保存时仅保存文本，丢弃其他模态的数据
+    "save_text_only": null
 }
 ```
-PS: 这里用户配置为null的表示使用主配置里写的默认值
+PS: 这里如果用户配置为null
+则表示使用主配置里写的默认值
 
 ---
 
