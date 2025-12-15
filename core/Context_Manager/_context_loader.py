@@ -27,6 +27,7 @@ from ._objects import (
     ContentRole,
     TextBlock,
     ImageBlock,
+    ImageUrlBlock,
 )
 from ._exceptions import *
 from TextProcessors import (
@@ -144,7 +145,9 @@ class ContextLoader:
                 )
                 content.content.append(
                     ImageBlock(
-                        url = image_url
+                        image_url = ImageUrlBlock(
+                            url = image_url,
+                        )
                     )
                 )
             else:
@@ -193,6 +196,7 @@ class ContextLoader:
             new_message = message,
             role = role,
             role_name = role_name,
+            image_url = image_url,
             continue_completion = continue_completion,
             prompt_vp = prompt_vp
         )
