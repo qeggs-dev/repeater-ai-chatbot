@@ -197,7 +197,7 @@ class Core:
             user_name: str,
             role: str = "user",
             role_name: str | None = None,
-            image_url: str | None = None,
+            image_url: str | list[str] | None = None,
             load_prompt: bool = True,
             continue_completion: bool = False,
             reference_context_id: str | None = None,
@@ -388,9 +388,9 @@ class Core:
             user_info: Request_User_Info = Request_User_Info(),
             role: str = "user",
             role_name:  str = "",
-            print_chunk: bool = True,
-            image_url: str | None = None,
+            image_url: str | list[str] | None = None,
             model_uid: str | None = None,
+            print_chunk: bool = True,
             load_prompt: bool | None = None,
             save_context: bool | None = None,
             reference_context_id: str | None = None,
@@ -402,15 +402,17 @@ class Core:
 
         :param message: 用户输入的消息
         :param user_id: 用户ID
-        :param user_name: 用户名
+        :param user_info: 用户信息
         :param role: 角色
         :param role_name: 角色名
+        :param image_url: 图片URL
         :param model_uid: 模型UID
-        :param load_prompt: 是否加载提示
         :param print_chunk: 是否打印片段
+        :param load_prompt: 是否加载提示
         :param save_context: 是否保存上下文
         :param reference_context_id: 引用上下文ID
         :param continue_completion: 是否继续完成
+        :param stream: 是否流式输出
         :return: 返回对话结果
         """
         try:

@@ -115,7 +115,7 @@ class ContextLoader:
             new_message: str,
             role: str = "user",
             role_name: str | None = None,
-            image_url: str | None = None,
+            image_url: str | list[str] | None = None,
             continue_completion: bool = False,
             prompt_vp: PromptVP | None = None
         ) -> ContextObject:
@@ -137,19 +137,39 @@ class ContextLoader:
             content = ContentUnit()
             new_message = await self._expand_variables(new_message, variables = prompt_vp, user_id=user_id)
             if image_url:
-                content.content = []
-                content.content.append(
-                    TextBlock(
-                        text = new_message,
-                    )
-                )
-                content.content.append(
-                    ImageBlock(
-                        image_url = ImageUrlBlock(
-                            url = image_url,
+                if isinstance(image_url, str):
+                    content.content = []
+                    content.content.append(
+                        TextBlock(
+                            text = new_message,
                         )
                     )
-                )
+                    content.content.append(
+                        ImageBlock(
+                            image_url = ImageUrlBlock(
+                                url = image_url,
+                            )
+                        )
+                    )
+                elif isinstance(image_url, list):
+                    content.content = []
+                    content.content.append(
+                        TextBlock(
+                            text = new_message,
+                        )
+                    )
+                    for url in image_url:
+                        content.content.append(
+                            ImageBlock(
+                                image_url = ImageUrlBlock(
+                                    url = url,
+                                )
+                            )
+                        )
+                else:
+                    raise TypeError(
+                        "Invalid content type, must be one of the following: str, list[str], list[ImageUrlBlock]"
+                    )
             else:
                 content.content = new_message
             content.role = ContentRole(role)
@@ -168,7 +188,7 @@ class ContextLoader:
             message: str,
             role: str = "user",
             role_name: str | None = None,
-            image_url: str | None = None,
+            image_url: str | list[str] | None = None,
             load_prompt: bool = True,
             continue_completion: bool = False,
             prompt_vp: PromptVP = PromptVP()
