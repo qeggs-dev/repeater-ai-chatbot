@@ -5,4 +5,4 @@ class Context_Config(BaseModel):
 
     context_shrink_limit: int | None = None
     save_context: bool = True
-    save_only_text: bool = False
+    save_text_only: bool = False
