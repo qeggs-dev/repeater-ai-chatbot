@@ -1,5 +1,5 @@
 # ==== 标准库 ==== #
-...
+from typing import Literal
 
 # ==== 第三方库 ==== #
 import openai
@@ -26,27 +26,6 @@ from ._call_api_base import CallNstreamAPIBase
 from .._exceptions import *
 
 class CallAPI(CallNstreamAPIBase):
-    async def call(self, user_id:str, request: Request) -> Response:
-        """
-        调用API
-
-        :param user_id: 用户ID
-        :param request: 请求对象
-        :return: 响应对象
-        """
-        try:
-            return await self._call(user_id, request)
-        except openai.APITimeoutError as e:
-            raise APITimeoutError(str(e)) from e
-        except openai.BadRequestError as e:
-            raise BadRequestError(str(e)) from e
-        except openai.InternalServerError as e:
-            raise APIServerError(str(e)) from e
-        except openai.APIConnectionError as e:
-            raise APIConnectionError(str(e)) from e
-        except Exception as e:
-            raise CallApiException(str(e)) from e
-
     async def _call(self, user_id:str, request: Request) -> Response:
         """调用API"""
         # 创建模型响应对象

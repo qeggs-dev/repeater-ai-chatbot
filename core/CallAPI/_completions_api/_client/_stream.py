@@ -30,7 +30,7 @@ class ClientStream(ClientBase):
     async def submit_Request(self, user_id:str, request: Request, response_callback: Callable[[Response], Awaitable[None]] | None = None) -> AsyncIterator[Delta]:
         """提交请求，并等待API返回结果"""
         try:
-            generator = self._submit_task(user_id, request)
+            generator: AsyncIterator[Delta] = self._submit_task(user_id, request)
             async def stream() -> AsyncIterator[Delta]:
                 warping_generator = StreamingResponseGenerationLayer(user_id, request, generator)
                 async for delta in warping_generator:

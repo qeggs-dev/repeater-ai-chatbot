@@ -38,8 +38,8 @@ class Response:
                 reason = "Content triggered filtering policy."
             case FinishReason.TOOL_CALLS:
                 reason = "Output contains tool calls."
-            case FinishReason.INSUFFICIENT_TOKENS:
-                reason = "Insufficient tokens to complete the request."
+            case FinishReason.INSUFFICIENT_SYSTEM_RESOURCE:
+                reason = "Insufficient system resource to complete the request."
             case _:
                 reason = "Unknown"
         return reason
