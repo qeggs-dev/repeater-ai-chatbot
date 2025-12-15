@@ -1,5 +1,6 @@
 from pydantic import BaseModel, ConfigDict
 from ..CallAPI import CompletionsAPI
+from ..Context_Manager import ContentBlock
 
 class Response(BaseModel):
     model_config = ConfigDict(
@@ -9,7 +10,7 @@ class Response(BaseModel):
     reasoning_content: str = ""
     content: str = ""
     user_raw_input: str = ""
-    user_input: str = ""
+    user_input: str | list[ContentBlock] = ""
     model_group: str = ""
     model_name: str = ""
     model_type: str = ""
