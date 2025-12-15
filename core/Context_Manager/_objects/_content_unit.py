@@ -2,6 +2,7 @@ from __future__ import annotations
 from pydantic import BaseModel, Field, ConfigDict
 from .._exceptions import *
 from ._content_role import ContentRole
+from ._content_block import ContentBlock
 from typing import Any
 
 class ContentUnit(BaseModel):
@@ -14,7 +15,7 @@ class ContentUnit(BaseModel):
     )
 
     reasoning_content:str = ""
-    content: str = ""
+    content: str | ContentBlock = ""
     role: ContentRole = ContentRole.USER
     role_name: str |  None = None
     prefix: bool | None = None
