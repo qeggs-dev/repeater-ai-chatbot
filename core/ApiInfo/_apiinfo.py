@@ -1,4 +1,6 @@
 import os
+import yaml
+import orjson
 import asyncio
 import aiofiles
 import threading
@@ -57,7 +59,6 @@ class ApiInfo:
             raise FileNotFoundError(f"File \"{path}\" does not exist")
         with self._api_info_lock:
             if path.suffix.lower() == ".json":
-                import orjson
                 try:
                     with open(path, "rb") as f:
                         fdata = f.read()
@@ -68,7 +69,6 @@ class ApiInfo:
                 except OSError as e:
                     raise IOError(f"Failed to read file: {e}")
             elif path.suffix.lower() == ".yaml" or path.suffix.lower() == ".yml":
-                import yaml
                 try:
                     with open(path, "r", encoding="utf-8") as f:
                         fdata = f.read()
@@ -86,8 +86,7 @@ class ApiInfo:
         if not path.exists():
             raise FileNotFoundError(f"File \"{path}\" does not exist")
         async with self._api_info_async_lock:
-            if not path.suffix.lower() == ".json":
-                import orjson
+            if path.suffix.lower() == ".json":
                 try:
                     async with aiofiles.open(path, "rb") as f:
                         fdata = await f.read()
@@ -98,7 +97,6 @@ class ApiInfo:
                 except OSError as e:
                     raise IOError(f"Failed to read file: {e}")
             elif path.suffix.lower() == ".yaml" or path.suffix.lower() == ".yml":
-                import yaml
                 try:
                     async with aiofiles.open(path, "r", encoding="utf-8") as f:
                         fdata = await f.read()
