@@ -30,7 +30,8 @@ from .Global_Config_Manager import ConfigManager
 from .Request_User_Info import Request_User_Info
 from .ApiInfo import (
     ApiInfo,
-    ModelType
+    ModelType,
+    ApiObject,
 )
 from . import Request_Log
 from .Logger_Init import (
@@ -293,6 +294,70 @@ class Core:
         return False
     # endregion
 
+    def _print_request_info(
+            self,
+            user_id: str,
+            api: ApiObject,
+            user_input: Context_Manager.ContentUnit,
+            user_info: Request_User_Info,
+            role_name: str | None = None
+        ) -> None:
+        logger.info(
+            "API URL: {url}",
+            user_id = user_id,
+            url = api.url
+        )
+        logger.info(
+            "API Model: {parent}/{model_name}",
+            user_id = user_id,
+            parent = api.parent,
+            model_name = api.name
+        )
+
+        # 打印上下文信息
+        if user_input.content:
+            logger.info(
+                "Message:\n{message}",
+                message = user_input.content,
+                user_id = user_id
+            )
+        else:
+            logger.warning(
+                "No message to send",
+                user_id = user_id
+            )
+
+        # 如果有设置用户信息，则打印日志
+        if user_info.username:
+            logger.info(
+                "User Name: {username}",
+                user_id = user_id,
+                username = user_info.username
+            )
+        if user_info.nickname:
+            logger.info(
+                "User Nickname: {nickname}",
+                user_id = user_id,
+                nickname = user_info.nickname
+            )
+        if user_info.gender:
+            logger.info(
+                "User Gender: {gender}",
+                user_id = user_id,
+                gender = user_info.gender
+            )
+        if user_info.age:
+            logger.info(
+                "User Age: {age}",
+                user_id = user_id,
+                age = user_info.age
+            )
+        if role_name:
+            logger.info(
+                "Role Name: {role_name}",
+                user_id = user_id,
+                role_name = role_name
+            )
     # region > Chat
     async def chat(
             self,
@@ -445,62 +510,14 @@ class Core:
                 request.model = api.id
                 request.key = api.api_key
                 request.timeout = api.timeout
-                logger.info(
-                    "API URL: {url}",
+                
+                self._print_request_info(
                     user_id = user_id,
-                    url = api.url
+                    api = api,
+                    user_input = user_input,
+                    user_info = user_info,
+                    role_name = role_name,
                 )
-                logger.info(
-                    "API Model: {parent}/{model_name}",
-                    user_id = user_id,
-                    parent = api.parent,
-                    model_name = api.name
-                )
-
-                # 打印上下文信息
-                if user_input.content:
-                    logger.info(
-                        "Message:\n{message}",
-                        message = user_input.content,
-                        user_id = user_id
-                    )
-                else:
-                    logger.warning(
-                        "No message to send",
-                        user_id = user_id
-                    )
-
-                # 如果有设置用户信息，则打印日志
-                if user_info.username:
-                    logger.info(
-                        "User Name: {username}",
-                        user_id = user_id,
-                        username = user_info.username
-                    )
-                if user_info.nickname:
-                    logger.info(
-                        "User Nickname: {nickname}",
-                        user_id = user_id,
-                        nickname = user_info.nickname
-                    )
-                if user_info.gender:
-                    logger.info(
-                        "User Gender: {gender}",
-                        user_id = user_id,
-                        gender = user_info.gender
-                    )
-                if user_info.age:
-                    logger.info(
-                        "User Age: {age}",
-                        user_id = user_id,
-                        age = user_info.age
-                    )
-                if role_name:
-                    logger.info(
-                        "Role Name: {role_name}",
-                        user_id = user_id,
-                        role_name = role_name
-                    )
 
                 # 设置请求对象的参数信息
                 request.user_name = user_info.nickname
