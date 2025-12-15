@@ -7,3 +7,4 @@ class Prompt_Config(BaseModel):
     suffix: str = ".md"
     encoding: str = "utf-8"
     preset_name: str = "default"
+    load_prompt: bool = True
