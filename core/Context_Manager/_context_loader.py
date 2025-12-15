@@ -10,7 +10,6 @@ from pathlib import Path
 import orjson
 
 # ==== 第三方库 ==== #
-from openai import AsyncOpenAI
 from loguru import logger
 
 # ==== 自定义库 ==== #
@@ -25,7 +24,9 @@ from ..User_Config_Manager import (
 from ._objects import (
     ContextObject,
     ContentUnit,
-    ContentRole
+    ContentRole,
+    TextBlock,
+    ImageBlock,
 )
 from ._exceptions import *
 from TextProcessors import (
@@ -113,6 +114,7 @@ class ContextLoader:
             new_message: str,
             role: str = "user",
             role_name: str | None = None,
+            image_url: str | None = None,
             continue_completion: bool = False,
             prompt_vp: PromptVP | None = None
         ) -> ContextObject:
@@ -132,7 +134,21 @@ class ContextLoader:
         
         if not continue_completion:
             content = ContentUnit()
-            content.content = await self._expand_variables(new_message, variables = prompt_vp, user_id=user_id)
+            new_message = await self._expand_variables(new_message, variables = prompt_vp, user_id=user_id)
+            if image_url:
+                content.content = []
+                content.content.append(
+                    TextBlock(
+                        text = new_message,
+                    )
+                )
+                content.content.append(
+                    ImageBlock(
+                        url = image_url
+                    )
+                )
+            else:
+                content.content = new_message
             content.role = ContentRole(role)
             content.role_name = role_name
 
@@ -149,6 +165,7 @@ class ContextLoader:
             message: str,
             role: str = "user",
             role_name: str | None = None,
+            image_url: str | None = None,
             load_prompt: bool = True,
             continue_completion: bool = False,
             prompt_vp: PromptVP = PromptVP()
