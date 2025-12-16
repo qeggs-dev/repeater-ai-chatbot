@@ -165,6 +165,10 @@ PS: `run.py`启动器会在完成所有操作后启动主程序，而这只需�
         // 默认为false
         // 设为true可能会让你获得更快的解析速度
         "save_text_only": false,
+
+        // 非文本数据在日志中的最大显示长度
+        // 默认为 null，表示不限制
+        "max_log_length_for_non_text_content": 100
     },
     "logger": {
         // Logger 配置
