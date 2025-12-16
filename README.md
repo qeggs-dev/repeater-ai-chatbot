@@ -164,7 +164,7 @@ PS: `run.py`启动器会在完成所有操作后启动主程序，而这只需�
         // 只保存文本，不保存图片，音频等其他数据
         // 默认为false
         // 设为true可能会让你获得更快的解析速度
-        "save_text_only": false
+        "save_text_only": false,
     },
     "logger": {
         // Logger 配置
@@ -620,7 +620,7 @@ PS: 转义必须保证转义处理器一字不漏，否则会以普通文本输�
 | `GET` | `/` | 无 | 无 | 获取Index Web | `Web页面` |
 | `GET` | `/index.html` | 无 | 无 | (同上) 获取Index Web | `Web页面` |
 | `GET` | `/docs` | 无 | 无 | 获取接口文档 | `Web页面` |
-| `POST` | `/chat/completion/{user_id:str}` | JSON请求体 | *`message(str)`*<br/>*`user_info.username(str)`*<br/>*`user_info.nickname(str)`*<br/>*`user_info.age(int)`*</br>*`user_info.gender(str)`*<br/>*`role(str) = "user"`*<br/>*`role_name(str)`*<br/>*`model_uid(str)`*<br/>*`load_prompt(bool) = true`*<br/>*`save_context(bool) = true`*<br/>*`image_url(str\|list[str])`*<br/>*`reference_context_id(str)`*<br/>*`continue_completion(bool)`*<br/>*`stream(bool)`*  | AI聊天 | `JSON响应对象` 或 `流式Delta对象` |
+| `POST` | `/chat/completion/{user_id:str}` | JSON请求体 | *`message(str)`*<br/>*`user_info.username(str)`*<br/>*`user_info.nickname(str)`*<br/>*`user_info.age(int)`*</br>*`user_info.gender(str)`*<br/>*`role(str)`*<br/>*`role_name(str)`*<br/>*`model_uid(str)`*<br/>*`load_prompt(bool)`*<br/>*`save_context(bool)`*<br/>*`image_url(str\|list[str])`*<br/>*`reference_context_id(str)`*<br/>*`continue_completion(bool)`*<br/>*`stream(bool)`*  | AI聊天 | `JSON响应对象` 或 `流式Delta对象` |
 | `POST` | `/render/{user_id:str}`| JSON请求体 | **`text(str)`**<br/>*`style(str)`*<br/>*`timeout(float)`* | 文本渲染 | `JSON对象` |
 | `POST` | `/userdata/variable/expand/{user_id:str}` | JSON请求体 | *`username(str)`*<br/>`text(str)` | 变量解析 | `JSON对象` |
 | `GET` | `/userdata/context/get/{user_id:str}` | | | 获取上下文 | `JSON列表` |
@@ -661,6 +661,16 @@ PS: 转义必须保证转义处理器一字不漏，否则会以普通文本输�
 | `GET` | `/version` | | | 获取版本信息 | `JSON对象` |
 | `GET` | `/version/api` | | | 获取API版本信息 | `纯文本` |
 | `GET` | `/version/core` | | | 获取核心版本信息 | `纯文本` |
+
+---
+
+## 多模态输入
+
+在 `/chat/completion` 端点下面
+传入 `image_url` 即可让后端构造视觉模态请求
+但需要保证目标模型支持视觉模态输入
+
+其他模态输入暂不支持
 
 ---
 
