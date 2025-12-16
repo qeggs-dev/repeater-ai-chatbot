@@ -6,3 +6,5 @@ class Context_Config(BaseModel):
     context_shrink_limit: int | None = None
     save_context: bool = True
     save_text_only: bool = False
+
+    max_log_length_for_non_text_content: int | None = None
