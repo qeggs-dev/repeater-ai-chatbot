@@ -297,6 +297,22 @@ class Core:
         return False
     # endregion
 
+    # region Print_Request_Log
+    @staticmethod
+    def _text_content_cutter(text: str) -> str:
+        max_log_length = ConfigManager.get_configs().context.max_log_length_for_non_text_content
+        if max_log_length is None:
+            return text
+        
+        if len(text) > max_log_length:
+            if max_log_length > 6:
+                return text[:max_log_length - 6] + "..." + text[-3:]
+            elif max_log_length > 3:
+                return text[:max_log_length - 3] + "..."
+            else:
+                return "..."
+        else:
+            return text
     def _print_request_info(
             self,
             user_id: str,
@@ -331,11 +347,17 @@ class Core:
                     if isinstance(block, Context_Manager.TextBlock):
                         message_texts.append(block.text)
                     elif isinstance(block, Context_Manager.ImageBlock):
-                        message_texts.append(f"[Image: {block.image_url.url}]")
+                        message_texts.append(
+                            f"[Image: {self._text_content_cutter(block.image_url.url)}]"
+                        )
                     elif isinstance(block, Context_Manager.AudioBlock):
-                        message_texts.append(f"[Audio: {block.input_audio.data}]")
+                        message_texts.append(
+                            f"[Audio: {self._text_content_cutter(block.input_audio.data)}]"
+                        )
                     elif isinstance(block, Context_Manager.FileBlock):
-                        message_texts.append(f"[File: {block.file.filename}]")
+                        message_texts.append(
+                            f"[File: {self._text_content_cutter(block.file.filename)}]"
+                        )
                     else:
                         message_texts.append(f"[Unknown Block: {block}]")
                 logger.info(
