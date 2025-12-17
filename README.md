@@ -1,10 +1,7 @@
 # @复读机Repeater
 **- Only Chat, Focus Chat. -**
 
-*本仓库仅为后端实现，NoneBot插件部分请查看[`Repater-Nonebot-Plugin`](https://github.com/qeggs-dev/repeater-qq-ai-chatbot-nonebot-plugins)*
-
-一个基于[`NoneBot`](https://nonebot.dev/)和[`OpenAI SDK`](https://pypi.org/project/openai/)开发的**实验性**QQ聊天机器人
-**此仓库仅为后端实现，NoneBot插件部分请查看[`Repater-Nonebot-Plugin`](https://github.com/qeggs-dev/repeater-qq-ai-chatbot-nonebot-plugins)**
+一个基于[`OpenAI SDK`](https://pypi.org/project/openai/)开发的聊天机器人
 将原始会话数据的处理直接公开给用户使用
 以达到接近直接操作API的灵活度体验
 
@@ -22,9 +19,9 @@
 ---
 
 ## 注意事项:
- - 本服务由一位 `16岁自学开发者`(现在17了) 使用AI辅助开发，公益项目，如果你愿意捐赠，可以在机器人的**QQ空间**中找到赞赏码以支持项目运营(或是支持开发者)。
  - 使用者需确认生成内容的合法性，并自行承担使用本服务可能产生的风险。
  - 如果你觉得这个Bot非常好用，请去看一下[`Deepseek`](https://www.deepseek.com/)的官网吧，这个Bot最初就是基于他们的模型API文档开发的。
+ - 机器人本体是免费的，但开发者不承担使用时的API费用，还请注意。
 
 ---
 
@@ -57,16 +54,17 @@
 
 ## 安装部署
 
-**推荐Python3.11以上版本安装**
+**推荐Python3.11及以上版本安装**
 > PS: 复读机可能会兼容Python3.11以前的版本
 > 但我们并未对其进行过测试
+> 复读机有可能会需要至少3.10的版本
 > 此处3.11为开发环境版本
 
 ### 自动安装
 
 1. 将项目克隆到本地
 2. 进入项目目录
-5. 运行`run.py`启动器 (详情请查看[Sloves_Starter](https://github.com/qeggs-dev/Sloves_Starter))
+5. 运行`run.py`启动器 (该项目的详情请查看[Sloves_Starter](https://github.com/qeggs-dev/Sloves_Starter))
 
 ### 手动安装
 
@@ -86,7 +84,7 @@ PS: `run.py`启动器会在完成所有操作后启动主程序，而这只需�
 
 | 环境变量 | 描述 | 是否必填 | 默认值(*示例值*) |
 | :---: | :---: | :---: | :---: |
-| `*API_KEY` | API_Key (具体变量名由`API_INFO.API_FILE_PATH`指向 文件中`ApiKeyEnv`字段的名称) | **必填** | *\*可从[Deepseek开放平台/API Keys](https://platform.deepseek.com/api_keys)页面获取* |
+| `*API_KEY` | API_Key (具体变量名由`API_INFO.API_FILE_PATH`指向 文件中`ApiKeyEnv`字段的名称) | **必填** | 从你所使用的AI厂商开放平台获取 API Key |
 | `ADMIN_API_KEY` | 管理员API_Key (用于Repeater的管理员操作身份验证) | **选填但生产环境建议填写</br>如果填写的不够随机，程序会报错</br>建议先执行一次取生成的API_Key** | *\*自动生成随机 API Key* |
 | `CONFIG_DIR` | 配置文件夹路径 | **选填** | `./config/project_config` |
 | `CONFIG_FORCE_LOAD_LIST` | 配置文件强制加载列表(元素为配置文件路径) | **选填** | *`["./config/project_config/configs.json", "./config/project_config/configs2.json"]`* |
