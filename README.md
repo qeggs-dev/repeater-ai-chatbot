@@ -1,7 +1,7 @@
 # @复读机Repeater
 **- Only Chat, Focus Chat. -**
 
-一个基于[`OpenAI SDK`](https://pypi.org/project/openai/)开发的聊天机器人
+一个主要基于[`OpenAI SDK`](https://pypi.org/project/openai/)开发的聊天机器人
 将原始会话数据的处理直接公开给用户使用
 以达到接近直接操作API的灵活度体验
 
