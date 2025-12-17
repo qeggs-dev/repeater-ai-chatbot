@@ -723,12 +723,6 @@ PS: 这里如果用户配置为null
 
 ---
 
-## 命令表：
-
-\*已被移动至[Repeater NoneBot插件仓库](https://github.com/qeggs-dev/repeater-qq-ai-chatbot-nonebot-plugins)
-
----
-
 ## 相关仓库
 
 [Sloves_Starter](https://github.com/qeggs-dev/Sloves_Starter)
