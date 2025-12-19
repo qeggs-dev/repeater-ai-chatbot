@@ -44,4 +44,5 @@
 | `legacy-dark-orange` | 旧版暗橙色 |
 
 颜色风格默认在 `./configs/style` 文件夹下
-可以通过 `render.markdown.styles_dir` 这个全局配置来修改
+可以通过 `render.markdown.styles_dir` 这个全局配置来修改路径
+你也可以去编写你自己的 CSS 样式

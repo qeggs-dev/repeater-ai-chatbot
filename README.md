@@ -106,7 +106,9 @@ PS: `run.py`启动器会在完成所有操作后启动主程序，而这只需�
 
 ## Markdown图片渲染
 
-请参阅：[Markdown图片渲染样式](docs/markdown_render_style.md)
+请参阅：
+[Markdown图片渲染模板](docs/markdown_render/template.md)
+[Markdown图片渲染样式](docs/markdown_render/style.md)
 
 ---
 
