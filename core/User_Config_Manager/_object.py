@@ -27,6 +27,7 @@ class UserConfigs(BaseModel):
     save_context: bool = True
     user_profile: str | None = None
     timezone: float | str | None = None
+    save_text_only: bool | None = True
 
     @field_validator("timezone")
     def check_timezone(cls, v):

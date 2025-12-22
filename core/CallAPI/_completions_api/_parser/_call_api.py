@@ -1,5 +1,5 @@
 # ==== 标准库 ==== #
-...
+from typing import Literal
 
 # ==== 第三方库 ==== #
 import openai
@@ -19,34 +19,13 @@ from .._objects import (
 from ....Context_Manager import (
     FunctionResponseUnit,
     ContentUnit,
-    ContextRole
+    ContentRole
 )
 from ....Request_Log import RequestLog, TimeStamp
 from ._call_api_base import CallNstreamAPIBase
 from .._exceptions import *
 
 class CallAPI(CallNstreamAPIBase):
-    async def call(self, user_id:str, request: Request) -> Response:
-        """
-        调用API
-
-        :param user_id: 用户ID
-        :param request: 请求对象
-        :return: 响应对象
-        """
-        try:
-            return await self._call(user_id, request)
-        except openai.APITimeoutError as e:
-            raise APITimeoutError(str(e)) from e
-        except openai.BadRequestError as e:
-            raise BadRequestError(str(e)) from e
-        except openai.InternalServerError as e:
-            raise APIServerError(str(e)) from e
-        except openai.APIConnectionError as e:
-            raise APIConnectionError(str(e)) from e
-        except Exception as e:
-            raise CallApiException(str(e)) from e
-
     async def _call(self, user_id:str, request: Request) -> Response:
         """调用API"""
         # 创建模型响应对象
@@ -88,13 +67,14 @@ class CallAPI(CallNstreamAPIBase):
             stream = False,
             messages = request.context.to_full_context(remove_resoning_prompt = True),
             tools = request.function_calling.tools if request.function_calling else None,
+            stream_options = request.stream_options.model_dump(),
         )
         request_end_time = TimeStamp()
 
         # 创建响应内容单元
         model_response_content_unit:ContentUnit = ContentUnit()
         # 设置角色
-        model_response_content_unit.role = ContextRole.ASSISTANT
+        model_response_content_unit.role = ContentRole.ASSISTANT
         # chunk计数
         chunk_count:int = 0
         # 空chunk计数

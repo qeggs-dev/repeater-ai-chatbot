@@ -1328,7 +1328,12 @@ class SlovesStarter:
                 set_title(self.process_exit_title)
             
             if self.restart:
-                if Ask("Re-select?").ask():
+                if self.reselect:
+                    ask = Ask("Re-select?")
+                else:
+                    ask = Ask("Restart?")
+                
+                if ask.ask():
                     reselect = False
                     continue
                 else:

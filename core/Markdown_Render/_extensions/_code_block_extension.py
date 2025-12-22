@@ -25,6 +25,9 @@ class CodeBlockPreprocessor(Preprocessor):
         # 替换小代码块
         text = self.FIND_LITTLE_CODE_BLOCK_PATTERN.sub(r"<code>\1</code>", text)
 
+        # 阻止Markdown对剩下的"`"进行处理
+        text = text.replace("`", r"\`")
+
         # 将文本拆分成行
         lines = text.splitlines()
 

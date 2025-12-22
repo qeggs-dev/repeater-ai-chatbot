@@ -4,7 +4,7 @@ from ...._resource import (
 )
 from .....Context_Manager import (
     ContentUnit,
-    ContextRole
+    ContentRole
 )
 from fastapi.responses import (
     ORJSONResponse
@@ -25,13 +25,13 @@ async def inject_context(user_id: str, request: InjectContext):
 
     context.append(
         ContentUnit(
-            role = ContextRole.USER,
+            role = ContentRole.USER,
             content = request.user_content,
         )
     )
     context.append(
         ContentUnit(
-            role = ContextRole.ASSISTANT,
+            role = ContentRole.ASSISTANT,
             content = request.assistant_content,
         )
     )

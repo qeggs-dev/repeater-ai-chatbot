@@ -10,7 +10,6 @@ from pathlib import Path
 import orjson
 
 # ==== 第三方库 ==== #
-from openai import AsyncOpenAI
 from loguru import logger
 
 # ==== 自定义库 ==== #
@@ -22,10 +21,13 @@ from ..User_Config_Manager import (
     ConfigManager,
     UserConfigs
 )
-from ._object import (
+from ._objects import (
     ContextObject,
     ContentUnit,
-    ContextRole
+    ContentRole,
+    TextBlock,
+    ImageBlock,
+    ImageUrlBlock,
 )
 from ._exceptions import *
 from TextProcessors import (
@@ -85,7 +87,7 @@ class ContextLoader:
 
         # 创建Content单元
         prompt = ContentUnit(
-            role = ContextRole.SYSTEM,
+            role = ContentRole.SYSTEM,
             content = prompt
         )
         # 将Content单元加入Context
@@ -113,6 +115,7 @@ class ContextLoader:
             new_message: str,
             role: str = "user",
             role_name: str | None = None,
+            image_url: str | list[str] | None = None,
             continue_completion: bool = False,
             prompt_vp: PromptVP | None = None
         ) -> ContextObject:
@@ -132,8 +135,44 @@ class ContextLoader:
         
         if not continue_completion:
             content = ContentUnit()
-            content.content = await self._expand_variables(new_message, variables = prompt_vp, user_id=user_id)
-            content.role = ContextRole(role)
+            new_message = await self._expand_variables(new_message, variables = prompt_vp, user_id=user_id)
+            if image_url:
+                if isinstance(image_url, str):
+                    content.content = []
+                    content.content.append(
+                        TextBlock(
+                            text = new_message,
+                        )
+                    )
+                    content.content.append(
+                        ImageBlock(
+                            image_url = ImageUrlBlock(
+                                url = image_url,
+                            )
+                        )
+                    )
+                elif isinstance(image_url, list):
+                    content.content = []
+                    content.content.append(
+                        TextBlock(
+                            text = new_message,
+                        )
+                    )
+                    for url in image_url:
+                        content.content.append(
+                            ImageBlock(
+                                image_url = ImageUrlBlock(
+                                    url = url,
+                                )
+                            )
+                        )
+                else:
+                    raise TypeError(
+                        "Invalid content type, must be one of the following: str, list[str], list[ImageUrlBlock]"
+                    )
+            else:
+                content.content = new_message
+            content.role = ContentRole(role)
             content.role_name = role_name
 
             # 添加上下文
@@ -149,6 +188,7 @@ class ContextLoader:
             message: str,
             role: str = "user",
             role_name: str | None = None,
+            image_url: str | list[str] | None = None,
             load_prompt: bool = True,
             continue_completion: bool = False,
             prompt_vp: PromptVP = PromptVP()
@@ -176,6 +216,7 @@ class ContextLoader:
             new_message = message,
             role = role,
             role_name = role_name,
+            image_url = image_url,
             continue_completion = continue_completion,
             prompt_vp = prompt_vp
         )
@@ -200,6 +241,7 @@ class ContextLoader:
             self,
             user_id: str,
             context: ContextObject,
+            reduce_to_text:bool = False
         ) -> None:
         """
         保存上下文
@@ -207,5 +249,5 @@ class ContextLoader:
         :param user_id: 用户ID
         :param context: 上下文对象
         """
-        await self._context_manager.save(user_id, context.context)
+        await self._context_manager.save(user_id, context.to_context(reduce_to_text = reduce_to_text))
         logger.info(f"Save Context: {len(context)}", user_id = user_id)

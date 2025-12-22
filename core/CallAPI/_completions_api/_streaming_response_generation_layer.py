@@ -2,7 +2,7 @@ import sys
 from typing import AsyncGenerator, Self, TextIO
 from ._objects import Request, Delta, Response
 from ...Request_Log import RequestLog
-from ...Context_Manager import ContentUnit, ContextRole, FunctionResponseUnit
+from ...Context_Manager import ContentUnit, ContentRole, FunctionResponseUnit
 from ...Request_Log import TimeStamp
 from ...Global_Config_Manager import ConfigManager
 from ...Logger_Init import config_to_log_level, LogLevel
@@ -54,7 +54,7 @@ class StreamingResponseGenerationLayer:
         # 创建响应缓冲区单元
         self.model_response_content_unit:ContentUnit = ContentUnit()
         # 设置角色
-        self.model_response_content_unit.role = ContextRole.ASSISTANT
+        self.model_response_content_unit.role = ContentRole.ASSISTANT
         # chunk计数器
         self.chunk_count:int = 0
         # 空chunk计数器

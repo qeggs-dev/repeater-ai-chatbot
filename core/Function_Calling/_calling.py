@@ -1,6 +1,6 @@
 import asyncio
 from typing import Any, Callable, Awaitable, Protocol, runtime_checkable
-from ..Context_Manager import CallingFunctionResponse, ContextSyntaxError, ContentUnit, ContextRole
+from ..Context_Manager import CallingFunctionResponse, ContextSyntaxError, ContentUnit, ContentRole
 from ._exceptions import *
 
 @runtime_checkable
@@ -68,7 +68,7 @@ class FunctionCalling:
             except Exception as e:
                 raise FunctionCallingException(f"FunctionCalling {id} {name} error: {e}")
             else:
-                return ContentUnit(content=str(result), role=ContextRole.FUNCTION, tool_call_id=id)
+                return ContentUnit(content=str(result), role=ContentRole.FUNCTION, tool_call_id=id)
     
     async def unregister(self, name: str):
         """

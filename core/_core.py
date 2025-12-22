@@ -30,6 +30,8 @@ from .Global_Config_Manager import ConfigManager
 from .Request_User_Info import Request_User_Info
 from .ApiInfo import (
     ApiInfo,
+    ModelType,
+    ApiObject,
 )
 from . import Request_Log
 from .Logger_Init import (
@@ -40,9 +42,6 @@ from TextProcessors import (
 )
 from .Text_Template_Processer import (
     PromptVP_Loader
-)
-from ._info import (
-    __version__,
 )
 
 # ==== 本模块代码 ==== #
@@ -61,12 +60,10 @@ class Core:
         # 初始化用户数据管理器
         self.context_manager = Data_Manager.ContextManager()
         self.prompt_manager = Data_Manager.PromptManager()
-        self.user_config_manager = UserConfigManager()
+        self.user_config_manager: UserConfigManager = UserConfigManager()
 
         # 初始化变量加载器
-        self.prompt_pv_loader = PromptVP_Loader(
-            version = __version__
-        )
+        self.prompt_pv_loader = PromptVP_Loader()
         # 初始化Client并设置并发大小
         self.api_client = CompletionsAPI.ClientNoStream(
             ConfigManager.get_configs().callapi.max_concurrency
@@ -87,7 +84,7 @@ class Core:
         )
 
         # 初始化锁池
-        self.namespace_locks = AsyncLockPool()
+        self.namespace_locks: AsyncLockPool = AsyncLockPool()
 
         # 初始化调用日志管理器
         self.request_log = Request_Log.RequestLogManager(
@@ -175,7 +172,7 @@ class Core:
         :param user_id: 用户ID
         :return: 用户配置
         """
-        config = await self.user_config_manager.load(user_id=user_id)
+        config: UserConfigs = await self.user_config_manager.load(user_id=user_id)
         return config
     # endregion
 
@@ -200,6 +197,7 @@ class Core:
             user_name: str,
             role: str = "user",
             role_name: str | None = None,
+            image_url: str | list[str] | None = None,
             load_prompt: bool = True,
             continue_completion: bool = False,
             reference_context_id: str | None = None,
@@ -231,6 +229,7 @@ class Core:
                 message = message,
                 role = role,
                 role_name = role_name if role_name else user_name,
+                image_url = image_url,
                 load_prompt = load_prompt,
                 continue_completion = continue_completion,
                 prompt_vp = prompt_vp
@@ -245,6 +244,7 @@ class Core:
                 message = message,
                 role = role,
                 role_name = role_name,
+                image_url = image_url,
                 load_prompt = load_prompt,
                 continue_completion = continue_completion,
                 prompt_vp = prompt_vp
@@ -297,6 +297,111 @@ class Core:
         return False
     # endregion
 
+    # region Print_Request_Log
+    @staticmethod
+    def _text_content_cutter(text: str) -> str:
+        max_log_length = ConfigManager.get_configs().context.max_log_length_for_non_text_content
+        if max_log_length is None:
+            return text
+        
+        if len(text) > max_log_length:
+            if max_log_length > 6:
+                return text[:max_log_length - 6] + "..." + text[-3:]
+            elif max_log_length > 3:
+                return text[:max_log_length - 3] + "..."
+            else:
+                return "..."
+        else:
+            return text
+    def _print_request_info(
+            self,
+            user_id: str,
+            api: ApiObject,
+            user_input: Context_Manager.ContentUnit,
+            user_info: Request_User_Info,
+            role_name: str | None = None
+        ) -> None:
+        logger.info(
+            "API URL: {url}",
+            user_id = user_id,
+            url = api.url
+        )
+        logger.info(
+            "API Model: {parent}/{model_name}",
+            user_id = user_id,
+            parent = api.parent,
+            model_name = api.name
+        )
+
+        # 打印上下文信息
+        if user_input.content:
+            if isinstance(user_input.content, str):
+                logger.info(
+                    "Message:\n{message}",
+                    message = user_input.content,
+                    user_id = user_id
+                )
+            else:
+                message_texts: list[str] = []
+                for block in user_input.content:
+                    if isinstance(block, Context_Manager.TextBlock):
+                        message_texts.append(block.text)
+                    elif isinstance(block, Context_Manager.ImageBlock):
+                        message_texts.append(
+                            f"[Image: {self._text_content_cutter(block.image_url.url)}]"
+                        )
+                    elif isinstance(block, Context_Manager.AudioBlock):
+                        message_texts.append(
+                            f"[Audio: {self._text_content_cutter(block.input_audio.data)}]"
+                        )
+                    elif isinstance(block, Context_Manager.FileBlock):
+                        message_texts.append(
+                            f"[File: {self._text_content_cutter(block.file.filename)}]"
+                        )
+                    else:
+                        message_texts.append(f"[Unknown Block: {block}]")
+                logger.info(
+                    "Message:\n{message}",
+                    message = "\n".join(message_texts),
+                    user_id = user_id
+                )
+        else:
+            logger.warning(
+                "No message to send",
+                user_id = user_id
+            )
+
+        # 如果有设置用户信息，则打印日志
+        if user_info.username:
+            logger.info(
+                "User Name: {username}",
+                user_id = user_id,
+                username = user_info.username
+            )
+        if user_info.nickname:
+            logger.info(
+                "User Nickname: {nickname}",
+                user_id = user_id,
+                nickname = user_info.nickname
+            )
+        if user_info.gender:
+            logger.info(
+                "User Gender: {gender}",
+                user_id = user_id,
+                gender = user_info.gender
+            )
+        if user_info.age:
+            logger.info(
+                "User Age: {age}",
+                user_id = user_id,
+                age = user_info.age
+            )
+        if role_name:
+            logger.info(
+                "Role Name: {role_name}",
+                user_id = user_id,
+                role_name = role_name
+            )
     # region > Chat
     async def chat(
             self,
@@ -305,8 +410,9 @@ class Core:
             user_info: Request_User_Info = Request_User_Info(),
             role: str = "user",
             role_name:  str = "",
-            print_chunk: bool = True,
+            image_url: str | list[str] | None = None,
             model_uid: str | None = None,
+            print_chunk: bool = True,
             load_prompt: bool | None = None,
             save_context: bool | None = None,
             reference_context_id: str | None = None,
@@ -318,15 +424,17 @@ class Core:
 
         :param message: 用户输入的消息
         :param user_id: 用户ID
-        :param user_name: 用户名
+        :param user_info: 用户信息
         :param role: 角色
         :param role_name: 角色名
+        :param image_url: 图片URL
         :param model_uid: 模型UID
-        :param load_prompt: 是否加载提示
         :param print_chunk: 是否打印片段
+        :param load_prompt: 是否加载提示
         :param save_context: 是否保存上下文
         :param reference_context_id: 引用上下文ID
         :param continue_completion: 是否继续完成
+        :param stream: 是否流式输出
         :return: 返回对话结果
         """
         try:
@@ -364,7 +472,10 @@ class Core:
                     model_uid: str = config.model_uid or ConfigManager.get_configs().api_info.default_model_uid
                 
                 # 获取API信息
-                apilist = self.apiinfo.find(model_uid = model_uid)
+                apilist = self.apiinfo.find(
+                    model_type = ModelType.CHAT,
+                    model_uid = model_uid
+                )
                 # 取第一个API
                 if len(apilist) == 0:
                     logger.error(
@@ -401,6 +512,11 @@ class Core:
                 context_loader = await self.get_context_loader()
 
                 # 获取上下文
+                if load_prompt is None:
+                    if config.load_prompt is None:
+                        load_prompt = ConfigManager.get_configs().prompt.load_prompt
+                    else:
+                        load_prompt = config.load_prompt
                 context = await self.get_context(
                     context_loader = context_loader,
                     user_id = user_id,
@@ -408,7 +524,8 @@ class Core:
                     user_name = user_info.nickname or user_info.username,
                     role = role,
                     role_name = role_name,
-                    load_prompt = load_prompt if load_prompt is not None else config.load_prompt,
+                    image_url = image_url,
+                    load_prompt = load_prompt,
                     continue_completion = continue_completion,
                     reference_context_id = reference_context_id,
                     prompt_vp = prompt_vp
@@ -446,62 +563,14 @@ class Core:
                 request.model = api.id
                 request.key = api.api_key
                 request.timeout = api.timeout
-                logger.info(
-                    "API URL: {url}",
+                
+                self._print_request_info(
                     user_id = user_id,
-                    url = api.url
+                    api = api,
+                    user_input = user_input,
+                    user_info = user_info,
+                    role_name = role_name,
                 )
-                logger.info(
-                    "API Model: {parent}/{model_name}",
-                    user_id = user_id,
-                    parent = api.parent,
-                    model_name = api.name
-                )
-
-                # 打印上下文信息
-                if user_input.content:
-                    logger.info(
-                        "Message:\n{message}",
-                        message = user_input.content,
-                        user_id = user_id
-                    )
-                else:
-                    logger.warning(
-                        "No message to send",
-                        user_id = user_id
-                    )
-
-                # 如果有设置用户信息，则打印日志
-                if user_info.username:
-                    logger.info(
-                        "User Name: {username}",
-                        user_id = user_id,
-                        username = user_info.username
-                    )
-                if user_info.nickname:
-                    logger.info(
-                        "User Nickname: {nickname}",
-                        user_id = user_id,
-                        nickname = user_info.nickname
-                    )
-                if user_info.gender:
-                    logger.info(
-                        "User Gender: {gender}",
-                        user_id = user_id,
-                        gender = user_info.gender
-                    )
-                if user_info.age:
-                    logger.info(
-                        "User Age: {age}",
-                        user_id = user_id,
-                        age = user_info.age
-                    )
-                if role_name:
-                    logger.info(
-                        "Role Name: {role_name}",
-                        user_id = user_id,
-                        role_name = role_name
-                    )
 
                 # 设置请求对象的参数信息
                 request.user_name = user_info.nickname
@@ -513,6 +582,8 @@ class Core:
                 request.max_completion_tokens = config.max_completion_tokens or ConfigManager.get_configs().model.default_max_completion_tokens
                 request.stop = config.stop or ConfigManager.get_configs().model.default_stop
                 request.stream = ConfigManager.get_configs().model.stream
+                request.stream_options.include_obfuscation = ConfigManager.get_configs().callapi.include_obfuscation
+                request.stream_options.include_usage = ConfigManager.get_configs().callapi.include_usage
                 request.print_chunk = print_chunk
 
                 # 记录预处理结束时间
@@ -526,6 +597,19 @@ class Core:
                 output.model_uid = api.uid
                 output.user_raw_input = message
                 output.user_input = user_input.content
+
+                # 是否保存上下文
+                if save_context is None:
+                    if config.save_context is not None:
+                        save_context = config.save_context
+                    else:
+                        save_context = ConfigManager.get_configs().context.save_context
+                
+                # 是否在保存时删除多模态内容
+                if config.save_text_only is not None:
+                    save_only_text: bool = config.save_text_only
+                else:
+                    save_only_text: bool = ConfigManager.get_configs().context.save_text_only
 
                 # region >> 提交请求
                 try:
@@ -545,11 +629,12 @@ class Core:
                                 response = response,
                                 prompt_vp = prompt_vp,
                                 user_input = user_input,
+                                save_context = save_context,
                                 context_loader = context_loader,
                                 task_start_time = task_start_time,
                                 reference_context_id = reference_context_id,
                                 call_prepare_end_time = call_prepare_end_time,
-                                save_context = save_context if save_context is not None else config.save_context,
+                                save_only_text = save_only_text,
                             )
                         response_iterator = await self.stream_api_client.submit_Request(
                             user_id = user_id,
@@ -570,29 +655,23 @@ class Core:
                             response = response,
                             prompt_vp = prompt_vp,
                             user_input = user_input,
+                            save_context = save_context,
                             context_loader = context_loader,
                             task_start_time = task_start_time,
                             reference_context_id = reference_context_id,
                             call_prepare_end_time = call_prepare_end_time,
-                            save_context = save_context if save_context is not None else config.save_context,
+                            save_only_text = save_only_text,
                         )
                         return output
                 
-                except CompletionsAPI.Exceptions.APIServerError as e:
-                    logger.error(f"API Server Error: {e}")
-                    output.content = f"Error:{e}"
-                    output.status = 500
-                    return output
-                
-                except CompletionsAPI.Exceptions.BadRequestError as e:
-                    logger.error(f"Bad Request Error: {e}")
-                    output.content = f"Error:{e}"
-                    output.status = 400
-                    return output
-
                 except CompletionsAPI.Exceptions.CallApiException as e:
-                    logger.error(f"CallAPI Error: {e}")
-                    output.content = f"Error:{e}"
+                    traceback_info = traceback.format_exc()
+                    logger.exception(
+                        "CallAPI Error: \n{traceback_info}",
+                        user_id = user_id,
+                        traceback_info = traceback_info,
+                    )
+                    output.content = f"API Error: {e}"
                     output.status = 500
                     return output
                 # endregion
@@ -615,7 +694,8 @@ class Core:
         call_prepare_end_time: Request_Log.TimeStamp,
         output: Response = Response(),
         save_context: bool | None = None,
-        reference_context_id: str | None = None
+        reference_context_id: str | None = None,
+        save_only_text: bool = False,
     ) -> Response:
         # 补充调用日志的时间信息
         response.calling_log.task_start_time = task_start_time
@@ -638,7 +718,8 @@ class Core:
                 context = historical_context
             await context_loader.save(
                 user_id = user_id,
-                context = context
+                context = context,
+                reduce_to_text = save_only_text,
             )
         else:
             logger.warning("Context not saved", user_id = user_id)
