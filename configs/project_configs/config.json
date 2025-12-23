@@ -9,10 +9,15 @@
         "match_timeout": 10.0
     },
     "callapi": {
-        "max_concurrency": 1000
+        "max_concurrency": 1000,
+        "include_usage": true,
+        "include_obfuscation": false
     },
     "context": {
-        "auto_shrink_length": null
+        "auto_shrink_length": null,
+        "save_context": true,
+        "save_text_only": true,
+        "max_log_length_for_non_text_content": 25
     },
     "logger": {
         "file_path": "./logs/repeater-log-{time:YYYY-MM-DD_HH-mm-ss.SSS}.log",
@@ -33,11 +38,13 @@
     },
     "prompt_template": {
         "version": "",
-        "name": "Repeater",
-        "birthday": {
-            "day": 28,
-            "month": 6,
-            "year": 2024
+        "bot_info": {
+            "name": "Repeater",
+            "birthday": {
+                "day": 28,
+                "month": 6,
+                "year": 2024
+            }
         },
         "time": {
             "timezone": "Asia/Shanghai"
@@ -47,7 +54,8 @@
         "dir": "./configs/prompt/presets",
         "suffix": ".md",
         "encoding": "utf-8",
-        "preset_name": "default"
+        "preset_name": "repeater",
+        "load_prompt": true
     },
     "render": {
         "default_image_timeout": 60.0,
