@@ -180,7 +180,15 @@ class RequestLogManager:
             if path.exists():
                 async with aiofiles.open(path, "rb") as f:
                     async for line in f:
-                        data = await asyncio.to_thread(orjson.loads, line)
+                        try:
+                            data = await asyncio.to_thread(orjson.loads, line)
+                        except orjson.JSONDecodeError as e:
+                            logger.error(   
+                                "JSONDecodeError: {error}\nLine: {line}",
+                                error = e,
+                                line = line
+                            )
+                            continue
                         try:
                             yield RequestLogObject(**data)  # 生成文件日志
                         except ValidationError as e:
