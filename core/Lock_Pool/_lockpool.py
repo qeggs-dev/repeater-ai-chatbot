@@ -1,11 +1,11 @@
 from __future__ import annotations
 import threading
-from typing import TypeVar
+from typing import TypeVar, Generic
 from loguru import logger
 
 T_KEY = TypeVar("T_KEY")
 
-class LockPool:
+class LockPool(Generic[T_KEY]):
     def __init__(self):
         self._lock = threading.Lock()
         self.locks: dict[T_KEY, threading.Lock] = {}
