@@ -51,7 +51,7 @@ async def catch_exceptions_middleware(request: Request, call_next):
         )
 
 async def shutdown_server(exception: CriticalException | None = None) -> None:
-    wait_time = None
+    wait_time: float = 0.0
     if exception is not None:
         if callable(exception.wait):
             try:
@@ -59,15 +59,15 @@ async def shutdown_server(exception: CriticalException | None = None) -> None:
             except KeyError:
                 logger.info("[Global Exception Recorder] Exceptions include waiting callbacks, and programs may exit delayed...")
             if asyncio.iscoroutinefunction(exception.wait):
-                wait_time: float = await exception.wait(exception)
+                wait_time = await exception.wait(exception)
             elif callable(exception.wait):
                 wait_time: float = await asyncio.to_thread(exception.wait, exception)
             elif not isinstance(wait_time, float):
-                wait_time: None = None
+                wait_time = exception.wait
         elif isinstance(exception.wait, float):
             wait_time: float = exception.wait
     
-    if wait_time is not None and (isinstance(wait_time, float) or isinstance(wait_time, int)) and wait_time > 0:
+    if (isinstance(wait_time, float) or isinstance(wait_time, int)) and wait_time > 0:
         try:
             logger.info(f"Waiting for {wait_time} seconds before closing the application...", user_id = "[Global Exception Recorder]")
         except KeyError:
