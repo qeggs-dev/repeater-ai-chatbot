@@ -26,7 +26,7 @@ class TimeStamp(BaseModel):
                 monotonic = self.monotonic + other.monotonic
             )
         elif isinstance(other, int):
-            other = TimeStamp(
+            return TimeStamp(
                 timestamp = self.timestamp + other,
                 monotonic = self.monotonic + other
             )
@@ -36,8 +36,8 @@ class TimeStamp(BaseModel):
     def __radd__(self, other: TimeStamp | int) -> TimeStamp:
         if isinstance(other, TimeStamp):
             return TimeStamp(
-                other.timestamp + self.timestamp,
-                other.monotonic + self.monotonic
+                timestamp = other.timestamp + self.timestamp,
+                monotonic = other.monotonic + self.monotonic
             )
         elif isinstance(other, int):
             other = TimeStamp(
@@ -62,13 +62,13 @@ class TimeStamp(BaseModel):
     def __sub__(self, other: TimeStamp | int) -> TimeStamp:
         if isinstance(other, TimeStamp):
             return TimeStamp(
-                self.timestamp - other.timestamp,
-                self.monotonic - other.monotonic
+                timestamp = self.timestamp - other.timestamp,
+                monotonic = self.monotonic - other.monotonic
             )
         elif isinstance(other, int):
             return TimeStamp(
-                self.timestamp - other,
-                self.monotonic - other
+                timestamp = self.timestamp - other,
+                monotonic = self.monotonic - other
             )
         else:
             return NotImplemented
@@ -76,13 +76,13 @@ class TimeStamp(BaseModel):
     def __rsub__(self, other: TimeStamp | int) -> TimeStamp:
         if isinstance(other, TimeStamp):
             return TimeStamp(
-                other.timestamp - self.timestamp,
-                other.monotonic - self.monotonic
+                timestamp = other.timestamp - self.timestamp,
+                monotonic = other.monotonic - self.monotonic
             )
         elif isinstance(other, int):
             return TimeStamp(
-                other - self.timestamp,
-                other - self.monotonic
+                timestamp = other - self.timestamp,
+                monotonic = other - self.monotonic
             )
         else:
             return NotImplemented
@@ -102,13 +102,13 @@ class TimeStamp(BaseModel):
     def __mul__(self, other: TimeStamp | int) -> TimeStamp:
         if isinstance(other, TimeStamp):
             return TimeStamp(
-                self.timestamp * other.timestamp,
-                self.monotonic * other.monotonic,
+                timestamp = self.timestamp * other.timestamp,
+                monotonic = self.monotonic * other.monotonic,
             )
         elif isinstance(other, int):
             return TimeStamp(
-                self.timestamp * other,
-                self.monotonic * other,
+                timestamp = self.timestamp * other,
+                monotonic = self.monotonic * other,
             )
         else:
             return NotImplemented
@@ -116,13 +116,13 @@ class TimeStamp(BaseModel):
     def __rmul__(self, other: TimeStamp | int) -> TimeStamp:
         if isinstance(other, TimeStamp):
             return TimeStamp(
-                other.timestamp * self.timestamp,
-                other.monotonic * self.monotonic,
+                timestamp = other.timestamp * self.timestamp,
+                monotonic = other.monotonic * self.monotonic,
             )
         elif isinstance(other, int):
             return TimeStamp(
-                other * self.timestamp,
-                other * self.monotonic,
+                timestamp = other * self.timestamp,
+                monotonic = other * self.monotonic,
             )
         else:
             return NotImplemented
@@ -142,13 +142,13 @@ class TimeStamp(BaseModel):
     def __floordiv__(self, other: TimeStamp | int) -> TimeStamp:
         if isinstance(other, TimeStamp):
             return TimeStamp(
-                self.timestamp // other.timestamp,
-                self.monotonic // other.monotonic,
+                timestamp = self.timestamp // other.timestamp,
+                monotonic = self.monotonic // other.monotonic,
             )
         elif isinstance(other, int):
             return TimeStamp(
-                self.timestamp // other,
-                self.monotonic // other,
+                timestamp = self.timestamp // other,
+                monotonic = self.monotonic // other,
             )
         else:
             return NotImplemented
@@ -162,13 +162,13 @@ class TimeStamp(BaseModel):
     def __rfloordiv__(self, other: TimeStamp | int) -> TimeStamp:
         if isinstance(other, TimeStamp):
             return TimeStamp(
-                other.timestamp // self.timestamp,
-                other.monotonic // self.monotonic,
+                timestamp = other.timestamp // self.timestamp,
+                monotonic = other.monotonic // self.monotonic,
             )
         elif isinstance(other, int):
             return TimeStamp(
-                other // self.timestamp,
-                other // self.monotonic,
+                timestamp = other // self.timestamp,
+                monotonic = other // self.monotonic,
             )
         else:
             return NotImplemented
@@ -189,35 +189,100 @@ class TimeStamp(BaseModel):
             return NotImplemented
     
     def __mod__(self, other: TimeStamp | int) -> TimeStamp:
-        return TimeStamp(self.timestamp % other.timestamp, self.monotonic % other.monotonic)
+        if isinstance(other, TimeStamp):
+            return TimeStamp(
+                timestamp = self.timestamp % other.timestamp,
+                monotonic = self.monotonic % other.monotonic
+            )
+        elif isinstance(other, int):
+            return TimeStamp(
+                timestamp = self.timestamp % other,
+                monotonic = self.monotonic % other
+            )
+        else:
+            return NotImplemented
     
     def __rmod__(self, other: TimeStamp | int) -> TimeStamp:
-        return TimeStamp(other.timestamp % self.timestamp, other.monotonic % self.monotonic)
+        if isinstance(other, TimeStamp):
+            return TimeStamp(
+                timestamp = other.timestamp % self.timestamp,
+                monotonic = other.monotonic % self.monotonic
+            )
+        elif isinstance(other, int):
+            return TimeStamp(
+                timestamp = other % self.timestamp,
+                monotonic = other % self.monotonic
+            )
+        else:
+            return NotImplemented
     
     def __imod__(self, other: TimeStamp | int) -> TimeStamp:
-        self.timestamp %= other.timestamp
-        self.monotonic %= other.monotonic
-        return self
+        if isinstance(other, TimeStamp):
+            self.timestamp %= other.timestamp
+            self.monotonic %= other.monotonic
+            return self
+        elif isinstance(other, int):
+            self.timestamp %= other
+            self.monotonic %= other
+            return self
+        else:
+            return NotImplemented
     
     def __pow__(self, other: TimeStamp | int) -> TimeStamp:
-        return TimeStamp(self.timestamp ** other.timestamp, self.monotonic ** other.monotonic)
+        if isinstance(other, TimeStamp):
+            return TimeStamp(
+                timestamp = self.timestamp ** other.timestamp,
+                monotonic = self.monotonic ** other.monotonic
+            )
+        elif isinstance(other, int):
+            return TimeStamp(
+                timestamp = self.timestamp ** other,
+                monotonic = self.monotonic ** other
+            )
+        else:
+            return NotImplemented
     
     def __rpow__(self, other: TimeStamp | int) -> TimeStamp:
-        return TimeStamp(other.timestamp ** self.timestamp, other.monotonic ** self.monotonic)
+        if isinstance(other, TimeStamp):
+            return TimeStamp(
+                timestamp = other.timestamp ** self.timestamp,
+                monotonic = other.monotonic ** self.monotonic
+            )
+        elif isinstance(other, int):
+            return TimeStamp(
+                timestamp = other ** self.timestamp,
+                monotonic = other ** self.monotonic
+            )
+        else:
+            return NotImplemented
 
     def __ipow__(self, other: TimeStamp | int) -> TimeStamp:
-        self.timestamp **= other.timestamp
-        self.monotonic **= other.monotonic
-        return self
+        if isinstance(other, TimeStamp):
+            self.timestamp **= other.timestamp
+            self.monotonic **= other.monotonic
+            return self
+        elif isinstance(other, int):
+            self.timestamp **= other
+            self.monotonic **= other
+            return self
     
     def __neg__(self) -> TimeStamp:
-        return TimeStamp(-self.timestamp, -self.monotonic)
+        return TimeStamp(
+            timestamp = -self.timestamp,
+            monotonic = -self.monotonic
+        )
     
     def __pos__(self) -> TimeStamp:
-        return TimeStamp(+self.timestamp, +self.monotonic)
+        return TimeStamp(
+            timestamp = +self.timestamp,
+            monotonic = +self.monotonic
+        )
     
     def __abs__(self) -> TimeStamp:
-        return TimeStamp(abs(self.timestamp), abs(self.monotonic))
+        return TimeStamp(
+            timestamp = abs(self.timestamp),
+            monotonic = abs(self.monotonic)
+        )
     
     def __eq__(self, other: TimeStamp) -> bool:
         return self.timestamp == other.timestamp and self.monotonic == other.monotonic
@@ -229,4 +294,4 @@ class TimeStamp(BaseModel):
         return hash((self.timestamp, self.monotonic))
     
     def __repr__(self) -> str:
-        return f"TimeStamp({self.timestamp}, {self.monotonic})"
+        return f"{self.__class__.__name__}({self.timestamp}, {self.monotonic})"
