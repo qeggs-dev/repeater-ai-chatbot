@@ -49,7 +49,12 @@ class ContextLoader:
         self._prompt_manager: PromptManager = prompt
         self._config_manager: ConfigManager = config
     
-    async def _load_prompt(self, context:ContextObject, user_id: str, prompt_vp: PromptVP) -> ContextObject:
+    async def _load_prompt(
+            self,
+            context:ContextObject,
+            user_id: str,
+            prompt_vp: PromptVP | None = None
+        ) -> ContextObject:
         user_prompt:str = await self._prompt_manager.load(user_id=user_id, default="")
         if user_prompt:
             # 使用用户提示词
@@ -82,7 +87,8 @@ class ContextLoader:
                 logger.warning(f"Default Prompt Directory Not Found: {default_prompt_dir}", user_id = user_id)
                 prompt = ""
         # 展开变量
-        prompt = await self._expand_variables(prompt, variables = prompt_vp, user_id=user_id)
+        if prompt_vp is not None:
+            prompt = await self._expand_variables(prompt, variables_parser = prompt_vp, user_id=user_id)
         logger.debug("Prompt Content:\n{prompt}", user_id = user_id, prompt = prompt)
 
         # 创建Content单元
@@ -135,7 +141,8 @@ class ContextLoader:
         
         if not continue_completion:
             content = ContentUnit()
-            new_message = await self._expand_variables(new_message, variables = prompt_vp, user_id=user_id)
+            if prompt_vp is not None:
+                new_message = await self._expand_variables(new_message, variables_parser = prompt_vp, user_id=user_id)
             if image_url:
                 if isinstance(image_url, str):
                     content.content = []
@@ -191,7 +198,7 @@ class ContextLoader:
             image_url: str | list[str] | None = None,
             load_prompt: bool = True,
             continue_completion: bool = False,
-            prompt_vp: PromptVP = PromptVP()
+            prompt_vp: PromptVP | None = None,
         ) -> ContextObject:
         """
         加载上下文
@@ -222,7 +229,7 @@ class ContextLoader:
         )
         return context
     
-    async def _expand_variables(self, prompt: str, variables: PromptVP, user_id: str) -> str:
+    async def _expand_variables(self, prompt: str, variables_parser: PromptVP, user_id: str) -> str:
         """
         展开变量
 
@@ -230,10 +237,10 @@ class ContextLoader:
         :param variables: 变量
         :param user_id: 用户ID
         """
-        variables.reset_counter()
-        prompt = variables.process(prompt)
-        logger.info(f"Prompt Hits Variable: {variables.hit_var()}/{variables.discover_var()}({variables.hit_var() / variables.discover_var() if variables.discover_var() != 0 else 0:.2%})", user_id = user_id)
-        variables.reset_counter()
+        variables_parser.reset_counter()
+        prompt = variables_parser.process(prompt)
+        logger.info(f"Prompt Hits Variable: {variables_parser.hit_var()}/{variables_parser.discover_var()}({variables_parser.hit_var() / variables_parser.discover_var() if variables_parser.discover_var() != 0 else 0:.2%})", user_id = user_id)
+        variables_parser.reset_counter()
         prompt = limit_blank_lines(prompt)
         return prompt
 
