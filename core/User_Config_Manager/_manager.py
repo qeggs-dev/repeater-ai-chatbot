@@ -229,10 +229,7 @@ class ConfigManager:
 
             userlist = await self._user_config_manager.get_all_user_id()
             for user_id in userlist:
-                cache[user_id] = UserConfigs(
-                    user_id = user_id,
-                    configs = await self._load_configs(user_id)
-                )
+                cache[user_id] = await self._load_configs(user_id)
             logger.info(f"Loaded {len(cache)} configs")
             return cache
     
@@ -277,13 +274,14 @@ class ConfigManager:
         """
         return await self._user_config_manager.get_all_user_id()
     
-    async def get_all_item_id(self):
+    async def get_all_item_id(self, user_id: str):
         """
         获取所有配置ID
 
+        :param user_id: 用户ID
         :return: 配置项ID列表
         """
-        return await self._user_config_manager.get_all_branch_id()
+        return await self._user_config_manager.get_all_branch_id(user_id=user_id)
     
     async def __aenter__(self):
         return self 
