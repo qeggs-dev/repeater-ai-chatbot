@@ -78,7 +78,7 @@ class PromptVP_Loader:
                 bot_birthday_month,
                 bot_birthday_day,
                 name=bot_name,
-                detailed_mode = str_to_bool(detailed_mode),
+                precise = str_to_bool(detailed_mode),
             ),
             reprs = lambda *args: "\n".join([repr(arg) for arg in args]),
             version = global_config.prompt_template.version or __version__,
