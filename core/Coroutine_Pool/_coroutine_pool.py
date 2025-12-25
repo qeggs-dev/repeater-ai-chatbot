@@ -1,7 +1,7 @@
 import asyncio
 from typing import (
     Any,
-    Awaitable,
+    Coroutine,
     TypeVar,
 )
 from loguru import logger
@@ -16,12 +16,21 @@ class CoroutinePool:
         self._semaphore = asyncio.Semaphore(self._max_concurrency)
         self._tasks = set()  # 存储运行中的任务
     # region 协程池管理
-    async def submit(self, coro: Awaitable[T], user_id: str = "[System]") -> T:
+    async def submit(self, coro: Coroutine[None, None, T], user_id: str = "[System]") -> T:
         """提交任务到协程池，并等待返回结果"""
         async with self._semaphore:  # 控制并发数
             task = asyncio.create_task(coro)
             self._tasks.add(task)
-            logger.debug(f"Created a new task for {inspect.currentframe().f_back.f_code.co_name} ({len(self._tasks)}/{self._max_concurrency})", user_id = user_id)
+            currentframe = inspect.currentframe()
+            if currentframe is None:
+                raise RuntimeError("No current frame")
+            else:
+                back_frame = currentframe.f_back
+                if back_frame is None:
+                    parten = "<Main Module>"
+                else:
+                    parten = back_frame.f_code.co_name
+            logger.debug(f"Created a new task for {parten} ({len(self._tasks)}/{self._max_concurrency})", user_id = user_id)
             try:
                 result = await task
                 return result
