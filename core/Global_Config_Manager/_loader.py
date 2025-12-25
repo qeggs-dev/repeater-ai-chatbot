@@ -32,20 +32,25 @@ class ConfigManager:
             cls._force_load_list = []
     
     @classmethod
-    def _scan_dir(cls, globs: Iterable[str]) -> Generator[Path, None, None]:
+    def _scan_dir(cls, globs: Iterable[str], temp_loadpath: Path | None = None) -> Generator[Path, None, None]:
+        if temp_loadpath is None:
+            load_path = cls._base_path
+        else:
+            load_path = temp_loadpath
         for glob in globs:
-            for path in cls._base_path.rglob(glob):
+            for path in load_path.rglob(glob):
                 yield path
     
     @classmethod
-    def _config_files(cls) -> list[Path]:
+    def _config_files(cls, temp_loadpath: Path | None = None) -> list[Path]:
         return sorted(
             cls._scan_dir(
                 [
                     "*.yaml",
                     "*.yml",
                     "*.json",
-                ]
+                ],
+                temp_loadpath
             ),
             key=lambda path: str(path)
         )
@@ -61,7 +66,7 @@ class ConfigManager:
             return orjson.loads(f.read())
     
     @classmethod
-    def load(cls, create_if_missing: bool = False) -> Global_Config:
+    def load(cls, create_if_missing: bool = False, temp_loadpath: str | os.PathLike | None = None) -> Global_Config:
         """
         Load the configs from the config files.
 
@@ -69,9 +74,11 @@ class ConfigManager:
         """
         try:
             if cls._force_load_list:
-                load_list = cls._force_load_list
+                load_list: list[Path] = cls._force_load_list
+            elif temp_loadpath is not None:
+                load_list: list[Path] = cls._config_files(Path(temp_loadpath))
             else:
-                load_list = cls._config_files()
+                load_list: list[Path] = cls._config_files()
             
             configs: list[Box] = []
             for path in load_list:
@@ -96,6 +103,7 @@ class ConfigManager:
         except Exception as e:
             if create_if_missing:
                 cls.save(cls._configs)
+                return cls._configs
             else:
                 raise
     
