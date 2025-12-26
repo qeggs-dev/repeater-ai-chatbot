@@ -110,6 +110,7 @@ class ConfigManager:
         等待并降级用户配置
 
         :param user_id: 用户ID
+        :param wait_time: 等待时间
         :return: None
         """
         try:
@@ -130,6 +131,7 @@ class ConfigManager:
         等待并保存用户配置
 
         :param user_id: 用户ID
+        :param wait_time: 等待时间
         :return: None
         """
         try:
@@ -148,7 +150,6 @@ class ConfigManager:
         获取默认配置项ID
 
         :param user_id: 用户ID
-        :param item: 配置项
         :return: 配置项
         """
         async with self._lock:
@@ -204,6 +205,7 @@ class ConfigManager:
         """
         保存所有用户配置
 
+        :param clear_all_tasks: 是否清除所有防抖任务
         :return: None
         """
         async with self._lock:
@@ -217,21 +219,24 @@ class ConfigManager:
             logger.info(f"Saved {len(cache)} config", user_id = user_id)
             cache.clear()
     
-    async def get_all(self):
+    async def get_all_configs(self):
         """
         获取所有用户配置
 
-        :param cache: 缓存字典
         :return: 所有用户的配置数据
         """
         async with self._lock:
+            configs: dict[str, UserConfigs] = {}
             cache = await self._get_cache()
 
             userlist = await self._user_config_manager.get_all_user_id()
             for user_id in userlist:
-                cache[user_id] = await self._load_configs(user_id)
-            logger.info(f"Loaded {len(cache)} configs")
-            return cache
+                if user_id in cache:
+                    configs[user_id] = cache[user_id]
+                else:
+                    configs[user_id] = await self._load_configs(user_id)
+            logger.info(f"Loaded {len(configs)} configs")
+            return configs
     
     async def _load_configs(self, user_id: str) -> UserConfigs:
         """
