@@ -9,7 +9,8 @@ from .....User_Config_Manager import (
     UserConfigs
 )
 from .._requests import (
-    SetConfigRequest
+    SetConfigRequest,
+    FieldType
 )
 from fastapi import (
     HTTPException
@@ -44,23 +45,29 @@ async def set_config_field(user_id: str, key: str, request: SetConfigRequest):
         ORJSONResponse: Config
     """
     # 允许的值类型
-    TYPES = {
-        "int": int,
-        "float": float,
-        "string": str,
-        "bool": bool,
-        "dict": dict,
-        "list": list,
-        "null": None
-    }
-    # 检查值类型是否有效
-    if request.type not in TYPES:
-        raise HTTPException(400, "Invalid value type")
-    if request.type == "null":
-        value = None
-    else:
-        # 将值转换为指定类型
-        value = TYPES[request.type](request.value)
+    match request.type:
+        case FieldType.INT:
+            value = int(request.value)
+        case FieldType.FLOAT:
+            value = float(request.value)
+        case FieldType.STRING:
+            value = str(request.value)
+        case FieldType.BOOLEAN:
+            value = bool(request.value)
+        case FieldType.DICT:
+            if not isinstance(request.value, dict):
+                raise HTTPException(status_code=400, detail="Value must be a dict.")
+            value = request.value
+        case FieldType.LIST:
+            if not isinstance(request.value, list):
+                raise HTTPException(status_code=400, detail="Value must be a list.")
+            value = request.value
+        case FieldType.RAW:
+            value = request.value
+        case FieldType.NULL:
+            value = None
+        case _:
+            raise HTTPException(status_code=400, detail="Invalid type.")
     
     # 读取配置
     config = await chat.user_config_manager.load(user_id=user_id)
