@@ -4,6 +4,7 @@ from ..Request_User_Info import Request_User_Info
 from TextProcessors import PromptVP, str_to_bool
 from .._info import __version__
 from ._value_comparison import value_comparison, ComparisonOperator
+from ..ApiInfo import ApiObject
 
 from datetime import datetime, timedelta
 from TimeParser import (
@@ -42,7 +43,7 @@ class PromptVP_Loader:
     def get_prompt_vp_ex(
             self,
             user_id: str,
-            model_uid: str = "",
+            model: ApiObject = ApiObject(),
             user_info: Request_User_Info = Request_User_Info(),
             global_config: Global_Config = Global_Config(),
             config: UserConfigs = UserConfigs(),
@@ -82,7 +83,11 @@ class PromptVP_Loader:
             ),
             reprs = lambda *args: "\n".join([repr(arg) for arg in args]),
             version = global_config.prompt_template.version or __version__,
-            model_uid = model_uid if model_uid else config.model_uid,
+            model_uid = model.uid,
+            model_name = model.name,
+            model_id = model.id,
+            model_type = model.type.value,
+            model_group = model.parent,
             botname = bot_name,
             username = user_info.username or "Unknown",
             nickname = user_info.nickname or "Unknown",
