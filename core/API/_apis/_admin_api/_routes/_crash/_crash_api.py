@@ -14,7 +14,7 @@ from fastapi.responses import (
 )
 from loguru import logger
 
-@app.get("/admin/crash")
+@app.post("/admin/crash")
 async def crash_api(
         api_key: str = Header(..., alias="X-Admin-API-Key")
     ):
