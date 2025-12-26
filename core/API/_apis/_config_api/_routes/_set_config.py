@@ -21,6 +21,16 @@ from pydantic import ValidationError
 
 @app.put("/userdata/config/set/{user_id}")
 async def set_config(user_id: str, request: UserConfigs):
+    """
+    Set user config
+
+    Args:
+        user_id (str): User ID
+        request (UserConfigs): User Config Data
+    
+    Returns:
+        ORJSONResponse: User Config Data
+    """
     await chat.user_config_manager.force_write(user_id=user_id, configs=request)
     logger.info(
         "Set user config: \n{config}",
