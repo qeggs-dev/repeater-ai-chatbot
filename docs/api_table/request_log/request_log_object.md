@@ -10,8 +10,8 @@
   - `total_chunk (int)` 请求的总 Chunk 数量
   - `empty_chunk (int)` 请求的空 Chunk 数量
   - `task_start_time (TimeStamp)` 任务开始时间
-  - `call_prepare_start_time (TimeStamp)` 预处理开始时间
-  - `call_prepare_end_time (TimeStamp)` 预处理结束时间
+  - `prepare _start_time (TimeStamp)` 预处理开始时间
+  - `prepare _end_time (TimeStamp)` 预处理结束时间
   - `request_start_time (TimeStamp)` 请求开始时间
   - `request_end_time (TimeStamp)` 请求结束时间
   - `stream_processing_start_time (TimeStamp)` 流式处理开始时间
