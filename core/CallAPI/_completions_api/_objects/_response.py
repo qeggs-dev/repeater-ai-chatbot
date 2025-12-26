@@ -13,7 +13,7 @@ class Response:
     """
     id: str = ""
     context: ContextObject = field(default_factory=ContextObject)
-    created: TimeStamp = 0
+    created: int = 0
     model: str = ""
     token_usage: TokensCount | None = None
     stream: bool = False
