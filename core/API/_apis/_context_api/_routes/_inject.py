@@ -11,12 +11,8 @@ from fastapi.responses import (
 )
 from loguru import logger
 
-from .._requests import (
-    InjectContext
-)
-
 @app.post("/userdata/context/inject/{user_id}")
-async def inject_context(user_id: str, request: InjectContext):
+async def inject_context(user_id: str, request: ContentUnit):
     """
     注入上下文
     """
