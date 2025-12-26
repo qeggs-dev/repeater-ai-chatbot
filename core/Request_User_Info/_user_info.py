@@ -7,5 +7,5 @@ class Request_User_Info(BaseModel):
 
     username: str | None = None
     nickname: str | None = None
-    age: int | None = None
+    age: int | float | None = None
     gender: str | None = None
