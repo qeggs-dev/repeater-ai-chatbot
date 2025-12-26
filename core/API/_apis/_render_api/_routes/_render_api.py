@@ -89,8 +89,15 @@ async def render(
     quality = render_request.quality if render_request.quality is not None else ConfigManager.get_configs().render.to_image.quality
 
     # 读取HTML模板
-    async with aiofiles.open(html_template_dir / f"{html_template_name}{html_template_suffix}", "r", encoding = html_template_encoding) as f:
-        html_template = await f.read()
+    if render_request.html_template is not None:
+        html_template = render_request.html_template
+    else:
+        async with aiofiles.open(
+            html_template_dir / f"{html_template_name}{html_template_suffix}",
+            "r",
+            encoding = html_template_encoding
+        ) as f:
+            html_template = await f.read()
     
     end_of_preprocessing = time.monotonic_ns()
 
