@@ -34,7 +34,7 @@ async def expand_variables(user_id: str, request: ExpandVariableRequest):
             age = request.user_info.age,
             gender = request.user_info.gender
         ),
-        model_uid = "nomodel",
+        model_uid = "no_model",
         global_config = Global_Config_Manager.get_configs(),
         config = config
     )
