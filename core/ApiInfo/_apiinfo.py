@@ -121,3 +121,7 @@ class ApiInfo:
             return []
         
         return index_list.copy()
+    
+    @property
+    def empty_api_object(self) -> ApiObject:
+        return ApiObject()
