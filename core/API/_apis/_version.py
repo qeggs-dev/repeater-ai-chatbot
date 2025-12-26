@@ -19,7 +19,7 @@ def version():
     return ORJSONResponse(versions)
 
 @app.route("/version/{module}")
-def version_module(module: str):
+def module_version(module: str):
     """
     Return the version of the specified module
     """

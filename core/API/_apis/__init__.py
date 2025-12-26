@@ -60,6 +60,5 @@ from ._static_api import (
 )
 from ._version import (
     version,
-    api_version,
-    core_version,
+    module_version
 )
