@@ -390,7 +390,7 @@ class Core:
                 user_id = user_id,
                 gender = user_info.gender
             )
-        if user_info.age:
+        if user_info.age is not None:
             logger.info(
                 "User Age: {age}",
                 user_id = user_id,
