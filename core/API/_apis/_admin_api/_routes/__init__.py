@@ -6,10 +6,14 @@ from ._reload import (
 from ._regenerate import (
     regenerate_admin_key,
 )
+from ._crash import (
+    crash_api
+)
 
 __all__ = [
     "reload_apiinfo",
     "reload_blacklist",
     "reload_configs",
     "regenerate_admin_key",
+    "crash_api",
 ]
