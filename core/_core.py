@@ -503,7 +503,7 @@ class Core:
                 prompt_vp = self.prompt_pv_loader.get_prompt_vp_ex(
                     user_id = user_id,
                     user_info = user_info,
-                    model_uid = model_uid,
+                    model = model_uid,
                     global_config = ConfigManager.get_configs(),
                     config = config
                 )
