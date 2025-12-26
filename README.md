@@ -113,18 +113,17 @@ PS: `run.py`启动器会在完成所有操作后启动主程序，而这只需�
 
 ## 配置文件
 
-1. [主配置](docs/configs/main.md)
-2. [API_INFO](docs/configs/api_info.md)
-3. [Blacklist](docs/configs/blacklist.md)
-4. [User_Nickname_Mapping](docs/configs/uer_nickname_mapping.md)
+- [Main Config](docs/configs/main.md)
+- [API_INFO](docs/configs/api_info.md)
+- [Blacklist](docs/configs/blacklist.md)
+- [User_Nickname_Mapping](docs/configs/uer_nickname_mapping.md)
 
 ---
 
 ## Markdown图片渲染
 
-请参阅：
-[Markdown图片渲染模板](docs/markdown_render/template.md)
-[Markdown图片渲染样式](docs/markdown_render/style.md)
+- [Markdown图片渲染模板](./docs/markdown_render/template.md)
+- [Markdown图片渲染样式](./docs/markdown_render/style.md)
 
 ---
 
@@ -150,13 +149,13 @@ PS: `run.py`启动器会在完成所有操作后启动主程序，而这只需�
 
 充分利用好模板展开器，可以实现很多有趣的功能
 
-详情请参阅：[模板展开系统](docs/template_expansion_engine/main.md)
+详情请参阅：[模板展开系统](./docs/template_expansion_engine/main.md)
 
 ---
 
-## 接口表
+## Repeater API
 
-请参阅：[API接口表](docs/api_table.md)
+请参阅：[Repeater API](./docs/api_table/index.md)
 
 ---
 
@@ -180,13 +179,13 @@ PS: `run.py`启动器会在完成所有操作后启动主程序，而这只需�
 
 Client 与 Server 使用 HTTP 进行通信
 
-接口表请参阅：[API接口表](docs/api_table.md)
+接口表请参阅：[Repeater API](./docs/api_table/index.md)
 
 ---
 
 ## 用户配置
 
-请参阅：[用户配置](docs/configs/user_config.md)
+请参阅：[用户配置](./docs/configs/user_config.md)
 
 ---
 
