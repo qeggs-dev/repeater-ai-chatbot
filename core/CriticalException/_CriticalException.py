@@ -3,7 +3,7 @@ from typing import Callable, Coroutine
 
 class CriticalException(Exception):
     """
-    严重的异常，抛出后程序将会退出
+    关键异常，抛出后程序将会崩溃
     """
     def __init__(
         self,
