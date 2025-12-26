@@ -4,7 +4,8 @@ from ...._resource import (
 )
 from fastapi import Form
 from fastapi.responses import (
-    PlainTextResponse
+    PlainTextResponse,
+    ORJSONResponse
 )
 from loguru import logger
 
@@ -19,7 +20,9 @@ async def get_context_branch_id_list(user_id: str):
     Returns:
         ORJSONResponse: Context branch id list
     """
-    return chat.context_manager.get_all_branch_id(user_id)
+    return ORJSONResponse(
+        chat.context_manager.get_all_branch_id(user_id)
+    )
 
 @app.get("/userdata/context/now_branch/{user_id}")
 async def get_context_now_branch_id(user_id: str):
@@ -59,4 +62,4 @@ async def change_context(user_id: str, new_branch_id: str = Form(...)):
     logger.info("Change Context to {new_branch_id}", user_id = user_id, new_branch_id = new_branch_id)
 
     # 返回成功文本
-    return PlainTextResponse("Context changed successfully")
+    return PlainTextResponse("Context branch changed")
