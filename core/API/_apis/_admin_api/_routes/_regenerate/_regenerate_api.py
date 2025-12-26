@@ -11,7 +11,7 @@ from fastapi.responses import (
 )
 from loguru import logger
 
-@app.post("/admin/regenerate/admin_key")
+@app.post("/admin/admin_key/regenerate")
 async def regenerate_admin_key(api_key: str = Header(..., alias="X-Admin-API-Key")):
     """
     Endpoint for regenerating admin key
