@@ -494,7 +494,7 @@ class Core:
                         user_id = user_id,
                         length = len(apilist)
                     )
-                api = apilist[0]
+                model = apilist[0]
 
                 # 进行用户名映射
                 user_info = await self.nickname_mapping(user_id, user_info)
@@ -503,7 +503,7 @@ class Core:
                 prompt_vp = self.prompt_pv_loader.get_prompt_vp_ex(
                     user_id = user_id,
                     user_info = user_info,
-                    model = model_uid,
+                    model = model,
                     global_config = ConfigManager.get_configs(),
                     config = config
                 )
@@ -559,14 +559,14 @@ class Core:
                 request.context = context
                 
                 # 设置请求对象的API信息
-                request.url = api.url
-                request.model = api.id
-                request.key = api.api_key
-                request.timeout = api.timeout
+                request.url = model.url
+                request.model = model.id
+                request.key = model.api_key
+                request.timeout = model.timeout
                 
                 self._print_request_info(
                     user_id = user_id,
-                    api = api,
+                    api = model,
                     user_input = user_input,
                     user_info = user_info,
                     role_name = role_name,
@@ -591,10 +591,10 @@ class Core:
 
                 # 输出 (为了自动填充输出内容)
                 output = Response()
-                output.model_group = api.parent
-                output.model_name = api.name
-                output.model_type = api.type.value
-                output.model_uid = api.uid
+                output.model_group = model.parent
+                output.model_name = model.name
+                output.model_type = model.type.value
+                output.model_uid = model.uid
                 output.user_raw_input = message
                 output.user_input = user_input.content
 
