@@ -57,6 +57,7 @@ async def markdown_to_html(
 
     template_handler = PromptVP()
     template_handler.bulk_register_variable(
+        markdown = markdown_text,
         html_content = html_content,
         css = css,
         title = html.escape(title)
