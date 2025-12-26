@@ -14,7 +14,14 @@ from loguru import logger
 @app.post("/userdata/context/inject/{user_id}")
 async def inject_context(user_id: str, request: ContentUnit):
     """
-    注入上下文
+    Injects a user's content into the context.
+
+    Args:
+        user_id (str): The ID of the user.
+        request (ContentUnit): The content to inject.
+
+    Returns:
+        ORJSONResponse: A response indicating the success or failure of the operation.
     """
     context_loader = await chat.get_context_loader()
     context = await context_loader.get_context_object(user_id)
