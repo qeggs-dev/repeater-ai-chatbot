@@ -12,3 +12,12 @@
 
 ## 服务器手动崩溃
   - [服务器手动崩溃](./crash/crash_api.md)
+
+注：Admin Key 需要保证足够的随机性，
+程序会检查 Admin Key 的熵值，
+如果 Admin Key 的熵值过低 (`Shannon Entropy` &lt; `3.5`)，
+程序会抛出异常以终止启动。
+
+熵值计算公式：
+
+$$H(s) = -\sum_{i=1}^{k} p_i \log_2 p_i$$
