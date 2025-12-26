@@ -67,10 +67,10 @@ async def render(
         user_configs = config
     )
     
-    if not render_request.url_expiry_time:
+    if not render_request.image_expiry_time:
         render_url_expiry_time = ConfigManager.get_configs().render.default_image_timeout
     else:
-        render_url_expiry_time = render_request.url_expiry_time
+        render_url_expiry_time = render_request.image_expiry_time
     
     # 日志打印文件名和渲染风格
     logger.info(f"Rendering image {filename} for \"{style_name}\" style", user_id=user_id)
