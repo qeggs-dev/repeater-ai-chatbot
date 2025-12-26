@@ -6,32 +6,27 @@ from fastapi.responses import (
     PlainTextResponse
 )
 
+versions = {
+    "core": __core_version__,
+    "api": __api_version__
+}
+
 @app.route("/version")
 def version():
     """
     Return the version of the API and the core
     """
-    return ORJSONResponse(
-        {
-        "core": __core_version__,
-        "api": __api_version__
-        }
-    )
+    return ORJSONResponse(versions)
 
-@app.route("/version/core")
-def core_version():
+@app.route("/version/{module}")
+def version_module(module: str):
     """
-    Return the version of the core
+    Return the version of the specified module
     """
-    return PlainTextResponse(
-        __core_version__
-    )
-
-@app.route("/version/api")
-def api_version():
-    """
-    Return the version of the API
-    """
-    return PlainTextResponse(
-        __api_version__
-    )
+    if module in versions:
+        return PlainTextResponse(versions[module])
+    else:
+        return PlainTextResponse(
+            "Module not found",
+            status_code = 404
+        )
