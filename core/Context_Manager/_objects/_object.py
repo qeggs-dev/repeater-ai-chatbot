@@ -91,6 +91,15 @@ class ContextObject(BaseModel):
         self.context_list = other.context_list
         self.prompt = other.prompt
     
+    def rewrite(self, content: ContentUnit, index: int = -1) -> None:
+        """
+        重写上下文列表中的指定项
+
+        :param content: 内容
+        :return: 构建的对象
+        """
+        self.context_list[index] = content
+    
     @property
     def context_item_length(self):
         """
