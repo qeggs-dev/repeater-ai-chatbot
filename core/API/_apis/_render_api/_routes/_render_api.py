@@ -30,6 +30,10 @@ from .._assists import (
 from .._requests import (
     RenderRequest
 )
+from .._responses import (
+    Render_Response,
+    RenderTime
+)
 
 delayed_tasks_pool = DelayedTasksPool()
 ExitHandler.add_function(delayed_tasks_pool.cancel_all())
@@ -46,7 +50,7 @@ async def render(
     """
     start_time = time.monotonic_ns()
 
-    if render_request.text == None:
+    if not render_request.text:
         raise HTTPException(status_code=400, detail="text is required")
     
     # 生成图片ID
@@ -63,10 +67,10 @@ async def render(
         user_configs = config
     )
     
-    if not render_request.timeout:
-        render_request_timeout = ConfigManager.get_configs().render.default_image_timeout
+    if not render_request.url_expiry_time:
+        render_url_expiry_time = ConfigManager.get_configs().render.default_image_timeout
     else:
-        render_request_timeout = render_request.timeout
+        render_url_expiry_time = render_request.url_expiry_time
     
     # 日志打印文件名和渲染风格
     logger.info(f"Rendering image {filename} for \"{style_name}\" style", user_id=user_id)
@@ -123,7 +127,7 @@ async def render(
 
     # 添加一个后台任务，时间到后删除图片
     await delayed_tasks_pool.add_task(
-        render_request_timeout,
+        render_url_expiry_time,
         delete_image(
             user_id = user_id,
             render_output_image_dir = render_output_image_dir,
@@ -136,23 +140,25 @@ async def render(
     fileurl = request.url_for("render_file", file_uuid=fuuid)
 
     return ORJSONResponse(
-        {
-            "image_url": str(fileurl),
-            "file_uuid": str(fuuid),
-            "style": style_name,
-            "status": result.status.value,
-            "browser_used": result.browser_used,
-            "timeout": render_request_timeout,
-            "error": result.error,
-            "text": render_request.text,
-            "image_render_time_ms": result.render_time_ms,
-            "created": create,
-            "created_ms": create_ms,
-            "times": {
-                "preprocess": end_of_preprocessing - start_time,
-                "markdown_to_html": end_of_md_to_html - end_of_preprocessing,
-                "render": end_of_render - end_of_md_to_html,
-            }
-        }
+        Render_Response(
+            image_url = str(fileurl),
+            file_uuid = str(fuuid),
+            style = style_name,
+            status = result.status,
+            browser_used = result.browser_used,
+            url_expiry_time = render_url_expiry_time,
+            error = result.error,
+            text = render_request.text,
+            image_render_time_ms = result.render_time_ms,
+            created = create,
+            created_ms = create_ms,
+            details_time = RenderTime(
+                preprocess = end_of_preprocessing - start_time,
+                markdown_to_html = end_of_md_to_html - end_of_preprocessing,
+                render = end_of_render - end_of_md_to_html
+            )
+        ).model_dump(
+            exclude_none = True
+        )
     )
 
