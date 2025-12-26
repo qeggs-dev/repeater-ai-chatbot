@@ -23,8 +23,7 @@ async def catch_exceptions_middleware(request: Request, call_next):
         except KeyError:
             logger.exception("Exception: {exception}", exception = e)
         # 触发后台任务关闭应用（非阻塞）
-        background_tasks = BackgroundTasks()
-        background_tasks.add_task(shutdown_server, exception = e)
+        asyncio.create_task(shutdown_server(e))
         error_time = time.time_ns()
         return ORJSONResponse(
             status_code=500,
@@ -74,6 +73,6 @@ async def shutdown_server(exception: CriticalException | None = None) -> None:
             logger.info("[Global Exception Recorder] Waiting for {wait_time} seconds before closing the application...")
         await asyncio.sleep(wait_time)
 
-    logger.critical("正在关闭应用...")
+    logger.critical("The server crashed! exiting...")
     # 发送 SIGTERM 信号终止进程
     os.kill(os.getpid(), signal.SIGTERM)
