@@ -587,7 +587,7 @@ class Core:
                 request.print_chunk = print_chunk
 
                 # 记录预处理结束时间
-                call_prepare_end_time = Request_Log.TimeStamp()
+                prepare_end_time = Request_Log.TimeStamp()
 
                 # 输出 (为了自动填充输出内容)
                 output = Response()
@@ -633,7 +633,7 @@ class Core:
                                 context_loader = context_loader,
                                 task_start_time = task_start_time,
                                 reference_context_id = reference_context_id,
-                                call_prepare_end_time = call_prepare_end_time,
+                                prepare_end_time = prepare_end_time,
                                 save_only_text = save_only_text,
                             )
                         response_iterator = await self.stream_api_client.submit_Request(
@@ -659,7 +659,7 @@ class Core:
                             context_loader = context_loader,
                             task_start_time = task_start_time,
                             reference_context_id = reference_context_id,
-                            call_prepare_end_time = call_prepare_end_time,
+                            prepare_end_time = prepare_end_time,
                             save_only_text = save_only_text,
                         )
                         return output
@@ -691,7 +691,7 @@ class Core:
         task_start_time: Request_Log.TimeStamp,
         user_input: Context_Manager.ContentUnit,
         context_loader:Context_Manager.ContextLoader,
-        call_prepare_end_time: Request_Log.TimeStamp,
+        prepare_end_time: Request_Log.TimeStamp,
         output: Response = Response(),
         save_context: bool | None = None,
         reference_context_id: str | None = None,
@@ -699,8 +699,8 @@ class Core:
     ) -> Response:
         # 补充调用日志的时间信息
         response.calling_log.task_start_time = task_start_time
-        response.calling_log.call_prepare_start_time = task_start_time
-        response.calling_log.call_prepare_end_time = call_prepare_end_time
+        response.calling_log.prepare_start_time = task_start_time
+        response.calling_log.prepare_end_time = prepare_end_time
         response.calling_log.created_time = response.created
 
         # 展开模型输出内容中的变量
