@@ -37,7 +37,7 @@ async def get_prompt_now_branch_id(user_id: str):
         user_id (str): User ID
 
     Returns:
-        ORJSONResponse: Now Branch ID
+        PlainTextResponse: Now Branch ID
     """
     # 获取用户ID为user_id的提示词分支ID
     branch_id = await chat.prompt_manager.get_default_branch_id(user_id)

@@ -40,7 +40,7 @@ async def get_config_now_branch_id(user_id: str):
         user_id (str): User id
 
     Returns:
-        ORJSONResponse: Now Branch id
+        PlainTextResponse: Now Branch id
     """
 
     # 获取当前配置路由ID

@@ -33,7 +33,7 @@ async def get_context_now_branch_id(user_id: str):
         user_id (str): User ID
 
     Returns:
-        ORJSONResponse: Context branch id
+        PlainTextResponse: Context branch id
     """
     # 获取用户ID为user_id的上下文分支ID
     branch_id = await chat.context_manager.get_default_branch_id(user_id)
