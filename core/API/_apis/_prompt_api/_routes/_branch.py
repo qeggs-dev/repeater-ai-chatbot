@@ -66,4 +66,4 @@ async def change_prompt(user_id: str, new_branch_id: str = Form(...)):
     logger.info("Change prompt to {new_branch_id}", user_id=user_id, new_branch_id=new_branch_id)
 
     # 返回成功文本
-    return PlainTextResponse("Prompt changed successfully")
+    return PlainTextResponse("Prompt branch changed")

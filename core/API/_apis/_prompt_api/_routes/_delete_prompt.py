@@ -24,4 +24,4 @@ async def delete_prompt(user_id: str):
     logger.info("Delete prompt", user_id=user_id)
 
     # 返回成功文本
-    return PlainTextResponse("Prompt deleted successfully")
+    return PlainTextResponse("Prompt deleted")

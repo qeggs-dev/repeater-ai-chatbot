@@ -27,4 +27,4 @@ async def set_prompt(user_id: str, prompt: str = Form(...)):
     logger.info("Set prompt", user_id=user_id)
 
     # 返回成功文本
-    return PlainTextResponse("Prompt set successfully")
+    return PlainTextResponse("Prompt seted")
