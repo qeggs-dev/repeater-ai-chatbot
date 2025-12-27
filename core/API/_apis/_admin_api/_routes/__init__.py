@@ -9,6 +9,9 @@ from ._regenerate import (
 from ._crash import (
     crash_api
 )
+from ._raise_error import (
+    raise_error,
+)
 
 __all__ = [
     "reload_apiinfo",
@@ -16,4 +19,5 @@ __all__ = [
     "reload_configs",
     "regenerate_admin_key",
     "crash_api",
+    "raise_error",
 ]

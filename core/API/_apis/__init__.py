@@ -47,6 +47,7 @@ from ._admin_api import (
     reload_blacklist,
     regenerate_admin_key,
     crash_api,
+    raise_error,
 )
 from ._index_web import (
     index_web,
