@@ -8,20 +8,20 @@
     - **method:** `POST`
     - **type:** `JSON`
     - **Request Body**:
-      - `message(str)` 用户发送的消息
-      - `user_info`
+      - `message(str)` 用户发送的消息，允许为空，但这时模型的行为可能是未定义的
+      - `user_info` 用户信息，全部可选
         - `username(str)` 用户名
         - `nickname(str)` 昵称
         - `age(int | float)` 年龄
         - `gender(str)` 性别
-      - `role(str)` 用户角色
-      - `role_name(str)` 用户角色名称
-      - `model_uid(str)` 模型UID
-      - `load_prompt(bool)` 是否加载Prompt
-      - `save_context(bool)` 是否在完成后保存上下文
-      - `image_url(str | list[str])` 图片URL
-      - `reference_context_id(str)` 从指定的user_id获取上下文
-      - `stream(bool)` 是否流式返回
+      - `role(str)` 用户角色，可选值：`user`、`assistant`、`system`，默认为 `user`
+      - `role_name(str)` 用户角色名称，用于模型区分相同上下文里相同用户角色的不同的用户
+      - `model_uid(str)` 模型UID，用于临时指定一个模型对话，如果不填则根据配置系统推断值
+      - `load_prompt(bool)` 是否加载Prompt，如果不填则根据配置系统推断值
+      - `save_context(bool)` 是否在完成后保存上下文，如果不填则根据配置系统推断值
+      - `image_url(str | list[str])` 图片URL，用于视觉输入，支持单张或多张图片，需要保证链接**长期有效**或使用 `base64` ，以及确保模型可以正确处理视觉输入
+      - `reference_context_id(str)` 从指定的 `user_id` 获取上下文，如果指定了该项，则不会从 `user_id` 获取上下文，但是保存仍然指向 `user_id`
+      - `stream(bool)` 是否流式返回（设置该值为 `true` 需要保证在配置中启用了流式处理器，否则会返回`503`错误码）
   - **Response**
     - **type:** `JSON`
     - **Response Body**:
@@ -39,8 +39,14 @@
       - `status(int)` 状态码，这里和http状态码一致，只是为了报告而写，通常你应该优先选择检查http报告的状态码而不是这个字段
 
 注：该API有**RUL(Request User Lock)**
-在`user_id`相同且上一个请求**未完成**时
+在 `user_id` 相同且上一个请求**未完成**时
 该API将会**堵塞**后来的请求
 直到该用户的上一个请求完成
 这保证了用户在频繁发起请求时数据的线性处理
-`user_id`不同时RUL不会阻碍它们并行处理
+`user_id` 不同时RUL不会阻碍它们并行处理
+
+由于程序是 Async 架构的
+初始化阶段是计算密集型任务居多
+大概持续 `40ms` 左右
+在这段时间内，当前执行的协程会无法让出执行权
+所以还请注意
