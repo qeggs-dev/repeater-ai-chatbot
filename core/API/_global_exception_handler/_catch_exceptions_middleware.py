@@ -30,15 +30,18 @@ async def catch_exceptions_middleware(request: Request, call_next: Callable[[Req
         # 记录异常日志
         traceback_info = traceback.format_exc()
         if is_critical_exception:
-            log_template = "Critical Exception: \n{traceback}"
+            logger.critical(
+                "Critical Exception: \n{traceback}",
+                user_id = "[Global Exception Recorder]",
+                traceback = traceback_info
+            )
         else:
-            log_template = "Exception: \n{traceback}"
+            logger.exception(
+                "Exception: \n{traceback}",
+                user_id = "[Global Exception Recorder]",
+                traceback = traceback_info
+            )
 
-        logger.critical(
-            log_template,
-            user_id = "[Global Exception Recorder]",
-            traceback = traceback_info
-        )
         
         # 记录Traceback
         if ConfigManager.get_configs().server.traceback_save_to:
