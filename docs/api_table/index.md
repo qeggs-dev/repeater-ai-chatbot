@@ -17,3 +17,6 @@ Repeater 提供了许多接口，
 ## Web API
   - [Web API](./web.md)
   - [Docs API](./docs_api.md)
+
+## API Error
+  - [API Error](./error.md)

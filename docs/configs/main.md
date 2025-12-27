@@ -114,6 +114,20 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
         "max_log_length_for_non_text_content": 100
     },
 
+    // 全局异常处理器配置
+    "global_exception_handler": {
+        // 当异常未被处理时，服务器返回的错误信息
+        "error_message": "Internal Server Error",
+        // 遇到关键错误是，服务器返回的错误信息
+        "critical_error_message": "Critical Server Error!",
+        // 在遇到关键错误时，是否让服务器关闭
+        "crash_exit": true,
+        // 遇到问题时，保存 traceback 的目录
+        // 如果该值为 null 则程序会跳过这一步骤
+        // 但日志中的错误追踪不受影响
+        "traceback_save_to": "./workspace/crash_log"
+    },
+
     // Logger 配置
     "logger": {
         // Log 文件输出路径
