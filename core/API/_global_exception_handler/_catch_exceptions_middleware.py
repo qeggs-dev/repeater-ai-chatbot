@@ -74,6 +74,6 @@ async def catch_exceptions_middleware(request: Request, call_next: Callable[[Req
             error_response.exception_traceback = traceback_info
 
         return ORJSONResponse(
-            status_code=500,
+            status_code=error_response.error_code,
             content=error_response.model_dump(exclude_none=True)
         )
