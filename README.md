@@ -97,12 +97,11 @@ PS: `run.py`启动器会在完成所有操作后启动主程序，而这只需�
 
 ---
 
-## 插件
+## 功能拓展
 
-在 Repeater 中
-每一个 Client 代表一个插件
-Client 与 Server 使用 HTTP 进行通信
-接口表请参阅：[Repeater API](./docs/api_table/index.md)
+Repeater 的功能拓展主要靠编写对应领域的 Client
+比如，你可以使用 Repeater 的 API 来制作一个每天自动写日记的 Client
+或者，将其接入到其他地方，以减少手动维护状态的成本
 
 ---
 
