@@ -130,6 +130,8 @@ class ContextObject(BaseModel):
 
         :return: 上下文平均长度
         """
+        if len(self) == 0:
+            return 0
         return self.total_length / len(self)
 
     def to_context(self, remove_resoning_prompt: bool = False, reduce_to_text: bool = False) -> list[dict]:
