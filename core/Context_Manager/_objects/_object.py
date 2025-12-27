@@ -63,8 +63,9 @@ class ContextObject(BaseModel):
 
         :return: 上下文列表的长度
         """
-        if len(self.prompt) > 0:
-            return len(self.context_list) + 1
+        if self.prompt is not None:
+            if len(self.prompt) > 0:
+                return len(self.context_list) + 1
         return self.context_item_length
     
     def __iter__(self):
