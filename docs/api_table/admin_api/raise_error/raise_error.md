@@ -10,9 +10,76 @@
   - **Request**
     - **type**: `JSON`
     - **Request Body**
-      - `type (str)` 抛出的异常类型
+      - `type (str)` 抛出的异常名称
       - `args (list)` 抛出异常时传递的参数
       - `kwargs (dict)` 抛出异常时传递的关键字参数
   - **Response**
     - *\*服务器可能并不会返回一个有效的内容, 大概率会是`500 Internal Server Error`*
 
+支持的异常名称：
+  - `Exception`
+  - `ArithmeticError`
+  - `BufferError`
+  - `LookupError`
+  - `AssertionError`
+  - `AttributeError`
+  - `EOFError`
+  - `FloatingPointError`
+  - `GeneratorExit`
+  - `ImportError`
+  - `ModuleNotFoundError`
+  - `IndexError`
+  - `KeyError`
+  - `KeyboardInterrupt`
+  - `MemoryError`
+  - `NameError`
+  - `NotImplementedError`
+  - `OSError`
+  - `OverflowError`
+  - `RecursionError`
+  - `ReferenceError`
+  - `RuntimeError`
+  - `StopIteration`
+  - `StopAsyncIteration`
+  - `SyntaxError`
+  - `IndentationError`
+  - `TabError`
+  - `SystemError`
+  - `SystemExit`
+  - `TypeError`
+  - `UnboundLocalError`
+  - `UnicodeError`
+  - `UnicodeEncodeError`
+  - `UnicodeDecodeError`
+  - `UnicodeTranslateError`
+  - `ValueError`
+  - `ZeroDivisionError`
+  - `EnvironmentError`
+  - `IOError`
+  - `BlockingIOError`
+  - `ChildProcessError`
+  - `ConnectionError`
+  - `BrokenPipeError`
+  - `ConnectionAbortedError`
+  - `ConnectionRefusedError`
+  - `ConnectionResetError`
+  - `FileExistsError`
+  - `FileNotFoundError`
+  - `InterruptedError`
+  - `IsADirectoryError`
+  - `NotADirectoryError`
+  - `PermissionError`
+  - `ProcessLookupError`
+  - `TimeoutError`
+  - `Warning`
+  - `UserWarning`
+  - `DeprecationWarning`
+  - `PendingDeprecationWarning`
+  - `SyntaxWarning`
+  - `RuntimeWarning`
+  - `FutureWarning`
+  - `ImportWarning`
+  - `UnicodeWarning`
+  - `EncodingWarning`
+  - `BytesWarning`
+  - `ResourceWarning`
