@@ -34,7 +34,7 @@ from typing import (
 # region Constants
 SYSTEM: str = platform.system()
 
-T_CPV = TypeVar('T_CPV')
+T_CPV = TypeVar('T_CPV")
 
 class ExitCode(Enum):
     ONLY_PAUSE = None
@@ -87,8 +87,8 @@ def center_print(text: str, file: TextIO = sys.stdout):
 
 # region IsVenv
 def is_venv():
-    return hasattr(sys, 'real_prefix') or (
-        hasattr(sys, 'base_prefix') and sys.base_prefix != sys.prefix
+    return hasattr(sys, "real_prefix") or (
+        hasattr(sys, "base_prefix") and sys.base_prefix != sys.prefix
     )
 # endregion
 
@@ -324,14 +324,14 @@ class PipPackage:
         if not cls.PACKAGE_NAME_CHARSET.match(name):
             raise ValueError(f"Package name {name} contains invalid characters")
         
-        if name[0] in ['-', '_', '.'] or name[-1] in ['-', '_', '.']:
+        if name[0] in ["-", "_", "."] or name[-1] in ["-", "_", "."]:
             raise ValueError(f"Package name {name} cannot start or end with a special character")
         
         if cls.CONSECUTIVE_SPECIAL_CHARACTERS.search(name):
             raise ValueError(f"Package name {name} contains consecutive special characters")
         
         normalized = name.lower()
-        normalized = cls.SPECIAL_CHARACTER_REPLACEMENT.sub('_', normalized)
+        normalized = cls.SPECIAL_CHARACTER_REPLACEMENT.sub("_", normalized)
         
         return normalized
     
@@ -417,7 +417,7 @@ class BaseAsk(ABC):
 # endregion
 
 # region >> Ask
-T_FILE = TypeVar('T_FILE', bound=TextIO)
+T_FILE = TypeVar("T_FILE", bound=TextIO)
 
 class Ask(BaseAsk, Generic[T_FILE]):
     """Ask for user"""
@@ -470,7 +470,7 @@ class Ask(BaseAsk, Generic[T_FILE]):
 # endregion
 
 # region > Choose 
-T = TypeVar('T')
+T = TypeVar("T")
 
 class Choose(BaseAsk, Generic[T, T_FILE]):
     """Ask the user to choose from a list of values"""
@@ -1248,7 +1248,7 @@ class SlovesStarter:
             self.pause_program(ExitCode.SCRIPT_NAME_NOT_PROVIDED)
         
         if not Path(script_name).exists():
-            print(f"Error: Script '{script_name}' is not existing")
+            print(f"Error: Script \"{script_name}\" is not existing")
         
         if self.use_venv:
             if SYSTEM == "Windows":
