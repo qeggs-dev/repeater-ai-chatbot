@@ -1,10 +1,10 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 from typing import Any
 
 class RaiseErrorRequest(BaseModel):
     """
     Request model for raising an error.
     """
-    error_type: str
-    error_args: list[str]
-    error_kwargs: dict[str, Any]
+    type: str
+    args: list[str] = Field(default_factory=list)
+    kwargs: dict[str, Any] = Field(default_factory=dict)
