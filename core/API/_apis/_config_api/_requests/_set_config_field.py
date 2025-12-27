@@ -4,4 +4,4 @@ from ._field_type import FieldType
 
 class SetConfigRequest(BaseModel):
     value: Any
-    type: FieldType
+    type: FieldType = FieldType.RAW
