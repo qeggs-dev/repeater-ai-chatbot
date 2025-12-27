@@ -268,7 +268,7 @@ class ConfigManager:
         :param configs: 配置数据
         """
         await self._user_config_manager.save(
-            user_id, configs.model_dump(exclude_defaults=True)
+            user_id, configs.model_dump(exclude_none=True)
         )
     
     async def get_all_user_id(self):
