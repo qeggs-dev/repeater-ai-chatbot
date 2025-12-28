@@ -122,6 +122,10 @@ class ApiInfo:
         
         return index_list.copy()
     
+    def uid_list(self, model_type: ModelType) -> list[str]:
+        """Get a list of all model uids."""
+        return list(self._api_objs[model_type].keys())
+    
     @property
     def empty_api_object(self) -> ApiObject:
         return ApiObject()

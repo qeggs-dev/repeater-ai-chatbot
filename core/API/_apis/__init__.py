@@ -49,6 +49,9 @@ from ._admin_api import (
     crash_api,
     raise_error,
 )
+from ._model_api import (
+    model_list,
+)
 from ._index_web import (
     index_web,
 )
