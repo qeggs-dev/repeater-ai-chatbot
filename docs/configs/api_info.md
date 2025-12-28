@@ -4,10 +4,10 @@
 它们的 API Key 在哪里
 以及它们向内部显示的模型UID
 
-PS：`模型UID` 是 Repeater 内部使用的唯一标识符，用于区分不同的模型
+PS：`Model UID` 是 Repeater 内部使用的唯一标识符，用于区分不同的模型
 也是用户在切换模型时需要写的参数
-`UID` 和 `模型Type` 共同组成了查询键
-目前，`模型Type` 只有 "chat" 一种，表示使用 `OpenAI chat/completions API` 的模型
+`Model UID` 和 `Model Type` 共同组成了查询键
+`Model Type` 的详细描述请查看 [模型类型](../model_type.md)
 用户在调用 `主API` 的时候，会查询 "chat" 类型的模型
 而 `模型ID` 则是调用 `API` 时实际使用的模型ID
 
