@@ -34,7 +34,7 @@ from typing import (
 # region Constants
 SYSTEM: str = platform.system()
 
-T_CPV = TypeVar('T_CPV")
+T_CPV = TypeVar("T_CPV")
 
 class ExitCode(Enum):
     ONLY_PAUSE = None
