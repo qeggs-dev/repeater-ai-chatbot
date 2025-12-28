@@ -15,7 +15,7 @@ class ApiInfoConfig(BaseModel):
     api_key_env: str = "API_KEY"
     url: str = ""
     models: list[Model] = Field(default_factory=list)
-    timeout: float = 60.0
+    timeout: float = 600.0
     
 class ApiGroup(BaseModel):
     api: list[ApiInfoConfig] = Field(default_factory=list)

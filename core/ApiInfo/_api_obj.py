@@ -12,7 +12,7 @@ class ApiObject(BaseModel):
     parent: str = ""
     uid: str = ""
     type: ModelType = ModelType.CHAT
-    timeout: float = 60.0
+    timeout: float = 600.0
 
     def get_api_key(self) -> str | None:
         return _env.str(self.api_key_env, None)
