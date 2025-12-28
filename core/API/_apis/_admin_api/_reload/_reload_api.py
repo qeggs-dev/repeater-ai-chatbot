@@ -15,7 +15,7 @@ from loguru import logger
 from ......Global_Config_Manager import ConfigManager
 
 @app.post("/admin/apiinfo/reload")
-async def reload_apiinfo(api_key: str = Header(..., alias="X-Admin-API-Key")):
+async def reload_apiinfo_api(api_key: str = Header(..., alias="X-Admin-API-Key")):
     """
     Reload API information
 
@@ -29,7 +29,7 @@ async def reload_apiinfo(api_key: str = Header(..., alias="X-Admin-API-Key")):
     return ORJSONResponse({"detail": "Apiinfo reloaded"})
 
 @app.post("/admin/blacklist/reload")
-async def reload_blacklist(api_key: str = Header(..., alias="X-Admin-API-Key")):
+async def reload_blacklist_api(api_key: str = Header(..., alias="X-Admin-API-Key")):
     """
     Reload blacklist
 
@@ -43,7 +43,7 @@ async def reload_blacklist(api_key: str = Header(..., alias="X-Admin-API-Key")):
     return ORJSONResponse({"detail": "Blacklist reloaded"})
 
 @app.post("/admin/configs/reload")
-async def reload_configs(api_key: str = Header(..., alias="X-Admin-API-Key")):
+async def reload_configs_api(api_key: str = Header(..., alias="X-Admin-API-Key")):
     """
     Reload Project Configs
 
