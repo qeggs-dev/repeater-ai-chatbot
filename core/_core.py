@@ -561,8 +561,15 @@ class Core:
                 # 设置请求对象的API信息
                 request.url = model.url
                 request.model = model.id
-                request.key = model.api_key
                 request.timeout = model.timeout
+                api_key = model.get_api_key()
+                if api_key is None:
+                    return Response(
+                        content = "Error: Model API key not found",
+                        status = 503,
+                        finish_reason_cause = "api_key_not_found",
+                    )
+                request.key = api_key
                 
                 self._print_request_info(
                     user_id = user_id,
