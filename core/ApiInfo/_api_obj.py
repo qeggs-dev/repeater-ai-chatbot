@@ -1,21 +1,18 @@
-from dataclasses import dataclass
+from pydantic import BaseModel, Field
 from environs import Env
 from ._model_type import ModelType
 
 _env = Env()
 
-
-@dataclass
-class ApiObject:
+class ApiObject(BaseModel):
     name: str = ""
     url: str = ""
     id: str = ""
-    api_key_env: str = "API_KEY"
+    api_key_env: str = Field("API_KEY", exclude = True)
     parent: str = ""
     uid: str = ""
     type: ModelType = ModelType.CHAT
     timeout: float = 60.0
 
-    @property
-    def api_key(self) -> str:
-        return _env.str(self.api_key_env, "None")
+    def get_api_key(self) -> str | None:
+        return _env.str(self.api_key_env, None)
