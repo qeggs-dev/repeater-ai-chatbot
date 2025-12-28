@@ -1,3 +1,3 @@
 from .....ApiInfo import ModelType
 
-MODEL_TYPES = [t.value for t in ModelType]
+MODEL_TYPES = set(model_type.value for model_type in ModelType)
