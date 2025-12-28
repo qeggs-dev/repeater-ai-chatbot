@@ -1,5 +1,5 @@
 import asyncio
-from ....._resource import (
+from ...._resource import (
     app,
     admin_api_key,
     chat
@@ -12,7 +12,7 @@ from fastapi.responses import (
     ORJSONResponse
 )
 from loguru import logger
-from ......Global_Config_Manager import ConfigManager
+from .....Global_Config_Manager import ConfigManager
 
 @app.post("/admin/apiinfo/reload")
 async def reload_apiinfo_api(api_key: str = Header(..., alias="X-Admin-API-Key")):

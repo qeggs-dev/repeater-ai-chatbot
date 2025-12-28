@@ -1,5 +1,5 @@
 from typing import NoReturn
-from ....._resource import (
+from ...._resource import (
     app,
     admin_api_key,
 )

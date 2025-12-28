@@ -1,4 +1,4 @@
-from ...._resource import (
+from ..._resource import (
     chat,
     app
 )

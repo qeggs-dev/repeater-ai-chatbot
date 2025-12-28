@@ -1,6 +1,6 @@
-from ......CriticalException import CriticalException
+from .....CriticalException import CriticalException
 import asyncio
-from ....._resource import (
+from ...._resource import (
     app,
     admin_api_key,
     chat
