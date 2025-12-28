@@ -18,5 +18,5 @@ async def model_info(model_type: str, model_uid: str):
 
     return ORJSONResponse(
         status_code = 200,
-        content=model_list
+        content=[model.model_dump() for model in model_list]
     )
