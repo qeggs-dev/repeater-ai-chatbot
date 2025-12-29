@@ -195,8 +195,9 @@ class Core:
             user_id: str,
             message: str,
             user_name: str,
-            role: str = "user",
+            role: Context_Manager.ContentRole = Context_Manager.ContentRole.USER,
             role_name: str | None = None,
+            temporary_prompt: str | None = None,
             image_url: str | list[str] | None = None,
             load_prompt: bool = True,
             continue_completion: bool = False,
@@ -212,6 +213,7 @@ class Core:
         :param user_name: 用户名
         :param role: 角色
         :param role_name: 角色名
+        :param temporary_prompt: 临时提示词
         :param load_prompt: 是否加载提示
         :param continue_completion: 是否继续完成
         :param reference_context_id: 引用上下文ID
@@ -229,6 +231,7 @@ class Core:
                 message = message,
                 role = role,
                 role_name = role_name if role_name else user_name,
+                temporary_prompt = temporary_prompt,
                 image_url = image_url,
                 load_prompt = load_prompt,
                 continue_completion = continue_completion,
@@ -244,6 +247,7 @@ class Core:
                 message = message,
                 role = role,
                 role_name = role_name,
+                temporary_prompt = temporary_prompt,
                 image_url = image_url,
                 load_prompt = load_prompt,
                 continue_completion = continue_completion,
@@ -408,8 +412,9 @@ class Core:
             message: str,
             user_id: str,
             user_info: Request_User_Info = Request_User_Info(),
-            role: str = "user",
+            role: Context_Manager.ContentRole = Context_Manager.ContentRole.USER,
             role_name:  str = "",
+            temporary_prompt: str | None = None,
             image_url: str | list[str] | None = None,
             model_uid: str | None = None,
             print_chunk: bool = True,
@@ -427,6 +432,7 @@ class Core:
         :param user_info: 用户信息
         :param role: 角色
         :param role_name: 角色名
+        :param temporary_prompt: 临时提示词
         :param image_url: 图片URL
         :param model_uid: 模型UID
         :param print_chunk: 是否打印片段
@@ -517,6 +523,7 @@ class Core:
                         load_prompt = ConfigManager.get_configs().prompt.load_prompt
                     else:
                         load_prompt = config.load_prompt
+                
                 context = await self.get_context(
                     context_loader = context_loader,
                     user_id = user_id,
@@ -524,6 +531,7 @@ class Core:
                     user_name = user_info.nickname or user_info.username,
                     role = role,
                     role_name = role_name,
+                    temporary_prompt = temporary_prompt,
                     image_url = image_url,
                     load_prompt = load_prompt,
                     continue_completion = continue_completion,
