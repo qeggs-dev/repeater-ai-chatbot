@@ -50,6 +50,8 @@
 | python-box        | 7.3.2    | MIT License                          | [MIT](https://github.com/cdgriffith/Box/blob/master/LICENSE)                        | `core.Global_Config_Manager`        | Mixed configuration files             |
 | tzdata            | 2025.2   | Apache Software License              | [Apache-2.0](https://github.com/python/tzdata/blob/master/LICENSE)                  | `core.Text_Template_Processer`      | Get timezone information              |
 
+具体依赖的License请查看[LICENSES.md](LICENSES.md)
+
 ---
 
 ## 安装部署
