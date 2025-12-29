@@ -53,10 +53,16 @@ class ContextLoader:
             self,
             context:ContextObject,
             user_id: str,
+            temporary_prompt: str | None = None,
             prompt_vp: PromptVP | None = None
         ) -> ContextObject:
+        
         user_prompt:str = await self._prompt_manager.load(user_id=user_id, default="")
-        if user_prompt:
+
+        if temporary_prompt is not None:
+            prompt = temporary_prompt
+            logger.info(f"Load Temporary Prompt", user_id = user_id)
+        elif user_prompt:
             # 使用用户提示词
             prompt = user_prompt
             logger.info(f"Load User Prompt", user_id = user_id)
@@ -86,6 +92,7 @@ class ContextLoader:
             else:
                 logger.warning(f"Default Prompt Directory Not Found: {default_prompt_dir}", user_id = user_id)
                 prompt = ""
+        
         # 展开变量
         if prompt_vp is not None:
             prompt = await self._expand_variables(prompt, variables_parser = prompt_vp, user_id=user_id)
@@ -119,7 +126,7 @@ class ContextLoader:
             context:ContextObject,
             user_id: str,
             new_message: str,
-            role: str = "user",
+            role: ContentRole = ContentRole.USER,
             role_name: str | None = None,
             image_url: str | list[str] | None = None,
             continue_completion: bool = False,
@@ -179,7 +186,7 @@ class ContextLoader:
                     )
             else:
                 content.content = new_message
-            content.role = ContentRole(role)
+            content.role = role
             content.role_name = role_name
 
             # 添加上下文
@@ -193,8 +200,9 @@ class ContextLoader:
             self,
             user_id: str,
             message: str,
-            role: str = "user",
+            role: ContentRole = ContentRole.USER,
             role_name: str | None = None,
+            temporary_prompt: str | None = None,
             image_url: str | list[str] | None = None,
             load_prompt: bool = True,
             continue_completion: bool = False,
@@ -206,13 +214,19 @@ class ContextLoader:
         :param user_id: 用户ID
         :param message: 消息内容
         :param role: 角色
-        :param roleName: 角色名称
+        :param role_name: 角色名称
+        :param temporary_prompt: 临时提示词
         :param load_prompt: 是否加载提示词
         :param continue_completion: 是否继续生成
         """
         # 如果允许添加提示词，就加载提示词，否则使用空上下文对象
         if load_prompt:
-            context = await self._load_prompt(ContextObject(), user_id=user_id, prompt_vp = prompt_vp)
+            context = await self._load_prompt(
+                ContextObject(),
+                user_id=user_id,
+                prompt_vp = prompt_vp,
+                temporary_prompt = temporary_prompt
+            )
         else:
             context = ContextObject()
         
