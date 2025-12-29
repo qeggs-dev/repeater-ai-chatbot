@@ -16,6 +16,7 @@
         - `gender(str)` 性别
       - `role(str)` 用户角色，可选值：`user`、`assistant`、`system`，默认为 `user`
       - `role_name(str)` 用户角色名称，用于模型区分相同上下文里相同用户角色的不同的用户
+      - `temporary_prompt(str)` 临时Prompt，临时指定一个Prompt，覆盖配置系统中的Prompt进行生成
       - `model_uid(str)` 模型UID，用于临时指定一个模型对话，如果不填则根据配置系统推断值
       - `load_prompt(bool)` 是否加载Prompt，如果不填则根据配置系统推断值
       - `save_context(bool)` 是否在完成后保存上下文，如果不填则根据配置系统推断值
