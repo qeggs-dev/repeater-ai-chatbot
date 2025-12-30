@@ -12,7 +12,7 @@ async def save_error_traceback(time: datetime, traceback: str):
     :param traceback: The traceback of the error
     :return: None
     """
-    base_traceback_save_path = Path(ConfigManager.get_configs().server.traceback_save_to)
+    base_traceback_save_path = Path(ConfigManager.get_configs().global_exception_handler.traceback_save_to)
     time_str = time.strftime("%Y-%m-%d_%H-%M-%S")
     file_name = f"{time_str}.txt"
     file_path = base_traceback_save_path / file_name

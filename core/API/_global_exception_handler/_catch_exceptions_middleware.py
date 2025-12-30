@@ -66,11 +66,11 @@ async def catch_exceptions_middleware(request: Request, call_next: Callable[[Req
             exception_message = str(error)
         )
         if is_critical_exception:
-            error_response.error_message = ConfigManager.get_configs().server.critical_error_message
+            error_response.error_message = ConfigManager.get_configs().global_exception_handler.critical_error_message
         else:
-            error_response.error_message = ConfigManager.get_configs().server.error_message
+            error_response.error_message = ConfigManager.get_configs().global_exception_handler.error_message
         
-        if ConfigManager.get_configs().server.error_output_include_traceback:
+        if ConfigManager.get_configs().global_exception_handler.error_output_include_traceback:
             error_response.exception_traceback = traceback_info
 
         return ORJSONResponse(
