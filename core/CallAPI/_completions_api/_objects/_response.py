@@ -16,6 +16,7 @@ class Response(BaseModel):
 
     id: str = ""
     context: ContextObject = Field(default_factory=ContextObject)
+    new_context: ContextObject = Field(default_factory=ContextObject)
     created: int = 0
     model: str = ""
     token_usage: TokensCount | None = None
