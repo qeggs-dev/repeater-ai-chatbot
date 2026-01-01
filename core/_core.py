@@ -18,7 +18,16 @@ from .CallAPI import (
     CompletionsAPI
 )
 from . import Data_Manager
-from . import Context_Manager
+from .Context_Manager import (
+    ContextLoader,
+    ContentRole,
+    ContextObject,
+    ContentUnit,
+    TextBlock,
+    ImageBlock,
+    AudioBlock,
+    FileBlock,
+)
 from . User_Config_Manager import (
     ConfigManager as UserConfigManager,
     UserConfigs
@@ -177,12 +186,12 @@ class Core:
     # endregion
 
     # region > get context
-    async def get_context_loader(self) -> Context_Manager.ContextLoader:
+    async def get_context_loader(self) -> ContextLoader:
         """
         加载上下文
         :return: 上下文加载器
         """
-        context_loader = Context_Manager.ContextLoader(
+        context_loader = ContextLoader(
             config=self.user_config_manager,
             prompt=self.prompt_manager,
             context=self.context_manager,
@@ -191,11 +200,11 @@ class Core:
     
     async def get_context(
             self,
-            context_loader: Context_Manager.ContextLoader,
+            context_loader: ContextLoader,
             user_id: str,
             message: str,
             user_name: str,
-            role: Context_Manager.ContentRole = Context_Manager.ContentRole.USER,
+            role: ContentRole = ContentRole.USER,
             role_name: str | None = None,
             temporary_prompt: str | None = None,
             image_url: str | list[str] | None = None,
@@ -203,7 +212,7 @@ class Core:
             continue_completion: bool = False,
             reference_context_id: str | None = None,
             prompt_vp: PromptVP = PromptVP()
-        ) -> Context_Manager.ContextObject:
+        ) -> tuple[ContextObject, ContentUnit | None]:
         """
         获取上下文
 
@@ -221,39 +230,42 @@ class Core:
         :return: 上下文对象
         """
         if reference_context_id:
-            logger.info(
-                "Reference Context ID: {reference_context_id}",
+            context_load_source = reference_context_id
+        else:
+            context_load_source = user_id
+        
+        logger.info(
+            "Load Context From [{context_load_source}]",
+            user_id=user_id,
+            context_load_source=context_load_source
+        )
+        context: ContextObject = await context_loader.load_context(
+            user_id = context_load_source
+        )
+
+        if load_prompt:
+            logger.info("Load Prompt", user_id=user_id)
+            prompt: ContentUnit = await context_loader.load_prompt(
                 user_id = user_id,
-                reference_context_id = reference_context_id
-            )
-            context = await context_loader.load(
-                user_id = reference_context_id,
-                message = message,
-                role = role,
-                role_name = role_name if role_name else user_name,
                 temporary_prompt = temporary_prompt,
-                image_url = image_url,
-                load_prompt = load_prompt,
-                continue_completion = continue_completion,
                 prompt_vp = prompt_vp
             )
-        else:
-            logger.info(
-                "Current Context ID: {user_id}",
+            context.prompt = prompt
+
+        if not continue_completion:
+            new_message: ContentUnit = context_loader.make_user_content(
                 user_id = user_id,
-            )
-            context = await context_loader.load(
-                user_id = user_id,
-                message = message,
+                new_message = message,
                 role = role,
                 role_name = role_name,
-                temporary_prompt = temporary_prompt,
                 image_url = image_url,
-                load_prompt = load_prompt,
-                continue_completion = continue_completion,
                 prompt_vp = prompt_vp
             )
-        return context
+            context.append(new_message)
+        else:
+            new_message: None = None
+
+        return context, new_message
     # endregion
 
     # region > load blacklist
@@ -321,7 +333,7 @@ class Core:
             self,
             user_id: str,
             api: ApiObject,
-            user_input: Context_Manager.ContentUnit,
+            user_input: ContentUnit | None,
             user_info: Request_User_Info,
             role_name: str | None = None
         ) -> None:
@@ -338,35 +350,41 @@ class Core:
         )
 
         # 打印上下文信息
-        if user_input.content:
-            if isinstance(user_input.content, str):
-                logger.info(
-                    "Message:\n{message}",
-                    message = user_input.content,
-                    user_id = user_id
-                )
+        if user_input is not None:
+            if user_input.content:
+                if isinstance(user_input.content, str):
+                    logger.info(
+                        "Message:\n{message}",
+                        message = user_input.content,
+                        user_id = user_id
+                    )
+                else:
+                    message_texts: list[str] = []
+                    for block in user_input.content:
+                        if isinstance(block, TextBlock):
+                            message_texts.append(block.text)
+                        elif isinstance(block, ImageBlock):
+                            message_texts.append(
+                                f"[Image: {self._text_content_cutter(block.image_url.url)}]"
+                            )
+                        elif isinstance(block, AudioBlock):
+                            message_texts.append(
+                                f"[Audio: {self._text_content_cutter(block.input_audio.data)}]"
+                            )
+                        elif isinstance(block, FileBlock):
+                            message_texts.append(
+                                f"[File: {self._text_content_cutter(block.file.filename)}]"
+                            )
+                        else:
+                            message_texts.append(f"[Unknown Block: {block}]")
+                    logger.info(
+                        "Message:\n{message}",
+                        message = "\n".join(message_texts),
+                        user_id = user_id
+                    )
             else:
-                message_texts: list[str] = []
-                for block in user_input.content:
-                    if isinstance(block, Context_Manager.TextBlock):
-                        message_texts.append(block.text)
-                    elif isinstance(block, Context_Manager.ImageBlock):
-                        message_texts.append(
-                            f"[Image: {self._text_content_cutter(block.image_url.url)}]"
-                        )
-                    elif isinstance(block, Context_Manager.AudioBlock):
-                        message_texts.append(
-                            f"[Audio: {self._text_content_cutter(block.input_audio.data)}]"
-                        )
-                    elif isinstance(block, Context_Manager.FileBlock):
-                        message_texts.append(
-                            f"[File: {self._text_content_cutter(block.file.filename)}]"
-                        )
-                    else:
-                        message_texts.append(f"[Unknown Block: {block}]")
-                logger.info(
-                    "Message:\n{message}",
-                    message = "\n".join(message_texts),
+                logger.warning(
+                    "Message is empty",
                     user_id = user_id
                 )
         else:
@@ -412,7 +430,7 @@ class Core:
             message: str,
             user_id: str,
             user_info: Request_User_Info = Request_User_Info(),
-            role: Context_Manager.ContentRole = Context_Manager.ContentRole.USER,
+            role: ContentRole = ContentRole.USER,
             role_name:  str = "",
             temporary_prompt: str | None = None,
             image_url: str | list[str] | None = None,
@@ -420,6 +438,7 @@ class Core:
             print_chunk: bool = True,
             load_prompt: bool | None = None,
             save_context: bool | None = None,
+            save_new_only: bool | None = None,
             reference_context_id: str | None = None,
             continue_completion: bool = False,
             stream: bool = False,
@@ -438,6 +457,7 @@ class Core:
         :param print_chunk: 是否打印片段
         :param load_prompt: 是否加载提示
         :param save_context: 是否保存上下文
+        :param save_new_only: 是否只保存最新的内容
         :param reference_context_id: 引用上下文ID
         :param continue_completion: 是否继续完成
         :param stream: 是否流式输出
@@ -524,7 +544,7 @@ class Core:
                     else:
                         load_prompt = config.load_prompt
                 
-                context = await self.get_context(
+                context, user_input = await self.get_context(
                     context_loader = context_loader,
                     user_id = user_id,
                     message = message,
@@ -558,8 +578,6 @@ class Core:
                                 status_code = 400,
                                 finish_reason_cause = "shrink_context_failed",
                             )
-
-                user_input = context.last_content
                 
                 # 创建请求对象
                 request = CompletionsAPI.Request()
@@ -611,7 +629,8 @@ class Core:
                 output.model_type = model.type.value
                 output.model_uid = model.uid
                 output.user_raw_input = message
-                output.user_input = user_input.content
+                if user_input is not None:
+                    output.user_input = user_input.content
 
                 # 是否保存上下文
                 if save_context is None:
@@ -704,13 +723,14 @@ class Core:
         prompt_vp: PromptVP,
         response: CompletionsAPI.Response,
         task_start_time: Request_Log.TimeStamp,
-        user_input: Context_Manager.ContentUnit,
-        context_loader:Context_Manager.ContextLoader,
+        context_loader: ContextLoader,
         prepare_end_time: Request_Log.TimeStamp,
+        user_input: ContentUnit | None = None,
         output: Response = Response(),
         save_context: bool | None = None,
-        reference_context_id: str | None = None,
         save_only_text: bool = False,
+        save_new_only: bool = False,
+        reference_context_id: str | None = None,
     ) -> Response:
         # 补充调用日志的时间信息
         response.calling_log.task_start_time = task_start_time
@@ -725,12 +745,26 @@ class Core:
 
         # 保存上下文
         if save_context:
-            context = response.context
-            if reference_context_id:
-                historical_context = await context_loader.get_context_object(user_id)
-                historical_context.append(user_input)
-                historical_context.append(response.context.last_content)
-                context = historical_context
+            if save_new_only:
+                context: ContextObject = ContextObject()
+                if user_input is not None:
+                    context.append(user_input)
+                if response.new_context:
+                    context.append(response.new_context)
+                logger.info(
+                    "Saving new context...",
+                    user_id = user_id,
+                )
+            else:
+                context: ContextObject = response.context
+                if reference_context_id:
+                    historical_context = await context_loader.load_context(user_id)
+                    historical_context.append(user_input)
+                    context = historical_context
+                logger.info(
+                    "Saving context...",
+                    user_id = user_id,
+                )
             await context_loader.save(
                 user_id = user_id,
                 context = context,
@@ -746,7 +780,7 @@ class Core:
         await self.request_log.add_request_log(response.calling_log)
 
         # 记录API调用成功
-        logger.success(f"API call successful", user_id = user_id)
+        logger.success(f"Task Finished!", user_id = user_id)
 
         # 返回模型输出内容
         output.reasoning_content = response.context.last_content.reasoning_content
