@@ -44,6 +44,7 @@ async def chat_endpoint(
             print_chunk = True,
             load_prompt = request.load_prompt,
             save_context = request.save_context,
+            save_new_only = request.save_new_only,
             reference_context_id = request.reference_context_id,
             continue_completion = request.continue_completion,
             stream = request.stream
