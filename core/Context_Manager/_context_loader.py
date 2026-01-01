@@ -107,7 +107,7 @@ class ContextLoader:
         
         # 展开变量
         if prompt_vp is not None:
-            prompt = await self._expand_variables(prompt, variables_parser = prompt_vp, user_id=user_id)
+            prompt = self._expand_variables(prompt, variables_parser = prompt_vp, user_id=user_id)
         logger.debug("Prompt Content:\n{prompt}", user_id = user_id, prompt = prompt)
 
         # 创建Content单元
