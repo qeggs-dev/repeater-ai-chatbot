@@ -204,6 +204,6 @@ class CallAPI(CallNstreamAPIBase):
         # 添加上下文
         model_response.context = request.context
         model_response.context.context_list.append(model_response_content_unit)
-        model_response.new_context = model_response.context.copy()
+        model_response.new_context.append(model_response_content_unit)
 
         return model_response

@@ -91,7 +91,7 @@ class StreamingResponseGenerationLayer:
         # 添加上下文
         self.response.context = self.request.context
         self.response.context.context_list.append(self.model_response_content_unit)
-        self.response.new_context = self.request.context.copy()
+        self.response.new_context.append(self.model_response_content_unit)
 
     def __aiter__(self) -> Self:
         """
