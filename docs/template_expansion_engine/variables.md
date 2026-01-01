@@ -10,7 +10,10 @@
 | `botname` | Bot名称 | 无 |
 | `user_name` | 用户名 | 无 |
 | `user_age` | 用户年龄 | 无 |
-| `model_uid` | 模型类型 | 无 |
+| `model_uid` | 模型UID | 无 |
+| `model_name` | 模型名称 | 无 |
+| `model_type` | 模型类型 | 无 |
+| `model_group` | 模型组 | 无 |
 | `user_info` | 用户信息 | 无 |
 | `user_gender` | 用户性别 | 无 |
 | `user_profile` | 用户资料 | 无 |

@@ -26,7 +26,7 @@ async def withdraw_context(user_id: str, context_pair_num: int = Form(1, gt=0)):
     """
     # 从context_loader中加载用户ID为user_id的上下文
     context_loader = await chat.get_context_loader()
-    context = await context_loader.get_context_object(user_id)
+    context = await context_loader.load_context(user_id)
     pop_items: list[ContextObject] = []
     
     try:

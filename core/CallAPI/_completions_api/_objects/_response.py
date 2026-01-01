@@ -1,4 +1,4 @@
-from dataclasses import dataclass, field
+from pydantic import BaseModel, ConfigDict, Field
 from ....Context_Manager import ContextObject
 from ....Request_Log import RequestLog, TimeStamp
 from ._tokens_count import TokensCount
@@ -6,25 +6,29 @@ from ._finish_reason import FinishReason
 from ._logprob import Logprob
 
 
-@dataclass
-class Response:
+class Response(BaseModel):
     """
     This class is used to store the response data
     """
+    model_config = ConfigDict(
+        validate_assignment=True
+    )
+
     id: str = ""
-    context: ContextObject = field(default_factory=ContextObject)
-    created: TimeStamp = 0
+    context: ContextObject = Field(default_factory=ContextObject)
+    new_context: ContextObject = Field(default_factory=ContextObject)
+    created: int = 0
     model: str = ""
     token_usage: TokensCount | None = None
     stream: bool = False
 
-    stream_processing_start_time_ns:TimeStamp = 0
-    stream_processing_end_time_ns:TimeStamp = 0
-    chunk_times: list[TimeStamp] = field(default_factory=list)
+    stream_processing_start_time_ns:TimeStamp = Field(default_factory=TimeStamp)
+    stream_processing_end_time_ns:TimeStamp = Field(default_factory=TimeStamp)
+    chunk_times: list[TimeStamp] = Field(default_factory=list)
     finish_reason: FinishReason = FinishReason.STOP
     system_fingerprint: str = ""
     logprobs: list[Logprob] | None = None
-    calling_log: RequestLog = field(default_factory=RequestLog)
+    calling_log: RequestLog = Field(default_factory=RequestLog)
 
     @property
     def finish_reason_cause(self) -> str:

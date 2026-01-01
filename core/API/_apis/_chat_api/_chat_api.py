@@ -38,11 +38,13 @@ async def chat_endpoint(
             user_info = request.user_info,
             role = request.role,
             role_name = request.role_name,
+            temporary_prompt = request.temporary_prompt,
             image_url = request.image_url,
             model_uid = request.model_uid,
             print_chunk = True,
             load_prompt = request.load_prompt,
             save_context = request.save_context,
+            save_new_only = request.save_new_only,
             reference_context_id = request.reference_context_id,
             continue_completion = request.continue_completion,
             stream = request.stream

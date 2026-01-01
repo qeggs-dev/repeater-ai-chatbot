@@ -10,6 +10,8 @@ class ChatRequest(BaseModel):
     model_uid: str | None = None
     load_prompt: bool | None = None
     save_context: bool | None = None
+    save_new_only: bool | None = None
+    temporary_prompt: str | None = None
     image_url: str | list[str] | None = None
     reference_context_id: str | None = None
     continue_completion: bool = False

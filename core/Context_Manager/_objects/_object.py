@@ -63,8 +63,9 @@ class ContextObject(BaseModel):
 
         :return: 上下文列表的长度
         """
-        if len(self.prompt) > 0:
-            return len(self.context_list) + 1
+        if self.prompt is not None:
+            if len(self.prompt) > 0:
+                return len(self.context_list) + 1
         return self.context_item_length
     
     def __iter__(self):
@@ -90,6 +91,15 @@ class ContextObject(BaseModel):
         other = self.from_context(context)
         self.context_list = other.context_list
         self.prompt = other.prompt
+    
+    def rewrite(self, content: ContentUnit, index: int = -1) -> None:
+        """
+        重写上下文列表中的指定项
+
+        :param content: 内容
+        :return: 构建的对象
+        """
+        self.context_list[index] = content
     
     @property
     def context_item_length(self):
@@ -120,6 +130,8 @@ class ContextObject(BaseModel):
 
         :return: 上下文平均长度
         """
+        if len(self) == 0:
+            return 0
         return self.total_length / len(self)
 
     def to_context(self, remove_resoning_prompt: bool = False, reduce_to_text: bool = False) -> list[dict]:
@@ -242,6 +254,17 @@ class ContextObject(BaseModel):
         添加上下文单元
         """
         self.context_list.append(content)
+    
+    def extend(self, content: ContextObject | list[ContentUnit]) -> None:
+        """
+        扩展上下文单元
+        """
+        if isinstance(content, ContextObject):
+            self.context_list.extend(content.context_list)
+        elif isinstance(content, list):
+            self.context_list.extend(content)
+        else:
+            raise TypeError("content must be a list of ContentUnit or ContextObject")
     
     def append_content(
         self,

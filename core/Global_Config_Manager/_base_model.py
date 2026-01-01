@@ -8,6 +8,7 @@ class Global_Config(BaseModel):
     blacklist: Backlist_Config = Field(default_factory=Backlist_Config)
     callapi: CallAPI_Config = Field(default_factory=CallAPI_Config)
     context: Context_Config = Field(default_factory=Context_Config)
+    global_exception_handler: Global_Exception_Handler_Config = Field(default_factory=Global_Exception_Handler_Config)
     logger: Logger_Config = Field(default_factory=Logger_Config)
     model: Model_Config = Field(default_factory=Model_Config)
     prompt_template: Prompt_Template_Config = Field(default_factory=Prompt_Template_Config)

@@ -9,7 +9,7 @@ from ._requests import ExpandVariableRequest
 
 prompt_vp_loader = PromptVP_Loader()
 
-@app.post("/userdata/variable/expand/{user_id}")
+@app.post("/variable_expand/{user_id}")
 async def expand_variables(user_id: str, request: ExpandVariableRequest):
     """
     Endpoint for expanding variables
@@ -34,7 +34,6 @@ async def expand_variables(user_id: str, request: ExpandVariableRequest):
             age = request.user_info.age,
             gender = request.user_info.gender
         ),
-        model_uid = "nomodel",
         global_config = Global_Config_Manager.get_configs(),
         config = config
     )

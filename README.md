@@ -9,7 +9,7 @@
 
  - 平行数据管理：支持平行数据管理，用户可以随意切换平行数据，减少数据丢失的风险
  - 多模型支持：支持OpenAI接口的对话模型即可调用，可以根据需要选择不同的模型进行对话
- - 超高自由度：用户可以自定义会话注入、切换、删除，以及自定义提示词和模型参数
+ - 更高自由度：用户可以自定义会话注入、切换、删除，以及自定义提示词和模型参数
  - MD图片渲染：可以将回复以图片的形式渲染发送，减少对正常聊天的干扰
  - 用户自治设计：用户可以自己管理自己的所有用户数据
  - 多预设人设：复读机支持多预设人设，用户可以自由选择自己喜欢的人设进行对话
@@ -50,6 +50,8 @@
 | python-box        | 7.3.2    | MIT License                          | [MIT](https://github.com/cdgriffith/Box/blob/master/LICENSE)                        | `core.Global_Config_Manager`        | Mixed configuration files             |
 | tzdata            | 2025.2   | Apache Software License              | [Apache-2.0](https://github.com/python/tzdata/blob/master/LICENSE)                  | `core.Text_Template_Processer`      | Get timezone information              |
 
+具体依赖的License请查看[LICENSES.md](LICENSES.md)
+
 ---
 
 ## 安装部署
@@ -76,6 +78,7 @@
 6. 执行`python3 run_repeater.py`启动服务
 
 PS: `run.py`启动器会在完成所有操作后启动主程序，而这只需要你保证你的配置正确
+
 并且每一次你都可以通过启动器来启动程序
 
 ---
@@ -89,76 +92,29 @@ PS: `run.py`启动器会在完成所有操作后启动主程序，而这只需�
 
 ---
 
-## 环境变量表
+## 详细文档
 
-| 环境变量 | 描述 | 是否必填 | 默认值(*示例值*) |
-| :---: | :---: | :---: | :---: |
-| `*API_KEY` | API_Key (具体变量名由`API_INFO.API_FILE_PATH`指向 文件中`ApiKeyEnv`字段的名称) | **必填** | 从你所使用的AI厂商开放平台获取 API Key |
-| `ADMIN_API_KEY` | 管理员API_Key (用于Repeater的管理员操作身份验证) | **选填但生产环境建议填写</br>如果填写的不够随机，程序会报错</br>建议先执行一次取生成的API_Key** | *\*自动生成随机 API Key* |
-| `CONFIG_DIR` | 配置文件夹路径 | **选填** | `./config/project_config` |
-| `CONFIG_FORCE_LOAD_LIST` | 配置文件强制加载列表(元素为配置文件路径) | **选填** | *`["./config/project_config/configs.json", "./config/project_config/configs2.json"]`* |
-| `HOST` | 服务监听的IP | **选填** | `0.0.0.0` |
-| `PORT` | 服务监听的端口 | **选填** | `8080` |
-| `WORKERS` | 服务监听的进程数 | **选填** | `1` |
-| `RELOAD` | 是否自动重启 | **选填** | `false` |
+[详细文档](./docs/index.md)
+从这里开始使用 Repeater!
 
 ---
 
-## 配置文件
+## 功能拓展
 
-1. [主配置](docs/configs/main.md)
-2. [API_INFO](docs/configs/api_info.md)
-3. [Blacklist](docs/configs/blacklist.md)
-4. [User_Nickname_Mapping](docs/configs/uer_nickname_mapping.md)
-
----
-
-## Markdown图片渲染
-
-请参阅：
-[Markdown图片渲染模板](docs/markdown_render/template.md)
-[Markdown图片渲染样式](docs/markdown_render/style.md)
+Repeater 的功能拓展主要靠编写对应领域的 Client
+比如，你可以使用 Repeater 的 API 来制作一个每天自动写日记的 Client
+或者，将其接入到其他地方，以减少手动维护状态的成本
 
 ---
 
-## Prompt
+## 项目设计
 
-该项目在 `configs/prompt/presets` 目录中
-提供了多个预设的Prompt
-这些预设的 Prompt 与该项目一同使用 MIT 许可证发布
-这里面的预设可能会在不同版本里有所变动
-非常建议用户在拿到后，先创建一份自己的 Prompt
-
----
-
-## 模板展开系统
-
-项目中提供了模板展开系统
-用于对提示词模板和用户输入模板进行变量展开
-充分利用好模板展开器，可以实现很多有趣的功能
-详情请参阅：[模板展开系统](docs/template_expansion_engine/main.md)
-
----
-
-## 接口表
-
-请参阅：[接口表](docs/api_table.md)
-
----
-
-## 多模态输入
-
-在 `/chat/completion` 端点下面
-传入 `image_url` 即可让后端构造视觉模态请求
-但需要保证目标模型支持视觉模态输入
-
-其他模态输入暂不支持
-
----
-
-## 用户配置
-
-请参阅：[用户配置](docs/configs/user_config.md)
+> 这个项目在最初只是为了给 Bot 添加方便的有状态 AI API
+> 后面逐渐发现，这个项目其实可以独立出去，作为一个单独的项目使用
+> 设计理念上，Repeater 希望用户能完全掌握自己的数据 (别把锅甩运营头上)
+> Repeater 并不主动的把目标放在拟人化上，工具的行为越清晰，用户越能对工具放心
+> 它希望在有人与它进行交流时，能时刻想起自己可以对自己才是有控制权的那方
+> (我才不会告诉你是因为我不会写拟人化才走的这条路呢)
 
 ---
 

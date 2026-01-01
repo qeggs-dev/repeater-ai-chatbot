@@ -7,6 +7,7 @@ import threading
 from pathlib import Path
 
 from ._pydantic_models import ApiInfoConfig, ApiGroup
+from ..Global_Config_Manager import ConfigManager
 from ._model_type import ModelType
 from ._api_obj import ApiObject
 from ._exceptions import *
@@ -31,11 +32,21 @@ class ApiInfo:
         """Parse raw API groups data and populate indexes."""
         if not isinstance(raw_api_groups, list):
             raise ValueError("api_groups must be a list")
+        default_timeout = ConfigManager.get_configs().model.default_timeout
         
         api_groups: ApiGroup = self._create_api_group(raw_api_groups)
-        self._api_groups = api_groups
+        self._api_groups: ApiGroup = api_groups
+
         for group in api_groups.api:
             for model in group.models:
+
+                if model.timeout is not None:
+                    model_timeout: float = group.timeout
+                elif group.timeout is not None:
+                    model_timeout: float = group.timeout
+                else:
+                    model_timeout: float = default_timeout
+                
                 api_obj = ApiObject(
                     name = model.name,
                     uid = model.uid,
@@ -44,7 +55,7 @@ class ApiInfo:
                     parent = group.name,
                     url = model.url or group.url,
                     type = model.type,
-                    timeout = model.timeout or group.timeout or 60.0,
+                    timeout = model_timeout,
                 )
                 if api_obj.uid not in self._api_objs:
                     self._api_objs[model.type][api_obj.uid] = [api_obj]
@@ -121,3 +132,11 @@ class ApiInfo:
             return []
         
         return index_list.copy()
+    
+    def uid_list(self, model_type: ModelType) -> list[str]:
+        """Get a list of all model uids."""
+        return list(self._api_objs[model_type].keys())
+    
+    @property
+    def empty_api_object(self) -> ApiObject:
+        return ApiObject()

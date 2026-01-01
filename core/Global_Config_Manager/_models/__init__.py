@@ -2,6 +2,9 @@ from ._api_info import API_Info_Config
 from ._black_list import Backlist_Config
 from ._call_api import CallAPI_Config
 from ._context import Context_Config
+from ._global_exception_handler import (
+    Global_Exception_Handler_Config
+)
 from ._logger import (
     Logger_Config,
     LogLevel
@@ -36,6 +39,7 @@ __all__ = [
     "Bot_Info_Config",
     "CallAPI_Config",
     "Context_Config",
+    "Global_Exception_Handler_Config",
     "Prompt_Template_Config",
     "Logger_Config",
     "LogLevel",

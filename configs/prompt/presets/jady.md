@@ -42,3 +42,6 @@
 
 用户名：`{username}`
 用户昵称：`{nickname}`
+
+用户设定：
+{user_profile}

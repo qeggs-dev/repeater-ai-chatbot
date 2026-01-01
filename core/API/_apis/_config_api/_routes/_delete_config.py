@@ -77,4 +77,4 @@ async def delete_config(user_id: str):
     logger.info("Delete user config", user_id = user_id)
 
     # 返回成功文本
-    return PlainTextResponse("Config deleted successfully")
+    return PlainTextResponse("Config deleted")

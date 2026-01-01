@@ -44,11 +44,11 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
 ## 详细字段信息：
 ```json
 {
+    // API INFO 配置
     "api_info": {
-        // API INFO 配置
-
         // API INFO 文件路径
         "api_file_path": "./config/api_info.json",
+
         // 默认使用的模型uid
         // 这里需要填写你在api_info.json中配置的模型uid
         // 如果用户没有指定模型，则使用这个模型进行响应
@@ -57,7 +57,10 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
         // 建议在部署时，自己定一个或是根据厂商和模型的名字来定一个
         // 比如deepseek-chat之类的
         "default_model_uid": "chat",
+
         // 在匹配UID时是否启用大小写敏感
+        // 此选项需要更改后需要重新录入API INFO
+        // 因为 API INFO 中实现这个的方法是全部转换为小写
         "case_sensitive": false
     },
     "blacklist": {
@@ -73,9 +76,9 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
         // 黑名单匹配超时时间，单位为秒
         "match_timeout": 10.0 // 匹配超时时间，单位为秒
     },
-    "callapi": {
-        // CallAPI 配置
 
+    // CallAPI 配置
+    "callapi": {
         // 协程池最大并发数
         "max_concurrency": 1000,
 
@@ -89,9 +92,9 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
         // 默认值：true，因为 Fast Statistics 需要这部分数据
         "include_usage": true
     },
-    "context": {
-        // Context 配置
 
+    // Context 配置
+    "context": {
         // 自动上下文长度裁剪
         // 当你聊天过长时，可能会超过模型上下文窗口限制
         // 这个设置可以让Repeater为你自动裁剪最久的消息
@@ -114,41 +117,72 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
         // 默认为 null，表示不限制
         "max_log_length_for_non_text_content": 100
     },
-    "logger": {
-        // Logger 配置
 
+    // 全局异常处理器配置
+    "global_exception_handler": {
+        // 当异常未被处理时，服务器返回的错误信息
+        "error_message": "Internal Server Error",
+
+        // 遇到关键错误是，服务器返回的错误信息
+        "critical_error_message": "Critical Server Error!",
+
+        // 在遇到关键错误时，是否让服务器关闭
+        "crash_exit": true,
+
+        // 遇到问题时，保存 traceback 的目录
+        // 如果该值为 null 则程序会跳过这一步骤
+        // 但日志中的错误追踪不受影响
+        "traceback_save_to": "./workspace/crash_log"
+    },
+
+    // Logger 配置
+    "logger": {
         // Log 文件输出路径
         "file_path": "./logs/repeater-log-{time:YYYY-MM-DD_HH-mm-ss.SSS}.log",
+
         // Log 级别
         "level": "INFO",
+
         // Log 轮换设置
         "rotation": "10 MB",
+
         // Log 保留设置
         "retention": "7 days",
+
         // Log 过期后执行的操作
         "compression": "zip"
     },
+
+    // 你可以微调默认的用户model参数
+    // 如果用户没有定义模型参数，则你这里定义的参数取请求API
     "model": {
-        // 你可以微调默认的用户model参数
-        // 如果用户没有定义模型参数，则你这里定义的参数取请求API
+        // 默认模型超时时间，单位为秒
+        "default_timeout": 600.0,
 
         // 默认模型温度，更高的温度意味着下一个词更高的不确定性
         "default_temperature": 1.0,
+
         // 默认模型Top_P，指越大在采样时考虑的词汇越多
         "default_top_p": 1.0,
+
         // 默认模型最大生成长度(兼容)
         "default_max_tokens": 4096,
+
         // 默认模型最大生成长度
         "default_max_completion_tokens": 4096,
+
         // 默认模型频率惩罚，值越高模型越不容易出现重复内容
         // 惩罚程度按照频率增加，如果该值为负则是奖励模型输出重复内容
         "default_frequency_penalty": 0.0,
+
         // 默认模型存在惩罚，值越高模型越不容易出现重复内容
         // 惩罚程度只要存在就一直不变，如果该值为负则是奖励模型输出重复内容
         "default_presence_penalty": 0.0,
+
         // 默认模型停止符
         // 当模型输出到停止符内容时，停止生成
         "default_stop": [],
+
         // 默认模型是否流式输出
         // 注意：这里只是在告诉Repeater应该使用什么方式调用模型接口
         // 如果模型不支持流式生成，调用可能会报错
@@ -162,19 +196,23 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
         // 且控制台和日志会打印当前chunk，并生成chunk统计数据
         "stream": true
     },
-    "prompt_template": {
-        // template 提示词文本模板展开器配置
-        // 注：此选项不会改变实际的其他系统内容，而只会改变模板展开器中的变量
 
+    // template 提示词文本模板展开器配置
+    // 注：此选项不会改变实际的其他系统内容，而只会改变模板展开器中的变量
+    "prompt_template": {
         // 模板展开器中显示的程序版本
         "version": "",
-        // 模板展开器中显示的 Bot 名称
-        "name": "Repeater",
-        // Bot 的生日
-        "birthday": {
-            "day": 28,
-            "month": 6,
-            "year": 2024
+
+        // 模板展开器中显示的 Bot 信息
+        "bot_info": {
+            // 模板展开器中显示的 Bot 名称
+            "name": "Repeater",
+            // Bot 的生日
+            "birthday": {
+                "day": 28,
+                "month": 6,
+                "year": 2024
+            }
         },
         "time": {
             // 时间偏移量，单位为小时
@@ -183,15 +221,18 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
             "time_offset": 0.0
         }
     },
-    "prompt": {
-        // Prompt 配置
 
+    // Prompt 配置
+    "prompt": {
         // 告诉Prompt加载器预设提示词目录的路径
         "dir": "./config/prompt/presets",
+
         // 预设提示词文件的后缀名
         "suffix": ".md",
+
         // 预设提示词文件应该用什么编码打开
         "encoding": "utf-8",
+
         // 如果用户没设置路由到其他提示词，应该使用哪一个提示词
         "preset_name": "default",
 
@@ -199,25 +240,32 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
         // 加载提示词
         "load_prompt": true
     },
+    
+    // Markdown 图片渲染器配置
     "render": {
-        // Markdown 图片渲染器配置
-
         // 图片等待多少时间后被删除（URL有效时间）
         "default_image_timeout": 60.0,
+
         // Markdown 到 HTML 渲染配置
         "markdown": {
             // 默认样式
             "default_style": "light",
+
             // 样式文件目录
             "styles_dir": "./configs/styles",
+
             // 样式文件应该用什么编码打开
             "style_file_encoding": "utf-8",
+
             // HTML 模板文件目录
             "html_template_dir": "./configs/html_templates",
+
             // HTML 模板文件应该用什么编码打开
             "html_template_file_encoding": "utf-8",
+
             // 默认使用的 HTML 模板文件
             "default_html_template": "default.html",
+
             // Markdown 预处理器配置
             "preprocess_map": {
                 // Before 预处理器
@@ -230,19 +278,27 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
             // 在 HTML 中添加的标题
             "title": "Repeater Image Generator"
         },
+
+        // HTML 到图片的渲染器配置
         "to_image": {
             // 最多允许在一个浏览器中打开多少个页面
             "max_pages_per_browser": 5,
+
             // 最多允许同时打开的浏览器数量
             "max_browsers": 2,
+
             // 浏览器类型
             "browser_type": "msedge",
+
             // 浏览器是否为无头模式
             "headless": true,
+
             // 输出图片的目录
             "output_dir": "./workspace/temp/render",
+
             // 输出图片的格式
             "output_suffix": ".png",
+
             // 浏览器的可执行文件路径
             "executable_path": "",
 
@@ -251,55 +307,63 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
             "height": 600
         }
     },
-    "request_log": {
-        // /chat/completion 端口的请求日志
 
+    // /chat/completion 端口的请求日志
+    "request_log": {
         // 请求日志的保存目录
         "dir": "./workspace/request_log",
+
         // 是否自动保存请求日志
         "auto_save": true,
+
         // 缓存请求日志的等待时间
         "debonce_save_wait_time": 1200.0,
+
         // 请求日志缓存的队列最大长度
         "max_cache_size": 1000
     },
-    "server": {
-        // 服务器配置
-        // 这里的几个字段为null或不填则会使用环境变量中定义的配置
-        // 如果这里填写了内容，那么这里的内容会覆盖环境变量中的值
 
+    // 服务器配置
+    // 这里的几个字段为null或不填则会使用环境变量中定义的配置
+    // 如果这里填写了内容，那么这里的内容会覆盖环境变量中的值
+    "server": {
         // 监听的IP
         "host": null,
+
         // 监听的端口
         "port": null,
+
         // 工作进程数量
         "workers": null,
+
         // 是否在文件发生变动时自动重启
         "reload": null
     },
+    // 静态文件配置
     "static": {
-        // 静态文件配置
-
         // README.md 文件的路径
         "readme_file_path": "./README.md",
+
         // 静态文件目录
         "static_dir": "./static"
     },
+    // 用户配置缓存配置
     "user_config_cache": {
-        // 用户配置缓存配置
-
         // 读取配置后等待多少秒后从缓存删除
         "downgrade_wait_time": 600.0,
+
         // 保存配置到缓存后等待多少秒后从关闭缓存并写入
         "debounce_save_wait_time": 1000.0
     },
-    "user_data": {
-        // 用户数据配置
 
+    // 用户数据配置
+    "user_data": {
         // 用户数据的保存目录
         "dir": "./workspace/data/user_data",
+
         // 分支数据使用的目录名称
         "branches_dir_name": "branches",
+
         // 元数据文件名称
         "metadata_file_name": "metadata.json",
 
@@ -318,17 +382,17 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
             "config": false
         }
     },
-    "user_nickname_mapping": {
-        // 用户昵称映射配置
 
+    // 用户昵称映射配置
+    "user_nickname_mapping": {
         // 昵称映射文件路径
         // 有些用户的昵称可能会让模型陷入循环
         // 可以用这个文件来映射它们到一个安全的昵称
         "file_path": "./config/user_nickname_mapping.json"
     },
-    "web": {
-        // Web配置
 
+    // Web配置
+    "web": {
         // Index Web 文件路径
         // 如果不填写这个项目，那么默认会使用内置的索引页面
         "index_web_file": "./static/index.html"

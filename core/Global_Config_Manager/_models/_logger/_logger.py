@@ -6,6 +6,6 @@ class Logger_Config(BaseModel):
 
     file_path: str = "./logs/repeater-log-{time:YYYY-MM-DD_HH-mm-ss.SSS}.log"
     level: LogLevel = LogLevel.DEBUG
-    rotation: str = "10 MB"
+    rotation: str = "1 days"
     retention: str = "7 days"
     compression: str = "zip"

@@ -24,4 +24,4 @@ async def delete_context(user_id: str):
     logger.info("Delete Context", user_id = user_id)
 
     # 返回成功文本
-    return PlainTextResponse("Context deleted successfully")
+    return PlainTextResponse("Context deleted")

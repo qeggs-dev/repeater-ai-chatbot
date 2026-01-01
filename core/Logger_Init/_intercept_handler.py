@@ -6,7 +6,7 @@ class InterceptHandler(logging.Handler):
         super().__init__()
         self.extra_fields = extra_fields or {}
 
-    def emit(self, record):
+    def emit(self, record: logging.LogRecord):
         try:
             level = logger.level(record.levelname).name
         except ValueError:

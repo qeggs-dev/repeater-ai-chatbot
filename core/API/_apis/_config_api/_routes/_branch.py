@@ -40,7 +40,7 @@ async def get_config_now_branch_id(user_id: str):
         user_id (str): User id
 
     Returns:
-        ORJSONResponse: Now Branch id
+        PlainTextResponse: Now Branch id
     """
 
     # 获取当前配置路由ID
@@ -70,4 +70,4 @@ async def change_config(user_id: str, new_branch_id: str = Form(...)):
     logger.info("Change user config branch id to {new_branch_id}", user_id = user_id, new_branch_id = new_branch_id)
 
     # 返回成功文本
-    return PlainTextResponse("Config changed successfully")
+    return PlainTextResponse("Config branch changed")
