@@ -664,6 +664,7 @@ class Core:
                                 prompt_vp = prompt_vp,
                                 user_input = user_input,
                                 save_context = save_context,
+                                save_new_only = save_new_only,
                                 context_loader = context_loader,
                                 task_start_time = task_start_time,
                                 reference_context_id = reference_context_id,
@@ -690,6 +691,7 @@ class Core:
                             prompt_vp = prompt_vp,
                             user_input = user_input,
                             save_context = save_context,
+                            save_new_only = save_new_only,
                             context_loader = context_loader,
                             task_start_time = task_start_time,
                             reference_context_id = reference_context_id,
@@ -750,7 +752,7 @@ class Core:
                 if user_input is not None:
                     context.append(user_input)
                 if response.new_context:
-                    context.append(response.new_context)
+                    context.extend(response.new_context)
                 logger.info(
                     "Saving new context...",
                     user_id = user_id,
