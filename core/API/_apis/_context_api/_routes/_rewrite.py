@@ -26,7 +26,7 @@ async def rewrite_context(user_id: str, rewrite_context: RewriteContext):
     """
     # 从context_loader中加载用户ID为user_id的上下文
     context_loader = await chat.get_context_loader()
-    context = await context_loader.get_context_object(user_id)
+    context = await context_loader.load_context(user_id)
 
     # 检查索引是否在上下文范围内
     if abs(rewrite_context.index) < len(context.context_list):

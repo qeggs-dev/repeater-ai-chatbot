@@ -24,7 +24,7 @@ async def inject_context(user_id: str, request: ContentUnit):
         ORJSONResponse: A response indicating the success or failure of the operation.
     """
     context_loader = await chat.get_context_loader()
-    context = await context_loader.get_context_object(user_id)
+    context = await context_loader.load_context(user_id)
 
     context.append(
         ContentUnit(
