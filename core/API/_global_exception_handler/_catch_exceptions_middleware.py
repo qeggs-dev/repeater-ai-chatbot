@@ -44,7 +44,7 @@ async def catch_exceptions_middleware(request: Request, call_next: Callable[[Req
 
         
         # 记录Traceback
-        if ConfigManager.get_configs().server.traceback_save_to:
+        if ConfigManager.get_configs().global_exception_handler.traceback_save_to:
             await save_error_traceback(
                 datetime.fromtimestamp(error_time / 1e9),
                 traceback_info
@@ -52,7 +52,7 @@ async def catch_exceptions_middleware(request: Request, call_next: Callable[[Req
         
         # 判断是否要关闭服务器
         if is_critical_exception:
-            if ConfigManager.get_configs().server.crash_exit:
+            if ConfigManager.get_configs().global_exception_handler.crash_exit:
                 asyncio.create_task(shutdown_server(error))
             else:
                 logger.critical(
