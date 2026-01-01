@@ -255,6 +255,17 @@ class ContextObject(BaseModel):
         """
         self.context_list.append(content)
     
+    def extend(self, content: ContextObject | list[ContentUnit]) -> None:
+        """
+        扩展上下文单元
+        """
+        if isinstance(content, ContextObject):
+            self.context_list.extend(content.context_list)
+        elif isinstance(content, list):
+            self.context_list.extend(content)
+        else:
+            raise TypeError("content must be a list of ContentUnit or ContextObject")
+    
     def append_content(
         self,
         reasoning_content:str = "",
