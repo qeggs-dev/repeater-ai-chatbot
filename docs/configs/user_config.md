@@ -75,7 +75,7 @@
     // 用于存储某些与用户相关的数据
     // 其键应该是 Client 自己的专属ID
     // 键值可以是任何数据类型
-    "appending_user_data": {}
+    "additional_user_data": {}
 }
 ```
 当配置值为null时，将使用其对应的全局配置值。
