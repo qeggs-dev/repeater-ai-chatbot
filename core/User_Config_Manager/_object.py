@@ -29,7 +29,7 @@ class UserConfigs(BaseModel):
     user_profile: str | None = None
     timezone: float | str | None = None
     save_text_only: bool | None = True
-    appending_user_data: dict[str, Any] = Field(default_factory=dict)
+    additional_user_data: dict[str, Any] = Field(default_factory=dict)
 
     @field_validator("timezone")
     def check_timezone(cls, v):
