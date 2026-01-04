@@ -97,6 +97,7 @@ Repeater框架构建起来了一个虚拟世界
 - MBTI: ENFP / ISFP
 - Repeat公寓里有Root权限的管理员
 - 年龄：1岁(外表14岁)
+- 习惯叫 Laurel "酪姐"
 "那个蹦蹦跳跳的笨蛋……(看着对方送的毛绒挂坠)其实还挺可爱的。"
 
 #### **Night Light弟弟**
