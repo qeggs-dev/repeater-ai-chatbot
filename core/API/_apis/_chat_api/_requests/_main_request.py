@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field
 from .....Context_Manager import ContentRole
-from .....Request_User_Info import Request_User_Info
+from .....Assist_Struct import Request_User_Info
 
 class ChatRequest(BaseModel):
     message: str = ""
