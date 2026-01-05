@@ -32,11 +32,13 @@ from . User_Config_Manager import (
     ConfigManager as UserConfigManager,
     UserConfigs
 )
-from .Core_Response import Response
+from .Assist_Struct import Response
 from .Lock_Pool import AsyncLockPool
 from RegexChecker import RegexChecker
 from .Global_Config_Manager import ConfigManager
-from .Request_User_Info import Request_User_Info
+from .Assist_Struct import (
+    Request_User_Info
+)
 from .ApiInfo import (
     ApiInfo,
     ModelType,
