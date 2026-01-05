@@ -1,8 +1,10 @@
 from .._objects import Delta, TokensCount, FinishReason
-from openai.types.chat import ChatCompletion
+from openai.types.chat import ChatCompletionChunk
+from pydantic import validate_call
 
+@validate_call
 async def translation_chunk(
-    chunk: ChatCompletion,
+    chunk: ChatCompletionChunk,
 ) -> Delta:
     """
     翻译单个OpenAI API响应块
@@ -10,9 +12,6 @@ async def translation_chunk(
     :param chunk: API响应块
     :return: Delta_data对象
     """
-    if not isinstance(chunk, ChatCompletion):
-        raise TypeError("chunk must be a ChatCompletion object")
-    
     # 初始化对象
     tokens_usage = TokensCount()
     delta_data = Delta()
