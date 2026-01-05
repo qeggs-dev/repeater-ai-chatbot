@@ -20,7 +20,18 @@ class StreamingResponseGenerationLayer:
     :param request: 请求对象
     :param response_iterator: 原始响应迭代器
     """
-    def __init__(self, user_id: str, request: Request, response_iterator: AsyncGenerator[Delta, None], print_file: TextIO = sys.stdout) -> None:
+    def __init__(
+            self,
+            user_id: str,
+            request: Request,
+            response_iterator: AsyncGenerator[Delta, None],
+            print_file: TextIO = sys.stdout
+        ) -> None:
+        if not isinstance(user_id, str):
+            raise TypeError("user_id must be a string")
+        if not isinstance(request, Request):
+            raise TypeError("request must be a Request object")
+
         self.request: Request = request
         self._response_iterator: AsyncGenerator[Delta, None] = response_iterator
         self._finished: bool = False
