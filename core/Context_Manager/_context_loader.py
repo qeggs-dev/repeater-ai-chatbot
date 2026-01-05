@@ -1,16 +1,11 @@
 # ==== 标准库 ==== #
-import copy
 import aiofiles
-from typing import (
-    Any,
-    Awaitable,
-)
-import time
 from pathlib import Path
 import orjson
 
 # ==== 第三方库 ==== #
 from loguru import logger
+from pydantic import validate_call
 
 # ==== 自定义库 ==== #
 from ..Data_Manager import (
@@ -18,8 +13,7 @@ from ..Data_Manager import (
     ContextManager
 )
 from ..User_Config_Manager import (
-    ConfigManager,
-    UserConfigs
+    ConfigManager
 )
 from ._objects import (
     ContextObject,
@@ -39,6 +33,7 @@ from ..Global_Config_Manager import ConfigManager as GlobalConfigManager
 
 # ==== 本模块代码 ==== #
 class ContextLoader:
+    @validate_call
     def __init__(
             self,
             context: ContextManager,
@@ -54,6 +49,7 @@ class ContextLoader:
     def empty_content() -> ContentUnit:
         return ContentUnit()
     
+    @validate_call
     async def load_prompt(
             self,
             user_id: str,
@@ -68,7 +64,6 @@ class ContextLoader:
         :param prompt_vp: 变量展开处理器
         :return: 提示词
         """
-        
         user_prompt:str = await self._prompt_manager.load(user_id=user_id, default="")
 
         if temporary_prompt is not None:
@@ -107,7 +102,11 @@ class ContextLoader:
         
         # 展开变量
         if prompt_vp is not None:
-            prompt = self._expand_variables(prompt, variables_parser = prompt_vp, user_id=user_id)
+            prompt = self._expand_variables(
+                user_id = user_id,
+                prompt = prompt,
+                variables_parser = prompt_vp
+            )
         logger.debug("Prompt Content:\n{prompt}", user_id = user_id, prompt = prompt)
 
         # 创建Content单元
@@ -117,6 +116,7 @@ class ContextLoader:
         )
         return prompt
     
+    @validate_call
     async def load_context(
             self,
             user_id: str
@@ -137,6 +137,7 @@ class ContextLoader:
         logger.info(f"Load Context: {len(context)}", user_id = user_id)
         return context
     
+    @validate_call
     async def load(
             self,
             user_id: str,
@@ -173,6 +174,7 @@ class ContextLoader:
         context.prompt = prompt
         return context
     
+    @validate_call
     def make_user_content(
             self,
             user_id: str,
@@ -194,7 +196,11 @@ class ContextLoader:
         """
         content = ContentUnit()
         if prompt_vp is not None:
-            new_message = self._expand_variables(new_message, variables_parser = prompt_vp, user_id=user_id)
+            new_message = self._expand_variables(
+                user_id = user_id,
+                prompt = new_message,
+                variables_parser = prompt_vp
+            )
         if image_url:
             if isinstance(image_url, str):
                 content.content = []
@@ -235,7 +241,8 @@ class ContextLoader:
         content.role_name = role_name
         return content
     
-    def _expand_variables(self, prompt: str, variables_parser: PromptVP, user_id: str) -> str:
+    @validate_call
+    def _expand_variables(self, user_id: str, prompt: str, variables_parser: PromptVP) -> str:
         """
         展开变量
 
@@ -256,6 +263,7 @@ class ContextLoader:
         prompt = limit_blank_lines(prompt)
         return prompt
 
+    @validate_call
     async def save(
             self,
             user_id: str,
@@ -267,6 +275,7 @@ class ContextLoader:
 
         :param user_id: 用户ID
         :param context: 上下文对象
+        :param reduce_to_text: 是否将上下文对象转换为纯文本
         """
         await self._context_manager.save(user_id, context.to_context(reduce_to_text = reduce_to_text))
         logger.info(f"Save Context: {len(context)}", user_id = user_id)
