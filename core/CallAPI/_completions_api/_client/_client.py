@@ -10,7 +10,7 @@ from typing import (
 import openai
 from loguru import logger
 import numpy as np
-from pydantic import validate_call, Field
+from pydantic import validate_call, Field, ConfigDict
 
 # ==== 自定义库 ==== #
 from .._objects import (
@@ -106,7 +106,6 @@ class ClientBase(ABC):
     # endregion
 
     @staticmethod
-    @validate_call
     def _calculate_stability_cv(intervals: np.ndarray):
         """使用变异系数衡量数据稳定度"""
         assert isinstance(intervals, np.ndarray), "intervals Must be a numpy array"
