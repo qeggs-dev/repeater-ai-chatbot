@@ -1,3 +1,6 @@
+from pydantic import validate_call
+
+@validate_call
 def remove_keys_from_dicts(dict_list: list[dict], keys_to_remove: list[str] | set[str]):
     """
     从字典列表中删除指定的键
@@ -11,7 +14,8 @@ def remove_keys_from_dicts(dict_list: list[dict], keys_to_remove: list[str] | se
         for d in dict_list
     ]
 
-def sum_string_lengths(items, field_name):
+@validate_call
+def sum_string_lengths(items: list[dict[str, str]], field_name: str):
     """
     计算列表中所有字典指定字段的字符串长度总和
     
@@ -19,4 +23,7 @@ def sum_string_lengths(items, field_name):
     :param field_name: 要计算长度的字段名
     :return: 字符串长度总和
     """
-    return sum(len(item[field_name]) for item in items if field_name in item and isinstance(item[field_name], str))
+    len_sum: int = 0
+    for item in items:
+        if field_name in item:
+            len_sum += len(item[field_name])
