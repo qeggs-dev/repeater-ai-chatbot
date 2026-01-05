@@ -3,7 +3,7 @@
 手动抛出一些常见的异常
 通常用于测试异常处理器
 
-- **`/admin/crash`**
+- **`/admin/debug/raise_error`**
   - **method**: `POST`
   - **Header**
     - `X-Admin-API-Key (str)` API 密钥
