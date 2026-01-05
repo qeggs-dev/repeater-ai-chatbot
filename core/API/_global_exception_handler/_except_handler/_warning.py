@@ -1,26 +1,47 @@
-import traceback
+import warnings
+import aiofiles
+
+from typing import TextIO
 from loguru import logger
 from datetime import datetime
-from fastapi.responses import ORJSONResponse
-from pydantic import ValidationError
+from pathlib import Path
 
-from ....CriticalException import CriticalException
 from ....Global_Config_Manager import ConfigManager
-from .._shutdown_server import shutdown_server
-from .._save_error_traceback import save_error_traceback
-from .._error_output_model import ErrorResponse
+from .._get_code import get_code
 
-async def warning_handler(warning: Warning) -> None:
+def warning_handler(
+        message: Warning | str,
+        category: type[Warning],
+        filename: str,
+        lineno: int,
+        file: TextIO | None = None,
+        line: str | None = None
+    ) -> None:
     warning_time = datetime.now()
+    file_path = Path(filename)
 
-    traceback_str = traceback.format_exc()
-    if ConfigManager().get_configs().global_exception_handler.traceback_save_to:
-        await save_error_traceback(warning_time, traceback_str)
+    if ConfigManager().get_configs().global_exception_handler.code_reader.enable:
+        code = get_code(file_path, lineno)
 
     # 记录异常日志
-    logger.exception(
-        "Warning: {message}\n{traceback}",
+    logger.warning(
+        (
+            "Warning: \n"
+            "    - Type: \n"
+            "        {warning_name}\n"
+            "    - Raised from:\n"
+            "        {raiser}:{lineno}\n"
+            "    - Message: \n"
+            "        {message}\n"
+            "File: \n"
+            "{code}"
+        ),
         user_id = "[Global Exception Recorder]",
-        message = str(warning),
-        traceback = traceback_str
+        warning_name = category.__name__,
+        message = message,
+        raiser = file_path.as_posix(),
+        lineno = lineno,
+        code = code
     )
+
+warnings.showwarning = warning_handler
