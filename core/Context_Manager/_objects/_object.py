@@ -30,7 +30,6 @@ class ContextObject(BaseModel):
     def __getitem__(self, index: slice) -> ContextObject:
         ...
     
-    @validate_call
     def __getitem__(self, index: int | slice):
         """
         获取上下文列表中的指定项
@@ -48,7 +47,6 @@ class ContextObject(BaseModel):
         else:
             raise TypeError("index must be int or slice")
     
-    @validate_call
     def __setitem__(self, index: int | slice, value: ContentUnit | Iterable[ContentUnit]):
         """
         设置上下文列表中的指定项
@@ -332,7 +330,7 @@ class ContextObject(BaseModel):
         return self.context_list.pop(index)
     
     @validate_call
-    def pop_last_n(self, n: int) -> ContextObject:
+    def pop_last_n(self, n: int) -> list[ContentUnit]:
         """
         弹出最后n个上下文单元
 
@@ -343,16 +341,12 @@ class ContextObject(BaseModel):
         if n > len(self.context_list) or n < 0:
             raise IndexOutOfRangeError("index out of range")
         
-        pop_list:list[ContentUnit] = []
-        for _ in range(n):
-            pop_list.append(self.pop())
-        return ContextObject(
-            prompt = self.prompt,
-            context_list = pop_list
-        )
+        pop_list:list[ContentUnit] = self.context_list[-n:]
+        self.context_list = self.context_list[:-n]
+        return pop_list
     
     @validate_call
-    def pop_begin_n(self, n: int) -> ContentUnit:
+    def pop_begin_n(self, n: int) -> list[ContentUnit]:
         """
         弹出头部的n个元素
 
@@ -425,7 +419,6 @@ class ContextObject(BaseModel):
         )
     
     @classmethod
-    @validate_call
     def from_context(cls, context: list[dict[str, Any]]) -> ContextObject:
         """
         从上下文列表构建对象
