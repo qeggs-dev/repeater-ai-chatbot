@@ -1,10 +1,14 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from environs import Env
 from ._model_type import ModelType
 
 _env = Env()
 
 class ApiObject(BaseModel):
+    model_config = ConfigDict(
+        validate_assignment = True
+    )
+
     name: str = ""
     url: str = ""
     id: str = ""
