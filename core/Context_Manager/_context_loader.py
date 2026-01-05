@@ -5,7 +5,7 @@ import orjson
 
 # ==== 第三方库 ==== #
 from loguru import logger
-from pydantic import validate_call
+from pydantic import validate_call, ConfigDict
 
 # ==== 自定义库 ==== #
 from ..Data_Manager import (
@@ -33,7 +33,7 @@ from ..Global_Config_Manager import ConfigManager as GlobalConfigManager
 
 # ==== 本模块代码 ==== #
 class ContextLoader:
-    @validate_call
+    @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
     def __init__(
             self,
             context: ContextManager,
@@ -49,7 +49,7 @@ class ContextLoader:
     def empty_content() -> ContentUnit:
         return ContentUnit()
     
-    @validate_call
+    @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
     async def load_prompt(
             self,
             user_id: str,
@@ -137,7 +137,7 @@ class ContextLoader:
         logger.info(f"Load Context: {len(context)}", user_id = user_id)
         return context
     
-    @validate_call
+    @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
     async def load(
             self,
             user_id: str,
@@ -174,7 +174,7 @@ class ContextLoader:
         context.prompt = prompt
         return context
     
-    @validate_call
+    @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
     def make_user_content(
             self,
             user_id: str,
@@ -241,7 +241,7 @@ class ContextLoader:
         content.role_name = role_name
         return content
     
-    @validate_call
+    @validate_call(config=ConfigDict(arbitrary_types_allowed=True))
     def _expand_variables(self, user_id: str, prompt: str, variables_parser: PromptVP) -> str:
         """
         展开变量
