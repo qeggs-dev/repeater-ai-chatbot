@@ -28,6 +28,6 @@ browser_pool_manager = HTML_Render.BrowserPoolManager(
     default_browser = render_config.to_image.browser_type,
     headless = render_config.to_image.headless,
     browser_args = HTML_Render.BrowserArgs(
-        render_config.to_image.executable_path
+        executable_path = render_config.to_image.executable_path
     )
 )
