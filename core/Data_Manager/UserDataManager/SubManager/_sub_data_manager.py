@@ -9,6 +9,8 @@ from pathlib import Path
 import orjson
 import aiofiles
 
+from pydantic import validate_call
+
 # ==== 项目库 ==== #
 from PathProcessors import validate_path, sanitize_filename
 from ....Global_Config_Manager import ConfigManager
@@ -38,6 +40,7 @@ class SubManager:
         """获取元数据文件路径"""
         return self.base_path / self._metadata_filename
     
+    @validate_call
     def _get_file_path(self, name: str) -> Path:
         """获取文件路径"""
         # if not self._default_base_file.exists():
@@ -45,6 +48,7 @@ class SubManager:
         name = sanitize_filename(name)
         return self._default_base_file / f"{name}.json"
     
+    @validate_call
     async def _get_item_lock(self, item_name: str) -> asyncio.Lock:
         """获取 item_name 对应的锁，如果没有则创建"""
         async with self._global_lock:
@@ -100,6 +104,7 @@ class SubManager:
             if self.cache_metadata:
                 self._metadata_cache = data
     
+    @validate_call
     async def load(self, item: str, default: Any | None = None) -> Any:
         """
         Load data from file
@@ -129,6 +134,7 @@ class SubManager:
             except orjson.JSONDecodeError:
                 return default
     
+    @validate_call
     async def save(self, item: str, data: Any) -> None:
         """
         Save data to a file.
@@ -149,6 +155,7 @@ class SubManager:
             if self.cache_data:
                 self._data_cache[item] = data
     
+    @validate_call
     async def delete(self, item: str) -> None:
         """Delete a file from the cache.
 
