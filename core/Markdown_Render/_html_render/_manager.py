@@ -12,6 +12,7 @@ from ._browser_stats import BrowserStats
 from ._render_config import RenderConfig
 from ._render_result import RenderResult
 from playwright.async_api import async_playwright, Browser, Page, Playwright
+from pydantic import validate_call
 from ._image_format_detector import ImageFormatDetector
 from loguru import logger
 from ...Lifespan import (
@@ -27,6 +28,7 @@ class BrowserPoolManager:
     _instances: list[BrowserPoolManager] = []
     _is_initialized = False
     
+    @validate_call
     def __init__(
         self,
         max_pages_per_browser: int = 10,
@@ -105,6 +107,7 @@ class BrowserPoolManager:
             
             logger.info("Browser pool initialized")
     
+    @validate_call
     async def render_html(
         self,
         html_content: str,
@@ -136,7 +139,7 @@ class BrowserPoolManager:
         
         # 应用kwargs覆盖
         if kwargs:
-            config_dict = config.as_dict
+            config_dict = config.model_dump()
             config_dict.update(kwargs)
             config = RenderConfig(**config_dict)
         
@@ -196,7 +199,8 @@ class BrowserPoolManager:
             # 确保页面和浏览器被释放
             if "browser" in locals() and "page" in locals():
                 await self._release_page(browser, page)
-    
+
+    @validate_call    
     async def _acquire_page_for_render(self, browser_type: BrowserType) -> tuple[Browser, Page, str]:
         """为渲染获取页面"""
         if browser_type == BrowserType.AUTO:
@@ -223,6 +227,7 @@ class BrowserPoolManager:
             browser, page = await self._try_acquire_page(browser_type)
             return browser, page, browser_type.value
     
+    @validate_call
     async def _try_acquire_page(self, browser_type: BrowserType) -> tuple[Browser, Page]:
         """尝试获取页面"""
         browser = await self._acquire_browser(browser_type)
@@ -242,6 +247,7 @@ class BrowserPoolManager:
             
             raise RuntimeError("Browser page limit reached")
     
+    @validate_call
     async def _acquire_browser(self, browser_type: BrowserType) -> Browser:
         """获取浏览器"""
         if self._playwright is None:
@@ -260,24 +266,25 @@ class BrowserPoolManager:
             
             raise RuntimeError(f"No available {browser_type} browsers")
     
+    @validate_call
     async def _create_browser(self, browser_type: BrowserType) -> Browser:
         """创建浏览器"""
         match browser_type:
             case BrowserType.CHROME:
                 browser_creator = self._playwright.chromium
-                launch_args = {"channel": "chrome", **self.browser_args.as_dict}
+                launch_args = {"channel": "chrome", **self.browser_args.model_dump(exclude_none=True)}
             case BrowserType.MSEDGE:
                 browser_creator = self._playwright.chromium
-                launch_args = {"channel": "msedge", **self.browser_args.as_dict}
+                launch_args = {"channel": "msedge", **self.browser_args.model_dump(exclude_none=True)}
             case BrowserType.CHROMIUM:
                 browser_creator = self._playwright.chromium
-                launch_args = self.browser_args.as_dict.copy()
+                launch_args = self.browser_args.model_dump(exclude_none=True)
             case BrowserType.FIREFOX:
                 browser_creator = self._playwright.firefox
-                launch_args = self.browser_args.as_dict.copy()
+                launch_args = self.browser_args.model_dump(exclude_none=True)
             case BrowserType.WEBKIT:
                 browser_creator = self._playwright.webkit
-                launch_args = self.browser_args.as_dict.copy()
+                launch_args = self.browser_args.model_dump(exclude_none=True)
             case _:
                 raise ValueError(f"Unsupported browser type: {browser_type}")
         
@@ -291,6 +298,7 @@ class BrowserPoolManager:
         logger.debug(f"Created new {browser_type} browser")
         return browser
     
+    @validate_call
     async def _release_page(self, browser: Browser, page: Page):
         """释放页面"""
         async with self._lock:
@@ -314,6 +322,7 @@ class BrowserPoolManager:
                         self._available_browsers[btype].append(browser)
                         break
     
+    @validate_call
     async def _get_page_dimensions(self, page: Page) -> dict[str, int]:
         """获取页面实际渲染尺寸"""
         return await page.evaluate("""
