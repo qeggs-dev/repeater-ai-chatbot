@@ -1,16 +1,18 @@
-from dataclasses import dataclass, field
+from pydantic import BaseModel, Field, ConfigDict
 from typing import Callable
 from ._delta import Delta
 from ._stream_options import StreamOptions
 
 from ....Context_Manager import ContextObject, CallingFunctionRequest
 
-
-@dataclass
-class Request:
+class Request(BaseModel):
     """
     This class is used to store the request data
     """
+    model_config = ConfigDict(
+        validate_assignment = True
+    )
+
     url: str = ""
     key: str = ""
     model: str = ""
@@ -30,4 +32,4 @@ class Request:
     print_chunk: bool = True
     function_calling: CallingFunctionRequest | None = None
     continue_processing_callback_function: Callable[[str, Delta], bool] | None = None
-    stream_options: StreamOptions = field(default_factory=StreamOptions)
+    stream_options: StreamOptions = Field(default_factory=StreamOptions)
