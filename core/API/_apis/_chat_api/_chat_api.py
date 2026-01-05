@@ -11,7 +11,7 @@ from fastapi.exceptions import (
     HTTPException
 )
 from ..._resource import app, chat
-from ....Core_Response import Response
+from ....Assist_Struct import Response
 from ....ApiInfo import APIGroupNotFoundError
 from ....CallAPI import CompletionsAPI
 
