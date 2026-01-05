@@ -3,7 +3,7 @@ import numpy as np
 
 from ..Global_Config_Manager import Global_Config
 from ..User_Config_Manager import UserConfigs
-from ..Request_User_Info import Request_User_Info
+from ..Assist_Struct import Request_User_Info
 from TextProcessors import PromptVP, str_to_bool
 from .._info import __version__
 from ._value_comparison import value_comparison, ComparisonOperator
