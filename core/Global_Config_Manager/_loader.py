@@ -45,7 +45,6 @@ class ConfigManager:
         else:
             load_path = temp_loadpath
         for glob in globs:
-            assert isinstance(glob, str), "glob must be str"
             for path in load_path.rglob(glob):
                 yield path
     
