@@ -1,5 +1,5 @@
 from typing import NoReturn
-from ...._resource import (
+from ....._resource import (
     app,
     admin_api_key,
 )
@@ -10,7 +10,7 @@ from fastapi import (
 from ._errors import ERRORS
 from ._request import RaiseErrorRequest
 
-@app.post("/admin/raise_error")
+@app.post("/admin/debug/raise_error")
 async def raise_error_api(
         request: RaiseErrorRequest,
         api_key: str = Header(..., alias="X-Admin-API-Key")
