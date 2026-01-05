@@ -1,6 +1,6 @@
 import asyncio
 from typing import Any
-from pydantic import ValidationError
+from pydantic import ValidationError, validate_call
 from loguru import logger
 from ..Data_Manager import UserConfigManager
 from ._exceptions import *
@@ -14,6 +14,7 @@ class ConfigManager:
     # 全局配置缓存
     _global_config_cache:dict[str, UserConfigs] = {}
     
+    @validate_call
     def __init__(
             self,
             cache: bool = True,
@@ -40,6 +41,7 @@ class ConfigManager:
         else:
             return self._cache
     
+    @validate_call
     async def load(self, user_id: str) -> UserConfigs:
         """
         获取用户配置
@@ -74,6 +76,7 @@ class ConfigManager:
             logger.info("Get config from database", user_id = user_id)
             return await self._load_configs(user_id)
     
+    @validate_call
     async def save(self, user_id: str, configs: UserConfigs) -> None:
         """
         保存用户配置
@@ -105,6 +108,7 @@ class ConfigManager:
             logger.info("Save config to database", user_id = user_id)
             await self._save_configs(user_id, configs)
     
+    @validate_call
     async def _wait_and_downgrade(self, user_id: str, wait_time: float = 5) -> None:
         """
         等待并降级用户配置
@@ -126,6 +130,7 @@ class ConfigManager:
         except asyncio.CancelledError:
             logger.info("User config downgrade task cancelled", user_id = user_id)
     
+    @validate_call
     async def _wait_and_save(self, user_id: str, wait_time: float = 5) -> None:
         """
         等待并保存用户配置
@@ -144,7 +149,8 @@ class ConfigManager:
                     del cache[user_id]
         except asyncio.CancelledError:
             logger.info("User config save task cancelled", user_id = user_id)
-     
+    
+    @validate_call
     async def get_default_item_id(self, user_id: str) -> str:
         """
         获取默认配置项ID
@@ -155,6 +161,7 @@ class ConfigManager:
         async with self._lock:
             return await self._user_config_manager.get_default_branch_id(user_id)
     
+    @validate_call
     async def set_default_item_id(self, user_id: str, item: str) -> None:
         """
         设置默认配置项ID
@@ -167,6 +174,7 @@ class ConfigManager:
             await self._user_config_manager.set_default_branch_id(user_id, item)
             logger.info("Set default config item", user_id = user_id, item = item)
     
+    @validate_call
     async def delete(self, user_id: str) -> None:
         """
         删除用户配置
@@ -186,7 +194,8 @@ class ConfigManager:
         清除缓存
         """
         (await self._get_cache()).clear()
-        
+    
+    @validate_call
     async def force_write(self, user_id: str, configs: UserConfigs) -> None:
         """
         强制写入配置
@@ -201,6 +210,7 @@ class ConfigManager:
             cache[user_id] = configs
             logger.info("Force write config", user_id = user_id)
 
+    @validate_call
     async def save_all(self, clear_all_tasks: bool = True) -> None:
         """
         保存所有用户配置
@@ -238,6 +248,7 @@ class ConfigManager:
             logger.info(f"Loaded {len(configs)} configs")
             return configs
     
+    @validate_call
     async def _load_configs(self, user_id: str) -> UserConfigs:
         """
         读取用户配置
@@ -260,6 +271,7 @@ class ConfigManager:
                 )
             raise Exception("\n".join(text_buffer))
     
+    @validate_call
     async def _save_configs(self, user_id: str, configs: UserConfigs):
         """
         写入用户配置
