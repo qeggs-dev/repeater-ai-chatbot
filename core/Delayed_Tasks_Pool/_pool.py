@@ -1,6 +1,7 @@
 import asyncio
 from typing import TypeVar
 from collections.abc import Coroutine
+from pydantic import validate_call
 from loguru import logger
 
 T = TypeVar("T")
@@ -9,8 +10,8 @@ class DelayedTasksPool:
     def __init__(self):
         self.tasks: set[asyncio.Task] = set()
     
-    async def _task_warper(self, sleep_time: float, task: Coroutine[None, None, T], id: str | None = None) -> T:
-        """Wrapper for tasks to add them to the pool"""
+    @validate_call
+    async def _task_warper(self, sleep_time: int | float, task: Coroutine[None, None, T], id: str | None = None) -> T:
         if id is None:
             id = task.__qualname__
         logger.trace(
@@ -39,6 +40,7 @@ class DelayedTasksPool:
         
         return result
 
+    @validate_call
     async def add_task(self, sleep_time: float, task: Coroutine[None, None, T], id: str | None = None):
         """Add task to the pool"""
         self.tasks.add(
@@ -55,7 +57,8 @@ class DelayedTasksPool:
         """Wait for all tasks in the pool to complete"""
         await asyncio.gather(*self.tasks)
         self.tasks.clear()
-    
+
+    @validate_call    
     async def cancel_all(self, wait: bool = True):
         """Cancel all tasks in the pool"""
         for task in self.tasks:
