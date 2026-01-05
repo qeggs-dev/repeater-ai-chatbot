@@ -17,8 +17,8 @@ class CoroutinePool:
         self._max_concurrency = max_concurrency
         self._semaphore = asyncio.Semaphore(self._max_concurrency)
         self._tasks = set()  # 存储运行中的任务
+    
     # region 协程池管理
-    @validate_call
     async def submit(self, coro: Coroutine[None, None, T], user_id: str | None = None) -> T:
         """提交任务到协程池，并等待返回结果"""
         async with self._semaphore:  # 控制并发数
