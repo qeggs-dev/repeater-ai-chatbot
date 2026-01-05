@@ -117,7 +117,7 @@ async def render(
     # 生成图片
     result = await browser_pool_manager.render_html(
         html_content = html,
-        output_path = render_output_image_dir / filename,
+        output_path = str(render_output_image_dir / filename),
         browser_type = browser_type,
         config = HTML_Render.RenderConfig(
             width = width,
