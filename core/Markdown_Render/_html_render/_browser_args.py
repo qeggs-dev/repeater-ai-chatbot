@@ -1,11 +1,16 @@
 from pathlib import Path
 from typing import Any, Sequence
-from playwright.async_api import ProxySettings
 from pydantic import BaseModel, ConfigDict
+
+class ProxySettings(BaseModel):
+    server: str
+    bypass: str | None = None
+    username: str | None = None
+    password: str | None = None
 
 class BrowserArgs(BaseModel):
     model_config = ConfigDict(
-        validate_assignment=True,
+        validate_assignment=True
     )
 
     executable_path: Path | str | None = None
