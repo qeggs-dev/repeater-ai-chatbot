@@ -6,6 +6,7 @@ import aiofiles
 import threading
 from pathlib import Path
 
+from pydantic import validate_call
 from ._pydantic_models import ApiInfoConfig, ApiGroup
 from ..Global_Config_Manager import ConfigManager
 from ._model_type import ModelType
@@ -32,8 +33,6 @@ class ApiInfo:
 
     def _parse_api_groups(self, raw_api_groups: list[dict]) -> None:
         """Parse raw API groups data and populate indexes."""
-        if not isinstance(raw_api_groups, list):
-            raise ValueError("api_groups must be a list")
         default_timeout = ConfigManager.get_configs().model.default_timeout
         
         api_groups: ApiGroup = self._create_api_group(raw_api_groups)
@@ -64,7 +63,7 @@ class ApiInfo:
                 else:
                     self._api_objs[model.type][api_obj.uid].append(api_obj)
 
-
+    @validate_call
     def load(self, path: str | os.PathLike) -> None:
         """Load and parse API groups from a JSON/YAML file."""
         path: Path = Path(path)
@@ -94,6 +93,7 @@ class ApiInfo:
             else:
                 raise ValueError(f"Invalid file format: {path.suffix}")
 
+    @validate_call
     async def load_async(self, path: str | os.PathLike) -> None:
         """Load and parse API groups from a JSON/YAML file."""
         path: Path = Path(path)
@@ -123,17 +123,9 @@ class ApiInfo:
             else:
                 raise ValueError(f"Invalid file format: {path.suffix}")
 
+    @validate_call
     def find(self, model_type: ModelType, model_uid: str, default: list[ApiObject] | None = None) -> list[ApiObject]:
         """Find API groups by model uid."""
-        if not isinstance(model_type, ModelType):
-            raise TypeError("model_type must be an instance of ModelType")
-
-        if not isinstance(model_uid, str):
-            raise TypeError("model_uid must be a string")
-
-        if not isinstance(default, list) and default is not None:
-            raise TypeError("default must be a list or None")
-        
         if self._case_sensitive:
             key = model_uid
         else:
@@ -145,6 +137,7 @@ class ApiInfo:
         
         return index_list.copy()
     
+    @validate_call
     def uid_list(self, model_type: ModelType) -> list[str]:
         """Get a list of all model uids."""
         if not isinstance(model_type, ModelType):
