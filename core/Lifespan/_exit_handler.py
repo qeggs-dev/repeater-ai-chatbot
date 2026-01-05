@@ -1,8 +1,6 @@
 from __future__ import annotations
 import asyncio
 from typing import Coroutine
-from ._args import Args
-from ._func_obj import FuncObject
 
 class ExitHandler:
     _functions: asyncio.Queue[Coroutine[None, None, None]] = asyncio.Queue()
@@ -21,6 +19,8 @@ class ExitHandler:
     
     @classmethod
     def add_function(cls, func: Coroutine[None, None, None]):
+        if not asyncio.iscoroutine(func):
+            raise TypeError("Function must be a coroutine")
         cls._functions.put_nowait(
             func
         )
