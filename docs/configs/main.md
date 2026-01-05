@@ -132,7 +132,16 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
         // 遇到问题时，保存 traceback 的目录
         // 如果该值为 null 则程序会跳过这一步骤
         // 但日志中的错误追踪不受影响
-        "traceback_save_to": "./workspace/crash_log"
+        "traceback_save_to": "./workspace/crash_log",
+        
+        // 是否简化 Validation Error 的信息
+        "format_validation_error": true,
+
+        // 是否记录警告信息
+        "record_warnings": true,
+
+        // 是否记录所有异常(比如 KeyboardInterrupt)
+        "record_all_exceptions": true
     },
 
     // Logger 配置
