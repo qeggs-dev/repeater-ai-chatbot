@@ -8,7 +8,7 @@ from ._log_level import (
 
 __all__ = [
     "logger_init",
-    "InterceptHandler"
+    "InterceptHandler",
     "LogLevel",
     "log_level_to_config",
     "config_to_log_level"
