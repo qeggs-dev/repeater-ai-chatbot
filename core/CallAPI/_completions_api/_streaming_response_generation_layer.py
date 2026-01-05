@@ -8,7 +8,7 @@ from ...Request_Log import TimeStamp
 from ...Global_Config_Manager import ConfigManager
 from ...Logger_Init import config_to_log_level, LogLevel
 from loguru import logger
-from pydantic import validate_call
+from pydantic import validate_call, ConfigDict
 
 class StreamingResponseGenerationLayer:
     """
@@ -23,7 +23,6 @@ class StreamingResponseGenerationLayer:
     :param response_iterator: 原始响应迭代器
     """
 
-    @validate_call
     def __init__(
             self,
             user_id: str,
@@ -31,6 +30,8 @@ class StreamingResponseGenerationLayer:
             response_iterator: AsyncGenerator[Delta, None],
             print_file: TextIO = sys.stdout
         ) -> None:
+
+
         self.request: Request = request
         self._response_iterator: AsyncGenerator[Delta, None] = response_iterator
         self._finished: bool = False
