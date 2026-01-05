@@ -1,10 +1,13 @@
-from dataclasses import dataclass, asdict
+from pydantic import BaseModel, validate_call, ConfigDict
 from ._enums import ImageFormat
 from typing import Any
 
-@dataclass
-class RenderConfig:
+class RenderConfig(BaseModel):
     """渲染配置"""
+    model_config = ConfigDict(
+        validate_assignment=True
+    )
+
     width: int = 1200
     height: int = 800
     full_page: bool = True
@@ -12,6 +15,7 @@ class RenderConfig:
     timeout: int = 30000
     omit_background: bool = False
     
+    @validate_call
     def to_screenshot_options(self, format: ImageFormat, path: str) -> dict[str, Any]:
         """转换为Playwright截图选项"""
         options = {
@@ -29,7 +33,3 @@ class RenderConfig:
             options["quality"] = min(max(self.quality, 1), 100)
         
         return options
-    
-    @property
-    def as_dict(self) -> dict[str, int | bool]:
-        return asdict(self)
