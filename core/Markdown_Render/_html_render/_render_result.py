@@ -1,15 +1,18 @@
-from dataclasses import dataclass, field, asdict
+from pydantic import BaseModel, Field, ConfigDict
 from ._enums import RenderStatus, ImageFormat
 from ._render_config import RenderConfig
 
-@dataclass
-class RenderResult:
+class RenderResult(BaseModel):
     """渲染结果"""
+    model_config = ConfigDict(
+        validate_assignment=True
+    )
+    
     status: RenderStatus
     output_path: str
     browser_used: str | None = None
     image_format: ImageFormat | None = None
-    dimensions: dict[str, int | None] = field(default_factory=dict)
+    dimensions: dict[str, int | None] = Field(default_factory=dict)
     error: str | None = None
     render_time_ms: int | None = None
     config_used: RenderConfig | None = None
@@ -30,7 +33,3 @@ class RenderResult:
         if self.success:
             return f"RenderResult(status={self.status}, output={self.output_path}, browser={self.browser_used})"
         return f"RenderResult(status={self.status}, error={self.error})"
-    
-    @property
-    def as_dict(self) -> dict[str, str | int | ImageFormat | RenderConfig | dict[str, int | None] | None]:
-        return asdict(self)
