@@ -8,3 +8,6 @@ class Global_Exception_Handler_Config(BaseModel):
     crash_exit: bool = True
     traceback_save_to: str | None = None
     error_output_include_traceback: bool = False
+    format_validation_error: bool = True
+    record_warnings: bool = True
+    record_all_exceptions: bool = False
