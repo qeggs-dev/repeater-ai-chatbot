@@ -1,6 +1,6 @@
 import logging
 from loguru import logger
-from pydantic import validate_call
+from pydantic import validate_call, ConfigDict
 
 class InterceptHandler(logging.Handler):
     @validate_call
@@ -8,7 +8,6 @@ class InterceptHandler(logging.Handler):
         super().__init__(level)
         self.extra_fields = extra_fields or {}
 
-    @validate_call
     def emit(self, record: logging.LogRecord):
         try:
             level = logger.level(record.levelname).name
