@@ -11,8 +11,14 @@ from ._browser_args import BrowserArgs
 from ._browser_stats import BrowserStats
 from ._render_config import RenderConfig
 from ._render_result import RenderResult
-from playwright.async_api import async_playwright, Browser, Page, Playwright
-from pydantic import validate_call
+from playwright.async_api import (
+    async_playwright,
+    Browser,
+    Page,
+    Playwright,
+    ProxySettings
+)
+from pydantic import validate_call, ConfigDict
 from ._image_format_detector import ImageFormatDetector
 from loguru import logger
 from ...Lifespan import (
@@ -298,7 +304,6 @@ class BrowserPoolManager:
         logger.debug(f"Created new {browser_type} browser")
         return browser
     
-    @validate_call
     async def _release_page(self, browser: Browser, page: Page):
         """释放页面"""
         async with self._lock:
@@ -322,7 +327,6 @@ class BrowserPoolManager:
                         self._available_browsers[btype].append(browser)
                         break
     
-    @validate_call
     async def _get_page_dimensions(self, page: Page) -> dict[str, int]:
         """获取页面实际渲染尺寸"""
         return await page.evaluate("""
