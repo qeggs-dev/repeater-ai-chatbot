@@ -10,6 +10,9 @@ async def translation_chunk(
     :param chunk: API响应块
     :return: Delta_data对象
     """
+    if not isinstance(chunk, ChatCompletion):
+        raise TypeError("chunk must be a ChatCompletion object")
+    
     # 初始化对象
     tokens_usage = TokensCount()
     delta_data = Delta()

@@ -22,6 +22,11 @@ class BaseCallAPI(ABC):
         :param request: 请求对象
         :return: 响应对象
         """
+        if user_id is None:
+            raise ValueError("user_id cannot be None")
+        if not isinstance(request, Request):
+            raise TypeError("request must be Request")
+        
         try:
             return self._call(user_id, request)
         except openai.APITimeoutError as e:
