@@ -32,6 +32,8 @@ class ClientBase(ABC):
     # region 协程池管理
     async def set_concurrency(self, new_max: int):
         """动态修改并发限制"""
+        if not isinstance(new_max, int) or new_max < 1:
+            raise ValueError("new_max must be a positive integer")
         await self.coroutine_pool.set_concurrency(new_max)
     # endregion
 
@@ -44,6 +46,10 @@ class ClientBase(ABC):
 
     # region 预处理响应数据
     async def _preprocess_response(self, user_id: str, request: Request, response: Response):
+        assert isinstance(user_id, str)
+        assert isinstance(request, Request)
+        assert isinstance(response, Response)
+
         if response.context.last_content.reasoning_content:
             logger.info(
                 "Reasoning_Content: \n{reasoning_content}",
@@ -69,6 +75,9 @@ class ClientBase(ABC):
 
     # region 任务
     async def _submit_task(self, user_id: str, request: Request):
+        assert isinstance(user_id, str), "user_id must be a string"
+        assert isinstance(request, Request), "request must be a Request object"
+
         if request.stream:
             client = StreamAPI()
         else:
@@ -93,6 +102,8 @@ class ClientBase(ABC):
     @staticmethod
     def _calculate_stability_cv(intervals: np.ndarray):
         """使用变异系数衡量数据稳定度"""
+        assert isinstance(intervals, np.ndarray), "intervals Must be a numpy array"
+
         if len(intervals) == 0:
             return np.inf  # 无穷大表示不稳定
         
@@ -115,6 +126,10 @@ class ClientBase(ABC):
         :param request: 请求对象
         :param response: 响应对象
         """
+        assert isinstance(user_id, str), "user_id must be a string"
+        assert isinstance(request, Request), "request must be a Request object"
+        assert isinstance(response, Response), "response must be a Response object"
+
         logger.info("========== Fast Statistics =========", user_id = user_id)
         logger.info("Generating statistics...", user_id = user_id)
         logger.info("============= API INFO =============", user_id = user_id)
