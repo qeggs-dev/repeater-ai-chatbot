@@ -1,6 +1,6 @@
-from .....CriticalException import CriticalException
+from ......CriticalException import CriticalException
 import asyncio
-from ...._resource import (
+from ....._resource import (
     app,
     admin_api_key,
     chat
@@ -14,7 +14,7 @@ from fastapi.responses import (
 )
 from loguru import logger
 
-@app.post("/admin/crash")
+@app.post("/admin/debug/crash")
 async def crash_api(
         api_key: str = Header(..., alias="X-Admin-API-Key")
     ):
