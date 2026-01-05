@@ -9,6 +9,7 @@ from typing import (
 # ==== 第三方库 ==== #
 import openai
 from loguru import logger
+from pydantic import validate_call
 
 # ==== 自定义库 ==== #
 from .._objects import (
@@ -27,13 +28,9 @@ from ._client import ClientBase
 class ClientNoStream(ClientBase):
     """Client without stream"""
     
+    @validate_call
     async def submit_Request(self, user_id:str, request: Request) -> Response:
         """提交请求，并等待API返回结果"""
-        if not isinstance(user_id, str):
-            raise TypeError("user_id must be a string")
-        if not isinstance(request, Request):
-            raise TypeError("request must be a Request object")
-        
         try:
             response = await self._submit_task(user_id, request)
             if not isinstance(response, Response):
@@ -53,10 +50,8 @@ class ClientNoStream(ClientBase):
         
         return output
     
+    @validate_call
     async def _submit_task(self, user_id: str, request: Request) -> AsyncIterator[Delta] | Response:
-        assert isinstance(user_id, str), "user_id must be a string"
-        assert isinstance(request, Request), "request must be a Request object"
-        
         try:
             if request.stream:
                 client = StreamAPI()

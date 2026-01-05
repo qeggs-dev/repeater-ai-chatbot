@@ -2,11 +2,15 @@
 import math
 from datetime import datetime, timezone
 from abc import ABC, abstractmethod
+from typing import (
+    Annotated
+)
 
 # ==== 第三方库 ==== #
 import openai
 from loguru import logger
 import numpy as np
+from pydantic import validate_call, Field
 
 # ==== 自定义库 ==== #
 from .._objects import (
@@ -26,14 +30,14 @@ from .._parser import (
 from .._exceptions import *
 
 class ClientBase(ABC):
-    def __init__(self, max_concurrency: int = 1000):
+    @validate_call
+    def __init__(self, max_concurrency: Annotated[int, Field(gt=0)] = 1000):
         # 协程池
         self.coroutine_pool = CoroutinePool(max_concurrency)
     # region 协程池管理
-    async def set_concurrency(self, new_max: int):
+    @validate_call
+    async def set_concurrency(self, new_max: Annotated[int, Field(gt=0)] = 1000):
         """动态修改并发限制"""
-        if not isinstance(new_max, int) or new_max < 1:
-            raise ValueError("new_max must be a positive integer")
         await self.coroutine_pool.set_concurrency(new_max)
     # endregion
 
@@ -45,6 +49,7 @@ class ClientBase(ABC):
     # endregion
 
     # region 预处理响应数据
+    @validate_call
     async def _preprocess_response(self, user_id: str, request: Request, response: Response):
         assert isinstance(user_id, str)
         assert isinstance(request, Request)
@@ -74,6 +79,7 @@ class ClientBase(ABC):
     # endregion
 
     # region 任务
+    @validate_call
     async def _submit_task(self, user_id: str, request: Request):
         assert isinstance(user_id, str), "user_id must be a string"
         assert isinstance(request, Request), "request must be a Request object"
@@ -100,6 +106,7 @@ class ClientBase(ABC):
     # endregion
 
     @staticmethod
+    @validate_call
     def _calculate_stability_cv(intervals: np.ndarray):
         """使用变异系数衡量数据稳定度"""
         assert isinstance(intervals, np.ndarray), "intervals Must be a numpy array"
@@ -118,6 +125,7 @@ class ClientBase(ABC):
         return float(stability)
 
     # region 打印日志
+    @validate_call
     async def _print_log(self, user_id: str, request: Request, response: Response):
         """
         打印统计日志
@@ -196,8 +204,8 @@ class ClientBase(ABC):
             logger.info(f"Cache Hit Count: {response.token_usage.prompt_cache_hit_tokens}", user_id = user_id)
         if response.token_usage.prompt_cache_miss_tokens is not None:
             logger.info(f"Cache Miss Count: {response.token_usage.prompt_cache_miss_tokens}", user_id = user_id)
-        if not math.isnan(response.token_usage.prompt_cache_hit_ratio):
-            logger.info(f"Cache Hit Ratio: {response.token_usage.prompt_cache_hit_ratio :.2%}", user_id = user_id)
+        if not math.isnan(response.token_usage.cache_hit_ratio()):
+            logger.info(f"Cache Hit Ratio: {response.token_usage.cache_hit_ratio() :.2%}", user_id = user_id)
         if response.stream:
             logger.info(f"Average Generation Rate: {response.token_usage.completion_tokens / ((response.calling_log.stream_processing_end_time - response.calling_log.stream_processing_start_time) / 1e9):.2f} /s", user_id = user_id)
 
