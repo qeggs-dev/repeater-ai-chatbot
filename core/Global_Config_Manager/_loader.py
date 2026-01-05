@@ -1,12 +1,17 @@
 from __future__ import annotations
+
 import os
 import yaml
 import shutil
 import orjson
+
 from box import Box
 from pathlib import Path
-from ._base_model import Global_Config
 from typing import Generator, Iterable
+
+from pydantic import validate_call
+
+from ._base_model import Global_Config
 
 class ConfigManager:
     _configs: Global_Config = Global_Config()
@@ -24,6 +29,7 @@ class ConfigManager:
         return cls._instance
 
     @classmethod
+    @validate_call
     def update_base_path(cls, path: str | os.PathLike, force_load_list: list[str | os.PathLike] | None = None) -> None:
         cls._base_path = Path(path)
         if isinstance(force_load_list, list):
@@ -32,16 +38,19 @@ class ConfigManager:
             cls._force_load_list = []
     
     @classmethod
+    @validate_call
     def _scan_dir(cls, globs: Iterable[str], temp_loadpath: Path | None = None) -> Generator[Path, None, None]:
         if temp_loadpath is None:
             load_path = cls._base_path
         else:
             load_path = temp_loadpath
         for glob in globs:
+            assert isinstance(glob, str), "glob must be str"
             for path in load_path.rglob(glob):
                 yield path
     
     @classmethod
+    @validate_call
     def _config_files(cls, temp_loadpath: Path | None = None) -> list[Path]:
         return sorted(
             cls._scan_dir(
@@ -56,16 +65,19 @@ class ConfigManager:
         )
     
     @staticmethod
+    @validate_call
     def _load_yaml(path: Path) -> dict:
         with open(path, "r", encoding="utf-8") as f:
             return yaml.safe_load(f)
     
     @staticmethod
+    @validate_call
     def _load_json(path: Path) -> dict:
         with open(path, "rb") as f:
             return orjson.loads(f.read())
     
     @classmethod
+    @validate_call
     def load(cls, create_if_missing: bool = False, temp_loadpath: str | os.PathLike | None = None) -> Global_Config:
         """
         Load the configs from the config files.
@@ -108,6 +120,7 @@ class ConfigManager:
                 raise
     
     @staticmethod
+    @validate_call
     def _dump_yaml(path: Path, data: Global_Config) -> None:
         with open(path, "w", encoding="utf-8") as f:
             f.write(
@@ -119,6 +132,7 @@ class ConfigManager:
             )
     
     @staticmethod
+    @validate_call
     def _dump_json(path: Path, data: Global_Config) -> None:
         with open(path, "wb") as f:
             f.write(
@@ -128,7 +142,8 @@ class ConfigManager:
             )
     
     @classmethod
-    def save(cls, config: Global_Config | None = None, filename: str = "config.json") -> None:
+    @validate_call
+    def save(cls, config: Global_Config | None = None, filename: str | os.PathLike = "config.json") -> None:
         """
         Save the config to the config files.
         
