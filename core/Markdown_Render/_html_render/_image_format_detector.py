@@ -3,6 +3,7 @@ import mimetypes
 from pathlib import Path
 from loguru import logger
 from ._enums import ImageFormat
+from pydantic import validate_call
 
 class ImageFormatDetector:
     """图片格式检测器"""
@@ -31,6 +32,7 @@ class ImageFormatDetector:
     }
     
     @classmethod
+    @validate_call
     def detect_format(
             cls,
             output_path:str | os.PathLike, 
@@ -64,6 +66,7 @@ class ImageFormatDetector:
         return ImageFormat.PNG
     
     @classmethod
+    @validate_call
     def ensure_correct_extension(
             cls,
             output_path: str, 
