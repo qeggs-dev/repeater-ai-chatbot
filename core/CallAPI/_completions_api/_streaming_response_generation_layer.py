@@ -1,4 +1,5 @@
 import sys
+
 from typing import AsyncGenerator, Self, TextIO
 from ._objects import Request, Delta, Response
 from ...Request_Log import RequestLog
@@ -7,6 +8,7 @@ from ...Request_Log import TimeStamp
 from ...Global_Config_Manager import ConfigManager
 from ...Logger_Init import config_to_log_level, LogLevel
 from loguru import logger
+from pydantic import validate_call
 
 class StreamingResponseGenerationLayer:
     """
@@ -20,6 +22,8 @@ class StreamingResponseGenerationLayer:
     :param request: 请求对象
     :param response_iterator: 原始响应迭代器
     """
+
+    @validate_call
     def __init__(
             self,
             user_id: str,
@@ -27,11 +31,6 @@ class StreamingResponseGenerationLayer:
             response_iterator: AsyncGenerator[Delta, None],
             print_file: TextIO = sys.stdout
         ) -> None:
-        if not isinstance(user_id, str):
-            raise TypeError("user_id must be a string")
-        if not isinstance(request, Request):
-            raise TypeError("request must be a Request object")
-
         self.request: Request = request
         self._response_iterator: AsyncGenerator[Delta, None] = response_iterator
         self._finished: bool = False
@@ -128,6 +127,7 @@ class StreamingResponseGenerationLayer:
             self.finally_stream()
             raise e
     
+    @validate_call
     def _parse_delta(self, delta_data: Delta):
         # 记录会话开启时间
         if not self.response.created:
