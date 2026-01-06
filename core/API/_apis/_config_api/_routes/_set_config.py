@@ -77,7 +77,7 @@ async def set_config_field(user_id: str, key: str, request: SetConfigRequest):
             raise HTTPException(status_code=400, detail="Invalid type.")
     
     # 读取配置
-    config = await core.user_config_manager.load(user_id=user_id)
+    config = await Resource.core.user_config_manager.load(user_id=user_id)
     
     # 更新配置
     if key in type(config).model_fields.keys():
@@ -94,7 +94,7 @@ async def set_config_field(user_id: str, key: str, request: SetConfigRequest):
 
     # 保存配置
     # await chat.user_config_manager.save(user_id=user_id, configs=config)
-    await core.user_config_manager.force_write(user_id=user_id, configs=config)
+    await Resource.core.user_config_manager.force_write(user_id=user_id, configs=config)
     
     logger.info(
         "Set user config {key}={value}(type:{value_type})",
