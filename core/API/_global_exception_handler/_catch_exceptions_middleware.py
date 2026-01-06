@@ -6,9 +6,13 @@ from .._resource import app
 from ...Global_Config_Manager import ConfigManager
 from ._except_handler import (
     exception_handler,
-    warning_handler,
+    WarningHandler,
     base_exception_handler
 )
+
+# 初始化警告处理器
+warning_handler = WarningHandler()
+warning_handler.inject()
 
 @app.middleware("http")
 async def catch_exceptions_middleware(request: Request, call_next: Callable[[Request], Awaitable[Response]]):

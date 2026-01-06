@@ -9,11 +9,6 @@ from AdminApikeyManager import AdminKeyManager
 from ._lifespan import lifespan
 from ..Global_Config_Manager import ConfigManager
 from ..Markdown_Render import HTML_Render
-from ._global_exception_handler import WarningHandler
-
-# 初始化警告处理器
-warning_handler = WarningHandler()
-warning_handler.inject()
 
 app = FastAPI(
     title="RepeaterChatBackend",
