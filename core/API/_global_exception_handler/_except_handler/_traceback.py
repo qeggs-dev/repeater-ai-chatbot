@@ -63,7 +63,7 @@ async def format_traceback(exclude_library_code: bool = False, read_last_frame_o
             get_code = GetCode(frame.filename, frame.lineno)
             text_buffer.append(
                 f"    - Code:\n"
-                f"        {(await get_code.get_code_async()).replace('\n', '\n        |')}"
+                f"        {(await get_code.get_code_async()).replace('\n', '\n        ')}"
             )
     text_buffer.append(f"Exception: {exc_type.__name__}")
     text_buffer.append(f"Message: \n{exc_value}")
