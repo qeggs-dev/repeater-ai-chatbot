@@ -51,6 +51,7 @@ class GetCode:
     async def get_code_async(self) -> str:
         text_buffer: list[str] = []
         max_length: int = 0
+        add_bottom_border = self._add_bottom_border
         async with aiofiles.open(
             self._file_path,
             mode="r",
@@ -66,15 +67,17 @@ class GetCode:
                 if isinstance(processed_text, str):
                     text_buffer.append(processed_text)
                 if (index - self._line + 1) > self._dilation:
+                    add_bottom_border = False
                     break
         
-        if self._add_bottom_border:
+        if add_bottom_border:
             text_buffer.append(self._get_last_line(max_length = max_length))
         return "".join(text_buffer)
                     
     def get_code(self) -> str:
         text_buffer: list[str] = []
         max_length: int = 0
+        add_bottom_border = self._add_bottom_border
         with open(
             self._file_path,
             mode="r",
@@ -89,9 +92,10 @@ class GetCode:
                 if isinstance(processed_text, str):
                     text_buffer.append(processed_text)
                 if (index - self._line + 1) > self._dilation:
+                    add_bottom_border = False
                     break
         
-        if self._add_bottom_border:
+        if add_bottom_border:
             text_buffer.append(self._get_last_line(max_length = max_length))
         return "".join(text_buffer)
     
