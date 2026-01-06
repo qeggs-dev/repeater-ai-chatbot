@@ -28,7 +28,7 @@ async def get_context_length(user_id: str):
     return ORJSONResponse(
         {
             "total_context_length": context.total_length,
-            "context_length": len(context),
+            "context_length": context.context_item_length,
             "average_content_length": context.average_length
         }
     )
