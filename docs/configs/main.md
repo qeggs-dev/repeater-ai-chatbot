@@ -169,6 +169,12 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
             // 行数标记填充字符
             // 通常为空格
             "fill_char": " ",
+
+            // 是否添加底部边框
+            "add_bottom_border": true,
+
+            // 底部边框延长线的长度上限
+            "bottom_border_limit": null
         },
 
         // 使用 Repeater 自己的 Traceback 格式化函数
