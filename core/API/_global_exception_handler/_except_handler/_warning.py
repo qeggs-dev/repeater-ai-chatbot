@@ -7,7 +7,7 @@ from datetime import datetime
 from pathlib import Path
 
 from ....Global_Config_Manager import ConfigManager
-from .._get_code import get_code
+from .._get_code import GetCode
 
 class WarningHandler:
     """Warning Handler"""
@@ -35,7 +35,8 @@ class WarningHandler:
 
             if ConfigManager().get_configs().global_exception_handler.code_reader.enable:
                 if file_path.exists() and file_path.is_file() and lineno > 0:
-                    code = get_code(file_path, lineno)
+                    get_code = GetCode(file_path, lineno)
+                    code = get_code.get_code()
                 else:
                     code = "[Invalid Code Frame]"
             else:

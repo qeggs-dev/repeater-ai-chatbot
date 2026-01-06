@@ -14,7 +14,7 @@ from ....Global_Config_Manager import ConfigManager
 from .._shutdown_server import shutdown_server
 from .._save_error_traceback import save_error_traceback
 from .._error_output_model import ErrorResponse
-from .._get_code import get_code_async
+from .._get_code import GetCode
 from ._traceback import format_traceback
 
 async def exception_handler(error: BaseException) -> None:
@@ -47,7 +47,11 @@ async def exception_handler(error: BaseException) -> None:
 
     if ConfigManager.get_configs().global_exception_handler.code_reader.enable:
         if raiser_file.exists() and raiser_file.is_file() and last_tb.lineno is not None and last_tb.lineno > 0:
-            code = await get_code_async(raiser_file, last_tb.lineno)
+            get_code = GetCode(
+                raiser_file,
+                last_tb.lineno
+            )
+            code = await get_code.get_code_async()
         else:
             code = "[Invalid Code Frame]"
     else:

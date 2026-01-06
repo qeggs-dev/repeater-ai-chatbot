@@ -4,7 +4,7 @@ import traceback
 
 from pathlib import Path
 
-from .._get_code import get_code_async
+from .._get_code import GetCode
 
 def is_library_code(filename: str):
     if not filename:
@@ -60,9 +60,10 @@ async def format_traceback(exclude_library_code: bool = False, read_last_frame_o
         )
 
         if not read_last_frame_only or index == len(frames) - 1:
+            get_code = GetCode(frame.filename, frame.lineno)
             text_buffer.append(
                 f"    - Code:\n"
-                f"        {await get_code_async(frame.filename, frame.lineno).replace('\n', '\n        |')}"
+                f"        {(await get_code.get_code_async()).replace('\n', '\n        |')}"
             )
     text_buffer.append(f"Exception: {exc_type.__name__}")
     text_buffer.append(f"Message: \n{exc_value}")
