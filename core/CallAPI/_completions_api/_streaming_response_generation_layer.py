@@ -8,7 +8,6 @@ from ...Request_Log import TimeStamp
 from ...Global_Config_Manager import ConfigManager
 from ...Logger_Init import config_to_log_level, LogLevel
 from loguru import logger
-from pydantic import validate_call, ConfigDict
 
 class StreamingResponseGenerationLayer:
     """
@@ -127,8 +126,7 @@ class StreamingResponseGenerationLayer:
             self.response.calling_log.stream_processing_end_time = stream_processing_end_time
             self.finally_stream()
             raise e
-    
-    @validate_call
+
     def _parse_delta(self, delta_data: Delta):
         # 记录会话开启时间
         if not self.response.created:

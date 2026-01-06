@@ -5,10 +5,8 @@ from ._extensions import (
     CodeBlockExtension,
     DividingLineExtension
 )
-from pydantic import validate_call
 from TextProcessors import PromptVP
 
-@validate_call
 async def markdown_to_html(
     markdown_text: str,
     html_template: str,

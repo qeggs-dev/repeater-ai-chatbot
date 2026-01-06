@@ -2,11 +2,9 @@ import sys
 import logging
 from pathlib import Path
 from loguru import logger
-from pydantic import validate_call
 from ._intercept_handler import InterceptHandler
 from ..Global_Config_Manager import Logger_Config
 
-@validate_call
 def logger_init(config: Logger_Config):
     logging.root.handlers = [InterceptHandler()]
     logging.root.setLevel(logging.INFO)

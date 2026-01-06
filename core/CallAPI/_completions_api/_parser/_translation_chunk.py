@@ -1,8 +1,6 @@
 from .._objects import Delta, TokensCount, FinishReason
 from openai.types.chat import ChatCompletionChunk
-from pydantic import validate_call
 
-@validate_call
 async def translation_chunk(
     chunk: ChatCompletionChunk,
 ) -> Delta:

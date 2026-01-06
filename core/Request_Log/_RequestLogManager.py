@@ -10,10 +10,9 @@ from loguru import logger
 from ..Global_Config_Manager import ConfigManager
 from typing import List, AsyncIterator, Generator, Iterable
 from ._RequestLogObject import RequestLogObject, CallAPILogObject
-from pydantic import ValidationError, validate_call
+from pydantic import ValidationError
 
 class RequestLogManager:
-    @validate_call
     def __init__(
             self,
             base_dir: str | os.PathLike,
@@ -61,7 +60,6 @@ class RequestLogManager:
         time = datetime.datetime.now()
         return self._base_dir / f"{time.strftime('%Y-%m-%d')}.jsonl"
 
-    @validate_call
     async def add_request_log(self, request_log: RequestLogObject | CallAPILogObject) -> None:
         """
         添加调用日志项
@@ -91,7 +89,6 @@ class RequestLogManager:
         
     # 将日志列表转换为字节流
     @staticmethod
-    @validate_call
     def _log_bytestream(log_list: Iterable[RequestLogObject | CallAPILogObject]) -> Generator[bytes, None, None]:
         for log in log_list:
             yield orjson.dumps(log.model_dump()) + b"\n"
@@ -234,7 +231,6 @@ class RequestLogManager:
                 self._debonce_task.cancel()  # 如果已有任务，先取消
             await self._save_request_log_async()
 
-    @validate_call
     async def _wait_and_save_async(self, wait_time: float = 5) -> None:
         """等待并保存日志到文件"""
         try:

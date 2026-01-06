@@ -6,7 +6,6 @@ import aiofiles
 import threading
 from pathlib import Path
 
-from pydantic import validate_call
 from ._pydantic_models import ApiInfoConfig, ApiGroup
 from ..Global_Config_Manager import ConfigManager
 from ._model_type import ModelType
@@ -63,7 +62,6 @@ class ApiInfo:
                 else:
                     self._api_objs[model.type][api_obj.uid].append(api_obj)
 
-    @validate_call
     def load(self, path: str | os.PathLike) -> None:
         """Load and parse API groups from a JSON/YAML file."""
         path: Path = Path(path)
@@ -93,7 +91,6 @@ class ApiInfo:
             else:
                 raise ValueError(f"Invalid file format: {path.suffix}")
 
-    @validate_call
     async def load_async(self, path: str | os.PathLike) -> None:
         """Load and parse API groups from a JSON/YAML file."""
         path: Path = Path(path)
@@ -123,7 +120,6 @@ class ApiInfo:
             else:
                 raise ValueError(f"Invalid file format: {path.suffix}")
 
-    @validate_call
     def find(self, model_type: ModelType, model_uid: str, default: list[ApiObject] | None = None) -> list[ApiObject]:
         """Find API groups by model uid."""
         if self._case_sensitive:
@@ -136,8 +132,7 @@ class ApiInfo:
             return []
         
         return index_list.copy()
-    
-    @validate_call
+
     def uid_list(self, model_type: ModelType) -> list[str]:
         """Get a list of all model uids."""
         if not isinstance(model_type, ModelType):

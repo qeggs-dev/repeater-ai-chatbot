@@ -5,13 +5,11 @@ from typing import (
     TypeVar,
 )
 from loguru import logger
-from pydantic import validate_call
 import inspect
 
 T = TypeVar("T")
 
 class CoroutinePool:
-    @validate_call
     def __init__(self, max_concurrency: int = 1000):
         # 协程池
         self._max_concurrency = max_concurrency
@@ -56,7 +54,6 @@ class CoroutinePool:
         """关闭池，等待所有任务完成"""
         await asyncio.gather(*self._tasks)
 
-    @validate_call
     async def set_concurrency(self, new_max: int):
         """动态修改并发限制"""
         self._max_concurrency = new_max

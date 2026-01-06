@@ -1,6 +1,5 @@
 from enum import StrEnum
 from typing import Any
-from pydantic import validate_call
 
 class ComparisonOperator(StrEnum):
     """
@@ -32,7 +31,6 @@ def try_convert_to_number(value: Any) -> int | float | None:
         except ValueError:
             return None
 
-@validate_call
 def value_comparison(value1: Any, value2: Any, comparison_operator: ComparisonOperator, to_number_size_comparsion: bool = False) -> bool:
     """
     Compare two values using a specified comparison operator

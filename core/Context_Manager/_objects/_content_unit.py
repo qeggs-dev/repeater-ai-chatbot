@@ -1,5 +1,5 @@
 from __future__ import annotations
-from pydantic import BaseModel, Field, ConfigDict, validate_call
+from pydantic import BaseModel, Field, ConfigDict
 from .._exceptions import *
 from ._content_role import ContentRole
 from ._content_block import ContentBlock, TextBlock
@@ -23,8 +23,7 @@ class ContentUnit(BaseModel):
 
     def __len__(self) -> int:
         return len(self.content) + len(self.reasoning_content)
-
-    @validate_call    
+ 
     def to_content(self, remove_resoning_prompt: bool = False) -> dict[str, Any]:
         if remove_resoning_prompt:
             return self.model_dump(exclude = {"reasoning_content"})

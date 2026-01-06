@@ -10,7 +10,6 @@ from typing import (
 import openai
 from loguru import logger
 import numpy as np
-from pydantic import validate_call, Field, ConfigDict
 
 # ==== 自定义库 ==== #
 from .._objects import (
@@ -30,13 +29,11 @@ from .._parser import (
 from .._exceptions import *
 
 class ClientBase(ABC):
-    @validate_call
-    def __init__(self, max_concurrency: Annotated[int, Field(gt=0)] = 1000):
+    def __init__(self, max_concurrency: int = 1000):
         # 协程池
         self.coroutine_pool = CoroutinePool(max_concurrency)
     # region 协程池管理
-    @validate_call
-    async def set_concurrency(self, new_max: Annotated[int, Field(gt=0)] = 1000):
+    async def set_concurrency(self, new_max: int = 1000):
         """动态修改并发限制"""
         await self.coroutine_pool.set_concurrency(new_max)
     # endregion
@@ -49,7 +46,6 @@ class ClientBase(ABC):
     # endregion
 
     # region 预处理响应数据
-    @validate_call
     async def _preprocess_response(self, user_id: str, request: Request, response: Response):
         assert isinstance(user_id, str)
         assert isinstance(request, Request)
@@ -79,7 +75,6 @@ class ClientBase(ABC):
     # endregion
 
     # region 任务
-    @validate_call
     async def _submit_task(self, user_id: str, request: Request):
         assert isinstance(user_id, str), "user_id must be a string"
         assert isinstance(request, Request), "request must be a Request object"
@@ -124,7 +119,6 @@ class ClientBase(ABC):
         return float(stability)
 
     # region 打印日志
-    @validate_call
     async def _print_log(self, user_id: str, request: Request, response: Response):
         """
         打印统计日志

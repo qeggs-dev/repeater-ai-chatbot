@@ -1,7 +1,6 @@
 import asyncio
 
 from typing import Any, Callable, Awaitable, Protocol, runtime_checkable
-from pydantic import validate_call
 from ..Context_Manager import CallingFunctionResponse, ContextSyntaxError, ContentUnit, ContentRole
 from ._exceptions import *
 
@@ -21,7 +20,6 @@ class FunctionCalling:
         self._function_calling_args_types: dict[str, dict[str, type | Callable[[str], object]]] = {}
         self._global_resource_lock = asyncio.Lock()
     
-    @validate_call
     async def register(self, function: Callable[..., Awaitable[SupportsStr]], funcargs_types: dict[str, type | Callable[[str], object]] | None = None, name: str | None = None):
         """
         注册一个函数调用
@@ -37,7 +35,6 @@ class FunctionCalling:
             if funcargs_types:
                 self._function_calling_args_types[name or function.__name__] = funcargs_types
     
-    @validate_call
     async def call(self, calling_function: CallingFunctionResponse) -> ContentUnit:
         for function_response in calling_function.callingFunctionResponse:
             id = function_response.id
@@ -74,7 +71,6 @@ class FunctionCalling:
             else:
                 return ContentUnit(content=str(result), role=ContentRole.FUNCTION, tool_call_id=id)
     
-    @validate_call
     async def unregister(self, name: str):
         """
         注销一个函数调用

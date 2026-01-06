@@ -5,7 +5,6 @@ import orjson
 
 # ==== 第三方库 ==== #
 from loguru import logger
-from pydantic import validate_call
 
 # ==== 自定义库 ==== #
 from ..Data_Manager import (
@@ -114,7 +113,6 @@ class ContextLoader:
         )
         return prompt
     
-    @validate_call
     async def load_context(
             self,
             user_id: str
@@ -258,7 +256,6 @@ class ContextLoader:
         prompt = limit_blank_lines(prompt)
         return prompt
 
-    @validate_call
     async def save(
             self,
             user_id: str,

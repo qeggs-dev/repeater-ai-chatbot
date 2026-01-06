@@ -4,7 +4,6 @@ from pathlib import Path
 
 # ==== 第三方库 ==== #
 from loguru import logger
-from pydantic import validate_call
 
 # ==== 自定义库 ==== #
 from .SubManager import SubManager
@@ -12,7 +11,6 @@ from PathProcessors import validate_path, sanitize_filename
 from ...Global_Config_Manager import ConfigManager
 
 class MainManager:
-    @validate_call
     def __init__(self, base_name: str, cache_metadata:bool = False, cache_data:bool = False, branches_dir_name:str = "ParallelData"):
         self._base_path = Path(ConfigManager.get_configs().user_data.dir)
         self._base_name = sanitize_filename(base_name)
@@ -29,7 +27,6 @@ class MainManager:
     def base_path(self):
         return self._base_path / self._base_name
     
-    @validate_call
     async def load(self, user_id: str, default: Any = None) -> Any:
         user_id = sanitize_filename(user_id)
         manager = self.sub_managers.setdefault(
@@ -66,7 +63,6 @@ class MainManager:
             )
             raise
     
-    @validate_call
     async def save(self, user_id: str, data: Any) -> None:
         user_id = sanitize_filename(user_id)
         manager = self.sub_managers.setdefault(
@@ -102,7 +98,6 @@ class MainManager:
             )
             raise
     
-    @validate_call
     async def delete(self, user_id: str) -> None:
         user_id = sanitize_filename(user_id)
         manager = self.sub_managers.setdefault(
@@ -139,7 +134,6 @@ class MainManager:
             )
             raise
     
-    @validate_call
     async def set_default_branch_id(self, user_id: str, branch_name: str) -> None:
         user_id = sanitize_filename(user_id)
         manager = self.sub_managers.setdefault(
@@ -172,7 +166,6 @@ class MainManager:
             logger.error(f"Write User Metadata File Error: {e}", user_id = user_id)
             raise
     
-    @validate_call
     async def get_default_branch_id(self, user_id: str) -> str:
         user_id = sanitize_filename(user_id)
         manager = self.sub_managers.setdefault(
@@ -201,6 +194,5 @@ class MainManager:
     async def get_all_user_id(self) -> list:
         return [f.name for f in (self.base_path).iterdir() if f.is_dir()]
 
-    @validate_call
     async def get_all_branch_id(self, user_id: str) -> list:
         return [f.stem for f in (self.base_path / user_id / self.sub_dir_name).iterdir() if f.is_file()]

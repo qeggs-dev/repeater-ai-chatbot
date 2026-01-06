@@ -1,5 +1,5 @@
 from __future__ import annotations
-from pydantic import BaseModel, Field, ConfigDict, validate_call
+from pydantic import BaseModel, Field, ConfigDict
 from typing import overload, Iterable, Any
 from .._exceptions import *
 from ._func_calling_objects import CallingFunctionResponse
@@ -81,7 +81,6 @@ class ContextObject(BaseModel):
         for content in self.context_list:
             yield content
     
-    @validate_call
     def update_from_context(self, context: list[dict]) -> None:
         """
         从上下文列表更新上下文
@@ -93,7 +92,6 @@ class ContextObject(BaseModel):
         self.context_list = other.context_list
         self.prompt = other.prompt
     
-    @validate_call
     def rewrite(self, content: ContentUnit, index: int = -1) -> None:
         """
         重写上下文列表中的指定项
@@ -145,7 +143,6 @@ class ContextObject(BaseModel):
             return 0
         return self.total_length / len(self)
 
-    @validate_call
     def to_context(self, remove_resoning_prompt: bool = False, reduce_to_text: bool = False) -> list[dict]:
         """
         获取上下文
@@ -168,7 +165,6 @@ class ContextObject(BaseModel):
         """
         return self.to_context(False, False)
     
-    @validate_call
     def to_full_context(self, remove_resoning_prompt: bool = False, reduce_to_text: bool = False) -> list[dict]:
         """
         获取上下文，如果有提示词，则添加到最前面
@@ -191,7 +187,6 @@ class ContextObject(BaseModel):
         """
         return self.to_full_context(False, False)
     
-    @validate_call
     def withdraw(self, length: int | None = None):
         """
         撤销指定长度的内容
@@ -241,7 +236,6 @@ class ContextObject(BaseModel):
         else:
             raise TypeError("length must be int or None")
     
-    @validate_call
     def insert(self, content_unit: ContentUnit, index: int | None = None):
         """
         插入内容单元到上下文列表中
@@ -266,7 +260,6 @@ class ContextObject(BaseModel):
             self.context_list.append(ContentUnit())
         return self.context_list[-1]
     
-    @validate_call
     def append(self, content: ContentUnit) -> None:
         """
         添加上下文单元
@@ -315,7 +308,6 @@ class ContextObject(BaseModel):
             )
         )
     
-    @validate_call
     def pop(self, index: int = -1) -> ContentUnit:
         """
         弹出一个上下文单元
@@ -329,7 +321,6 @@ class ContextObject(BaseModel):
         
         return self.context_list.pop(index)
     
-    @validate_call
     def pop_last_n(self, n: int) -> list[ContentUnit]:
         """
         弹出最后n个上下文单元
@@ -345,7 +336,6 @@ class ContextObject(BaseModel):
         self.context_list = self.context_list[:-n]
         return pop_list
     
-    @validate_call
     def pop_begin_n(self, n: int) -> list[ContentUnit]:
         """
         弹出头部的n个元素
@@ -375,7 +365,6 @@ class ContextObject(BaseModel):
         """
         return self.last_content.funcResponse is not None
     
-    @validate_call
     def shrink(self, length: int, ensure_role_at_top: ContentRole = ContentRole.USER):
         """
         缩小上下文长度

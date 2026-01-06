@@ -2,7 +2,6 @@ from __future__ import annotations
 import threading
 from typing import TypeVar, Generic
 from loguru import logger
-from pydantic import validate_call
 
 T_KEY = TypeVar("T_KEY")
 
@@ -12,7 +11,6 @@ class LockPool(Generic[T_KEY]):
         self.locks: dict[T_KEY, threading.Lock] = {}
         self._reference_count : dict[T_KEY, int] = {}
     
-    @validate_call
     def get_lock(self, key: T_KEY) -> threading.Lock:
         with self._lock:
             if key in self.locks:
@@ -64,7 +62,6 @@ class LockPool(Generic[T_KEY]):
             logger.debug(f"LockPool: Created lock for {repr(key)}")
             return lock
     
-    @validate_call
     def lock_count(self, key: T_KEY):
         with self._lock:
             return self._reference_count.get(key, 0)

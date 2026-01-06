@@ -18,7 +18,6 @@ from playwright.async_api import (
     Playwright,
     ProxySettings
 )
-from pydantic import validate_call, ConfigDict
 from ._image_format_detector import ImageFormatDetector
 from loguru import logger
 from ...Lifespan import (
@@ -34,7 +33,6 @@ class BrowserPoolManager:
     _instances: list[BrowserPoolManager] = []
     _is_initialized = False
     
-    @validate_call
     def __init__(
         self,
         max_pages_per_browser: int = 10,
@@ -113,7 +111,6 @@ class BrowserPoolManager:
             
             logger.info("Browser pool initialized")
     
-    @validate_call
     async def render_html(
         self,
         html_content: str,
@@ -205,8 +202,7 @@ class BrowserPoolManager:
             # 确保页面和浏览器被释放
             if "browser" in locals() and "page" in locals():
                 await self._release_page(browser, page)
-
-    @validate_call    
+  
     async def _acquire_page_for_render(self, browser_type: BrowserType) -> tuple[Browser, Page, str]:
         """为渲染获取页面"""
         if browser_type == BrowserType.AUTO:
@@ -233,7 +229,6 @@ class BrowserPoolManager:
             browser, page = await self._try_acquire_page(browser_type)
             return browser, page, browser_type.value
     
-    @validate_call
     async def _try_acquire_page(self, browser_type: BrowserType) -> tuple[Browser, Page]:
         """尝试获取页面"""
         browser = await self._acquire_browser(browser_type)
@@ -253,7 +248,6 @@ class BrowserPoolManager:
             
             raise RuntimeError("Browser page limit reached")
     
-    @validate_call
     async def _acquire_browser(self, browser_type: BrowserType) -> Browser:
         """获取浏览器"""
         if self._playwright is None:
@@ -272,7 +266,6 @@ class BrowserPoolManager:
             
             raise RuntimeError(f"No available {browser_type} browsers")
     
-    @validate_call
     async def _create_browser(self, browser_type: BrowserType) -> Browser:
         """创建浏览器"""
         match browser_type:

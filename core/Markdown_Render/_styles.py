@@ -6,14 +6,12 @@ import aiofiles
 from pathlib import Path
 from PathProcessors import validate_path, sanitize_filename
 from loguru import logger
-from pydantic import validate_call
 
 class Styles:
     def __init__(self, style_dir: str | os.PathLike):
         self._style_dir = Path(style_dir)
     
     @staticmethod
-    @validate_call
     async def _read_style(style_file_path: Path, encoding: str = "utf-8") -> str:
         if not style_file_path.exists():
             raise FileNotFoundError(f"Style file not found: {style_file_path}")
@@ -25,7 +23,6 @@ class Styles:
         async with aiofiles.open(style_file_path, "r", encoding=encoding) as f:
             return await f.read()
 
-    @validate_call
     async def get_style(self, style_name: str, use_base: bool = True, encoding: str = "utf-8") -> str:
         style_name = sanitize_filename(style_name)
         style_file_path: Path = self._style_dir / f"{style_name}.css"

@@ -9,7 +9,6 @@ from typing import (
 # ==== 第三方库 ==== #
 import openai
 from loguru import logger
-from pydantic import validate_call
 
 # ==== 自定义库 ==== #
 from .._objects import (
@@ -28,7 +27,6 @@ from ._client import ClientBase
 class ClientNoStream(ClientBase):
     """Client without stream"""
     
-    @validate_call
     async def submit_Request(self, user_id:str, request: Request) -> Response:
         """提交请求，并等待API返回结果"""
         try:
@@ -50,7 +48,6 @@ class ClientNoStream(ClientBase):
         
         return output
     
-    @validate_call
     async def _submit_task(self, user_id: str, request: Request) -> AsyncIterator[Delta] | Response:
         try:
             if request.stream:

@@ -1,4 +1,4 @@
-from pydantic import BaseModel, validate_call, ConfigDict
+from pydantic import BaseModel, ConfigDict
 from ._enums import ImageFormat
 from typing import Any
 
@@ -15,7 +15,6 @@ class RenderConfig(BaseModel):
     timeout: int = 30000
     omit_background: bool = False
     
-    @validate_call
     def to_screenshot_options(self, format: ImageFormat, path: str) -> dict[str, Any]:
         """转换为Playwright截图选项"""
         options = {

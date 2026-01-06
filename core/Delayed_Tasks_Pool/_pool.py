@@ -1,7 +1,6 @@
 import asyncio
 from typing import TypeVar
 from collections.abc import Coroutine
-from pydantic import validate_call
 from loguru import logger
 
 T = TypeVar("T")
@@ -56,7 +55,6 @@ class DelayedTasksPool:
         await asyncio.gather(*self.tasks)
         self.tasks.clear()
 
-    @validate_call    
     async def cancel_all(self, wait: bool = True):
         """Cancel all tasks in the pool"""
         for task in self.tasks:

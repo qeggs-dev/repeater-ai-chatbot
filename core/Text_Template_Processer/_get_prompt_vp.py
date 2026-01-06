@@ -9,7 +9,6 @@ from .._info import __version__
 from ._value_comparison import value_comparison, ComparisonOperator
 from ..ApiInfo import ApiObject
 
-from pydantic import validate_call
 from datetime import datetime, timedelta
 from TimeParser import (
     get_timezone_offset,
@@ -42,7 +41,6 @@ class PromptVP_Loader:
     
         return prompt_vp
 
-    @validate_call
     def get_prompt_vp_ex(
             self,
             user_id: str,
