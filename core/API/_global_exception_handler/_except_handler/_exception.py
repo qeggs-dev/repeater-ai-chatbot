@@ -16,7 +16,7 @@ from .._save_error_traceback import save_error_traceback
 from .._error_output_model import ErrorResponse
 from .._get_code import get_code_async
 
-async def exception_handler(error: Exception) -> None:
+async def exception_handler(error: BaseException) -> None:
     error_time = time.time_ns()
 
     # 判断是否为CriticalException
