@@ -55,8 +55,7 @@ async def exception_handler(error: Exception) -> None:
         logger.critical(
             (
                 "Critical Exception:\n"
-                "    - Type: \n"
-                "        {error_name}\n"
+                "{error_name}\n"
                 "    - Depth of stack frame:\n"
                 "        {total_tb_count}\n"
                 "    - Raised from:\n"
@@ -81,8 +80,7 @@ async def exception_handler(error: Exception) -> None:
         logger.exception(
             (
                 "Exception: \n"
-                "    - Type: \n"
-                "        {error_name}\n"
+                "{error_name}\n"
                 "    - Depth of stack frame:\n"
                 "        {total_tb_count}\n"
                 "    - Raised from:\n"

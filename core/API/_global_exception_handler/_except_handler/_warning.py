@@ -40,8 +40,7 @@ class WarningHandler:
             logger.warning(
                 (
                     "Warning: \n"
-                    "    - Type: \n"
-                    "        {warning_name}\n"
+                    "{warning_name}\n"
                     "    - Raised from:\n"
                     "        {raiser}:{lineno}\n"
                     "    - Message: \n"
