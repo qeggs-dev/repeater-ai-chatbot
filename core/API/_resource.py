@@ -1,19 +1,31 @@
 # ==== 标准库 ==== #
 from __future__ import annotations
-from typing import ClassVar
+from typing import ClassVar, Sequence, Callable, Any
 
 # ==== 第三方库 ==== #
+import uvicorn
+
 from fastapi import FastAPI
 
 # ==== 自定义库 ==== #
-from .._core import Core
 from AdminApikeyManager import AdminKeyManager
-from ._lifespan import lifespan
+from .._core import Core
 from ..Global_Config_Manager import ConfigManager
 from ..Markdown_Render import HTML_Render
+from ._lifespan import lifespan
+from ._info import __version__
 
-class Resource():
-    app: ClassVar[FastAPI | None] = None
+class Resource:
+    startup: ClassVar[Sequence[Callable[[], Any]] | None] = None
+    shutdown: ClassVar[Sequence[Callable[[], Any]]] | None = None
+    
+    app: ClassVar[FastAPI] = FastAPI(
+        title = "RepeaterChatBackend",
+        lifespan = lifespan,
+        on_startup = startup,
+        on_shutdown = shutdown,
+        version = __version__
+    )
     core: ClassVar[Core | None] = None
     admin_key_manager: ClassVar[AdminKeyManager | None] = None
     browser_pool_manager: ClassVar[HTML_Render.BrowserPoolManager | None] = None
@@ -26,8 +38,6 @@ class Resource():
 
     @classmethod
     def inited(cls):
-        if cls.app is None:
-            return False
         if cls.core is None:
             return False
         if cls.admin_key_manager is None:
@@ -38,20 +48,13 @@ class Resource():
 
     @classmethod
     def init_all(cls):
-        cls.init_app()
+        cls.init_core()
         cls.init_admin_key_manager()
         cls.init_browser_pool_manager()
     
     @classmethod
     def init_core(cls):
         cls.core = Core()
-    
-    @classmethod
-    def init_app(cls):
-        cls.app = FastAPI(
-            title="RepeaterChatBackend",
-            lifespan = lifespan
-        )
 
     @classmethod
     def init_admin_key_manager(cls):
@@ -72,3 +75,21 @@ class Resource():
             )
         )
 
+    @classmethod
+    def run_server(
+        cls,
+        host: str,
+        port: int,
+        workers: int = 1,
+        reload: bool = False
+    ) -> None:
+        if not cls.inited():
+            raise RuntimeError("API not initialized")
+        uvicorn.run(
+            app = cls.app,
+            host = host,
+            port = port,
+            workers = workers,
+            reload = reload,
+            log_config = None,
+        )
