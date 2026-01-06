@@ -15,6 +15,7 @@ from .._shutdown_server import shutdown_server
 from .._save_error_traceback import save_error_traceback
 from .._error_output_model import ErrorResponse
 from .._get_code import get_code_async
+from ._traceback import format_traceback
 
 async def exception_handler(error: BaseException) -> None:
     error_time = time.time_ns()
@@ -51,9 +52,16 @@ async def exception_handler(error: BaseException) -> None:
             code = "[Invalid Code Frame]"
     else:
         code = "[Code Reader Disabled]"
+    
+    if ConfigManager.get_configs().global_exception_handler.repeater_traceback.enable:
+        traceback_str = await format_traceback(
+            exclude_library_code = ConfigManager.get_configs().global_exception_handler.repeater_traceback.exclude_library_code,
+            read_last_frame_only = ConfigManager.get_configs().global_exception_handler.repeater_traceback.read_last_frame_only,
+        )
+    else:
+        traceback_str = traceback.format_exc()
 
     # 记录异常日志
-    traceback_str = traceback.format_exc()
     if is_critical_exception:
         logger.critical(
             (
