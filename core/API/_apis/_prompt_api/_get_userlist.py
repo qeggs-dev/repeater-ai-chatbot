@@ -1,13 +1,10 @@
-from ..._resource import (
-    chat,
-    app
-)
+from ..._resource import Resource
 from fastapi.responses import (
     ORJSONResponse,
 )
 from loguru import logger
 
-@app.get("/userdata/prompt/userlist")
+@Resource.app.get("/userdata/prompt/userlist")
 async def get_prompt_userlist():
     """
     Endpoint for getting prompt user list
@@ -16,7 +13,7 @@ async def get_prompt_userlist():
         ORJSONResponse: User ID list
     """
     # 获取所有用户ID
-    userid_list = await chat.prompt_manager.get_all_user_id()
+    userid_list = await Resource.core.prompt_manager.get_all_user_id()
 
     logger.info("Get prompt user list")
 

@@ -1,8 +1,4 @@
-from ...._resource import (
-    app,
-    chat,
-    browser_pool_manager
-)
+from ...._resource import Resource
 from .....Markdown_Render import (
     markdown_to_html,
     Styles,
@@ -39,7 +35,7 @@ delayed_tasks_pool = DelayedTasksPool()
 ExitHandler.add_function(delayed_tasks_pool.cancel_all())
 
 
-@app.post("/render/{user_id}")
+@Resource.app.post("/render/{user_id}")
 async def render(
     request: Request,
     user_id: str,
@@ -59,7 +55,7 @@ async def render(
     render_output_image_dir = Path(ConfigManager.get_configs().render.to_image.output_dir)
     
     # 获取用户配置
-    config = await chat.user_config_manager.load(user_id)
+    config = await Resource.core.user_config_manager.load(user_id)
         
     style_name, css = await get_style(
         user_id = user_id,

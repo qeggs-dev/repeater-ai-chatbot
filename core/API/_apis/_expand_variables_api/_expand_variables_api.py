@@ -1,6 +1,6 @@
 import warnings
 
-from ..._resource import chat, app
+from ..._resource import Resource
 from ....Assist_Struct import Request_User_Info
 from fastapi.responses import PlainTextResponse
 from loguru import logger
@@ -13,7 +13,7 @@ prompt_vp_loader = PromptVP_Loader()
 
 warnings.showwarning
 
-@app.post("/variable_expand/{user_id}")
+@Resource.app.post("/variable_expand/{user_id}")
 async def expand_variables(user_id: str, request: ExpandVariableRequest):
     """
     Endpoint for expanding variables

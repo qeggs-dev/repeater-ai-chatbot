@@ -2,7 +2,7 @@ from fastapi.responses import Response
 from fastapi import Request
 from typing import Callable, Awaitable
 
-from .._resource import app
+from .._resource import Resource
 from ...Global_Config_Manager import ConfigManager
 from ._except_handler import (
     exception_handler,
@@ -13,7 +13,7 @@ from ._except_handler import (
 warning_handler = WarningHandler()
 warning_handler.inject()
 
-@app.middleware("http")
+@Resource.app.middleware("http")
 async def catch_exceptions_middleware(request: Request, call_next: Callable[[Request], Awaitable[Response]]):
     try:
         return await call_next(request)

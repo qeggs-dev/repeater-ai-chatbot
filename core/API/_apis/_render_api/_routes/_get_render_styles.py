@@ -1,6 +1,4 @@
-from ...._resource import (
-    app
-)
+from ...._resource import Resource
 from .....Markdown_Render import (
     Styles,
 )
@@ -8,7 +6,7 @@ from fastapi.responses import ORJSONResponse
 from pathlib import Path
 from .....Global_Config_Manager import ConfigManager
 
-@app.get("/render_styles")
+@Resource.app.get("/render_styles")
 async def get_render_styles():
     styles_path = Path(ConfigManager.get_configs().render.markdown.styles_dir)
     styles = Styles(

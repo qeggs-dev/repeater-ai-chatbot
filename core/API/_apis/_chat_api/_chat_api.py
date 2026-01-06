@@ -10,7 +10,7 @@ from fastapi.responses import (
 from fastapi.exceptions import (
     HTTPException
 )
-from ..._resource import app, chat
+from ..._resource import Resource
 from ....Assist_Struct import Response
 from ....ApiInfo import APIGroupNotFoundError
 from ....CallAPI import CompletionsAPI
@@ -21,7 +21,7 @@ from ._requests import (
     ChatRequest
 )
 
-@app.post("/chat/completion/{user_id}")
+@Resource.app.post("/chat/completion/{user_id}")
 async def chat_endpoint(
     user_id: str,
     request: ChatRequest
@@ -32,7 +32,7 @@ async def chat_endpoint(
     if request.continue_completion and request.message:
         raise HTTPException(detail="Cannot send message when continuing completion", status_code=400)
     try:
-        context = await chat.chat(
+        context = await Resource.core.chat(
             user_id = user_id,
             message = request.message,
             user_info = request.user_info,
@@ -59,7 +59,7 @@ async def chat_endpoint(
         else:
             async def generator_wrapper(context: AsyncIterator[CompletionsAPI.Delta]) -> AsyncIterator[bytes]:
                 async for chunk in context:
-                    yield orjson.dumps(chunk.as_dict) + b"\n"
+                    yield orjson.dumps(chunk.model_dump(exclude_none=True)) + b"\n"
 
             return StreamingResponse(generator_wrapper(context), media_type="application/x-ndjson")
     except APIGroupNotFoundError as e:

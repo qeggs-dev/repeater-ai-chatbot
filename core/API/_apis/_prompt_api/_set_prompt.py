@@ -1,7 +1,4 @@
-from ..._resource import (
-    chat,
-    app
-)
+from ..._resource import Resource
 from fastapi import Form
 from fastapi.responses import (
     ORJSONResponse,
@@ -9,7 +6,7 @@ from fastapi.responses import (
 )
 from loguru import logger
 
-@app.put("/userdata/prompt/set/{user_id}")
+@Resource.app.put("/userdata/prompt/set/{user_id}")
 async def set_prompt(user_id: str, prompt: str = Form(...)):
     """
     Endpoint for setting prompt
@@ -22,7 +19,7 @@ async def set_prompt(user_id: str, prompt: str = Form(...)):
         PlainTextResponse: Success message
     """
     # 设置用户ID为user_id的提示词为prompt
-    await chat.prompt_manager.save(user_id, prompt)
+    await Resource.core.prompt_manager.save(user_id, prompt)
 
     logger.info("Set prompt", user_id=user_id)
 

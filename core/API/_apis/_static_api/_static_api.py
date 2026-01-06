@@ -1,4 +1,4 @@
-from ..._resource import app
+from ..._resource import Resource
 from fastapi.responses import FileResponse
 from fastapi import HTTPException
 from PathProcessors import validate_path
@@ -6,7 +6,7 @@ from pathlib import Path
 
 from ....Global_Config_Manager import ConfigManager
 
-@app.get("/static/{path:path}")
+@Resource.app.get("/static/{path:path}")
 async def static_file(path: str):
     """Return static files"""
     static_dir = Path(ConfigManager.get_configs().static.static_dir)

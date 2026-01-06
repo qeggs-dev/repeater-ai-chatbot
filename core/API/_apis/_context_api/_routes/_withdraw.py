@@ -1,7 +1,4 @@
-from ...._resource import (
-    chat,
-    app
-)
+from ...._resource import Resource
 from .....Context_Manager import (
     ContextObject
 )
@@ -12,7 +9,7 @@ from fastapi.responses import (
 from fastapi import HTTPException
 from loguru import logger
 
-@app.post("/userdata/context/withdraw/{user_id}")
+@Resource.app.post("/userdata/context/withdraw/{user_id}")
 async def withdraw_context(user_id: str, context_pair_num: int = Form(1, gt=0)):
     """
     Endpoint for withdrawing context
@@ -25,7 +22,7 @@ async def withdraw_context(user_id: str, context_pair_num: int = Form(1, gt=0)):
         ORJSONResponse: New context
     """
     # 从context_loader中加载用户ID为user_id的上下文
-    context_loader = await chat.get_context_loader()
+    context_loader = await Resource.core.get_context_loader()
     context = await context_loader.load_context(user_id)
     pop_items: list[ContextObject] = []
     
