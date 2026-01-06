@@ -62,7 +62,7 @@ def get_code(file_path: str | PathLike, line: int, dilation: int | None = None, 
                 else:
                     text_buffer.append(line_text)
             
-            if abs(index - line + 1) > dilation:
+            if (index - line + 1) > dilation:
                 break
 
     return "".join(text_buffer)
