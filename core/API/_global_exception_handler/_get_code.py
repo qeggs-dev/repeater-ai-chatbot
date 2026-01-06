@@ -2,7 +2,6 @@ import aiofiles
 
 from os import PathLike
 from ...Global_Config_Manager import ConfigManager
-from typing import Generator, Iterable
 
 class GetCode:
     def __init__(
@@ -14,12 +13,12 @@ class GetCode:
             reserve_space: bool | None = None,
             fill_char: str | None = None
         ):
-        self._file_path = file_path
-        self._line = line
-        self._dilation = dilation
-        self._with_numbers = with_numbers
-        self._reserve_space = reserve_space
-        self._fill_char = fill_char
+        self._file_path: str | PathLike = file_path
+        self._line: int = line
+        self._dilation: int | None = dilation
+        self._with_numbers: bool | None = with_numbers
+        self._reserve_space: bool | None = reserve_space
+        self._fill_char: str | None = fill_char
 
     async def get_code_async(self) -> str:
         text_buffer: list[str] = []
