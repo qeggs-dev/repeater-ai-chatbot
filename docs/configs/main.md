@@ -169,6 +169,18 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
             // 行数标记填充字符
             // 通常为空格
             "fill_char": " ",
+        },
+
+        // 使用 Repeater 自己的 Traceback 格式化函数
+        "repeater_traceback": {
+            // 是否启用
+            "enable": false,
+
+            // 是否排除库函数的 Traceback
+            "exclude_library_code": true,
+
+            // 是否仅读取最后一个栈帧的文件内容
+            "read_last_frame_only": true,
         }
     },
 
