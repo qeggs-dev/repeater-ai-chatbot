@@ -9,9 +9,7 @@ class Global_Exception_Handler_Config(BaseModel):
     critical_error_message: str = "Critical Server Error!"
     crash_exit: bool = True
     traceback_save_to: str | None = None
-    error_output_include_traceback: bool = False
-    format_validation_error: bool = True
-    record_warnings: bool = True
     record_all_exceptions: bool = False
+    error_output_include_traceback: bool = False
     repeater_traceback: Repeater_Traceback_Config = Field(default_factory=Repeater_Traceback_Config)
     code_reader: Code_Reader_Config = Field(default_factory=Code_Reader_Config)
