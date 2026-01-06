@@ -186,6 +186,9 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
 
             // 是否记录警告信息
             "record_warnings": true,
+
+            // 是否使用传统堆栈帧格式 (Python 原版 Traceback)
+            "traditional_stack_frame": false,
         }
     },
 
