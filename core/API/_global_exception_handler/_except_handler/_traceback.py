@@ -7,7 +7,7 @@ from .._get_code import GetCode
 from pathlib import Path
 from typing import Generator
 
-def is_library_code(filename: str):
+def is_library_code(filename: str | os.PathLike):
     if not filename:
         return True
     
@@ -38,19 +38,18 @@ def is_library_code(filename: str):
 
 def format_stack_frame(frames: traceback.StackSummary, exclude_library: bool = False) -> Generator[str, None, None]:
     for index, frame in enumerate(frames):
-        if is_library_code(frame.filename):
+        file_path = Path(frame.filename)
+        if is_library_code(file_path):
             frame_flag = "Library Code"
             if exclude_library:
-                yield f"[{index}] Frame ({frame_flag})"
+                yield f"[{index}] Frame ({frame_flag}): {file_path.as_posix()}:{frame.lineno}"
                 continue
         else:
             frame_flag = "App Code"
         
-        yield f"[{index}] Frame ({frame_flag}):"
-        yield f"    - File:"
-        yield f"        {frame.filename}:{frame.lineno}"
-        yield f"    - Line: {frame.lineno} ~ {frame.end_lineno}"
+        yield f"[{index}] Frame ({frame_flag}): {file_path.as_posix()}:{frame.lineno}"
         yield f"    - Function: {frame.name}"
+        yield f"    - Line: {frame.lineno} ~ {frame.end_lineno}"
         yield f"    - Columns: {frame.colno} ~ {frame.end_colno}"
         yield f"    - Locals:"
         indented_locals = json.dumps(frame.locals, indent=4, ensure_ascii=False).replace("\n", "\n" + " " * 8)
@@ -95,7 +94,7 @@ async def format_traceback(exclude_library: bool = False, enable_code_reader: bo
         "    - Depth of stack frame:\n"
         f"        {total_frame_depth}\n"
         "    - Raised from:\n"
-        f"        {raiser}:{line_start}:{column_start}\n"
+        f"        {raiser.as_posix()}:{line_start}:{column_start}\n"
         "    - Line Range:\n"
         f"        {line_start} ~ {line_end}"
         "    - Column Range:\n"
