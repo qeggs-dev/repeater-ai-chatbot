@@ -14,7 +14,6 @@ from ....Global_Config_Manager import ConfigManager
 from .._shutdown_server import shutdown_server
 from .._save_error_traceback import save_error_traceback
 from .._error_output_model import ErrorResponse
-from .._get_code import GetCode
 from ._traceback import format_traceback
 
 async def exception_handler(error: BaseException) -> None:
@@ -25,42 +24,12 @@ async def exception_handler(error: BaseException) -> None:
         is_critical_exception: bool = True
     else:
         is_critical_exception: bool = False
-    
-    error_message = str(error)
-    
-    if isinstance(error, ValidationError):
-        if ConfigManager.get_configs().global_exception_handler.format_validation_error:
-            format_text_buffer: list[str] = [
-                "Validation Error:"
-            ]
-            errors = error.errors()
-            for detail in errors:
-                format_text_buffer.append(
-                    f"- [{'.'.join(detail['loc'])}]: {detail['msg']}"
-                )
-            error_message = "\n".join(format_text_buffer)
-    
-    exc_type, exc_value, exc_traceback = sys.exc_info()
-    traceback_info: traceback.StackSummary = traceback.extract_tb(exc_traceback)
-    last_tb = traceback_info[-1]
-    raiser_file = Path(last_tb.filename)
 
-    if ConfigManager.get_configs().global_exception_handler.code_reader.enable:
-        if raiser_file.exists() and raiser_file.is_file() and last_tb.lineno is not None and last_tb.lineno > 0:
-            get_code = GetCode(
-                raiser_file,
-                last_tb.lineno
-            )
-            code = await get_code.get_code_async()
-        else:
-            code = "[Invalid Code Frame]"
-    else:
-        code = "[Code Reader Disabled]"
-    
     if ConfigManager.get_configs().global_exception_handler.repeater_traceback.enable:
         traceback_str = await format_traceback(
-            exclude_library_code = ConfigManager.get_configs().global_exception_handler.repeater_traceback.exclude_library_code,
-            read_last_frame_only = ConfigManager.get_configs().global_exception_handler.repeater_traceback.read_last_frame_only,
+            ConfigManager.get_configs().global_exception_handler.repeater_traceback.exclude_library_code,
+            ConfigManager.get_configs().global_exception_handler.code_reader.enable,
+            ConfigManager.get_configs().global_exception_handler.repeater_traceback.traditional_stack_frame,
         )
     else:
         traceback_str = traceback.format_exc()
@@ -70,51 +39,19 @@ async def exception_handler(error: BaseException) -> None:
         logger.critical(
             (
                 "Critical Exception:\n"
-                "{error_name}\n"
-                "    - Depth of stack frame:\n"
-                "        {total_tb_count}\n"
-                "    - Raised from:\n"
-                "        {raiser}\n"
-                "    - Message: \n"
-                "        {message}\n"
-                "    - Traceback: \n"
-                "        {traceback}\n"
-                "File: \n"
-                "{code}"
+                "{traceback}"
             ),
             user_id = "[Global Exception Recorder]",
-            total_tb_count = len(traceback_info),
-            raiser = raiser_file.as_posix(),
-            lineno = last_tb.lineno,
-            error_name = error.__class__.__name__,
-            message = error_message.replace("\n", "\n        "),
-            traceback = traceback_str.replace("\n", "\n        "),
-            code = code
+            traceback = traceback_str,
         )
     else:
         logger.exception(
             (
                 "Exception: \n"
-                "{error_name}\n"
-                "    - Depth of stack frame:\n"
-                "        {total_tb_count}\n"
-                "    - Raised from:\n"
-                "        {raiser}:{lineno}\n"
-                "    - Message: \n"
-                "        {message}\n"
-                "    - Traceback: \n"
-                "        {traceback}\n"
-                "File: \n"
-                "{code}"
+                "{traceback}"
             ),
             user_id = "[Global Exception Recorder]",
-            total_tb_count = len(traceback_info),
-            raiser = raiser_file.as_posix(),
-            lineno = last_tb.lineno,
-            error_name = error.__class__.__name__,
-            message = error_message.replace("\n", "\n        "),
-            traceback = traceback_str.replace("\n", "\n        "),
-            code = code
+            traceback = traceback_str
         )
 
     
