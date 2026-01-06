@@ -9,9 +9,12 @@ from AdminApikeyManager import AdminKeyManager
 from ._lifespan import lifespan
 from ..Global_Config_Manager import ConfigManager
 from ..Markdown_Render import HTML_Render
-# endregion
+from ._global_exception_handler import WarningHandler
 
-# region Global Objects
+# 初始化警告处理器
+warning_handler = WarningHandler()
+warning_handler.inject()
+
 app = FastAPI(
     title="RepeaterChatBackend",
     lifespan = lifespan
@@ -21,6 +24,7 @@ chat = Core()
 # 生成或读取API Key
 admin_api_key = AdminKeyManager()
 
+# 渲染配置
 render_config = ConfigManager.get_configs().render
 browser_pool_manager = HTML_Render.BrowserPoolManager(
     max_pages_per_browser = render_config.to_image.max_pages_per_browser,
