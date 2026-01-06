@@ -8,6 +8,10 @@ class GetCode:
             self,
             file_path: str | PathLike,
             line: int,
+            end_line: int | None = None,
+            column: int | None = None,
+            end_column: int | None = None,
+
             dilation: int | None = None,
             with_numbers: bool | None = None,
             reserve_space: int | None = None,
@@ -16,7 +20,15 @@ class GetCode:
             bottom_border_limit: int | None = None,
         ):
         self._file_path: str | PathLike = file_path
+
         self._line: int = line
+        if end_line is None:
+            self._end_line: int = line
+        else:
+            self._end_line: int = end_line
+        
+        self._column: int | None = column
+        self._end_column: int | None = end_column
 
         if fill_char is None:
             self._fill_char: str = ConfigManager.get_configs().global_exception_handler.code_reader.fill_char
@@ -57,7 +69,7 @@ class GetCode:
             mode="r",
             encoding=ConfigManager.get_configs().global_exception_handler.code_reader.code_encoding
         ) as f:
-            index: int = 0
+            index: int = 1
             async for line in f:
                 max_length = max(max_length, len(line))
                 processed_text = self._get_line_text(
@@ -66,13 +78,18 @@ class GetCode:
                 )
                 if isinstance(processed_text, str):
                     text_buffer.append(processed_text)
-                if (index - self._line + 1) > self._dilation:
+                if index == self._line and not (self._column is None and self._end_column is None):
+                    text_buffer.append(self._get_columns_pointer_line())
+                if (index - self._end_line) > self._dilation:
                     add_bottom_border = False
                     break
+                index += 1
         
+        if not text_buffer:
+            return ""
         if add_bottom_border:
             text_buffer.append(self._get_last_line(max_length = max_length))
-        return "".join(text_buffer)
+        return "\n".join(text_buffer)
                     
     def get_code(self) -> str:
         text_buffer: list[str] = []
@@ -83,7 +100,7 @@ class GetCode:
             mode="r",
             encoding=ConfigManager.get_configs().global_exception_handler.code_reader.code_encoding
         ) as f:
-            for index, line in enumerate(f):
+            for index, line in enumerate(f, start=1):
                 max_length = max(max_length, len(line))
                 processed_text = self._get_line_text(
                     text=line,
@@ -91,24 +108,46 @@ class GetCode:
                 )
                 if isinstance(processed_text, str):
                     text_buffer.append(processed_text)
-                if (index - self._line + 1) > self._dilation:
+                if index == self._line and not (self._column is None and self._end_column is None):
+                    text_buffer.append(self._get_columns_pointer_line())
+                if (index - self._end_line) > self._dilation:
                     add_bottom_border = False
                     break
         
+        if not text_buffer:
+            return ""
         if add_bottom_border:
             text_buffer.append(self._get_last_line(max_length = max_length))
-        return "".join(text_buffer)
+        return "\n".join(text_buffer)
+    
+    def _get_columns_pointer_line(self):
+        spaces = self._fill_char * self._reserve_space
+        
+        if self._column is None and self._end_column is None:
+            raise ValueError("Column is None")
+        elif self._column is None:
+            pointer_offset_space = ""
+            pointer_text = "^" * self._end_column
+        elif self._end_column is None:
+            pointer_offset_space = " " * self._column
+            pointer_text = "^~"
+        else:
+            pointer_offset_space = " " * self._column
+            pointer_text = "^" * self._end_column
+
+        text = f"│{spaces}│ {pointer_offset_space}{pointer_text}"
+        return text
     
     def _get_line_text(
             self,
             text: str,
             index: int,
         ) -> str | None:
-
-        if abs(index - self._line + 1) <= self._dilation:
+        text = text.strip("\n")
+        if abs(index - self._line) <= self._dilation:
             if self._with_numbers:
-                index_char = str(index + 1).rjust(self._reserve_space, self._fill_char)
-                if index + 1 == self._line:
+                index_char = str(index).rjust(self._reserve_space, self._fill_char)
+                if self._end_line >= index >= self._line:
                     if index_char.startswith(self._fill_char):
                         index_char = f">{index_char[1:]}"
                     else:
@@ -129,14 +168,14 @@ class GetCode:
         if self._bottom_border_limit is not None:
             bottom_border_limit = self._bottom_border_limit
         else:
-            bottom_border_limit = get_terminal_size().columns
+            bottom_border_limit = get_terminal_size().columns - self._reserve_space - 2
         
         if bottom_border_limit > 0:
             text_buffer.append("┴")
         else:
             text_buffer.append("┘")
         
-        for i in range(bottom_border_limit):
+        for i in range(min(bottom_border_limit, max_length)):
             text_buffer.append("─")
 
         return "".join(text_buffer)
