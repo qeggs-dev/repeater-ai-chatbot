@@ -111,7 +111,7 @@ async def render(
     end_of_md_to_html = time.monotonic_ns()
 
     # 生成图片
-    result = await browser_pool_manager.render_html(
+    result = await Resource.browser_pool_manager.render_html(
         html_content = html,
         output_path = str(render_output_image_dir / filename),
         browser_type = browser_type,
