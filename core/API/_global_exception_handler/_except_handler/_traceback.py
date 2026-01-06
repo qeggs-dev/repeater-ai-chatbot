@@ -1,10 +1,11 @@
 import os
 import sys
+import json
 import traceback
 
-from pathlib import Path
-
 from .._get_code import GetCode
+from pathlib import Path
+from typing import Generator
 
 def is_library_code(filename: str):
     if not filename:
@@ -35,39 +36,80 @@ def is_library_code(filename: str):
     
     return False
 
-async def format_traceback(exclude_library_code: bool = False, read_last_frame_only: bool = False):
-    exc_type, exc_value, exc_traceback = sys.exc_info()
-    text_buffer: list[str] = []
-    text_buffer.append("Traceback:")
-    frames = traceback.extract_tb(exc_traceback)
+def format_stack_frame(frames: traceback.StackSummary, exclude_library: bool = False) -> Generator[str, None, None]:
     for index, frame in enumerate(frames):
         if is_library_code(frame.filename):
             frame_flag = "Library Code"
-            if exclude_library_code:
-                text_buffer.append(f"[{index}] Frame ({frame_flag})")
+            if exclude_library:
+                yield f"[{index}] Frame ({frame_flag})"
                 continue
         else:
             frame_flag = "App Code"
         
-        text_buffer.append(
-            f"[{index}] Frame ({frame_flag}):\n"
-            f"    - File:\n"
-            f"        {frame.filename}:{frame.lineno}\n"
-            f"    - Line:\n"
-            f"        {frame.lineno}\n"
-            f"    - Function:\n"
-            f"        {frame.name}"
-        )
+        yield f"[{index}] Frame ({frame_flag}):"
+        yield f"    - File:"
+        yield f"        {frame.filename}:{frame.lineno}"
+        yield f"    - Line: {frame.lineno} ~ {frame.end_lineno}"
+        yield f"    - Function: {frame.name}"
+        yield f"    - Columns: {frame.colno} ~ {frame.end_colno}"
+        yield f"    - Locals:"
+        indented_locals = json.dumps(frame.locals, indent=4, ensure_ascii=False).replace("\n", "\n" + " " * 8)
+        yield f"        {indented_locals}"
 
-        if not read_last_frame_only or index == len(frames) - 1:
-            get_code = GetCode(frame.filename, frame.lineno)
-            code_text = await get_code.get_code_async()
-            indented_code_text = code_text.replace('\n', '\n        ')
-            text_buffer.append(
-                f"    - Code:\n"
-                f"        {indented_code_text}"
+
+async def format_traceback(exclude_library: bool = False, enable_code_reader: bool = False, traditional_stack_frame: bool = False):
+    exc_type, exc_value, exc_traceback = sys.exc_info()
+    frames = traceback.extract_tb(exc_traceback)
+    last_frame = frames[-1]
+    total_frame_depth = len(frames)
+    raiser = Path(last_frame.filename)
+    line_start = last_frame.lineno
+    line_end = last_frame.end_lineno
+    column_start = last_frame.colno
+    column_end = last_frame.end_colno
+    error_name = exc_value.__class__.__name__
+    indented_message = str(exc_value).replace("\n", "\n" + " " * 8)
+    if traditional_stack_frame:
+        traceback_str = traceback.format_exc()
+    else:
+        traceback_str = "\n".join(format_stack_frame(frames, exclude_library))
+    indented_traceback = traceback_str.replace("\n", "\n" + " " * 8)
+
+    if enable_code_reader:
+        if raiser.exists() and raiser.is_file() and last_frame.lineno is not None and last_frame.lineno > 0:
+            get_code = GetCode(
+                raiser,
+                last_frame.lineno,
+                last_frame.end_lineno,
+                last_frame.colno,
+                last_frame.end_colno
             )
-    text_buffer.append(f"Exception: {exc_type.__name__}")
-    text_buffer.append(f"Message: \n{exc_value}")
-    return "\n".join(text_buffer)
+            code = await get_code.get_code_async()
+        else:
+            code = "[Invalid Code Frame]"
+    else:
+        code = "[Code Reader Disabled]"
+    
+    format_text = (
+        f"{error_name}\n"
+        "    - Depth of stack frame:\n"
+        f"        {total_frame_depth}\n"
+        "    - Raised from:\n"
+        f"        {raiser}:{line_start}:{column_start}\n"
+        "    - Line Range:\n"
+        f"        {line_start} ~ {line_end}"
+        "    - Column Range:\n"
+        f"        {column_start} ~ {column_end}\n"
+        "    - Message: \n"
+        f"        {indented_message}\n"
+        "    - Traceback: \n"
+        f"        {indented_traceback}\n"
+    )
+    if enable_code_reader:
+        format_text += (
+            "File Context: \n"
+            f"{code}\n"
+        )
+    
+    return format_text
     
