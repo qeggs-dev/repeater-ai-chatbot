@@ -73,7 +73,7 @@ async def exception_handler(error: Exception) -> None:
             raiser = raiser_file.as_posix(),
             lineno = last_tb.lineno,
             error_name = error.__class__.__name__,
-            message = str(error).replace("\n", "\n        "),
+            message = error_message.replace("\n", "\n        "),
             traceback = traceback_str.replace("\n", "\n        "),
             code = code
         )
@@ -99,7 +99,7 @@ async def exception_handler(error: Exception) -> None:
             raiser = raiser_file.as_posix(),
             lineno = last_tb.lineno,
             error_name = error.__class__.__name__,
-            message = str(error).replace("\n", "\n        "),
+            message = error_message.replace("\n", "\n        "),
             traceback = traceback_str.replace("\n", "\n        "),
             code = code
         )
