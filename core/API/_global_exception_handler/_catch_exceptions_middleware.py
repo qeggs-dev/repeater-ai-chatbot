@@ -14,10 +14,6 @@ from ._except_handler import (
 async def catch_exceptions_middleware(request: Request, call_next: Callable[[Request], Awaitable[Response]]):
     try:
         return await call_next(request)
-    except Warning as w:
-        if ConfigManager().get_configs().global_exception_handler.record_warnings:
-            await warning_handler(w)
-        raise
     except Exception as e:
         return await exception_handler(e)
     except BaseException as e:
