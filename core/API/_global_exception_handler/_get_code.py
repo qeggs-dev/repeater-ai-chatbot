@@ -11,7 +11,9 @@ class GetCode:
             dilation: int | None = None,
             with_numbers: bool | None = None,
             reserve_space: int | None = None,
-            fill_char: str | None = None
+            fill_char: str | None = None,
+            add_bottom_border: bool | None = None,
+            bottom_border_limit: int | None = None,
         ):
         self._file_path: str | PathLike = file_path
         self._line: int = line
@@ -35,6 +37,16 @@ class GetCode:
             self._reserve_space: int = ConfigManager.get_configs().global_exception_handler.code_reader.reserve_space
         else:
             self._reserve_space: int = reserve_space
+        
+        if add_bottom_border is None:
+            self._add_bottom_border: bool = ConfigManager.get_configs().global_exception_handler.code_reader.add_bottom_border
+        else:
+            self._add_bottom_border: bool = add_bottom_border
+
+        if bottom_border_limit is None:
+            self._bottom_border_limit: int = ConfigManager.get_configs().global_exception_handler.code_reader.bottom_border_limit
+        else:
+            self._bottom_border_limit: int = bottom_border_limit
 
     async def get_code_async(self) -> str:
         text_buffer: list[str] = []
@@ -55,7 +67,9 @@ class GetCode:
                     text_buffer.append(processed_text)
                 if (index - self._line + 1) > self._dilation:
                     break
-        text_buffer.append(self._get_last_line(max_length = max_length))
+        
+        if self._add_bottom_border:
+            text_buffer.append(self._get_last_line(max_length = max_length))
         return "".join(text_buffer)
                     
     def get_code(self) -> str:
@@ -76,8 +90,9 @@ class GetCode:
                     text_buffer.append(processed_text)
                 if (index - self._line + 1) > self._dilation:
                     break
-
-        text_buffer.append(self._get_last_line(max_length = max_length))
+        
+        if self._add_bottom_border:
+            text_buffer.append(self._get_last_line(max_length = max_length))
         return "".join(text_buffer)
     
     def _get_line_text(
@@ -101,10 +116,26 @@ class GetCode:
     
     def _get_last_line(self, max_length: int) -> str:
         text_buffer: list[str] = []
+        
         text_buffer.append("└")
+
         for i in range(self._reserve_space):
             text_buffer.append("─")
-        text_buffer.append("┴")
-        for i in range(min(get_terminal_size().columns, max_length) - self._reserve_space - 2):
+
+        bottom_border_limit: int = min(
+            get_terminal_size().columns, max_length
+        ) - self._reserve_space - 2
+
+        if self._bottom_border_limit is not None:
+            bottom_border_limit = min(
+                bottom_border_limit, self._bottom_border_limit
+            )
+        if bottom_border_limit > 0:
+            text_buffer.append("┴")
+        else:
+            text_buffer.append("┘")
+        
+        for i in range(bottom_border_limit):
             text_buffer.append("─")
+
         return "".join(text_buffer)
