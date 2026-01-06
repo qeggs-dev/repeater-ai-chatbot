@@ -122,14 +122,11 @@ class GetCode:
         for i in range(self._reserve_space):
             text_buffer.append("─")
 
-        bottom_border_limit: int = min(
-            get_terminal_size().columns, max_length
-        ) - self._reserve_space - 2
-
         if self._bottom_border_limit is not None:
-            bottom_border_limit = min(
-                bottom_border_limit, self._bottom_border_limit
-            )
+            bottom_border_limit = self._bottom_border_limit
+        else:
+            bottom_border_limit = get_terminal_size().columns
+        
         if bottom_border_limit > 0:
             text_buffer.append("┴")
         else:
