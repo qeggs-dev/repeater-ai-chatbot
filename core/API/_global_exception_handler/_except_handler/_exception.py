@@ -44,10 +44,13 @@ async def exception_handler(error: Exception) -> None:
     last_tb = traceback_info[-1]
     raiser_file = Path(last_tb.filename)
 
-    if raiser_file.exists() and raiser_file.is_file() and last_tb.lineno is not None and last_tb.lineno > 0:
-        code = await get_code_async(raiser_file, last_tb.lineno)
+    if ConfigManager.get_configs().global_exception_handler.code_reader.enable:
+        if raiser_file.exists() and raiser_file.is_file() and last_tb.lineno is not None and last_tb.lineno > 0:
+            code = await get_code_async(raiser_file, last_tb.lineno)
+        else:
+            code = "[Invalid Code Frame]"
     else:
-        code = "[No Code]"
+        code = "[Code Reader Disabled]"
 
     # 记录异常日志
     traceback_str = traceback.format_exc()

@@ -34,7 +34,12 @@ class WarningHandler:
             file_path = Path(filename)
 
             if ConfigManager().get_configs().global_exception_handler.code_reader.enable:
-                code = get_code(file_path, lineno)
+                if file_path.exists() and file_path.is_file() and lineno > 0:
+                    code = get_code(file_path, lineno)
+                else:
+                    code = "[Invalid Code Frame]"
+            else:
+                code = "[Code Reader Disabled]"
 
             # 记录异常日志
             logger.warning(
