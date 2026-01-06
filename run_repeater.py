@@ -1,9 +1,6 @@
-from environs import Env
-env = Env()
-env.read_env()
-
-import uvicorn
 import sys
+import uvicorn
+
 from environs import Env
 from core import (
     Global_Config_Manager,
@@ -14,8 +11,8 @@ from core import (
 from loguru import logger
 
 def main():
-    
     env = Env()
+    env.read_env()
     config_loader = Global_Config_Manager.ConfigManager()
     config_loader.update_base_path(
         env.path("CONFIG_DIR", "./configs/project_configs"),
@@ -24,6 +21,7 @@ def main():
     config_loader.load(
         create_if_missing=True
     )
+    Core_API.Resource.init_all()
 
     host = "0.0.0.0" # 默认监听所有地址
     port = 8000 # 默认监听8000端口
