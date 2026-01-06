@@ -270,4 +270,4 @@ class ContextLoader:
         :param reduce_to_text: 是否将上下文对象转换为纯文本
         """
         await self._context_manager.save(user_id, context.to_context(reduce_to_text = reduce_to_text))
-        logger.info(f"Save Context: {len(context)}", user_id = user_id)
+        logger.info(f"Save Context: {context.context_item_length}", user_id = user_id)
