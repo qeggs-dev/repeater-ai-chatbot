@@ -45,9 +45,6 @@ from .ApiInfo import (
     ApiObject,
 )
 from . import Request_Log
-from .Logger_Init import (
-    logger_init
-)
 from TextProcessors import (
     PromptVP
 )
@@ -60,11 +57,6 @@ from .Text_Template_Processer import (
 class Core:
     # region > init
     def __init__(self, max_concurrency: int | None = None):
-        # 初始化日志
-        logger_init(
-            ConfigManager.get_configs().logger,
-        )
-
         # 全局锁(用于获取会话锁)
         self.lock = asyncio.Lock()
 

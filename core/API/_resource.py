@@ -12,6 +12,7 @@ from AdminApikeyManager import AdminKeyManager
 from .._core import Core
 from ..Global_Config_Manager import ConfigManager
 from ..Markdown_Render import HTML_Render
+from ..Logger_Init import logger_init
 from ._lifespan import lifespan
 from ._info import __version__
 
@@ -48,6 +49,7 @@ class Resource:
 
     @classmethod
     def init_all(cls):
+        cls.init_logger()
         cls.init_core()
         cls.init_admin_key_manager()
         cls.init_browser_pool_manager()
@@ -55,6 +57,13 @@ class Resource:
     @classmethod
     def init_core(cls):
         cls.core = Core()
+    
+    @classmethod
+    def init_logger(cls):
+        # 初始化日志
+        logger_init(
+            ConfigManager.get_configs().logger,
+        )
 
     @classmethod
     def init_admin_key_manager(cls):
