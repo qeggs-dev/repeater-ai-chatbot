@@ -133,12 +133,6 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
         // 如果该值为 null 则程序会跳过这一步骤
         // 但日志中的错误追踪不受影响
         "traceback_save_to": "./workspace/crash_log",
-        
-        // 是否使用自定义的 pydantic.ValidationError 格式化信息
-        "format_validation_error": true,
-
-        // 是否记录警告信息
-        "record_warnings": true,
 
         // 是否记录所有异常(比如 KeyboardInterrupt)
         "record_all_exceptions": true,
@@ -186,9 +180,12 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
 
             // 是否排除库函数的 Traceback
             "exclude_library_code": true,
+        
+            // 是否使用自定义的 pydantic.ValidationError 格式化信息
+            "format_validation_error": true,
 
-            // 是否仅读取最后一个栈帧的文件内容
-            "read_last_frame_only": true,
+            // 是否记录警告信息
+            "record_warnings": true,
         }
     },
 
@@ -272,10 +269,8 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
             }
         },
         "time": {
-            // 时间偏移量，单位为小时
-            // 如果为0，则是UTC时间
-            // 此参数仅影响文本展开器的部分变量
-            "time_offset": 0.0
+            // 时区字符串
+            "timezone": "Asia/Shanghai"
         }
     },
 
@@ -452,6 +447,7 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
     "web": {
         // Index Web 文件路径
         // 如果不填写这个项目，那么默认会使用内置的索引页面
+        // 你也可以使用这个来为 Repeater 创建一个自定义前端
         "index_web_file": "./static/index.html"
     }
 }
