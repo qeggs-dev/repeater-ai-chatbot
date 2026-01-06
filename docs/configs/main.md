@@ -134,14 +134,42 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
         // 但日志中的错误追踪不受影响
         "traceback_save_to": "./workspace/crash_log",
         
-        // 是否简化 Validation Error 的信息
+        // 是否使用自定义的 pydantic.ValidationError 格式化信息
         "format_validation_error": true,
 
         // 是否记录警告信息
         "record_warnings": true,
 
         // 是否记录所有异常(比如 KeyboardInterrupt)
-        "record_all_exceptions": true
+        "record_all_exceptions": true,
+
+        // 代码读取器配置
+        // 通常是为了更直观的显示错误位置
+        "code_reader": {
+            // 是否启用代码读取器
+            "enable": true,
+
+            // 读取代码文件时使用的编码
+            "code_encoding": "utf-8",
+
+            // 读取代码文件从错误发生行开始向两边扩展的行数
+            "code_line_dilation": 3,
+
+            // 读取时是否添加行数标记
+            "with_numbers": true,
+
+            // 行数标记所占用的字符长度
+            // 默认为5
+            // 即行数在5个字符的最右边
+            // 举例：
+            // |    1| def foo():
+            // |>   2|     raise Exception("Error")
+            "reserve_space": 5,
+
+            // 行数标记填充字符
+            // 通常为空格
+            "fill_char": " ",
+        }
     },
 
     // Logger 配置
