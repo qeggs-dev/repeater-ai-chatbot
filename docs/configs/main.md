@@ -197,14 +197,20 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
         // Log 文件输出路径
         "file_path": "./logs/repeater-log-{time:YYYY-MM-DD_HH-mm-ss.SSS}.log",
 
+        // Log 控制台输出格式
+        "console_format": "<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | <level>{level: <8}</level> | <cyan>{extra[user_id]}</cyan> - <level>{message}</level>",
+
+        // Log 文件输出格式
+        "file_format": "{time:YYYY-MM-DD HH:mm:ss.SSS} | {level: <8} | {extra[user_id]} - {message}",
+
         // Log 级别
         "level": "INFO",
 
         // Log 轮换设置
-        "rotation": "10 MB",
+        "rotation": "1 days",
 
         // Log 保留设置
-        "retention": "7 days",
+        "retention": "1 months",
 
         // Log 过期后执行的操作
         "compression": "zip"
