@@ -21,7 +21,7 @@ def main():
     config_loader.load(
         create_if_missing=True
     )
-    # Core_API.Resource.init_all()
+    Core_API.Resource.init_all()
 
     host = "0.0.0.0" # 默认监听所有地址
     port = 8000 # 默认监听8000端口
