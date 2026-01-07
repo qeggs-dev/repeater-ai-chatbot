@@ -94,6 +94,11 @@
             "name": "python-box",
             "version_mode": "==",
             "version": "7.3.2"
+        },
+        {
+            "name": "tzdata",
+            "version_mode": "==",
+            "version": "2025.2"
         }
     ],
     "run_cmd_need_to_ask": false,
