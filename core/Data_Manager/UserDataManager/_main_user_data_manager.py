@@ -11,7 +11,7 @@ from PathProcessors import validate_path, sanitize_filename
 from ...Global_Config_Manager import ConfigManager
 
 class MainManager:
-    def __init__(self, base_name: str, cache_metadata:bool = False, cache_data:bool = False, branches_dir_name:str = "ParallelData"):
+    def __init__(self, base_name: str, cache_metadata:bool = False, cache_data:bool = False, branches_dir_name:str = "branches"):
         self._base_path = Path(ConfigManager.get_configs().user_data.dir)
         self._base_name = sanitize_filename(base_name)
         if not validate_path(self._base_path, self._base_name):
