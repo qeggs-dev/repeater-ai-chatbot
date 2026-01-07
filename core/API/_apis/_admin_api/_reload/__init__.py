@@ -5,7 +5,7 @@ from ._reload_api import (
 )
 
 __all__ = [
-    'reload_apiinfo_api',
-    'reload_blacklist_api',
-    'reload_configs_api'
+    "reload_apiinfo_api",
+    "reload_blacklist_api",
+    "reload_configs_api"
 ]

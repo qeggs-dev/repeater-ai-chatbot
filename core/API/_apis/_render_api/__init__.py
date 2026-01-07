@@ -4,6 +4,6 @@ from ._routes import (
 )
 
 __all__ = [
-    'render',
-    'get_render_styles',
+    "render",
+    "get_render_styles",
 ]
