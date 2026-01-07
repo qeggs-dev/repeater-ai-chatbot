@@ -1,5 +1,6 @@
 from pydantic import BaseModel, ConfigDict
 from ._log_level import LogLevel
+from ._log_compression import CompressionMode
 
 class Logger_Config(BaseModel):
     model_config = ConfigDict(case_sensitive=False)
@@ -8,4 +9,4 @@ class Logger_Config(BaseModel):
     level: LogLevel = LogLevel.DEBUG
     rotation: str = "1 days"
     retention: str = "7 days"
-    compression: str = "zip"
+    compression: CompressionMode | None = CompressionMode.ZIP
