@@ -9,4 +9,6 @@ class Logger_Config(BaseModel):
     level: LogLevel = LogLevel.DEBUG
     rotation: str = "1 days"
     retention: str = "7 days"
+    console_format: str = "<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | <level>{level: <8}</level> | <cyan>{extra[user_id]}</cyan> - <level>{message}</level>"
+    file_format: str = "{time:YYYY-MM-DD HH:mm:ss.SSS} | {level: <8} | {extra[user_id]} - {message}"
     compression: CompressionMode | None = CompressionMode.ZIP
