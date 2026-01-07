@@ -19,19 +19,19 @@ def is_library_code(filename: str | os.PathLike):
     ]
     stdlib_dirs: list[Path] = [Path(dir) for dir in stdlib_dirs]
     for dir in stdlib_dirs.copy():
-        stdlib_dirs.append(dir / 'lib')
+        stdlib_dirs.append(dir / "lib")
     
     for lib_dir in stdlib_dirs:
         if file_path.is_relative_to(lib_dir):
             return True
     
     for path in sys.path:
-        if 'site-packages' in path and filename.startswith(path):
+        if "site-packages" in path and filename.startswith(path):
             return True
-        if 'dist-packages' in path and filename.startswith(path):
+        if "dist-packages" in path and filename.startswith(path):
             return True
     
-    if filename.startswith('<') and filename.endswith('>'):
+    if filename.startswith("<") and filename.endswith(">"):
         return True
     
     return False
