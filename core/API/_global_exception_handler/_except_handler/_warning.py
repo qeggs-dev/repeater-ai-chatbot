@@ -36,7 +36,10 @@ class WarningHandler:
             if ConfigManager().get_configs().global_exception_handler.code_reader.enable:
                 if file_path.exists() and file_path.is_file() and lineno > 0:
                     get_code = GetCode(file_path, lineno)
-                    code = get_code.get_code()
+                    try:
+                        code = get_code.get_code()
+                    except Exception as e:
+                        code = f"[Get Code Error: {e}]"
                 else:
                     code = "[Invalid Code Frame]"
             else:

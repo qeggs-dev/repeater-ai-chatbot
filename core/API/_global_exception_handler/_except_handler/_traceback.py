@@ -83,7 +83,10 @@ async def format_traceback(exclude_library: bool = False, enable_code_reader: bo
                 last_frame.colno,
                 last_frame.end_colno
             )
-            code = await get_code.get_code_async()
+            try:
+                code = await get_code.get_code_async()
+            except Exception as e:
+                code = f"[Get Code Error: {e}]"
         else:
             code = "[Invalid Code Frame]"
     else:
