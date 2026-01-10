@@ -12,6 +12,7 @@ import sys
 import time
 import json
 import shlex
+import ctypes
 import atexit
 import platform
 import traceback
@@ -64,7 +65,6 @@ def set_title(title: str):
     """
     if SYSTEM == "Windows":
         try:
-            import ctypes
             # Win API
             ctypes.windll.kernel32.SetConsoleTitleW(title)
         except Exception:
