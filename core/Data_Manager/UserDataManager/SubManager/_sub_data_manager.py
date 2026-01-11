@@ -160,6 +160,25 @@ class SubManager:
         """
         async with self._get_branch_lock(branch_id):
             try:
-                await asyncio.to_thread(os.remove, self._get_file_path(branch_id))
+                loop = asyncio.get_event_loop()
+                await loop.run_in_executor(None, os.remove, self._get_file_path(branch_id))
             except FileNotFoundError:
                 pass
+    
+    def binding(self, src_branch_id: str, dst_branch_id: str) -> None:
+        """Bind a branch to another branch.
+
+        Use hard links to bind a branch to another branch.
+
+        Args:
+            src_branch_id (str): The branch to bind from.
+            dst_branch_id (str): The branch to bind to.
+
+        Returns:
+            None
+        """
+        src_path = self._get_file_path(src_branch_id)
+        dst_path = self._get_file_path(dst_branch_id)
+        if dst_path.exists():
+            raise FileExistsError(f"{dst_path} already exists.")
+        src_path.hardlink_to(dst_path)
