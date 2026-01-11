@@ -3,4 +3,5 @@ from ._user_data_manager import (
     PromptManager,
     UserConfigManager
 )
-from .SubManager import BranchInfo
+from ._main_user_data_manager import UserDataManager
+from .Sub_Manager import BranchInfo

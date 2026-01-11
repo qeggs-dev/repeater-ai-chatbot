@@ -1,5 +1,5 @@
 
-from ._main_user_data_manager import MainManager as UserDataManager
+from ._main_user_data_manager import UserDataManager as UserDataManager
 from ...Global_Config_Manager import ConfigManager, Cache_Data_Config
 
 class ContextManager(UserDataManager[list]):

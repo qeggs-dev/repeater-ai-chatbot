@@ -7,13 +7,13 @@ from weakref import WeakValueDictionary
 from loguru import logger
 
 # ==== 自定义库 ==== #
-from .SubManager import SubManager, BranchInfo
+from .Sub_Manager import SubManager, BranchInfo
 from PathProcessors import validate_path, sanitize_filename
 from ...Global_Config_Manager import ConfigManager
 
 T = TypeVar("T")
 
-class MainManager(Generic[T]):
+class UserDataManager(Generic[T]):
     def __init__(
             self,
             base_name: str,
@@ -197,13 +197,13 @@ class MainManager(Generic[T]):
         await manager.binding(source_branch_id, branch_id)
 
     
-    async def set_default_branch_id(self, user_id: str, branch_id: str) -> None:
+    async def set_active_branch_id(self, user_id: str, branch_id: str) -> None:
         """
-        Set the default branch ID for a user.
+        Set the active branch id for a user.
 
         Args:
-            user_id (str): The user ID.
-            branch_id (str): The branch ID.
+            user_id (str): The user id.
+            branch_id (str): The branch id.
         """
         manager = self._get_sub_manager(user_id)
 
@@ -213,6 +213,19 @@ class MainManager(Generic[T]):
             metadata = {ConfigManager.get_configs().user_data.metadata_fields.branch_field: branch_id}
         
         await manager.save_metadata(metadata)
+    
+    async def get_active_branch_id(self, user_id: str) -> str:
+        """
+        Get the active branch id from a user.
+
+        Args:
+            user_id (str): The user id.
+        
+        Returns:
+            str: The default branch id.
+        """
+        branch_id = await self._get_branch_id(user_id)
+        return branch_id
     
     async def info(self, user_id: str) -> BranchInfo:
         """
@@ -228,19 +241,6 @@ class MainManager(Generic[T]):
         branch_id = await self._get_branch_id(user_id)
 
         return await manager.info(branch_id)
-    
-    async def get_default_branch_id(self, user_id: str) -> str:
-        """
-        Get the default branch ID from a user.
-
-        Args:
-            user_id (str): The user ID.
-        
-        Returns:
-            str: The default branch ID.
-        """
-        branch_id = await self._get_branch_id(user_id)
-        return branch_id
 
     async def get_all_user_id(self) -> list:
         """
