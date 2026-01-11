@@ -162,9 +162,9 @@ class UserDataManager(Generic[T]):
         loaded_data = await manager.load(source_branch_id, default_value)
         await manager.save(branch_id, loaded_data)
     
-    async def binding(self, user_id: str, new_branch_id: str, default: T | None = None) -> None:
+    async def bind(self, user_id: str, new_branch_id: str, default: T | None = None) -> None:
         """
-        Binding now active branch to an another branch.
+        Bind now active branch to an another branch.
 
         Args:
             user_id (str): User ID.
@@ -177,11 +177,11 @@ class UserDataManager(Generic[T]):
             await manager.save(branch_id, default_value)
         if manager.exists(new_branch_id):
             await manager.delete(new_branch_id)
-        await manager.binding(branch_id, new_branch_id)
+        await manager.bind(branch_id, new_branch_id)
     
-    async def binding_from(self, user_id: str, source_branch_id: str, default: T | None = None) -> None:
+    async def bind_from(self, user_id: str, source_branch_id: str, default: T | None = None) -> None:
         """
-        Binding an another branch to now active branch.
+        Bind an another branch to now active branch.
 
         Warning:
             This method will override now active branch.
@@ -197,7 +197,7 @@ class UserDataManager(Generic[T]):
             await manager.save(source_branch_id, default_value)
         if manager.exists(branch_id):
             await manager.delete(branch_id)
-        await manager.binding(source_branch_id, branch_id)
+        await manager.bind(source_branch_id, branch_id)
 
     
     async def set_active_branch_id(self, user_id: str, branch_id: str) -> None:
