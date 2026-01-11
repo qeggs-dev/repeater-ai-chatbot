@@ -7,7 +7,7 @@ from weakref import WeakValueDictionary
 from loguru import logger
 
 # ==== 自定义库 ==== #
-from .SubManager import SubManager
+from .SubManager import SubManager, BranchInfo
 from PathProcessors import validate_path, sanitize_filename
 from ...Global_Config_Manager import ConfigManager
 
@@ -183,6 +183,22 @@ class MainManager(Generic[T]):
             metadata = {ConfigManager.get_configs().user_data.metadata_fields.branch_field: branch_id}
         
         await manager.save_metadata(metadata)
+    
+    async def info(self, user_id: str) -> BranchInfo:
+        """
+        Get the user's information.
+
+        Args:
+            user_id (str): The user ID.
+        
+        Returns:
+            dict: The user's information.
+        """
+        user_id = sanitize_filename(user_id)
+        manager = self._get_sub_manager(user_id)
+        branch_id = await self._get_branch_id(user_id)
+
+        return await manager.info(branch_id)
     
     async def get_default_branch_id(self, user_id: str) -> str:
         """
