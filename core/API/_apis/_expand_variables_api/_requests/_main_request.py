@@ -1,4 +1,4 @@
-from .....Request_User_Info import Request_User_Info
+from .....Assist_Struct import Request_User_Info
 from pydantic import BaseModel, Field
 
 class ExpandVariableRequest(BaseModel):

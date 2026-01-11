@@ -28,6 +28,10 @@ from .._exceptions import *
 class CallAPI(CallNstreamAPIBase):
     async def _call(self, user_id:str, request: Request) -> Response:
         """调用API"""
+        # 检查参数
+        assert isinstance(user_id, str), "user_id must be str"
+        assert isinstance(request, Request), "request must be Request"
+
         # 创建模型响应对象
         model_response = Response()
         # 创建调用日志对象

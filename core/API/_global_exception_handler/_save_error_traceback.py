@@ -4,7 +4,7 @@ from datetime import datetime
 
 from ...Global_Config_Manager import ConfigManager
 
-async def save_error_traceback(time: datetime, traceback: str):
+async def save_error_traceback(time: datetime, traceback_str: str):
     """
     Saves the traceback to a file in the traceback_save_to directory
 
@@ -17,4 +17,4 @@ async def save_error_traceback(time: datetime, traceback: str):
     file_name = f"{time_str}.txt"
     file_path = base_traceback_save_path / file_name
     async with aiofiles.open(file_path, "w", encoding="utf-8") as f:
-        await f.write(traceback)
+        await f.write(traceback_str)

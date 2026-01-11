@@ -11,7 +11,13 @@ from ._browser_args import BrowserArgs
 from ._browser_stats import BrowserStats
 from ._render_config import RenderConfig
 from ._render_result import RenderResult
-from playwright.async_api import async_playwright, Browser, Page, Playwright
+from playwright.async_api import (
+    async_playwright,
+    Browser,
+    Page,
+    Playwright,
+    ProxySettings
+)
 from ._image_format_detector import ImageFormatDetector
 from loguru import logger
 from ...Lifespan import (
@@ -136,7 +142,7 @@ class BrowserPoolManager:
         
         # 应用kwargs覆盖
         if kwargs:
-            config_dict = config.as_dict
+            config_dict = config.model_dump()
             config_dict.update(kwargs)
             config = RenderConfig(**config_dict)
         
@@ -196,7 +202,7 @@ class BrowserPoolManager:
             # 确保页面和浏览器被释放
             if "browser" in locals() and "page" in locals():
                 await self._release_page(browser, page)
-    
+  
     async def _acquire_page_for_render(self, browser_type: BrowserType) -> tuple[Browser, Page, str]:
         """为渲染获取页面"""
         if browser_type == BrowserType.AUTO:
@@ -265,19 +271,19 @@ class BrowserPoolManager:
         match browser_type:
             case BrowserType.CHROME:
                 browser_creator = self._playwright.chromium
-                launch_args = {"channel": "chrome", **self.browser_args.as_dict}
+                launch_args = {"channel": "chrome", **self.browser_args.model_dump(exclude_none=True)}
             case BrowserType.MSEDGE:
                 browser_creator = self._playwright.chromium
-                launch_args = {"channel": "msedge", **self.browser_args.as_dict}
+                launch_args = {"channel": "msedge", **self.browser_args.model_dump(exclude_none=True)}
             case BrowserType.CHROMIUM:
                 browser_creator = self._playwright.chromium
-                launch_args = self.browser_args.as_dict.copy()
+                launch_args = self.browser_args.model_dump(exclude_none=True)
             case BrowserType.FIREFOX:
                 browser_creator = self._playwright.firefox
-                launch_args = self.browser_args.as_dict.copy()
+                launch_args = self.browser_args.model_dump(exclude_none=True)
             case BrowserType.WEBKIT:
                 browser_creator = self._playwright.webkit
-                launch_args = self.browser_args.as_dict.copy()
+                launch_args = self.browser_args.model_dump(exclude_none=True)
             case _:
                 raise ValueError(f"Unsupported browser type: {browser_type}")
         

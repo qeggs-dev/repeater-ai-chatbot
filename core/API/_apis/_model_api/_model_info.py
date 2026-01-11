@@ -1,17 +1,17 @@
-from ..._resource import app, chat
+from ..._resource import Resource
 from ....ApiInfo import ModelType
 from fastapi.responses import ORJSONResponse
 from fastapi import HTTPException
 from ._resources import MODEL_TYPES
 
-@app.get("/model/info/{model_type}/{model_uid}")
+@Resource.app.get("/model/info/{model_type}/{model_uid}")
 async def model_info(model_type: str, model_uid: str):
     if model_type not in MODEL_TYPES:
         raise HTTPException(
             status_code=400,
             detail="Invalid model type."
         )
-    model_list = chat.apiinfo.find(
+    model_list = Resource.core.apiinfo.find(
         ModelType(model_type),
         model_uid
     )

@@ -1,4 +1,4 @@
-from ..._resource import app, chat
+from ..._resource import Resource
 from PathProcessors import validate_path
 from fastapi import HTTPException
 from fastapi.responses import FileResponse
@@ -6,7 +6,7 @@ from pathlib import Path
 
 from ....Global_Config_Manager import ConfigManager
 
-@app.get("/file/render/{file_uuid}.png", name = "render_file")
+@Resource.app.get("/file/render/{file_uuid}.png", name = "render_file")
 async def get_render_file(file_uuid: str):
     """
     Endpoint for rendering file

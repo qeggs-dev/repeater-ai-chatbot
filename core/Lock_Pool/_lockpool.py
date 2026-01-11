@@ -61,7 +61,7 @@ class LockPool(Generic[T_KEY]):
             self.locks[key] = lock
             logger.debug(f"LockPool: Created lock for {repr(key)}")
             return lock
-        
+    
     def lock_count(self, key: T_KEY):
         with self._lock:
             return self._reference_count.get(key, 0)

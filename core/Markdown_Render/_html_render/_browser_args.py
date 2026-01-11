@@ -1,10 +1,18 @@
-from dataclasses import dataclass, asdict
 from pathlib import Path
 from typing import Any, Sequence
-from playwright.async_api import ProxySettings
+from pydantic import BaseModel, ConfigDict
 
-@dataclass
-class BrowserArgs:
+class ProxySettings(BaseModel):
+    server: str
+    bypass: str | None = None
+    username: str | None = None
+    password: str | None = None
+
+class BrowserArgs(BaseModel):
+    model_config = ConfigDict(
+        validate_assignment=True
+    )
+
     executable_path: Path | str | None = None
     channel: str | None = None
     args: Sequence[str] | None = None
@@ -22,7 +30,3 @@ class BrowserArgs:
     traces_dir: Path | str | None = None
     chromium_sandbox: bool | None = None
     firefox_user_prefs: dict[str, str | float | bool] | None = None
-
-    @property
-    def as_dict(self) -> dict[str, Any]:
-        return asdict(self)

@@ -9,8 +9,7 @@ class DelayedTasksPool:
     def __init__(self):
         self.tasks: set[asyncio.Task] = set()
     
-    async def _task_warper(self, sleep_time: float, task: Coroutine[None, None, T], id: str | None = None) -> T:
-        """Wrapper for tasks to add them to the pool"""
+    async def _task_warper(self, sleep_time: int | float, task: Coroutine[None, None, T], id: str | None = None) -> T:
         if id is None:
             id = task.__qualname__
         logger.trace(
@@ -55,7 +54,7 @@ class DelayedTasksPool:
         """Wait for all tasks in the pool to complete"""
         await asyncio.gather(*self.tasks)
         self.tasks.clear()
-    
+
     async def cancel_all(self, wait: bool = True):
         """Cancel all tasks in the pool"""
         for task in self.tasks:

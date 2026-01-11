@@ -2,8 +2,8 @@ import logging
 from loguru import logger
 
 class InterceptHandler(logging.Handler):
-    def __init__(self, extra_fields:dict | None = None):
-        super().__init__()
+    def __init__(self, level: int | str = logging.NOTSET, extra_fields:dict | None = None):
+        super().__init__(level)
         self.extra_fields = extra_fields or {}
 
     def emit(self, record: logging.LogRecord):

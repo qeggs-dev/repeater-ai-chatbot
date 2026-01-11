@@ -11,7 +11,6 @@ class LockPool(Generic[T_KEY]):
         self.locks: dict[T_KEY, asyncio.Lock] = {}
         self._reference_count : dict[T_KEY, int] = {}
     
-    
     async def get_lock(self, key: T_KEY) -> asyncio.Lock:
         async with self._lock:
             if key in self.locks:
@@ -62,7 +61,7 @@ class LockPool(Generic[T_KEY]):
             logger.debug(f"LockPool: Created lock for {repr(key)}")
             self.locks[key] = lock
             return lock
-        
+    
     async def lock_count(self, key: T_KEY):
         async with self._lock:
             return self._reference_count.get(key, 0)

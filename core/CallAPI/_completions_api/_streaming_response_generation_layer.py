@@ -1,4 +1,5 @@
 import sys
+
 from typing import AsyncGenerator, Self, TextIO
 from ._objects import Request, Delta, Response
 from ...Request_Log import RequestLog
@@ -20,7 +21,16 @@ class StreamingResponseGenerationLayer:
     :param request: 请求对象
     :param response_iterator: 原始响应迭代器
     """
-    def __init__(self, user_id: str, request: Request, response_iterator: AsyncGenerator[Delta, None], print_file: TextIO = sys.stdout) -> None:
+
+    def __init__(
+            self,
+            user_id: str,
+            request: Request,
+            response_iterator: AsyncGenerator[Delta, None],
+            print_file: TextIO = sys.stdout
+        ) -> None:
+
+
         self.request: Request = request
         self._response_iterator: AsyncGenerator[Delta, None] = response_iterator
         self._finished: bool = False
@@ -116,7 +126,7 @@ class StreamingResponseGenerationLayer:
             self.response.calling_log.stream_processing_end_time = stream_processing_end_time
             self.finally_stream()
             raise e
-    
+
     def _parse_delta(self, delta_data: Delta):
         # 记录会话开启时间
         if not self.response.created:

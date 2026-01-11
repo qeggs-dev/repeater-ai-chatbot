@@ -20,81 +20,22 @@
     "argument": null,
     "restart": true,
     "requirements": [
-        {
-            "name": "aiofiles",
-            "version_mode": "==",
-            "version": "24.1.0"
-        },
-        {
-            "name": "environs",
-            "version_mode": "==",
-            "version": "14.2.0"
-        },
-        {
-            "name": "pydantic",
-            "version_mode": "==",
-            "version": "2.11.7"
-        },
-        {
-            "name": "fastapi",
-            "version_mode": "==",
-            "version": "0.115.13"
-        },
-        {
-            "name": "python-multipart",
-            "version_mode": "==",
-            "version": "0.0.20"
-        },
-        {
-            "name": "loguru",
-            "version_mode": "==",
-            "version": "0.7.3"
-        },
-        {
-            "name": "openai",
-            "version_mode": "==",
-            "version": "1.90.0"
-        },
-        {
-            "name": "orjson",
-            "version_mode": "==",
-            "version": "3.10.18"
-        },
-        {
-            "name": "uvicorn",
-            "version_mode": "==",
-            "version": "0.34.3"
-        },
-        {
-            "name": "markdown",
-            "version_mode": "==",
-            "version": "3.8.2"
-        },
-        {
-            "name": "playwright",
-            "version_mode": "==",
-            "version": "1.56.0"
-        },
-        {
-            "name": "httpx",
-            "version_mode": "==",
-            "version": "0.28.1"
-        },
-        {
-            "name": "pyyaml",
-            "version_mode": "==",
-            "version": "6.0.2"
-        },
-        {
-            "name": "numpy",
-            "version_mode": "==",
-            "version": "2.3.4"
-        },
-        {
-            "name": "python-box",
-            "version_mode": "==",
-            "version": "7.3.2"
-        }
+        "aiofiles==24.1.0",
+        "environs==14.2.0",
+        "pydantic==2.11.7",
+        "fastapi==0.115.13",
+        "python-multipart==0.0.20",
+        "loguru==0.7.3",
+        "openai==1.90.0",
+        "orjson==3.10.18",
+        "uvicorn==0.34.3",
+        "markdown==3.8.2",
+        "playwright==1.56.0",
+        "httpx==0.28.1",
+        "pyyaml==6.0.2",
+        "numpy==2.3.4",
+        "python-box==7.3.2",
+        "tzdata==2025.2"
     ],
     "run_cmd_need_to_ask": false,
     "run_cmd_ask_default_values": {}

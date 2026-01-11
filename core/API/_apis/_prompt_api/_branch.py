@@ -1,7 +1,4 @@
-from ..._resource import (
-    chat,
-    app
-)
+from ..._resource import Resource
 from fastapi import Form
 from fastapi.responses import (
     ORJSONResponse,
@@ -9,7 +6,7 @@ from fastapi.responses import (
 )
 from loguru import logger
 
-@app.get("/userdata/prompt/branchs/{user_id}")
+@Resource.app.get("/userdata/prompt/branchs/{user_id}")
 async def get_prompt_branch_id_list(user_id: str):
     """
     Endpoint for getting prompt branch ID
@@ -21,14 +18,14 @@ async def get_prompt_branch_id_list(user_id: str):
         ORJSONResponse: Prompt branch ID
     """
     # 获取用户ID为user_id的提示词分支ID
-    branchs = await chat.prompt_manager.get_all_branch_id(user_id)
+    branchs = await Resource.core.prompt_manager.get_all_branch_id(user_id)
 
     logger.info("Get prompt branch", user_id=user_id)
 
     # 返回分支ID
     return ORJSONResponse(branchs)
 
-@app.get("/userdata/prompt/now_branch/{user_id}")
+@Resource.app.get("/userdata/prompt/now_branch/{user_id}")
 async def get_prompt_now_branch_id(user_id: str):
     """
     Endpoint for getting prompt branch ID
@@ -40,14 +37,14 @@ async def get_prompt_now_branch_id(user_id: str):
         PlainTextResponse: Now Branch ID
     """
     # 获取用户ID为user_id的提示词分支ID
-    branch_id = await chat.prompt_manager.get_default_branch_id(user_id)
+    branch_id = await Resource.core.prompt_manager.get_default_branch_id(user_id)
 
     logger.info("Get prompt branch", user_id=user_id)
 
     # 返回分支ID
     return PlainTextResponse(branch_id)
 
-@app.put("/userdata/prompt/change/{user_id}")
+@Resource.app.put("/userdata/prompt/change/{user_id}")
 async def change_prompt(user_id: str, new_branch_id: str = Form(...)):
     """
     Endpoint for changing prompt
@@ -61,7 +58,7 @@ async def change_prompt(user_id: str, new_branch_id: str = Form(...)):
     """
 
     # 设置用户ID为user_id的提示词为new_prompt_id
-    await chat.prompt_manager.set_default_branch_id(user_id, branch_name = new_branch_id)
+    await Resource.core.prompt_manager.set_default_branch_id(user_id, branch_name = new_branch_id)
 
     logger.info("Change prompt to {new_branch_id}", user_id=user_id, new_branch_id=new_branch_id)
 

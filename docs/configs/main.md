@@ -132,7 +132,64 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
         // 遇到问题时，保存 traceback 的目录
         // 如果该值为 null 则程序会跳过这一步骤
         // 但日志中的错误追踪不受影响
-        "traceback_save_to": "./workspace/crash_log"
+        "traceback_save_to": "./workspace/crash_log",
+
+        // 是否记录所有异常(比如 KeyboardInterrupt)
+        "record_all_exceptions": true,
+
+        // 代码读取器配置
+        // 通常是为了更直观的显示错误位置
+        "code_reader": {
+            // 是否启用代码读取器
+            "enable": true,
+
+            // 读取代码文件时使用的编码
+            "code_encoding": "utf-8",
+
+            // 读取代码文件从错误发生行开始向两边扩展的行数
+            "code_line_dilation": 3,
+
+            // 读取时是否添加行数标记
+            "with_numbers": true,
+
+            // 行数标记所占用的字符长度
+            // 默认为5
+            // 即行数在5个字符的最右边
+            // 举例：
+            // |    1| def foo():
+            // |>   2|     raise Exception("Error")
+            "reserve_space": 5,
+
+            // 行数标记填充字符
+            // 通常为空格
+            "fill_char": " ",
+
+            // 添加底部边框
+            // 一般长度上限为终端宽度减去行数标记所占的长度
+            "add_bottom_border": true,
+
+            // 底部边框延长线的长度上限
+            // 当值为 null 时，将使用终端宽度减去行数标记所占的长度
+            "bottom_border_limit": null
+        },
+
+        // 使用 Repeater 自己的 Traceback 格式化函数
+        "repeater_traceback": {
+            // 是否启用
+            "enable": false,
+
+            // 是否排除库函数的 Traceback
+            "exclude_library_code": true,
+        
+            // 是否使用自定义的 pydantic.ValidationError 格式化信息
+            "format_validation_error": true,
+
+            // 是否记录警告信息
+            "record_warnings": true,
+
+            // 是否使用传统堆栈帧格式 (Python 原版 Traceback)
+            "traditional_stack_frame": false,
+        }
     },
 
     // Logger 配置
@@ -140,14 +197,20 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
         // Log 文件输出路径
         "file_path": "./logs/repeater-log-{time:YYYY-MM-DD_HH-mm-ss.SSS}.log",
 
+        // Log 控制台输出格式
+        "console_format": "<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | <level>{level: <8}</level> | <cyan>{extra[user_id]}</cyan> - <level>{message}</level>",
+
+        // Log 文件输出格式
+        "file_format": "{time:YYYY-MM-DD HH:mm:ss.SSS} | {level: <8} | {extra[user_id]} - {message}",
+
         // Log 级别
         "level": "INFO",
 
         // Log 轮换设置
-        "rotation": "10 MB",
+        "rotation": "1 days",
 
         // Log 保留设置
-        "retention": "7 days",
+        "retention": "1 months",
 
         // Log 过期后执行的操作
         "compression": "zip"
@@ -215,10 +278,8 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
             }
         },
         "time": {
-            // 时间偏移量，单位为小时
-            // 如果为0，则是UTC时间
-            // 此参数仅影响文本展开器的部分变量
-            "time_offset": 0.0
+            // 时区字符串
+            "timezone": "Asia/Shanghai"
         }
     },
 
@@ -337,7 +398,14 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
         "workers": null,
 
         // 是否在文件发生变动时自动重启
-        "reload": null
+        "reload": null,
+
+        // 是否启动服务器
+        // 如果为 false
+        // 那么在初始化结束后
+        // 程序将会直接退出
+        // 而不是启动服务器
+        "run_server": true
     },
     // 静态文件配置
     "static": {
@@ -395,6 +463,7 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
     "web": {
         // Index Web 文件路径
         // 如果不填写这个项目，那么默认会使用内置的索引页面
+        // 你也可以使用这个来为 Repeater 创建一个自定义前端
         "index_web_file": "./static/index.html"
     }
 }

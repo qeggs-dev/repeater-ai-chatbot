@@ -19,7 +19,7 @@ def logger_init(config: Logger_Config):
     # 添加自定义处理器
     logger.add(
         sys.stderr,
-        format = "<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | <level>{level: <8}</level> | <cyan>{extra[user_id]}</cyan> - <level>{message}</level>",
+        format = config.console_format,
         filter = lambda record: "donot_send_console" not in record["extra"],
         level = config.level.value
     )
@@ -32,7 +32,7 @@ def logger_init(config: Logger_Config):
 
     logger.add(
         log_file,
-        format = "{time:YYYY-MM-DD HH:mm:ss.SSS} | {level: <8} | {extra[user_id]} - {message}",
+        format = config.file_format,
         level = config.level.value,
         enqueue = True,
         delay = True,

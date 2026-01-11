@@ -1,10 +1,13 @@
-from dataclasses import dataclass, asdict
+from pydantic import BaseModel, ConfigDict
 from ._enums import ImageFormat
 from typing import Any
 
-@dataclass
-class RenderConfig:
+class RenderConfig(BaseModel):
     """渲染配置"""
+    model_config = ConfigDict(
+        validate_assignment=True
+    )
+
     width: int = 1200
     height: int = 800
     full_page: bool = True
@@ -29,7 +32,3 @@ class RenderConfig:
             options["quality"] = min(max(self.quality, 1), 100)
         
         return options
-    
-    @property
-    def as_dict(self) -> dict[str, int | bool]:
-        return asdict(self)

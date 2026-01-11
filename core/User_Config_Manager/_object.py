@@ -1,5 +1,6 @@
 from pydantic import BaseModel, ConfigDict, field_validator, Field
 from zoneinfo import ZoneInfo, available_timezones
+from typing import Any
 
 class UserConfigs(BaseModel):
     """
@@ -28,6 +29,7 @@ class UserConfigs(BaseModel):
     user_profile: str | None = None
     timezone: float | str | None = None
     save_text_only: bool | None = True
+    additional_user_data: dict[str, Any] = Field(default_factory=dict)
 
     @field_validator("timezone")
     def check_timezone(cls, v):

@@ -7,11 +7,8 @@
   - [重载全局配置](./reload/configs.md)
   - [重载黑名单](./reload/blacklist.md)
 
-## 重新生成管理员密钥
-  - [重新生成管理员密钥](./regenerate/api_key.md)
-
-## 服务器手动崩溃
-  - [服务器手动崩溃](./crash/crash_api.md)
+## Debug API
+  - [Debug API](./debug/index.md)
 
 注：Admin Key 需要保证足够的随机性，
 程序会检查 Admin Key 的熵值，

@@ -23,7 +23,7 @@ class ContentUnit(BaseModel):
 
     def __len__(self) -> int:
         return len(self.content) + len(self.reasoning_content)
-    
+ 
     def to_content(self, remove_resoning_prompt: bool = False) -> dict[str, Any]:
         if remove_resoning_prompt:
             return self.model_dump(exclude = {"reasoning_content"})

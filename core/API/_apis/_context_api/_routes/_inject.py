@@ -1,7 +1,4 @@
-from ...._resource import (
-    chat,
-    app
-)
+from ...._resource import Resource
 from .....Context_Manager import (
     ContentUnit,
     ContentRole
@@ -11,7 +8,7 @@ from fastapi.responses import (
 )
 from loguru import logger
 
-@app.post("/userdata/context/inject/{user_id}")
+@Resource.app.post("/userdata/context/inject/{user_id}")
 async def inject_context(user_id: str, request: ContentUnit):
     """
     Injects a user's content into the context.
@@ -23,7 +20,7 @@ async def inject_context(user_id: str, request: ContentUnit):
     Returns:
         ORJSONResponse: A response indicating the success or failure of the operation.
     """
-    context_loader = await chat.get_context_loader()
+    context_loader = await Resource.core.get_context_loader()
     context = await context_loader.load_context(user_id)
 
     context.append(

@@ -14,6 +14,8 @@ from ._exceptions import *
 
 class ApiInfo:
     def __init__(self, case_sensitive: bool = False):
+        if not isinstance(case_sensitive, bool):
+            raise TypeError("case_sensitive must be a boolean")
         self._api_objs: dict[ModelType, dict[str, list[ApiObject]]] = {}
         self._case_sensitive: bool = case_sensitive
         self._api_info_async_lock = asyncio.Lock()
@@ -30,8 +32,6 @@ class ApiInfo:
 
     def _parse_api_groups(self, raw_api_groups: list[dict]) -> None:
         """Parse raw API groups data and populate indexes."""
-        if not isinstance(raw_api_groups, list):
-            raise ValueError("api_groups must be a list")
         default_timeout = ConfigManager.get_configs().model.default_timeout
         
         api_groups: ApiGroup = self._create_api_group(raw_api_groups)
@@ -62,10 +62,9 @@ class ApiInfo:
                 else:
                     self._api_objs[model.type][api_obj.uid].append(api_obj)
 
-
     def load(self, path: str | os.PathLike) -> None:
         """Load and parse API groups from a JSON/YAML file."""
-        path = Path(path)
+        path: Path = Path(path)
         if not path.exists():
             raise FileNotFoundError(f"File \"{path}\" does not exist")
         with self._api_info_lock:
@@ -92,8 +91,9 @@ class ApiInfo:
             else:
                 raise ValueError(f"Invalid file format: {path.suffix}")
 
-    async def load_async(self, path: Path) -> None:
+    async def load_async(self, path: str | os.PathLike) -> None:
         """Load and parse API groups from a JSON/YAML file."""
+        path: Path = Path(path)
         if not path.exists():
             raise FileNotFoundError(f"File \"{path}\" does not exist")
         async with self._api_info_async_lock:
@@ -132,9 +132,12 @@ class ApiInfo:
             return []
         
         return index_list.copy()
-    
+
     def uid_list(self, model_type: ModelType) -> list[str]:
         """Get a list of all model uids."""
+        if not isinstance(model_type, ModelType):
+            raise TypeError("model_type must be an instance of ModelType")
+        
         return list(self._api_objs[model_type].keys())
     
     @property

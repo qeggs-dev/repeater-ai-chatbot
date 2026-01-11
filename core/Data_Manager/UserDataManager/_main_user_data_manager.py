@@ -9,10 +9,9 @@ from loguru import logger
 from .SubManager import SubManager
 from PathProcessors import validate_path, sanitize_filename
 from ...Global_Config_Manager import ConfigManager
-from ._user_mainmanager_interface import UserMainManagerInterface
 
-class MainManager(UserMainManagerInterface):
-    def __init__(self, base_name: str, cache_metadata:bool = False, cache_data:bool = False, branches_dir_name:str = "ParallelData"):
+class MainManager:
+    def __init__(self, base_name: str, cache_metadata:bool = False, cache_data:bool = False, branches_dir_name:str = "branches"):
         self._base_path = Path(ConfigManager.get_configs().user_data.dir)
         self._base_name = sanitize_filename(base_name)
         if not validate_path(self._base_path, self._base_name):
@@ -166,7 +165,7 @@ class MainManager(UserMainManagerInterface):
         except Exception as e:
             logger.error(f"Write User Metadata File Error: {e}", user_id = user_id)
             raise
-
+    
     async def get_default_branch_id(self, user_id: str) -> str:
         user_id = sanitize_filename(user_id)
         manager = self.sub_managers.setdefault(

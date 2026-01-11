@@ -3,7 +3,7 @@
 手动触发服务器最高级别崩溃，
 主要用于调试目的
 
-- **`/admin/crash`**
+- **`/admin/debug/crash`**
   - **method**: `POST`
   - **Header**
     - `X-Admin-API-Key (str)` API 密钥

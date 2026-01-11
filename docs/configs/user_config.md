@@ -13,42 +13,69 @@
 
 ```json
 {
-    // (str) 时区设置，用于控制模板展开器中的{time}变量
+    // (str) 时区设置
+    // 用于控制模板展开器中的{time}变量
     "timezone": null,
-    // (str) 预设提示词，用于快速路由定义好的提示词文件
+    // (str) 预设提示词
+    // 用于快速路由定义好的提示词文件
     "parset_prompt_name": null,
-    // (str) 模型UID，用于指定消息处理模型
+    // (str) 模型UID
+    // 用于指定消息处理模型
     "model_uid": null,
-    // (float) 模型温度参数，温度越高模型输出的随机性就越高
+    // (float) 模型温度参数
+    // 温度越高模型输出的随机性就越高
     "temperature": null,
-    // (float) 模型Top-p参数，Top-p参数越低，模型在采样的时候就更倾向于使用更高概率的词
+    // (float) 模型Top-p参数
+    // Top-p参数越低
+    // 模型在采样的时候就更倾向于使用更高概率的词
     "top_p": null,
-    // (int) 最大生成长度，模型新生成的文本长度不能超过这个值
+    // (int) 最大生成长度
+    // 模型新生成的文本长度不能超过这个值
     "max_tokens": null,
-    // (int) 模型最大生成长度，模型生成文本长度不能超过这个值
+    // (int) 模型最大生成长度
+    // 模型生成文本长度不能超过这个值
     "max_completion_tokens": null,
-    // (list[str]) 模型停止生成文本的标志词，当生成的文本中包含这些词时，模型会停止生成
+    // (list[str]) 模型停止生成文本的标志词
+    // 当生成的文本中包含这些词时
+    // 模型会停止生成
     "stop": null,
-    // (float) 模型频率惩罚参数，频率惩罚参数越高，模型在生成文本时越倾向于使用新的词
+    // (float) 模型频率惩罚参数
+    // 频率惩罚参数越高
+    // 模型在生成文本时越倾向于使用新的词
     "frequency_penalty": null,
-    // (float) 模型存在性惩罚参数，存在性惩罚参数越高，模型越倾向于讨论新话题
+    // (float) 模型存在性惩罚参数
+    // 存在性惩罚参数越高
+    // 模型越倾向于讨论新话题
     "presence_penalty": null,
-    // (int) 定义上下文问的极限字数，Repeater会以一对消息为单位去删除过多的部分。
+    // (int) 定义上下文问的极限字数
+    // Repeater会以一对消息为单位去删除过多的部分。
     "context_shrink_limit": null,
-    // (str) 渲染风格，用于指定文本转图片时的CSS样式文件
+    // (str) 渲染风格
+    // 用于指定文本转图片时的CSS样式文件
     "render_style": null,
-    // (str) 渲染HTML模板，用于指定文本转图片时的HTML模板文件
+    // (str) 渲染HTML模板
+    // 用于指定文本转图片时的HTML模板文件
     "render_html_template": null,
-    // (str) 渲染HTML标题，用于指定文本转图片时的图片标题
+    // (str) 渲染HTML标题
+    // 用于指定文本转图片时的图片标题
     "render_title": null,
-    // (bool) 是否加载提示词，此选项会被API接口中传入的load_prompt参数覆盖
+    // (bool) 是否加载提示词
+    // 此选项会被API接口中传入的 load_prompt 参数覆盖
     "load_prompt": null,
-    // (bool) 是否保存上下文，此选项会被API接口中传入的save_context参数覆盖
+    // (bool) 是否保存上下文
+    // 此选项会被API接口中传入的 save_context 参数覆盖
     "save_context": null,
-    // (str) 用户资料，如果提示词中含有{user_profile}变量，将会展开为该值
+    // (str) 用户资料
+    // 如果提示词中含有{user_profile}变量
+    // 将会展开为该值
     "user_profile": null,
     // (bool) 是否在保存时丢弃非文本数据
-    "save_text_only": null
+    "save_text_only": null,
+    // (dict[str, Any]) 用户附加配置数据
+    // 用于存储某些与用户相关的数据
+    // 其键应该是 Client 自己的专属ID
+    // 键值可以是任何数据类型
+    "additional_user_data": {}
 }
 ```
 当配置值为null时，将使用其对应的全局配置值。

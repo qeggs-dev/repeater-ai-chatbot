@@ -1,7 +1,4 @@
-from ..._resource import (
-    app,
-    chat
-)
+from ..._resource import Resource
 from ....Context_Manager import (
     ContextObject
 )
@@ -18,7 +15,7 @@ from ._make_user_file import (
 )
 
 
-@app.get("/userdata/file/{user_id}.zip")
+@Resource.app.get("/userdata/file/{user_id}.zip")
 async def get_userdata_file(user_id: str):
     """
     Endpoint for getting userdata file
@@ -31,10 +28,10 @@ async def get_userdata_file(user_id: str):
     """
     # 创建虚拟文件缓冲区
     buffer = BytesIO()
-    context_loader = await chat.get_context_loader()
+    context_loader = await Resource.core.get_context_loader()
     context = await context_loader.load_context(user_id = user_id)
-    config = await chat.user_config_manager.load(user_id = user_id)
-    prompt = await chat.prompt_manager.load(user_id = user_id, default = "")
+    config = await Resource.core.user_config_manager.load(user_id = user_id)
+    prompt = await Resource.core.prompt_manager.load(user_id = user_id, default = "")
     
     make_user_file(
         file = buffer,

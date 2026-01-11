@@ -63,9 +63,8 @@ class ContextObject(BaseModel):
 
         :return: 上下文列表的长度
         """
-        if self.prompt is not None:
-            if len(self.prompt) > 0:
-                return len(self.context_list) + 1
+        if self.prompt:
+            return self.context_item_length + 1
         return self.context_item_length
     
     def __iter__(self):
@@ -99,6 +98,13 @@ class ContextObject(BaseModel):
         :param content: 内容
         :return: 构建的对象
         """
+        if not isinstance(content, ContentUnit):
+            raise TypeError("content must be a ContentUnit object")
+        if not isinstance(index, int):
+            raise TypeError("index must be an integer")
+        if abs(index) > len(self.context_list):
+            raise IndexError("index out of range")
+        
         self.context_list[index] = content
     
     @property
@@ -139,6 +145,7 @@ class ContextObject(BaseModel):
         获取上下文
 
         :param remove_reasoner_prompt: 是否移除reasoner提示词
+        :param reduce_to_text: 是否将上下文内容退化为纯文本
         """
         context_list = []
         if self.context_list:
@@ -160,6 +167,7 @@ class ContextObject(BaseModel):
         获取上下文，如果有提示词，则添加到最前面
 
         :param remove_reasoner_prompt: 是否移除reasoner提示词
+        :param reduce_to_text: 是否将上下文内容退化为纯文本
         """
         context_list: list[dict[str, Any]] = []
         if self.prompt:
@@ -305,11 +313,12 @@ class ContextObject(BaseModel):
         :return: 弹出的上下文单元
         :raises IndexOutOfRangeError: 如果index超出范围，则抛出该异常
         """
-        if index not in range(-len(self.context_list), len(self.context_list)):
+        if abs(index) > len(self.context_list):
             raise IndexOutOfRangeError("index out of range")
+        
         return self.context_list.pop(index)
     
-    def pop_last_n(self, n: int) -> ContextObject:
+    def pop_last_n(self, n: int) -> list[ContentUnit]:
         """
         弹出最后n个上下文单元
 
@@ -317,17 +326,14 @@ class ContextObject(BaseModel):
         :return: 弹出的元素列表
         :raises IndexOutOfRangeError: 数量超出范围
         """
-        if n not in range(0, len(self.context_list)):
+        if n > len(self.context_list) or n < 0:
             raise IndexOutOfRangeError("index out of range")
-        pop_list:list[ContentUnit] = []
-        for _ in range(n):
-            pop_list.append(self.pop())
-        return ContextObject(
-            prompt = self.prompt,
-            context_list = pop_list
-        )
+        
+        pop_list:list[ContentUnit] = self.context_list[-n:]
+        self.context_list = self.context_list[:-n]
+        return pop_list
     
-    def pop_begin_n(self, n: int = 0) -> ContentUnit:
+    def pop_begin_n(self, n: int) -> list[ContentUnit]:
         """
         弹出头部的n个元素
 
@@ -335,8 +341,9 @@ class ContextObject(BaseModel):
         :return: 弹出的元素列表
         :raise IndexOutOfRangeError: 数量超出范围
         """
-        if n not in range(0, len(self.context_list)):
+        if n > len(self.context_list) or n < 0:
             raise IndexOutOfRangeError("index out of range")
+        
         pop_list = self.context_list[:n]
         self.context_list = self.context_list[n:]
         return pop_list
@@ -363,6 +370,11 @@ class ContextObject(BaseModel):
         :param ensure_role_at_top: 确保指定角色在顶部
         :raise IndexOutOfRangeError: 数量超出范围
         """
+        if not isinstance(length, int):
+            raise TypeError("length must be int")
+        if not isinstance(ensure_role_at_top, ContentRole):
+            raise TypeError("ensure_role_at_top must be ContentRole")
+
         if length < 0:
             raise IndexOutOfRangeError("length must be positive")
 
@@ -381,7 +393,7 @@ class ContextObject(BaseModel):
                     break
             else:
                 raise IndexOutOfRangeError(f"Role {ensure_role_at_top} not found in context_list")
-        
+    
     def copy(self) -> ContextObject:
         """
         复制对象
@@ -400,9 +412,13 @@ class ContextObject(BaseModel):
         :param context: 上下文列表
         :return: 构建的对象
         """
+        if not isinstance(context, list):
+            raise TypeError("context must be list")
         contextObj = cls()
         contextObj.context_list = []
         for content in context:
+            if not isinstance(content, dict):
+                raise TypeError("context must be list of dict")
             contextObj.context_list.append(ContentUnit(**content))
         return contextObj
         

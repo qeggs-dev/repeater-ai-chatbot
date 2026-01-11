@@ -2,6 +2,9 @@
 import math
 from datetime import datetime, timezone
 from abc import ABC, abstractmethod
+from typing import (
+    Annotated
+)
 
 # ==== 第三方库 ==== #
 import openai
@@ -30,7 +33,7 @@ class ClientBase(ABC):
         # 协程池
         self.coroutine_pool = CoroutinePool(max_concurrency)
     # region 协程池管理
-    async def set_concurrency(self, new_max: int):
+    async def set_concurrency(self, new_max: int = 1000):
         """动态修改并发限制"""
         await self.coroutine_pool.set_concurrency(new_max)
     # endregion
@@ -44,6 +47,10 @@ class ClientBase(ABC):
 
     # region 预处理响应数据
     async def _preprocess_response(self, user_id: str, request: Request, response: Response):
+        assert isinstance(user_id, str)
+        assert isinstance(request, Request)
+        assert isinstance(response, Response)
+
         if response.context.last_content.reasoning_content:
             logger.info(
                 "Reasoning_Content: \n{reasoning_content}",
@@ -69,6 +76,9 @@ class ClientBase(ABC):
 
     # region 任务
     async def _submit_task(self, user_id: str, request: Request):
+        assert isinstance(user_id, str), "user_id must be a string"
+        assert isinstance(request, Request), "request must be a Request object"
+
         if request.stream:
             client = StreamAPI()
         else:
@@ -93,6 +103,8 @@ class ClientBase(ABC):
     @staticmethod
     def _calculate_stability_cv(intervals: np.ndarray):
         """使用变异系数衡量数据稳定度"""
+        assert isinstance(intervals, np.ndarray), "intervals Must be a numpy array"
+
         if len(intervals) == 0:
             return np.inf  # 无穷大表示不稳定
         
@@ -115,6 +127,10 @@ class ClientBase(ABC):
         :param request: 请求对象
         :param response: 响应对象
         """
+        assert isinstance(user_id, str), "user_id must be a string"
+        assert isinstance(request, Request), "request must be a Request object"
+        assert isinstance(response, Response), "response must be a Response object"
+
         logger.info("========== Fast Statistics =========", user_id = user_id)
         logger.info("Generating statistics...", user_id = user_id)
         logger.info("============= API INFO =============", user_id = user_id)
@@ -181,8 +197,8 @@ class ClientBase(ABC):
             logger.info(f"Cache Hit Count: {response.token_usage.prompt_cache_hit_tokens}", user_id = user_id)
         if response.token_usage.prompt_cache_miss_tokens is not None:
             logger.info(f"Cache Miss Count: {response.token_usage.prompt_cache_miss_tokens}", user_id = user_id)
-        if not math.isnan(response.token_usage.prompt_cache_hit_ratio):
-            logger.info(f"Cache Hit Ratio: {response.token_usage.prompt_cache_hit_ratio :.2%}", user_id = user_id)
+        if not math.isnan(response.token_usage.cache_hit_ratio()):
+            logger.info(f"Cache Hit Ratio: {response.token_usage.cache_hit_ratio() :.2%}", user_id = user_id)
         if response.stream:
             logger.info(f"Average Generation Rate: {response.token_usage.completion_tokens / ((response.calling_log.stream_processing_end_time - response.calling_log.stream_processing_start_time) / 1e9):.2f} /s", user_id = user_id)
 

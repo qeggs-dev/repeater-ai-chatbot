@@ -1,13 +1,10 @@
-from ...._resource import (
-    chat,
-    app
-)
+from ...._resource import Resource
 from fastapi.responses import (
     ORJSONResponse
 )
 from loguru import logger
 
-@app.get("/userdata/config/userlist")
+@Resource.app.get("/userdata/config/userlist")
 async def get_config_userlist():
     """
     Endpoint for getting config userlist
@@ -17,7 +14,7 @@ async def get_config_userlist():
     """
 
     # 获取所有用户ID
-    userid_list = await chat.user_config_manager.get_all_user_id()
+    userid_list = await Resource.core.user_config_manager.get_all_user_id()
 
     logger.info(f"Get user config userlist")
 

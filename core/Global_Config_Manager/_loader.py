@@ -1,18 +1,21 @@
 from __future__ import annotations
+
 import os
 import yaml
 import shutil
 import orjson
+
 from box import Box
 from pathlib import Path
+from typing import ClassVar, Generator, Iterable
+
 from ._base_model import Global_Config
-from typing import Generator, Iterable
 
 class ConfigManager:
-    _configs: Global_Config = Global_Config()
-    _instance: ConfigManager | None = None
-    _base_path: Path
-    _force_load_list: list[Path] = []
+    _configs: ClassVar[Global_Config] = Global_Config()
+    _instance: ClassVar[ConfigManager] | None = None
+    _base_path: ClassVar[Path]
+    _force_load_list: ClassVar[list[Path]] = []
 
     @classmethod
     def get_configs(cls) -> Global_Config:
@@ -128,7 +131,7 @@ class ConfigManager:
             )
     
     @classmethod
-    def save(cls, config: Global_Config | None = None, filename: str = "config.json") -> None:
+    def save(cls, config: Global_Config | None = None, filename: str | os.PathLike = "config.json") -> None:
         """
         Save the config to the config files.
         

@@ -1,9 +1,7 @@
-from environs import Env
-env = Env()
-env.read_env()
-
-import uvicorn
 import sys
+import uvicorn
+
+from environs import Env
 from core import (
     Global_Config_Manager,
     API as Core_API,
@@ -13,18 +11,43 @@ from core import (
 from loguru import logger
 
 def main():
+    env = Env()
+    env.read_env()
+    config_loader = Global_Config_Manager.ConfigManager()
+    config_loader.update_base_path(
+        env.path("CONFIG_DIR", "./configs/project_configs"),
+        env.json("CONFIG_FORCE_LOAD_LIST", None)
+    )
+    config_loader.load(
+        create_if_missing=True
+    )
+    Core_API.Resource.init_all()
+
     host = "0.0.0.0" # 默认监听所有地址
     port = 8000 # 默认监听8000端口
 
-    host = env.str("HOST", host)
-    port = env.int("PORT", port)
-    workers = env.int("WORKERS", None)
-    reload = env.bool("RELOAD", False)
+    env_config_host = env.str("HOST", host)
+    env_config_port = env.int("PORT", port)
+    env_config_workers = env.int("WORKERS", None)
+    env_config_reload = env.bool("RELOAD", False)
 
-    host = Global_Config_Manager.ConfigManager.get_configs().server.host or host
-    port = Global_Config_Manager.ConfigManager.get_configs().server.port or port
-    workers = Global_Config_Manager.ConfigManager.get_configs().server.workers or workers
-    reload = Global_Config_Manager.ConfigManager.get_configs().server.reload or reload
+    host: str | None = Global_Config_Manager.ConfigManager.get_configs().server.host
+    if host is None:
+        host: str = env_config_host
+    
+    port: int | None = Global_Config_Manager.ConfigManager.get_configs().server.port
+    if port is None:
+        port: int = env_config_port
+    
+    workers: int | None = Global_Config_Manager.ConfigManager.get_configs().server.workers
+    if workers is None:
+        workers: int = env_config_workers
+    
+    reload: bool | None = Global_Config_Manager.ConfigManager.get_configs().server.reload
+    if reload is None:
+        reload: bool = env_config_reload
+    
+    run_server: bool = Global_Config_Manager.ConfigManager.get_configs().server.run_server
 
     logger.info(f"Starting server at {host}:{port}")
 
@@ -38,15 +61,17 @@ def main():
     logger.info(f"Core Version: {core_version}")
     logger.info(f"Core API Version: {core_api_version}")
     
-    logger.info("Server starting...")
 
-    uvicorn.run(
-        app = Core_API.app,
-        host = host,
-        port = port,
-        workers = workers,
-        log_config = None,
-    )
+    if run_server:
+        logger.info("Server starting...")
+        Core_API.Resource.run_server(
+            host = host,
+            port = port,
+            workers = workers,
+            reload = reload
+        )
+    else:
+        logger.warning("Server startup is disabled.")
 
 if __name__ == "__main__":
     main()

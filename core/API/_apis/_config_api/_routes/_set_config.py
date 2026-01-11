@@ -1,7 +1,4 @@
-from ...._resource import (
-    chat,
-    app
-)
+from ...._resource import Resource
 from fastapi.responses import (
     ORJSONResponse,
 )
@@ -19,7 +16,7 @@ from loguru import logger
 
 from pydantic import ValidationError
 
-@app.put("/userdata/config/set/{user_id}")
+@Resource.app.put("/userdata/config/set/{user_id}")
 async def set_config(user_id: str, request: UserConfigs):
     """
     Set user config
@@ -31,7 +28,7 @@ async def set_config(user_id: str, request: UserConfigs):
     Returns:
         ORJSONResponse: User Config Data
     """
-    await chat.user_config_manager.force_write(user_id=user_id, configs=request)
+    await Resource.core.user_config_manager.force_write(user_id=user_id, configs=request)
     logger.info(
         "Set user config: \n{config}",
         user_id = user_id,
@@ -41,7 +38,7 @@ async def set_config(user_id: str, request: UserConfigs):
         request.model_dump(exclude_defaults=True)
     )
 
-@app.put("/userdata/config/set/{user_id}/{key}")
+@Resource.app.put("/userdata/config/set/{user_id}/{key}")
 async def set_config_field(user_id: str, key: str, request: SetConfigRequest):
     """
     Endpoint for setting config
@@ -80,7 +77,7 @@ async def set_config_field(user_id: str, key: str, request: SetConfigRequest):
             raise HTTPException(status_code=400, detail="Invalid type.")
     
     # 读取配置
-    config = await chat.user_config_manager.load(user_id=user_id)
+    config = await Resource.core.user_config_manager.load(user_id=user_id)
     
     # 更新配置
     if key in type(config).model_fields.keys():
@@ -97,7 +94,7 @@ async def set_config_field(user_id: str, key: str, request: SetConfigRequest):
 
     # 保存配置
     # await chat.user_config_manager.save(user_id=user_id, configs=config)
-    await chat.user_config_manager.force_write(user_id=user_id, configs=config)
+    await Resource.core.user_config_manager.force_write(user_id=user_id, configs=config)
     
     logger.info(
         "Set user config {key}={value}(type:{value_type})",

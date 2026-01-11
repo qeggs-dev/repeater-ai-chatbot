@@ -1,11 +1,5 @@
 # ==== 标准库 ==== #
-import copy
 import aiofiles
-from typing import (
-    Any,
-    Awaitable,
-)
-import time
 from pathlib import Path
 import orjson
 
@@ -18,8 +12,7 @@ from ..Data_Manager import (
     ContextManager
 )
 from ..User_Config_Manager import (
-    ConfigManager,
-    UserConfigs
+    ConfigManager
 )
 from ._objects import (
     ContextObject,
@@ -68,7 +61,6 @@ class ContextLoader:
         :param prompt_vp: 变量展开处理器
         :return: 提示词
         """
-        
         user_prompt:str = await self._prompt_manager.load(user_id=user_id, default="")
 
         if temporary_prompt is not None:
@@ -107,7 +99,11 @@ class ContextLoader:
         
         # 展开变量
         if prompt_vp is not None:
-            prompt = self._expand_variables(prompt, variables_parser = prompt_vp, user_id=user_id)
+            prompt = self._expand_variables(
+                user_id = user_id,
+                prompt = prompt,
+                variables_parser = prompt_vp
+            )
         logger.debug("Prompt Content:\n{prompt}", user_id = user_id, prompt = prompt)
 
         # 创建Content单元
@@ -194,7 +190,11 @@ class ContextLoader:
         """
         content = ContentUnit()
         if prompt_vp is not None:
-            new_message = self._expand_variables(new_message, variables_parser = prompt_vp, user_id=user_id)
+            new_message = self._expand_variables(
+                user_id = user_id,
+                prompt = new_message,
+                variables_parser = prompt_vp
+            )
         if image_url:
             if isinstance(image_url, str):
                 content.content = []
@@ -235,7 +235,7 @@ class ContextLoader:
         content.role_name = role_name
         return content
     
-    def _expand_variables(self, prompt: str, variables_parser: PromptVP, user_id: str) -> str:
+    def _expand_variables(self, user_id: str, prompt: str, variables_parser: PromptVP) -> str:
         """
         展开变量
 
@@ -267,6 +267,7 @@ class ContextLoader:
 
         :param user_id: 用户ID
         :param context: 上下文对象
+        :param reduce_to_text: 是否将上下文对象转换为纯文本
         """
         await self._context_manager.save(user_id, context.to_context(reduce_to_text = reduce_to_text))
-        logger.info(f"Save Context: {len(context)}", user_id = user_id)
+        logger.info(f"Save Context: {context.context_item_length}", user_id = user_id)

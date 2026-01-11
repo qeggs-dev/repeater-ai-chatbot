@@ -28,6 +28,9 @@ class StreamAPI(CallStreamAPIBase):
         :param request: 请求对象
         :return: 响应流
         """
+        assert isinstance(user_id, str), "user_id must be a string"
+        assert isinstance(request, Request), "request must be a Request object"
+
         # 创建OpenAI Client
         logger.info(f"Created OpenAI Client", user_id = user_id)
         client = openai.AsyncOpenAI(

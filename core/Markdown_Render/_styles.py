@@ -23,7 +23,6 @@ class Styles:
         async with aiofiles.open(style_file_path, "r", encoding=encoding) as f:
             return await f.read()
 
-
     async def get_style(self, style_name: str, use_base: bool = True, encoding: str = "utf-8") -> str:
         style_name = sanitize_filename(style_name)
         style_file_path: Path = self._style_dir / f"{style_name}.css"
@@ -41,8 +40,7 @@ class Styles:
             else:
                 logger.error(f"Style file not found: {style_file_path}")
                 raise ValueError(f"Style file not found: {style_file_path}")
-                
-
+    
     def get_style_names(self) -> list[str]:
         basepath = self._style_dir
         style_names = [f.stem for f in basepath.glob("*.css")]

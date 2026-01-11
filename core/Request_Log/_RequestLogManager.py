@@ -20,6 +20,7 @@ class RequestLogManager:
             max_cache_size: int | None = None,
             auto_save: bool = True
         ):
+
         # 日志缓存列表
         self._log_list: List[RequestLogObject | CallAPILogObject] = []
 
