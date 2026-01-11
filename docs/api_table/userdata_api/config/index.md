@@ -15,6 +15,10 @@
   - [Get Config Branch List API](./branch/branchs.md)
   - [Get Now Config Branch API](./branch/now_branch.md)
   - [Change Config Branch API](./branch/change_branch.md)
+  - [Config Branch Clone API](./branch/clone_branch.md)
+  - [Config Branch Clone From API](./branch/clone_branch_from.md)
+  - [Config Branch Binding API](./branch/binding.md)
+  - [Config Branch Binding From API](./branch/binding_from.md)
 
 ## 用户管理
   - [Config Users API](./userlist.md)
