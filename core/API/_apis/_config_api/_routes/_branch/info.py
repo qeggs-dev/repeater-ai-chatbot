@@ -15,6 +15,8 @@ async def get_branch_info(user_id: str):
         user_id (str): user id
     """
     manager = Resource.core.user_config_manager
-    await manager.info(user_id)
+    info = await manager.info(user_id)
 
-    return ORJSONResponse({"status": "success"})
+    return ORJSONResponse(
+        content = info.model_dump()
+    )
