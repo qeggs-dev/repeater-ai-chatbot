@@ -104,7 +104,6 @@ class MainManager(Generic[T]):
         Returns:
             Any: The user's data.
         """
-        user_id = sanitize_filename(user_id)
         manager = self._get_sub_manager(user_id)
         branch_id = await self._get_branch_id(user_id)
         default_value = self._get_default_value(default)
@@ -119,7 +118,6 @@ class MainManager(Generic[T]):
             user_id (str): The user's ID.
             data (Any): The user's data.
         """
-        user_id = sanitize_filename(user_id)
         manager = self._get_sub_manager(user_id)
         branch_id = await self._get_branch_id(user_id)
 
@@ -132,7 +130,6 @@ class MainManager(Generic[T]):
         Args:
             user_id (str): The user's ID.
         """
-        user_id = sanitize_filename(user_id)
         manager = self._get_sub_manager(user_id)
         branch_id = await self._get_branch_id(user_id)
 
@@ -147,7 +144,6 @@ class MainManager(Generic[T]):
             new_branch_id (str): The new branch ID.
             default (Any | None): The default data to use if the branch does not exist.
         """
-        user_id = sanitize_filename(user_id)
         manager = self._get_sub_manager(user_id)
         branch_id = await self._get_branch_id(user_id)
         default_value = self._get_default_value(default)
@@ -164,7 +160,6 @@ class MainManager(Generic[T]):
             source_branch_id (str): The source branch ID.
             default (Any | None): The default data to use if the branch does not exist.
         """
-        user_id = sanitize_filename(user_id)
         manager = self._get_sub_manager(user_id)
         branch_id = await self._get_branch_id(user_id)
         default_value = self._get_default_value(default)
@@ -172,7 +167,7 @@ class MainManager(Generic[T]):
         loaded_data = await manager.load(source_branch_id, default_value)
         await manager.save(branch_id, loaded_data)
     
-    async def binding(self, user_id: str, new_branch_id: str) -> None:
+    async def binding(self, user_id: str, new_branch_id: str, default: T | None = None) -> None:
         """
         Binding now active branch to an another branch.
 
@@ -180,12 +175,14 @@ class MainManager(Generic[T]):
             user_id (str): User ID.
             new_branch_id (str): New branch ID.
         """
-        user_id = sanitize_filename(user_id)
         manager = self._get_sub_manager(user_id)
         branch_id = await self._get_branch_id(user_id)
-        manager.binding(branch_id, new_branch_id)
+        default_value = self._get_default_value(default)
+        if not manager.exists(branch_id):
+            manager.save(branch_id, default_value)
+        await manager.binding(branch_id, new_branch_id)
     
-    async def binding_from(self, user_id: str, source_branch_id: str) -> None:
+    async def binding_from(self, user_id: str, source_branch_id: str, default: T | None = None) -> None:
         """
         Binding an another branch to now active branch.
 
@@ -196,11 +193,13 @@ class MainManager(Generic[T]):
             user_id (str): User ID.
             source_branch_id (str): The source branch ID.
         """
-        user_id = sanitize_filename(user_id)
         manager = self._get_sub_manager(user_id)
         branch_id = await self._get_branch_id(user_id)
-        manager.delete(branch_id)
-        manager.binding(source_branch_id, branch_id)
+        default_value = self._get_default_value(default)
+        if not manager.exists(branch_id):
+            manager.save(source_branch_id, default_value)
+        await manager.delete(branch_id)
+        await manager.binding(source_branch_id, branch_id)
 
     
     async def set_default_branch_id(self, user_id: str, branch_id: str) -> None:
@@ -211,7 +210,6 @@ class MainManager(Generic[T]):
             user_id (str): The user ID.
             branch_id (str): The branch ID.
         """
-        user_id = sanitize_filename(user_id)
         manager = self._get_sub_manager(user_id)
 
         if isinstance(metadata, dict):
@@ -231,7 +229,6 @@ class MainManager(Generic[T]):
         Returns:
             dict: The user's information.
         """
-        user_id = sanitize_filename(user_id)
         manager = self._get_sub_manager(user_id)
         branch_id = await self._get_branch_id(user_id)
 
@@ -247,7 +244,6 @@ class MainManager(Generic[T]):
         Returns:
             str: The default branch ID.
         """
-        user_id = sanitize_filename(user_id)
         branch_id = await self._get_branch_id(user_id)
         return branch_id
 
