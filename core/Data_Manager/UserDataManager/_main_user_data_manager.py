@@ -26,7 +26,6 @@ class MainManager(Generic[T]):
         self._base_name = sanitize_filename(base_name)
         if not validate_path(self._base_path, self._base_name):
             raise ValueError(f"Invalid path \"{self._base_name}\" for \"{self._base_path}\"")
-        self._sub_managers: WeakValueDictionary[str, SubManager] = WeakValueDictionary()
 
         self._cache_metadata = cache_metadata
         self._cache_data = cache_data
@@ -49,17 +48,13 @@ class MainManager(Generic[T]):
         return self._base_path / self._base_name
     
     def _get_sub_manager(self, user_id: str) -> SubManager:
-        if user_id not in self._sub_managers:
-            manager = SubManager(
-                self.base_path / user_id,
-                cache_metadata = self._cache_metadata,
-                cache_data = self._cache_data,
-                sub_dir_name = self._sub_dir_name,
-            )
-            self._sub_managers[user_id] = manager
-            return manager
-        else:
-            return self._sub_managers[user_id]
+        manager = SubManager(
+            self.base_path / user_id,
+            cache_metadata = self._cache_metadata,
+            cache_data = self._cache_data,
+            sub_dir_name = self._sub_dir_name,
+        )
+        return manager
     
     async def _get_branch_id(self, user_id: str) -> str:
         manager = self._get_sub_manager(user_id)
