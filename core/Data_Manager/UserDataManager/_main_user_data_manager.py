@@ -1,5 +1,5 @@
 # ==== 标准库 ==== #
-from typing import Any
+from typing import TypeVar, Generic
 from pathlib import Path
 from weakref import WeakValueDictionary
 
@@ -11,7 +11,9 @@ from .SubManager import SubManager
 from PathProcessors import validate_path, sanitize_filename
 from ...Global_Config_Manager import ConfigManager
 
-class MainManager:
+T = TypeVar("T")
+
+class MainManager(Generic[T]):
     def __init__(self, base_name: str, cache_metadata:bool = False, cache_data:bool = False, branches_dir_name:str = "branches"):
         self._base_path = Path(ConfigManager.get_configs().user_data.dir)
         self._base_name = sanitize_filename(base_name)
@@ -57,7 +59,7 @@ class MainManager:
         
         return branch_name
     
-    async def load(self, user_id: str, default: Any | None = None) -> Any:
+    async def load(self, user_id: str, default: T | None = None) -> T:
         """
         Load a user's data from file system.
 
@@ -74,7 +76,7 @@ class MainManager:
         
         return await manager.load(branch_id, default)
     
-    async def save(self, user_id: str, data: Any) -> None:
+    async def save(self, user_id: str, data: T) -> None:
         """
         Save a user's data to file system.
 
@@ -101,7 +103,7 @@ class MainManager:
 
         await manager.delete(branch_id)
     
-    async def clone(self, user_id: str, new_branch_id: str, default: Any | None = None) -> None:
+    async def clone(self, user_id: str, new_branch_id: str, default: T | None = None) -> None:
         """
         Clone a user's data to a new branch.
 
@@ -117,7 +119,7 @@ class MainManager:
         loaded_data = await manager.load(branch_id, default)
         await manager.save(new_branch_id, loaded_data)
     
-    async def clone_from(self, user_id: str, source_branch_id: str, default: Any | None = None) -> None:
+    async def clone_from(self, user_id: str, source_branch_id: str, default: T | None = None) -> None:
         """
         Clone data from another branch.
 
