@@ -19,7 +19,7 @@ class SubManager:
         sub_dir_name: str = sanitize_filename(sub_dir_name)
         self.sub_dir_name: str = sub_dir_name
         self._global_lock: asyncio.Lock = asyncio.Lock()
-        self._item_locks: weakref.WeakValueDictionary[str, asyncio.Lock] = weakref.WeakValueDictionary()
+        self._branches_locks: weakref.WeakValueDictionary[str, asyncio.Lock] = weakref.WeakValueDictionary()
         
         self._metadata_filename = ConfigManager.get_configs().user_data.metadata_file_name
         
@@ -45,13 +45,13 @@ class SubManager:
         name = sanitize_filename(name)
         return self._default_base_file / f"{name}.json"
     
-    async def _get_item_lock(self, item_name: str) -> asyncio.Lock:
-        """获取 item_name 对应的锁，如果没有则创建"""
+    async def _get_branch_lock(self, branch_id: str) -> asyncio.Lock:
+        """获取 branch_id 对应的锁，如果没有则创建"""
         async with self._global_lock:
-            lock: asyncio.Lock | None = self._item_locks.get(item_name)
+            lock: asyncio.Lock | None = self._branches_locks.get(branch_id)
             if lock is None:
                 lock = asyncio.Lock()
-                self._item_locks[item_name] = lock
+                self._branches_locks[branch_id] = lock
         return lock
     
     async def load_metadata(self, default: Any | None = None) -> Any:
@@ -100,66 +100,66 @@ class SubManager:
             if self.cache_metadata:
                 self._metadata_cache = data
     
-    async def load(self, item: str, default: Any | None = None) -> Any:
+    async def load(self, branch_id: str, default: Any | None = None) -> Any:
         """
         Load data from file
 
         Args:
-            item (str): Item name
+            branch_id (str): Branch ID to load
             default (Any | None, optional): Default value if item not found. Defaults to None.
         Returns:
             Any: Loaded data
         """
-        async with self._global_lock:
+        async with self._get_branch_lock(branch_id):
             try:
-                if self.cache_data and self._data_cache is not None and item in self._data_cache:
-                    return self._data_cache[item]
+                if self.cache_data and self._data_cache is not None and branch_id in self._data_cache:
+                    return self._data_cache[branch_id]
                 else:
-                    path = self._get_file_path(item)
+                    path = self._get_file_path(branch_id)
                     if not path.exists():
                         return default
                     async with aiofiles.open(path, "rb") as f:
                         fdata = await f.read()
                         data = await asyncio.to_thread(orjson.loads, fdata)
                         if self.cache_data:
-                            self._data_cache[item] = data
+                            self._data_cache[branch_id] = data
                         return data
             except FileNotFoundError:
                 return default
             except orjson.JSONDecodeError:
                 return default
     
-    async def save(self, item: str, data: Any) -> None:
+    async def save(self, branch_id: str, data: Any) -> None:
         """
         Save data to a file.
 
         Args:
-            item (str): The name of the item to save.
+            branch_id (str): The name of the branch to save.
             data (Any): The data to save.
 
         Returns:
             None
         """
-        async with self._global_lock:
-            path = self._get_file_path(item)
+        async with self._get_branch_lock(branch_id):
+            path = self._get_file_path(branch_id)
             if not path.parent.exists():
                 path.parent.mkdir(parents=True, exist_ok=True)
-            async with aiofiles.open(self._get_file_path(item), "wb") as f:
+            async with aiofiles.open(self._get_file_path(branch_id), "wb") as f:
                 await f.write(await asyncio.to_thread(orjson.dumps, data))
             if self.cache_data:
-                self._data_cache[item] = data
+                self._data_cache[branch_id] = data
     
-    async def delete(self, item: str) -> None:
+    async def delete(self, branch_id: str) -> None:
         """Delete a file from the cache.
 
         Args:
-            item (str): The item of the file to delete.
+            branch_id (str): The item of the file to delete.
 
         Returns:
             None
         """
-        async with self._global_lock:
+        async with self._get_branch_lock(branch_id):
             try:
-                await asyncio.to_thread(os.remove, self._get_file_path(item))
+                await asyncio.to_thread(os.remove, self._get_file_path(branch_id))
             except FileNotFoundError:
                 pass
