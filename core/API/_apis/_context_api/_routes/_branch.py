@@ -54,7 +54,7 @@ async def change_context(user_id: str, new_branch_id: str = Form(...)):
     """
 
     # 设置用户ID为user_id的上下文为new_context_id
-    await Resource.core.context_manager.set_default_branch_id(user_id, branch_name = new_branch_id)
+    await Resource.core.context_manager.set_default_branch_id(user_id, branch_id = new_branch_id)
 
     logger.info("Change Context to {new_branch_id}", user_id = user_id, new_branch_id = new_branch_id)
 
