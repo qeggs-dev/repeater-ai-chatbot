@@ -185,7 +185,7 @@ class SubManager:
                 raise FileNotFoundError(f"{src_path} does not exist.")
             if dst_path.exists():
                 raise FileExistsError(f"{dst_path} already exists.")
-            src_path.hardlink_to(dst_path)
+            dst_path.hardlink_to(src_path)
     
     def exists(self, branch_id: str) -> bool:
         """Check if a branch exists.
