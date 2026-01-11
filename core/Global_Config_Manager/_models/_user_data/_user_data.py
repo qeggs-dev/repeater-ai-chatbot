@@ -7,7 +7,7 @@ class User_Data_Config(BaseModel):
 
     dir: str = "./workspace/data/user_data"
     branches_dir_name: str = "branches"
-    default_branch_name: str = "default"
+    default_branch_id: str = "main"
     file_size_use_abbreviation: bool = True
     metadata_file_name: str = "metadata.json"
     cache_medadata: bool | Cache_Data_Config = False
