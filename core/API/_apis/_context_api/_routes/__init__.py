@@ -5,18 +5,21 @@ from ._inject import inject_context
 from ._rewrite import rewrite_context
 from ._get_userlist import get_context_userlist
 from ._delete import delete_context
-from ._branch._branch import (
+from ._branch.branch import (
     get_context_branch_id_list,
     get_context_now_branch_id,
     change_context,
 )
-from ._branch._clone import (
+from ._branch.clone import (
     clone_branch,
     clone_branch_from,
 )
-from ._branch._binding import (
+from ._branch.binding import (
     binding_branch,
     binding_branch_from,
+)
+from ._branch.info import (
+    get_branch_info,
 )
 
 __all__ = [
@@ -34,4 +37,5 @@ __all__ = [
     "clone_branch_from",
     "binding_branch",
     "binding_branch_from",
+    "get_branch_info",
 ]
