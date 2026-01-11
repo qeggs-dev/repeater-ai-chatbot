@@ -41,70 +41,59 @@ class MainManager:
     
     async def _get_branch_id(self, user_id: str) -> str:
         manager = self._get_sub_manager(user_id)
-        try:
-            metadata = await manager.load_metadata()
-        except Exception as e:
-            logger.error(
-                "Read User Metadata File Error: {error}",
-                user_id = user_id,
-                error = e
-            )
-            raise
+        metadata = await manager.load_metadata()
         
         if isinstance(metadata, dict):
             branch_name = metadata.get(ConfigManager.get_configs().user_data.metadata_fields.branch_field, "default")
             if not isinstance(branch_name, str):
                 branch_name = ConfigManager.get_configs().user_data.default_branch_name
                 metadata[ConfigManager.get_configs().user_data.metadata_fields.branch_field] = branch_name
+                logger.warning(
+                    "Branch name is not a string, using default branch name."
+                )
                 await manager.save_metadata(metadata)
         else:
             branch_name = ConfigManager.get_configs().user_data.default_branch_name
         
         return branch_name
     
-    async def load(self, user_id: str, default: Any = None) -> Any:
+    async def load(self, user_id: str, default: Any | None = None) -> Any:
         user_id = sanitize_filename(user_id)
         manager = self._get_sub_manager(user_id)
         branch_id = await self._get_branch_id(user_id)
         
-        try:
-            return await manager.load(branch_id, default)
-        except Exception as e:
-            logger.error(
-                "Read User File Error: {error}",
-                user_id = user_id,
-                error = e
-            )
-            raise
+        return await manager.load(branch_id, default)
     
     async def save(self, user_id: str, data: Any) -> None:
         user_id = sanitize_filename(user_id)
         manager = self._get_sub_manager(user_id)
         branch_id = await self._get_branch_id(user_id)
-        try:
-            await manager.save(branch_id, data)
-        except Exception as e:
-            logger.error(
-                "Write User File Error: {error}",
-                user_id = user_id,
-                error = e
-            )
-            raise
+
+        await manager.save(branch_id, data)
     
     async def delete(self, user_id: str) -> None:
         user_id = sanitize_filename(user_id)
         manager = self._get_sub_manager(user_id)
         branch_id = await self._get_branch_id(user_id)
 
-        try:
-            await manager.delete(branch_id)
-        except Exception as e:
-            logger.error(
-                "Delete User File Error: {error}",
-                user_id = user_id,
-                error = e
-            )
-            raise
+        await manager.delete(branch_id)
+    
+    async def clone(self, user_id: str, new_branch_id: str, default: Any | None = None) -> None:
+        user_id = sanitize_filename(user_id)
+        manager = self._get_sub_manager(user_id)
+        branch_id = await self._get_branch_id(user_id)
+
+        loaded_data = await manager.load(branch_id, default)
+        await manager.save(new_branch_id, loaded_data)
+    
+    async def clone_from(self, user_id: str, source_branch_id: str, default: Any | None = None) -> None:
+        user_id = sanitize_filename(user_id)
+        manager = self._get_sub_manager(user_id)
+        branch_id = await self._get_branch_id(user_id)
+
+        loaded_data = await manager.load(source_branch_id, default)
+        await manager.save(branch_id, loaded_data)
+
     
     async def set_default_branch_id(self, user_id: str, branch_id: str) -> None:
         user_id = sanitize_filename(user_id)
@@ -115,11 +104,7 @@ class MainManager:
         else:
             metadata = {ConfigManager.get_configs().user_data.metadata_fields.branch_field: branch_id}
         
-        try:
-            await manager.save_metadata(metadata)
-        except Exception as e:
-            logger.error(f"Write User Metadata File Error: {e}", user_id = user_id)
-            raise
+        await manager.save_metadata(metadata)
     
     async def get_default_branch_id(self, user_id: str) -> str:
         user_id = sanitize_filename(user_id)
