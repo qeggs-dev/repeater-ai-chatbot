@@ -166,7 +166,7 @@ class SubManager:
             except FileNotFoundError:
                 pass
     
-    async def binding(self, src_branch_id: str, dst_branch_id: str) -> None:
+    async def bind(self, src_branch_id: str, dst_branch_id: str) -> None:
         """Bind a branch to another branch.
 
         Use hard links to bind a branch to another branch.
