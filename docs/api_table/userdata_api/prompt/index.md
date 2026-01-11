@@ -17,6 +17,7 @@
   - [Prompt Branch Clone From API](./branch/clone_branch_from.md)
   - [Prompt Branch Binding API](./branch/binding.md)
   - [Prompt Branch Binding From API](./branch/binding_from.md)
+  - [Prompt Info API](./branch/info.md)
 
 ## 用户管理
   - [Prompt Users API](./userlist.md)

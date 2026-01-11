@@ -20,6 +20,7 @@
   - [Context Branch Clone From API](./branch/clone_branch_from.md)
   - [Context Branch Binding API](./branch/binding.md)
   - [Context Branch Binding From API](./branch/binding_from.md)
+  - [Context Info API](./branch/info.md)
 
 ## 用户管理
   - [Context Users API](./userlist.md)
