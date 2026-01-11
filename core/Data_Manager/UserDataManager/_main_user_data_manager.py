@@ -58,6 +58,16 @@ class MainManager:
         return branch_name
     
     async def load(self, user_id: str, default: Any | None = None) -> Any:
+        """
+        Load a user's data from file system.
+
+        Args:
+            user_id (str): The user's ID.
+            default (Any | None, optional): The default value to return if the user's data is not found. Defaults to None.
+
+        Returns:
+            Any: The user's data.
+        """
         user_id = sanitize_filename(user_id)
         manager = self._get_sub_manager(user_id)
         branch_id = await self._get_branch_id(user_id)
@@ -65,6 +75,13 @@ class MainManager:
         return await manager.load(branch_id, default)
     
     async def save(self, user_id: str, data: Any) -> None:
+        """
+        Save a user's data to file system.
+
+        Args:
+            user_id (str): The user's ID.
+            data (Any): The user's data.
+        """
         user_id = sanitize_filename(user_id)
         manager = self._get_sub_manager(user_id)
         branch_id = await self._get_branch_id(user_id)
@@ -72,6 +89,12 @@ class MainManager:
         await manager.save(branch_id, data)
     
     async def delete(self, user_id: str) -> None:
+        """
+        Delete a user's data from file system.
+
+        Args:
+            user_id (str): The user's ID.
+        """
         user_id = sanitize_filename(user_id)
         manager = self._get_sub_manager(user_id)
         branch_id = await self._get_branch_id(user_id)
@@ -79,6 +102,14 @@ class MainManager:
         await manager.delete(branch_id)
     
     async def clone(self, user_id: str, new_branch_id: str, default: Any | None = None) -> None:
+        """
+        Clone a user's data to a new branch.
+
+        Args:
+            user_id (str): The user's ID.
+            new_branch_id (str): The new branch ID.
+            default (Any | None): The default data to use if the branch does not exist.
+        """
         user_id = sanitize_filename(user_id)
         manager = self._get_sub_manager(user_id)
         branch_id = await self._get_branch_id(user_id)
@@ -87,15 +118,60 @@ class MainManager:
         await manager.save(new_branch_id, loaded_data)
     
     async def clone_from(self, user_id: str, source_branch_id: str, default: Any | None = None) -> None:
+        """
+        Clone data from another branch.
+
+        Args:
+            user_id (str): The user ID.
+            source_branch_id (str): The source branch ID.
+            default (Any | None): The default data to use if the branch does not exist.
+        """
         user_id = sanitize_filename(user_id)
         manager = self._get_sub_manager(user_id)
         branch_id = await self._get_branch_id(user_id)
 
         loaded_data = await manager.load(source_branch_id, default)
         await manager.save(branch_id, loaded_data)
+    
+    async def binding(self, user_id: str, new_branch_id: str) -> None:
+        """
+        Binding now active branch to an another branch.
+
+        Args:
+            user_id (str): User ID.
+            new_branch_id (str): New branch ID.
+        """
+        user_id = sanitize_filename(user_id)
+        manager = self._get_sub_manager(user_id)
+        branch_id = await self._get_branch_id(user_id)
+        manager.binding(branch_id, new_branch_id)
+    
+    async def binding_from(self, user_id: str, source_branch_id: str) -> None:
+        """
+        Binding an another branch to now active branch.
+
+        Warning:
+            This method will override now active branch.
+
+        Args:
+            user_id (str): User ID.
+            source_branch_id (str): The source branch ID.
+        """
+        user_id = sanitize_filename(user_id)
+        manager = self._get_sub_manager(user_id)
+        branch_id = await self._get_branch_id(user_id)
+        manager.delete(branch_id)
+        manager.binding(source_branch_id, branch_id)
 
     
     async def set_default_branch_id(self, user_id: str, branch_id: str) -> None:
+        """
+        Set the default branch ID for a user.
+
+        Args:
+            user_id (str): The user ID.
+            branch_id (str): The branch ID.
+        """
         user_id = sanitize_filename(user_id)
         manager = self._get_sub_manager(user_id)
 
@@ -107,12 +183,36 @@ class MainManager:
         await manager.save_metadata(metadata)
     
     async def get_default_branch_id(self, user_id: str) -> str:
+        """
+        Get the default branch ID from a user.
+
+        Args:
+            user_id (str): The user ID.
+        
+        Returns:
+            str: The default branch ID.
+        """
         user_id = sanitize_filename(user_id)
         branch_id = await self._get_branch_id(user_id)
         return branch_id
 
     async def get_all_user_id(self) -> list:
+        """
+        Get all user IDs.
+
+        Returns:
+            list: A list of all user IDs.
+        """
         return [f.name for f in (self.base_path).iterdir() if f.is_dir()]
 
     async def get_all_branch_id(self, user_id: str) -> list:
+        """
+        Get all branch IDs for a given user ID.
+
+        Args:
+            user_id (str): The user ID.
+        
+        Returns:
+            list: A list of branch IDs.
+        """
         return [f.stem for f in (self.base_path / user_id / self.sub_dir_name).iterdir() if f.is_file()]
