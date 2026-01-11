@@ -58,7 +58,7 @@ async def change_prompt(user_id: str, new_branch_id: str = Form(...)):
     """
 
     # 设置用户ID为user_id的提示词为new_prompt_id
-    await Resource.core.prompt_manager.set_default_branch_id(user_id, branch_name = new_branch_id)
+    await Resource.core.prompt_manager.set_default_branch_id(user_id, branch_id = new_branch_id)
 
     logger.info("Change prompt to {new_branch_id}", user_id=user_id, new_branch_id=new_branch_id)
 
