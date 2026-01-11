@@ -118,5 +118,7 @@ async def format_traceback(exclude_library: bool = False, enable_code_reader: bo
             f"{code}\n"
         )
     
+    format_text += f"\n{error_name}:\n{str(exc_value)}\n"
+    
     return format_text
     
