@@ -1,8 +1,8 @@
-# Prompt Branch Binding From API
+# Prompt Branch Bind From API
 
 绑定当前分支到指定分支
 
-- **`/userdata/prompt/binding_from/{user_id:str}`**
+- **`/userdata/prompt/bind_from/{user_id:str}`**
   - **Requset**
     - **method:** `PUT`
     - **type:** `FORM`

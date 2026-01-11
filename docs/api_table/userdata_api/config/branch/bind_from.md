@@ -1,8 +1,8 @@
-# Config Branch Binding From API
+# Config Branch Bind From API
 
 绑定当前分支到指定分支
 
-- **`/userdata/config/binding_from/{user_id:str}`**
+- **`/userdata/config/bind_from/{user_id:str}`**
   - **Requset**
     - **method:** `PUT`
     - **type:** `FORM`

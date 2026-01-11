@@ -18,8 +18,8 @@
   - [Change Context Branch API](./branch/change_branch.md)
   - [Context Branch Clone API](./branch/clone_branch.md)
   - [Context Branch Clone From API](./branch/clone_branch_from.md)
-  - [Context Branch Binding API](./branch/binding.md)
-  - [Context Branch Binding From API](./branch/binding_from.md)
+  - [Context Branch Bind API](./branch/bind.md)
+  - [Context Branch Bind From API](./branch/bind_from.md)
   - [Context Info API](./branch/info.md)
 
 ## 用户管理

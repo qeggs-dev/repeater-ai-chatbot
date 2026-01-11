@@ -17,8 +17,8 @@
   - [Change Config Branch API](./branch/change_branch.md)
   - [Config Branch Clone API](./branch/clone_branch.md)
   - [Config Branch Clone From API](./branch/clone_branch_from.md)
-  - [Config Branch Binding API](./branch/binding.md)
-  - [Config Branch Binding From API](./branch/binding_from.md)
+  - [Config Branch Bind API](./branch/bind.md)
+  - [Config Branch Bind From API](./branch/bind_from.md)
   - [Config Branch Info API](./branch/info.md)
 
 ## 用户管理

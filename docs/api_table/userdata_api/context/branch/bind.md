@@ -1,8 +1,8 @@
-# Context Branch Binding API
+# Context Branch Bind API
 
 绑定当前分支到指定分支
 
-- **`/userdata/context/binding/{user_id:str}`**
+- **`/userdata/context/bind/{user_id:str}`**
   - **Requset**
     - **method:** `PUT`
     - **type:** `FORM`

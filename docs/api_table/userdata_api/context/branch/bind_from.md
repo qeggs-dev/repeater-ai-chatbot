@@ -1,13 +1,13 @@
-# Prompt Branch Binding API
+# Context Branch Bind From API
 
 绑定当前分支到指定分支
 
-- **`/userdata/prompt/binding/{user_id:str}`**
+- **`/userdata/context/bind_from/{user_id:str}`**
   - **Requset**
     - **method:** `PUT`
     - **type:** `FORM`
     - **Request Body**:
-      - `dst_branch_id (str)`: 目标分支ID
+      - `src_branch_id (str)`: 源目标分支ID
   - **Response**
     - **type:** `JSON`
     - **Response Body**:
