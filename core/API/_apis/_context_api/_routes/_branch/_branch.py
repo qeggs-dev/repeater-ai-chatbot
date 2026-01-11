@@ -1,4 +1,4 @@
-from ...._resource import Resource
+from ....._resource import Resource
 from fastapi import Form
 from fastapi.responses import (
     PlainTextResponse,
