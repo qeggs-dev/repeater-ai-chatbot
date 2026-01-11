@@ -12,6 +12,7 @@ def is_library_code(filename: str | os.PathLike):
         return True
     
     file_path = Path(filename)
+    file_name_str = str(filename)
     
     stdlib_dirs: list[str] = [
         sys.prefix,
@@ -26,12 +27,12 @@ def is_library_code(filename: str | os.PathLike):
             return True
     
     for path in sys.path:
-        if "site-packages" in path and str(filename).startswith(path):
+        if "site-packages" in path and file_name_str.startswith(path):
             return True
-        if "dist-packages" in path and str(filename).startswith(path):
+        if "dist-packages" in path and file_name_str.startswith(path):
             return True
     
-    if str(filename).startswith("<") and str(filename).endswith(">"):
+    if file_name_str.startswith("<") and file_name_str.endswith(">"):
         return True
     
     return False
