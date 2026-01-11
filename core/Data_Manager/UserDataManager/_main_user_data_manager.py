@@ -65,7 +65,7 @@ class MainManager(Generic[T]):
         manager = self._get_sub_manager(user_id)
         metadata = await manager.load_metadata()
         
-        default_branch_id = ConfigManager.get_configs().user_data.default_branch_name
+        default_branch_id = ConfigManager.get_configs().user_data.default_branch_id
         if isinstance(metadata, dict):
             branch_name = metadata.get(ConfigManager.get_configs().user_data.metadata_fields.branch_field, default_branch_id)
             if not isinstance(branch_name, str):
