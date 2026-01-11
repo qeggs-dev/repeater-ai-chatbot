@@ -143,28 +143,6 @@ class ConfigManager(UserConfigManager):
         except asyncio.CancelledError:
             logger.info("User config save task cancelled", user_id = user_id)
     
-    async def get_default_item_id(self, user_id: str) -> str:
-        """
-        获取默认配置项ID
-
-        :param user_id: 用户ID
-        :return: 配置项
-        """
-        async with self._lock:
-            return await self.get_default_branch_id(user_id)
-    
-    async def set_default_item_id(self, user_id: str, item: str) -> None:
-        """
-        设置默认配置项ID
-
-        :param user_id: 用户ID
-        :param item: 配置项
-        :return: None
-        """
-        async with self._lock:
-            await self.set_default_branch_id(user_id, item)
-            logger.info("Set default config item", user_id = user_id, item = item)
-    
     async def delete(self, user_id: str) -> None:
         """
         删除用户配置
