@@ -18,6 +18,7 @@ class ConfigManager(UserConfigManager):
             downgrade_wait_time: float | None = None,
             debonce_save_wait_time: float | None = None
         ):
+        super().__init__()
         self._cache:dict[str, UserConfigs] = {}
 
         self._cache_switch = cache
