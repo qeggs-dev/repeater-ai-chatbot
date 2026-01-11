@@ -435,6 +435,12 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
         // 元数据文件名称
         "metadata_file_name": "metadata.json",
 
+        // 默认分支名称
+        "default_branch_name": "default",
+
+        // 是否在获取文件大小时 readable 里使用缩写
+        "file_size_use_abbreviation": true
+
         // 是否缓存
         // 这里的两个字段同时支持bool和cache_data结构
         // 如果为bool，则该值对所有数据类型生效
