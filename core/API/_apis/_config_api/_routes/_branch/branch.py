@@ -21,7 +21,7 @@ async def get_config_branch_id(user_id: str):
     """
 
     # 获取平行配置路由ID列表
-    branchs = await Resource.core.user_config_manager.get_all_item_id(user_id)
+    branchs = await Resource.core.user_config_manager.get_all_user_id(user_id)
 
     logger.info(f"Get user branchs list", user_id = user_id)
 
@@ -41,7 +41,7 @@ async def get_config_now_branch_id(user_id: str):
     """
 
     # 获取当前配置路由ID
-    branch_id = await Resource.core.user_config_manager.get_default_item_id(user_id)
+    branch_id = await Resource.core.user_config_manager.get_all_branch_id(user_id)
 
     logger.info(f"Get user now branch id", user_id = user_id)
 
@@ -62,7 +62,7 @@ async def change_config(user_id: str, new_branch_id: str = Form(...)):
     """
 
     # 设置平行配置路由
-    await Resource.core.user_config_manager.set_default_item_id(user_id, item = new_branch_id)
+    await Resource.core.user_config_manager.set_default_branch_id(user_id, item = new_branch_id)
 
     logger.info("Change user config branch id to {new_branch_id}", user_id = user_id, new_branch_id = new_branch_id)
 
