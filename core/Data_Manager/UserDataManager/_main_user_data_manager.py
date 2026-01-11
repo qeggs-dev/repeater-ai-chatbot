@@ -1,5 +1,5 @@
 # ==== 标准库 ==== #
-from typing import TypeVar, Generic
+from typing import TypeVar, Generic, Callable
 from pathlib import Path
 from weakref import WeakValueDictionary
 
@@ -14,50 +14,82 @@ from ...Global_Config_Manager import ConfigManager
 T = TypeVar("T")
 
 class MainManager(Generic[T]):
-    def __init__(self, base_name: str, cache_metadata:bool = False, cache_data:bool = False, branches_dir_name:str = "branches"):
+    def __init__(
+            self,
+            base_name: str,
+            cache_metadata:bool = False,
+            cache_data:bool = False,
+            branches_dir_name:str = "branches",
+            default_factory: Callable[[], T] | None = None
+        ):
         self._base_path = Path(ConfigManager.get_configs().user_data.dir)
         self._base_name = sanitize_filename(base_name)
         if not validate_path(self._base_path, self._base_name):
             raise ValueError(f"Invalid path \"{self._base_name}\" for \"{self._base_path}\"")
-        self.sub_managers: WeakValueDictionary[str, SubManager] = WeakValueDictionary()
+        self._sub_managers: WeakValueDictionary[str, SubManager] = WeakValueDictionary()
 
-        self.cache_metadata = cache_metadata
-        self.cache_data = cache_data
+        self._cache_metadata = cache_metadata
+        self._cache_data = cache_data
 
-        self.sub_dir_name = branches_dir_name
+        self._sub_dir_name = branches_dir_name
+
+        if default_factory is None:
+            self._default_factory = lambda: None
+        elif callable(default_factory):
+            self._default_factory = default_factory
+        else:
+            raise ValueError("default_factory must be callable or None")
+    
+    @property
+    def default_factory(self) -> Callable[[], T]:
+        return self._default_factory
     
     @property
     def base_path(self):
         return self._base_path / self._base_name
     
     def _get_sub_manager(self, user_id: str) -> SubManager:
-        if user_id not in self.sub_managers:
-            self.sub_managers[user_id] = SubManager(
+        if user_id not in self._sub_managers:
+            self._sub_managers[user_id] = SubManager(
                 self.base_path / user_id,
-                cache_metadata = self.cache_metadata,
-                cache_data = self.cache_data,
-                sub_dir_name = self.sub_dir_name,
+                cache_metadata = self._cache_metadata,
+                cache_data = self._cache_data,
+                sub_dir_name = self._sub_dir_name,
             )
         
-        return self.sub_managers[user_id]
+        return self._sub_managers[user_id]
     
     async def _get_branch_id(self, user_id: str) -> str:
         manager = self._get_sub_manager(user_id)
         metadata = await manager.load_metadata()
         
+        default_branch_id = ConfigManager.get_configs().user_data.default_branch_name
         if isinstance(metadata, dict):
-            branch_name = metadata.get(ConfigManager.get_configs().user_data.metadata_fields.branch_field, "default")
+            branch_name = metadata.get(ConfigManager.get_configs().user_data.metadata_fields.branch_field, default_branch_id)
             if not isinstance(branch_name, str):
-                branch_name = ConfigManager.get_configs().user_data.default_branch_name
+                branch_name = default_branch_id
                 metadata[ConfigManager.get_configs().user_data.metadata_fields.branch_field] = branch_name
                 logger.warning(
                     "Branch name is not a string, using default branch name."
                 )
                 await manager.save_metadata(metadata)
         else:
-            branch_name = ConfigManager.get_configs().user_data.default_branch_name
+            branch_name = default_branch_id
         
         return branch_name
+    
+    def _get_default_value(self, default_value: T | None) -> T:
+        if default_value is not None:
+            return default_value
+        
+        elif self._default_factory is None:
+            return None
+        
+        elif callable(self._default_factory):
+            return self._default_factory()
+        
+        else:
+            raise ValueError("Get default value failed.")
     
     async def load(self, user_id: str, default: T | None = None) -> T:
         """
@@ -73,8 +105,9 @@ class MainManager(Generic[T]):
         user_id = sanitize_filename(user_id)
         manager = self._get_sub_manager(user_id)
         branch_id = await self._get_branch_id(user_id)
+        default_value = self._get_default_value(default)
         
-        return await manager.load(branch_id, default)
+        return await manager.load(branch_id, default_value)
     
     async def save(self, user_id: str, data: T) -> None:
         """
@@ -115,8 +148,9 @@ class MainManager(Generic[T]):
         user_id = sanitize_filename(user_id)
         manager = self._get_sub_manager(user_id)
         branch_id = await self._get_branch_id(user_id)
+        default_value = self._get_default_value(default)
 
-        loaded_data = await manager.load(branch_id, default)
+        loaded_data = await manager.load(branch_id, default_value)
         await manager.save(new_branch_id, loaded_data)
     
     async def clone_from(self, user_id: str, source_branch_id: str, default: T | None = None) -> None:
@@ -131,8 +165,9 @@ class MainManager(Generic[T]):
         user_id = sanitize_filename(user_id)
         manager = self._get_sub_manager(user_id)
         branch_id = await self._get_branch_id(user_id)
+        default_value = self._get_default_value(default)
 
-        loaded_data = await manager.load(source_branch_id, default)
+        loaded_data = await manager.load(source_branch_id, default_value)
         await manager.save(branch_id, loaded_data)
     
     async def binding(self, user_id: str, new_branch_id: str) -> None:
@@ -233,4 +268,4 @@ class MainManager(Generic[T]):
         Returns:
             list: A list of branch IDs.
         """
-        return [f.stem for f in (self.base_path / user_id / self.sub_dir_name).iterdir() if f.is_file()]
+        return [f.stem for f in (self.base_path / user_id / self._sub_dir_name).iterdir() if f.is_file()]
