@@ -7,10 +7,7 @@ from ._exceptions import *
 from ._object import UserConfigs
 from ..Global_Config_Manager import ConfigManager as GlobalConfigManager
 
-class ConfigManager:
-    # 用户配置管理器 (定义为类属性以减少重复实例化)
-    _user_config_manager = UserConfigManager()
-
+class ConfigManager(UserConfigManager):
     # 全局配置缓存
     _global_config_cache:dict[str, UserConfigs] = {}
     
@@ -153,7 +150,7 @@ class ConfigManager:
         :return: 配置项
         """
         async with self._lock:
-            return await self._user_config_manager.get_default_branch_id(user_id)
+            return await self.get_default_branch_id(user_id)
     
     async def set_default_item_id(self, user_id: str, item: str) -> None:
         """
@@ -164,7 +161,7 @@ class ConfigManager:
         :return: None
         """
         async with self._lock:
-            await self._user_config_manager.set_default_branch_id(user_id, item)
+            await self.set_default_branch_id(user_id, item)
             logger.info("Set default config item", user_id = user_id, item = item)
     
     async def delete(self, user_id: str) -> None:
@@ -178,7 +175,7 @@ class ConfigManager:
             cache = await self._get_cache()
             if user_id in cache:
                 del cache[user_id]
-            await self._user_config_manager.delete(user_id)
+            await super().delete(user_id)
             logger.info("Delete config", user_id = user_id)
     
     async def clear_cache(self) -> None:
@@ -229,7 +226,7 @@ class ConfigManager:
             configs: dict[str, UserConfigs] = {}
             cache = await self._get_cache()
 
-            userlist = await self._user_config_manager.get_all_user_id()
+            userlist = await self.get_all_user_id()
             for user_id in userlist:
                 if user_id in cache:
                     configs[user_id] = cache[user_id]
@@ -247,7 +244,7 @@ class ConfigManager:
         """
         try:
             return UserConfigs(
-                **await self._user_config_manager.load(
+                **await super().load(
                     user_id
                 )
             )
@@ -267,26 +264,10 @@ class ConfigManager:
         :param user_id: 用户ID
         :param configs: 配置数据
         """
-        await self._user_config_manager.save(
+        await super().save(
             user_id, configs.model_dump(exclude_none=True)
         )
     
-    async def get_all_user_id(self):
-        """
-        获取所有用户ID
-
-        :return: 所有用户ID
-        """
-        return await self._user_config_manager.get_all_user_id()
-    
-    async def get_all_item_id(self, user_id: str):
-        """
-        获取所有配置ID
-
-        :param user_id: 用户ID
-        :return: 配置项ID列表
-        """
-        return await self._user_config_manager.get_all_branch_id(user_id=user_id)
     
     async def __aenter__(self):
         return self 
