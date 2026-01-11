@@ -111,7 +111,7 @@ class SubManager:
         Returns:
             Any: Loaded data
         """
-        async with self._get_branch_lock(branch_id):
+        async with await self._get_branch_lock(branch_id):
             try:
                 if self.cache_data and self._data_cache is not None and branch_id in self._data_cache:
                     return self._data_cache[branch_id]
@@ -141,7 +141,7 @@ class SubManager:
         Returns:
             None
         """
-        async with self._get_branch_lock(branch_id):
+        async with await self._get_branch_lock(branch_id):
             path = self._get_file_path(branch_id)
             if not path.parent.exists():
                 path.parent.mkdir(parents=True, exist_ok=True)
@@ -159,7 +159,7 @@ class SubManager:
         Returns:
             None
         """
-        async with self._get_branch_lock(branch_id):
+        async with await self._get_branch_lock(branch_id):
             try:
                 loop = asyncio.get_event_loop()
                 await loop.run_in_executor(None, os.remove, self._get_file_path(branch_id))
@@ -178,12 +178,25 @@ class SubManager:
         Returns:
             None
         """
-        async with self._get_branch_lock(src_branch_id):
+        async with await self._get_branch_lock(src_branch_id):
             src_path = self._get_file_path(src_branch_id)
             dst_path = self._get_file_path(dst_branch_id)
+            if not src_path.exists():
+                raise FileNotFoundError(f"{src_path} does not exist.")
             if dst_path.exists():
                 raise FileExistsError(f"{dst_path} already exists.")
             src_path.hardlink_to(dst_path)
+    
+    def exists(self, branch_id: str) -> bool:
+        """Check if a branch exists.
+
+        Args:
+            branch_id (str): The branch to check.
+
+        Returns:
+            bool: True if the branch exists, False otherwise.
+        """
+        return self._get_file_path(branch_id).exists()
     
     async def info(self, branch_id: str) -> BranchInfo:
         """Get the info of a branch.
@@ -194,7 +207,7 @@ class SubManager:
         Returns:
             BranchInfo: The info of the branch.
         """
-        async with self._get_branch_lock(branch_id):
+        async with await self._get_branch_lock(branch_id):
             path = self._get_file_path(branch_id)
             if not path.exists():
                 raise FileNotFoundError(f"{path} does not exist.")
