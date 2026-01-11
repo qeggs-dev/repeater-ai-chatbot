@@ -12,6 +12,7 @@ import aiofiles
 # ==== 项目库 ==== #
 from PathProcessors import validate_path, sanitize_filename
 from ....Global_Config_Manager import ConfigManager
+from ._branch_info import BranchInfo
 
 class SubManager:
     def __init__(self, base_path: str | os.PathLike, sub_dir_name: str, cache_metadata:bool = False, cache_data:bool = False):
@@ -165,7 +166,7 @@ class SubManager:
             except FileNotFoundError:
                 pass
     
-    def binding(self, src_branch_id: str, dst_branch_id: str) -> None:
+    async def binding(self, src_branch_id: str, dst_branch_id: str) -> None:
         """Bind a branch to another branch.
 
         Use hard links to bind a branch to another branch.
@@ -177,8 +178,30 @@ class SubManager:
         Returns:
             None
         """
-        src_path = self._get_file_path(src_branch_id)
-        dst_path = self._get_file_path(dst_branch_id)
-        if dst_path.exists():
-            raise FileExistsError(f"{dst_path} already exists.")
-        src_path.hardlink_to(dst_path)
+        async with self._get_branch_lock(src_branch_id):
+            src_path = self._get_file_path(src_branch_id)
+            dst_path = self._get_file_path(dst_branch_id)
+            if dst_path.exists():
+                raise FileExistsError(f"{dst_path} already exists.")
+            src_path.hardlink_to(dst_path)
+    
+    async def info(self, branch_id: str) -> BranchInfo:
+        """Get the info of a branch.
+
+        Args:
+            branch_id (str): The branch to get the info of.
+
+        Returns:
+            BranchInfo: The info of the branch.
+        """
+        async with self._get_branch_lock(branch_id):
+            path = self._get_file_path(branch_id)
+            if not path.exists():
+                raise FileNotFoundError(f"{path} does not exist.")
+            
+            info = path.stat()
+            return BranchInfo(
+                branch_id = branch_id,
+                size = info.st_size,
+                modified_time = info.st_mtime,
+            )
