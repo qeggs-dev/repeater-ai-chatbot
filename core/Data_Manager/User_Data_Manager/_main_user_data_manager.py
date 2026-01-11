@@ -175,6 +175,8 @@ class UserDataManager(Generic[T]):
         default_value = self._get_default_value(default)
         if not manager.exists(branch_id):
             await manager.save(branch_id, default_value)
+        if manager.exists(new_branch_id):
+            await manager.delete(new_branch_id)
         await manager.binding(branch_id, new_branch_id)
     
     async def binding_from(self, user_id: str, source_branch_id: str, default: T | None = None) -> None:
@@ -193,7 +195,8 @@ class UserDataManager(Generic[T]):
         default_value = self._get_default_value(default)
         if not manager.exists(branch_id):
             await manager.save(source_branch_id, default_value)
-        await manager.delete(branch_id)
+        if manager.exists(branch_id):
+            await manager.delete(branch_id)
         await manager.binding(source_branch_id, branch_id)
 
     
