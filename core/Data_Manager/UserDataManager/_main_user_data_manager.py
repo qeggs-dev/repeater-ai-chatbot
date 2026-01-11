@@ -50,14 +50,16 @@ class MainManager(Generic[T]):
     
     def _get_sub_manager(self, user_id: str) -> SubManager:
         if user_id not in self._sub_managers:
-            self._sub_managers[user_id] = SubManager(
+            manager = SubManager(
                 self.base_path / user_id,
                 cache_metadata = self._cache_metadata,
                 cache_data = self._cache_data,
                 sub_dir_name = self._sub_dir_name,
             )
-        
-        return self._sub_managers[user_id]
+            self._sub_managers[user_id] = manager
+            return manager
+        else:
+            return self._sub_managers[user_id]
     
     async def _get_branch_id(self, user_id: str) -> str:
         manager = self._get_sub_manager(user_id)
