@@ -1,4 +1,4 @@
-from ._binding import bind_branch, bind_branch_from
+from ._bind import bind_branch, bind_branch_from
 from ._change_branch import change_branch
 from ._clone import clone_branch, clone_branch_from
 from ._delete_branch import delete_branch
