@@ -19,8 +19,34 @@
         "save_text_only": true,
         "max_log_length_for_non_text_content": 25
     },
+    "global_exception_handler": {
+        "error_message": "Internal Server Error",
+        "critical_error_message": "Critical Server Error!",
+        "crash_exit": true,
+        "traceback_save_to": null,
+        "record_all_exceptions": true,
+        "code_reader": {
+            "enable": true,
+            "code_encoding": "utf-8",
+            "code_line_dilation": 3,
+            "with_numbers": true,
+            "reserve_space": 7,
+            "fill_char": " ",
+            "add_bottom_border": true,
+            "bottom_border_limit": null
+        },
+        "repeater_traceback": {
+            "enable": true,
+            "record_warnings": true,
+            "format_validation_error": true,
+            "exclude_library_code": true,
+            "traditional_stack_frame": false
+        }
+    },
     "logger": {
         "file_path": "./logs/repeater-log-{time:YYYY-MM-DD_HH-mm-ss.SSS}.log",
+        "console_format": "<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | <level>{level: <8}</level> | <cyan>{extra[user_id]}</cyan> - <level>{message}</level>",
+        "file_format": "{time:YYYY-MM-DD HH:mm:ss.SSS} | {level: <8} | {extra[user_id]} - {message}",
         "level": "DEBUG",
         "rotation": "10 MB",
         "retention": "7 days",
@@ -37,7 +63,7 @@
         "stream": true
     },
     "prompt_template": {
-        "version": "",
+        "version": null,
         "bot_info": {
             "name": "Repeater",
             "birthday": {
@@ -95,7 +121,8 @@
         "host": null,
         "port": null,
         "workers": null,
-        "reload": null
+        "reload": null,
+        "run_server": true
     },
     "static": {
         "readme_file_path": "./README.md",
@@ -109,6 +136,8 @@
         "dir": "./workspace/data/user_data",
         "branches_dir_name": "branches",
         "metadata_file_name": "metadata.json",
+        "default_branch_id": "main",
+        "file_size_use_abbreviation": true,
         "cache_medadata": false,
         "cache_data": false
     },
