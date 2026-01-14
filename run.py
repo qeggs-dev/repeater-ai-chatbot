@@ -584,9 +584,9 @@ class SlovesStarter:
             suffix:int = 0
             while True:
                 if suffix == 0:
-                    config_file = Path(f"config.json")
+                    config_file = Path(f"run.json")
                 else:
-                    config_file = Path(f"config_{suffix}.json")
+                    config_file = Path(f"run_{suffix}.json")
                 
                 if not config_file.exists():
                     if self.ask(
@@ -866,11 +866,13 @@ class SlovesStarter:
 
     # region > exit
     def _exit(self, code: ExitCode | int | None = None) -> None:
-        if isinstance(code, ExitCode) and code != ExitCode.ONLY_PAUSE:
+        if isinstance(code, ExitCode):
+            if code == ExitCode.ONLY_PAUSE:
+                return
             if self.allow_print:
                 print(f"Exit with code {code.value}({code.name}).")
             exit(code.value)
-        if isinstance(code, int):
+        elif isinstance(code, int):
             if self.allow_print:
                 print(f"Exit with code {code}.")
             exit(code)
