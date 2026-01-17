@@ -197,7 +197,6 @@ class Core:
             context_loader: ContextLoader,
             user_id: str,
             message: str,
-            user_name: str,
             role: ContentRole = ContentRole.USER,
             role_name: str | None = None,
             temporary_prompt: str | None = None,
@@ -213,10 +212,10 @@ class Core:
         :param context_loader: 上下文加载器
         :param user_id: 用户ID
         :param message: 消息
-        :param user_name: 用户名
         :param role: 角色
         :param role_name: 角色名
         :param temporary_prompt: 临时提示词
+        :param image_url: 图片URL
         :param load_prompt: 是否加载提示
         :param continue_completion: 是否继续完成
         :param reference_context_id: 引用上下文ID
@@ -276,11 +275,11 @@ class Core:
         
         if blacklist_file_path.exists():
             self.blacklist.clear()
-            try:
-                async with aiofiles.open(blacklist_file_path, "r") as f:
+            async with aiofiles.open(blacklist_file_path, "r") as f:
+                try:
                     self.blacklist.load(await f.read())
-            except ValueError as e:
-                logger.warning(f"load blacklist failed: {e}")
+                except ValueError as e:
+                    logger.warning(f"load blacklist failed: {e}")
     # endregion
 
     # region > in blacklist
@@ -542,7 +541,6 @@ class Core:
                     context_loader = context_loader,
                     user_id = user_id,
                     message = message,
-                    user_name = user_info.nickname or user_info.username,
                     role = role,
                     role_name = role_name,
                     temporary_prompt = temporary_prompt,
