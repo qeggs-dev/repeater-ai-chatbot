@@ -50,12 +50,12 @@ class ConfigManager(UserConfigManager):
         if self._cache_switch:
             async with self._lock:
                 if user_id in cache:
-                    logger.info("Get config form cache", user_id = user_id)
+                    logger.info("Get user config form cache", user_id = user_id)
                     config = cache[user_id]
                 else:
                     config = await self._load_configs(user_id)
                     cache[user_id] = config
-                    logger.info("Get config from database and save to cache", user_id = user_id)
+                    logger.info("Get user config from database and save to cache", user_id = user_id)
                 
                 # 如果已有任务，先取消
                 if user_id in self._downgrade_tasks and not self._downgrade_tasks[user_id].done():
@@ -63,13 +63,13 @@ class ConfigManager(UserConfigManager):
                 task = asyncio.create_task(
                     self._wait_and_downgrade(user_id=user_id, wait_time=self._downgrade_wait_time)
                 )
-                logger.info(f"Create downgrade task", user_id = user_id)
+                logger.info(f"Create user config downgrade task", user_id = user_id)
                 # 任务完成自动删除
                 task.add_done_callback(lambda _, id=user_id: self._downgrade_tasks.pop(id, None))
                 self._downgrade_tasks[user_id] = task
             return config
         else:
-            logger.info("Get config from database", user_id = user_id)
+            logger.info("Get user config from storage", user_id = user_id)
             return await self._load_configs(user_id)
     
     async def save(self, user_id: str, configs: UserConfigs) -> None:
@@ -86,7 +86,7 @@ class ConfigManager(UserConfigManager):
             if user_id in cache:
                 if isinstance(configs, UserConfigs):
                     async with self._lock:
-                        logger.info("Save config to cache", user_id = user_id)
+                        logger.info("Save user config to cache", user_id = user_id)
                         cache[user_id] = configs
 
                         if user_id in cache and (user_id in self._debonce_save_tasks and not self._debonce_save_tasks[user_id].done()):
@@ -94,13 +94,13 @@ class ConfigManager(UserConfigManager):
                         task = asyncio.create_task(
                             self._wait_and_save(user_id, self._debonce_save_wait_time)
                         )
-                        logger.info(f"Create save task", user_id = user_id)
+                        logger.info(f"Create user config save task", user_id = user_id)
                         task.add_done_callback(lambda _, id=user_id: self._debonce_save_tasks.pop(id, None))
                         self._debonce_save_tasks[user_id] = task
                 else:
-                    raise TypeError("configs must be Configs object")
+                    raise TypeError("user configs must be Configs object")
         else:
-            logger.info("Save config to database", user_id = user_id)
+            logger.info("Save user config to storage", user_id = user_id)
             await self._save_configs(user_id, configs)
     
     async def _wait_and_downgrade(self, user_id: str, wait_time: float = 5) -> None:
@@ -119,7 +119,7 @@ class ConfigManager(UserConfigManager):
                     return
                 cache = await self._get_cache()
                 if user_id in cache:
-                    logger.info("Downgrade config", user_id = user_id)
+                    logger.info("Downgrade user config", user_id = user_id)
                     del cache[user_id]
         except asyncio.CancelledError:
             logger.info("User config downgrade task cancelled", user_id = user_id)
@@ -137,7 +137,7 @@ class ConfigManager(UserConfigManager):
             async with self._lock:
                 cache: dict[str, UserConfigs] = await self._get_cache()
                 if user_id in cache:
-                    logger.info("Save config", user_id = user_id)
+                    logger.info("Save user config", user_id = user_id)
                     await self._save_configs(user_id, cache[user_id])
                     del cache[user_id]
         except asyncio.CancelledError:
@@ -155,7 +155,7 @@ class ConfigManager(UserConfigManager):
             if user_id in cache:
                 del cache[user_id]
             await super().delete(user_id)
-            logger.info("Delete config", user_id = user_id)
+            logger.info("Delete user config", user_id = user_id)
     
     async def clear_cache(self) -> None:
         """
@@ -175,7 +175,7 @@ class ConfigManager(UserConfigManager):
             cache = await self._get_cache()
             await self._save_configs(user_id, configs)
             cache[user_id] = configs
-            logger.info("Force write config", user_id = user_id)
+            logger.info("Force write user config", user_id = user_id)
 
     async def save_all(self, clear_all_tasks: bool = True) -> None:
         """
@@ -192,7 +192,7 @@ class ConfigManager(UserConfigManager):
                 if clear_all_tasks:
                     self._downgrade_tasks[user_id].cancel()
                     self._debonce_save_tasks[user_id].cancel()
-            logger.info(f"Saved {len(cache)} config", user_id = user_id)
+            logger.info(f"Saved {len(cache)} user config", user_id = user_id)
             cache.clear()
     
     async def get_all_configs(self):
@@ -211,7 +211,7 @@ class ConfigManager(UserConfigManager):
                     configs[user_id] = cache[user_id]
                 else:
                     configs[user_id] = await self._load_configs(user_id)
-            logger.info(f"Loaded {len(configs)} configs")
+            logger.info(f"Loaded {len(configs)} user configs")
             return configs
     
     async def _load_configs(self, user_id: str) -> UserConfigs:
