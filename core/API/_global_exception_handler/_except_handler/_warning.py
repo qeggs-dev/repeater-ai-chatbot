@@ -1,5 +1,4 @@
 import warnings
-import aiofiles
 
 from typing import TextIO
 from loguru import logger
