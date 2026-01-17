@@ -88,8 +88,16 @@ async def render(
     if render_request.html_template is not None:
         html_template = render_request.html_template
     else:
+        htmp_temllate_file = html_template_dir / f"{html_template_name}{html_template_suffix}"
+        if not htmp_temllate_file.exists():
+            raise ORJSONResponse(
+                content = Render_Response(
+                    error = f"HTML template file not found"
+                ).model_dump(exclude_none=True),
+                status_code= 404
+            )
         async with aiofiles.open(
-            html_template_dir / f"{html_template_name}{html_template_suffix}",
+            htmp_temllate_file,
             "r",
             encoding = html_template_encoding
         ) as f:
