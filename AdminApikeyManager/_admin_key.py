@@ -1,7 +1,8 @@
+import aiofiles
 import secrets
 import math
 import time
-from enum import Enum, auto
+from enum import Enum
 from typing import Optional, Union, Any
 from pathlib import Path
 from loguru import logger
@@ -202,8 +203,6 @@ class AdminKeyManager:
         path = Path(file_path)
         if not path.exists():
             raise FileNotFoundError(f"File not found: {path}")
-
-        import aiofiles
         async with aiofiles.open(path, "r") as f:
             self._api_key = self._examine_api_key((await f.read()).strip())
             self._source = AdminKeySource.FILE
@@ -222,8 +221,6 @@ class AdminKeyManager:
 
         if not path.parent.exists():
             raise FileNotFoundError(f"Directory not found: {path.parent}")
-
-        import aiofiles
         async with aiofiles.open(path, "w") as f:
             await f.write(self._api_key)
         logger.info(f"Saved API Key to file: {path}", user_id="[System]")
