@@ -56,7 +56,7 @@ class UserDataManager(Generic[T]):
         )
         return manager
     
-    async def _get_branch_id(self, user_id: str) -> str:
+    async def _get_active_branch_id(self, user_id: str) -> str:
         manager = self._get_sub_manager(user_id)
         metadata = await manager.load_metadata()
         
@@ -100,16 +100,16 @@ class UserDataManager(Generic[T]):
             Any: The user's data.
         """
         manager = self._get_sub_manager(user_id)
-        branch_id = await self._get_branch_id(user_id)
+        active_branch_id = await self._get_active_branch_id(user_id)
         default_value = self._get_default_value(default)
 
         logger.info(
-            "Loading user data from {branch_id}",
+            "Loading [Branch:{src_branch_id}]",
             user_id = user_id,
-            branch_id = branch_id
+            src_branch_id = active_branch_id
         )
         
-        return await manager.load(branch_id, default_value)
+        return await manager.load(active_branch_id, default_value)
     
     async def save(self, user_id: str, data: T) -> None:
         """
@@ -120,15 +120,15 @@ class UserDataManager(Generic[T]):
             data (Any): The user's data.
         """
         manager = self._get_sub_manager(user_id)
-        branch_id = await self._get_branch_id(user_id)
+        active_branch_id = await self._get_active_branch_id(user_id)
 
         logger.info(
-            "Saving user data to {branch_id}",
+            "Saving [Branch:{dst_branch_id}]",
             user_id = user_id,
-            branch_id = branch_id
+            dst_branch_id = active_branch_id
         )
 
-        await manager.save(branch_id, data)
+        await manager.save(active_branch_id, data)
     
     async def delete(self, user_id: str) -> None:
         """
@@ -138,38 +138,38 @@ class UserDataManager(Generic[T]):
             user_id (str): The user's ID.
         """
         manager = self._get_sub_manager(user_id)
-        branch_id = await self._get_branch_id(user_id)
+        active_branch_id = await self._get_active_branch_id(user_id)
 
         logger.info(
-            "Deleting user {branch_id} branch",
+            "Deleting [Branch:{dst_branch_id}]",
             user_id = user_id,
-            branch_id = branch_id
+            dst_branch_id = active_branch_id
         )
 
-        await manager.delete(branch_id)
+        await manager.delete(active_branch_id)
     
-    async def clone(self, user_id: str, new_branch_id: str, default: T | None = None) -> None:
+    async def clone(self, user_id: str, dst_branch_id: str, default: T | None = None) -> None:
         """
         Clone a user's data to a new branch.
 
         Args:
             user_id (str): The user's ID.
-            new_branch_id (str): The new branch ID.
+            dst_branch_id (str): The ID of the destination branch.
             default (Any | None): The default data to use if the branch does not exist.
         """
         manager = self._get_sub_manager(user_id)
-        branch_id = await self._get_branch_id(user_id)
+        active_branch_id = await self._get_active_branch_id(user_id)
         default_value = self._get_default_value(default)
 
         logger.info(
-            "Cloning user {src_branch_id} branch to {dst_branch_id}",
+            "Cloning [Branch:{src_branch_id}] to [Branch:{dst_branch_id}]",
             user_id = user_id,
-            src_branch_id = branch_id,
-            dst_branch_id = new_branch_id
+            src_branch_id = active_branch_id,
+            dst_branch_id = dst_branch_id
         )
 
-        loaded_data = await manager.load(branch_id, default_value)
-        await manager.save(new_branch_id, loaded_data)
+        loaded_data = await manager.load(active_branch_id, default_value)
+        await manager.save(dst_branch_id, loaded_data)
     
     async def clone_from(self, user_id: str, source_branch_id: str, default: T | None = None) -> None:
         """
@@ -177,59 +177,59 @@ class UserDataManager(Generic[T]):
 
         Args:
             user_id (str): The user ID.
-            source_branch_id (str): The source branch ID.
+            src_branch_id (str): The source branch ID.
             default (Any | None): The default data to use if the branch does not exist.
         """
         manager = self._get_sub_manager(user_id)
-        branch_id = await self._get_branch_id(user_id)
+        active_branch_id = await self._get_active_branch_id(user_id)
         default_value = self._get_default_value(default)
 
         logger.info(
-            "Cloning user {src_branch_id} branch to {dst_branch_id}",
+            "Cloning [Branch:{src_branch_id}] to [Branch:{dst_branch_id}]",
             user_id = user_id,
             src_branch_id = source_branch_id,
-            dst_branch_id = branch_id
+            dst_branch_id = active_branch_id
         )
 
         loaded_data = await manager.load(source_branch_id, default_value)
-        await manager.save(branch_id, loaded_data)
+        await manager.save(active_branch_id, loaded_data)
     
-    async def bind(self, user_id: str, new_branch_id: str, default: T | None = None) -> None:
+    async def bind(self, user_id: str, dst_branch_id: str, default: T | None = None) -> None:
         """
         Bind now active branch to an another branch.
 
         Args:
             user_id (str): User ID.
-            new_branch_id (str): New branch ID.
+            dst_branch_id (str): Destination branch ID.
         """
         manager = self._get_sub_manager(user_id)
-        branch_id = await self._get_branch_id(user_id)
+        active_branch_id = await self._get_active_branch_id(user_id)
         default_value = self._get_default_value(default)
 
         logger.info(
-            "Binding user {branch_id} branch to {new_branch_id}",
+            "Binding [Branch:{src_branch_id}] to [Branch:{dst_branch_id}]",
             user_id = user_id,
-            branch_id = branch_id,
-            new_branch_id = new_branch_id
+            src_branch_id = active_branch_id,
+            dst_branch_id = dst_branch_id
         )
 
-        if not manager.exists(branch_id):
+        if not manager.exists(active_branch_id):
             logger.warning(
-                "User {user_id} branch {branch_id} does not exist, creating...",
+                "{user_id} branch {src_branch_id} does not exist, creating...",
                 user_id = user_id,
-                branch_id = branch_id
+                src_branch_id = active_branch_id
             )
-            await manager.save(branch_id, default_value)
-        if manager.exists(new_branch_id):
+            await manager.save(active_branch_id, default_value)
+        if manager.exists(dst_branch_id):
             logger.warning(
-                "User {user_id} branch {dst_branch_id} already exists, deleting...",
+                "{user_id} branch {dst_branch_id} already exists, deleting...",
                 user_id = user_id,
-                dst_branch_id = new_branch_id
+                dst_branch_id = dst_branch_id
             )
-            await manager.delete(new_branch_id)
-        await manager.bind(branch_id, new_branch_id)
+            await manager.delete(dst_branch_id)
+        await manager.bind(active_branch_id, dst_branch_id)
     
-    async def bind_from(self, user_id: str, source_branch_id: str, default: T | None = None) -> None:
+    async def bind_from(self, user_id: str, src_branch_id: str, default: T | None = None) -> None:
         """
         Bind an another branch to now active branch.
 
@@ -238,34 +238,34 @@ class UserDataManager(Generic[T]):
 
         Args:
             user_id (str): User ID.
-            source_branch_id (str): The source branch ID.
+            src_branch_id (str): The source branch ID.
         """
         manager = self._get_sub_manager(user_id)
-        branch_id = await self._get_branch_id(user_id)
+        active_branch_id = await self._get_active_branch_id(user_id)
         default_value = self._get_default_value(default)
 
         logger.info(
-            "Binding user {user_id} branch {source_branch_id} to {branch_id}...",
+            "Binding [Branch:{src_branch_id}] to [Branch:{branch_id}]...",
             user_id = user_id,
-            source_branch_id = source_branch_id,
-            branch_id = branch_id
+            src_branch_id = src_branch_id,
+            branch_id = active_branch_id
         )
 
-        if not manager.exists(branch_id):
+        if not manager.exists(active_branch_id):
             logger.warning(
-                "User {user_id} branch {branch_id} does not exist, creating...",
+                "[Branch:{src_branch_id}] does not exist, creating...",
                 user_id = user_id,
-                branch_id = source_branch_id
+                src_branch_id = src_branch_id
             )
-            await manager.save(source_branch_id, default_value)
-        if manager.exists(branch_id):
+            await manager.save(src_branch_id, default_value)
+        if manager.exists(active_branch_id):
             logger.warning(
-                "User {user_id} branch {new_branch_id} already exists, deleting...",
+                "[Branch:{dst_branch_id}] already exists, deleting...",
                 user_id = user_id,
-                dst_branch_id = branch_id
+                dst_branch_id = active_branch_id
             )
-            await manager.delete(branch_id)
-        await manager.bind(source_branch_id, branch_id)
+            await manager.delete(active_branch_id)
+        await manager.bind(src_branch_id, active_branch_id)
 
     
     async def set_active_branch_id(self, user_id: str, branch_id: str) -> None:
@@ -284,9 +284,9 @@ class UserDataManager(Generic[T]):
             metadata = {ConfigManager.get_configs().user_data.metadata_fields.branch_field: branch_id}
         
         logger.info(
-            "User {user_id} branch {new_branch_id} set to {branch_id}",
+            "Set Active Branch to [Branch:{branch_id}]",
             user_id = user_id,
-            new_branch_id = branch_id,
+            dst_branch_id = branch_id,
             branch_id = branch_id
         )
         
@@ -302,7 +302,7 @@ class UserDataManager(Generic[T]):
         Returns:
             str: The default branch id.
         """
-        branch_id = await self._get_branch_id(user_id)
+        branch_id = await self._get_active_branch_id(user_id)
         return branch_id
     
     async def info(self, user_id: str) -> BranchInfo:
@@ -316,7 +316,7 @@ class UserDataManager(Generic[T]):
             dict: The user's information.
         """
         manager = self._get_sub_manager(user_id)
-        branch_id = await self._get_branch_id(user_id)
+        branch_id = await self._get_active_branch_id(user_id)
 
         return await manager.info(branch_id)
 
