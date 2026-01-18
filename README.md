@@ -1,9 +1,16 @@
+<center>
+
 # @复读机Repeater
 **- Only Chat, Focus Chat. -**
 
-一个主要基于[`OpenAI SDK`](https://pypi.org/project/openai/)开发的聊天机器人
-将原始会话数据的处理直接公开给用户使用
-以达到接近直接操作API的灵活度体验
+[![Python 3.11+](https://img.shields.io/badge/Python-3.11+-blue.svg?logo=python)](https://www.python.org/downloads/) [![License: MIT](https://img.shields.io/badge/License-MIT-63b9ff.svg)](https://opensource.org/licenses/MIT) [![Model Protocol](https://img.shields.io/badge/Model%20Protocol-OpenAI%20Completions%20API-brightgreen.svg)](https://platform.openai.com/docs/overview)
+
+</center>
+
+---
+
+一个主要基于[`OpenAI SDK`](https://pypi.org/project/openai/)开发的聊天机器人中间件
+将状态管理封装到API中，以提供带状态的接口服务，降低对接成本
 
 目前，复读机具有以下特点：
 
@@ -14,14 +21,14 @@
  - 用户自治设计：用户可以自己管理自己的所有用户数据
  - 多预设人设：复读机支持多预设人设，用户可以自由选择自己喜欢的人设进行对话
 
-注：拟人化并非复读机的赛道，复读机不对拟人化需求做过多保证，如有需要请自行引导或编写提示词。
+拟人化并非复读机的赛道，复读机不对拟人化需求做过多保证，如有需要请自行引导或编写提示词。
 
 ---
 
 ## 注意事项:
  - 使用者需确认生成内容的合法性，并自行承担使用本服务可能产生的风险。
- - 如果你觉得这个Bot非常好用，请去看一下[`Deepseek`](https://www.deepseek.com/)的官网吧，这个Bot最初就是基于他们的模型API文档开发的。
- - 机器人本体是免费的，但开发者不承担使用时的API费用，还请注意。
+ - 如果你觉得这个Bot非常好用，请去看一下 [`Deepseek`](https://www.deepseek.com/) 的官网吧，这个Bot最初就是基于他们的模型API文档开发的。(OpenAI兼容就是省事啊~)
+ - 机器人本体是免费的，开发者不承担使用时的API费用，还请注意。
 
 ---
 
@@ -66,18 +73,18 @@
 
 1. 将项目克隆到本地
 2. 进入项目目录
-5. 运行`run.py`启动器 (该项目的详情请查看[Sloves_Starter](https://github.com/qeggs-dev/Sloves_Starter))
+5. 运行 `run.py` 启动器 (该项目的详情请查看[Sloves_Starter](https://github.com/qeggs-dev/Sloves_Starter))
 
 ### 手动安装
 
 1. 将项目克隆到本地
 2. 进入项目目录
-3. 执行`python3 -m venv .venv`创建虚拟环境
-4. 执行`.venv/bin/activate`激活虚拟环境(Windows下则是`.venv\Scripts\activate`)
-5. 执行`pip install -r requirements.txt`安装依赖
-6. 执行`python3 run_repeater.py`启动服务
+3. 执行 `python3 -m venv .venv` 创建虚拟环境
+4. 执行 `.venv/bin/activate` 激活虚拟环境 (Windows下则是 `.venv\Scripts\activate` )
+5. 执行 `pip install -r requirements.txt` 安装依赖
+6. 执行 `python3 run_repeater.py` 启动服务
 
-PS: `run.py`启动器会在完成所有操作后启动主程序，而这只需要你保证你的配置正确
+PS: `run.py` 启动器会在完成所有操作后启动主程序，而这只需要你保证你的配置正确
 
 并且每一次你都可以通过启动器来启动程序
 
@@ -88,14 +95,13 @@ PS: `run.py`启动器会在完成所有操作后启动主程序，而这只需�
 本项目并未在项目中加入平台强相关逻辑
 经过测试，Repeater可以在 Windows、Linux 上正常运行
 启动器也根据平台特性做了适配
-暂未测试过 MacOS (因为没钱买苹果)
+暂未测试过 MacOS (因为没钱买Mac)
 
 ---
 
 ## 详细文档
 
-[详细文档](./docs/index.md)
-从这里开始使用 Repeater!
+[从这里开始使用 Repeater!](./docs/index.md)
 
 ---
 
