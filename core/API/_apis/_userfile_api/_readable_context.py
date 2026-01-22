@@ -10,9 +10,11 @@ def readable_context(context: ContextObject) -> str:
         if item.reasoning_content:
             text_buffer.append("Reasoning:")
             text_buffer.append(item.reasoning_content)
+            text_buffer.append("")
         if item.content:
             text_buffer.append("Content:")
             text_buffer.append(item.content)
+            text_buffer.append("")
         
         text_buffer.append("==========================")
         text_buffer.append("")
