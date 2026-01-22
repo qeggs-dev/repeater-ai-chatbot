@@ -13,29 +13,29 @@ import yaml
 def make_user_file(file: BinaryIO, context: ContextObject, prompt: str, user_configs: UserConfigs) -> None:
     with zipfile.ZipFile(file, "w") as zipf:
         zipf.writestr(
-            "user_context.json",
+            "raw/context.json",
             orjson.dumps(
                 context.context
             )
         )
         zipf.writestr(
-            "user_context_readable.txt",
+            "readable/context.txt",
             readable_context(
                 context
             )
         )
         zipf.writestr(
-            "user_prompt.json",
+            "raw/prompt.json",
             orjson.dumps(
                 prompt
             )
         )
         zipf.writestr(
-            "user_prompt_readable.txt",
+            "readable/prompt.txt",
             prompt
         )
         zipf.writestr(
-            "user_config.json",
+            "raw/user_configs.json",
             orjson.dumps(
                 user_configs.model_dump(
                     exclude_defaults=True
@@ -43,7 +43,7 @@ def make_user_file(file: BinaryIO, context: ContextObject, prompt: str, user_con
             )
         )
         zipf.writestr(
-            "user_config_readable.yaml",
+            "readable/user_configs.yaml",
             (
                 yaml.dump(
                     user_configs.model_dump(
