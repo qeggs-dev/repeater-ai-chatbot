@@ -13,9 +13,11 @@
 
 该文件通常会包含以下文件
 - `userfile.zip`
-  - `user_config.json` 用户配置文件
-  - `user_config_readable.yaml` 用户配置文件（YAML格式）
-  - `user_context.json` 用户上下文文件
-  - `user_context_readable.txt` 用户上下文文件（可读格式）
-  - `user_prompt.json` 用户提示文件
-  - `user_prompt_readable.txt` 用户提示文件（纯文本格式）
+  - `raw`
+    - `context.json` 用户上下文文件
+    - `prompt.json` 用户提示文件
+    - `user_config.json` 用户配置文件
+  - `readable`
+    - `context.txt` 用户上下文文件（可读格式）
+    - `prompt.txt` 用户提示文件（纯文本格式）
+    - `user_config.yaml` 用户配置文件（YAML格式）
