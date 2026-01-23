@@ -76,10 +76,10 @@ class PromptVP_Loader:
         
         prompt_vp = self.get_prompt_vp(
             user_id = user_id,
-            birthday_countdown = lambda detailed_mode = False: get_birthday_countdown(
-                bot_birthday_month,
-                bot_birthday_day,
-                name=bot_name,
+            birthday_countdown = lambda birthday_month = bot_birthday_month, birthday_day = bot_birthday_day, name = bot_name, detailed_mode = False: get_birthday_countdown(
+                int(birthday_month),
+                int(birthday_day),
+                name=name,
                 precise = str_to_bool(detailed_mode) if isinstance(detailed_mode, bool) else detailed_mode,
             ),
             reprs = lambda *args: "\n".join([repr(arg) for arg in args]),
