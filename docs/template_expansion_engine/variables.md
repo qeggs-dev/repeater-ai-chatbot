@@ -22,8 +22,8 @@
 | `randchoice` | 随机选择 | 抽取内容(*str) |
 | `reprs` | 显示对象的字符串表示 | 任何内容(*Any) |
 | `random` | 随机数 | 随机数下限(int)，随机数上下限(int) |
-| `birthday_countdown` | 生日倒计时 | 启用详细信息(bool) |
 | `random_matrix` | 0~1随机矩阵 | 矩阵行数(int)，矩阵列数(int) |
 | `randfloat` | 随机浮点数 | 随机数下限(float)，随机数上下限(float) |
 | `copytext` | 重复文本 | 重复文本(str)， 重复次数(int), 间隔符(str) |
 | `text_matrix` | 文本矩阵 | 重复文本(int)，列数(int)，行数(int)，间隔符(str)，换行符(str) |
+| `birthday_countdown` | 生日倒计时 | 生日月份(int), 生日日期(int), 对象名称(str), 启用详细信息(bool) |
