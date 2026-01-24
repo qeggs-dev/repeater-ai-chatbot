@@ -45,7 +45,7 @@ async def chat_endpoint(
             load_prompt = request.load_prompt,
             save_context = request.save_context,
             save_new_only = request.save_new_only,
-            reference_context_id = request.reference_context_id,
+            cross_user_data_flow = request.cross_user_data_flow,
             continue_completion = request.continue_completion,
             stream = request.stream
         )
