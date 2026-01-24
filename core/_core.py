@@ -498,6 +498,7 @@ class Core:
                 config = await self.get_config(user_id)
                 
                 if not ConfigManager.get_configs().user_data.allow_cross_user_data_flow:
+                    logger.warning("Cross user data flow is not allowed.", user_id = user_id)
                     cross_user_data_flow = None
                 
                 cross_user_data_flow = self.cross_user_data_flow_fill_undefined(user_id, cross_user_data_flow)
