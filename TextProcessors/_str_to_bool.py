@@ -8,6 +8,8 @@ def str_to_bool(s: str):
     Returns:
     bool: The boolean value of the string.
     """
+    if isinstance(s, bool):
+        return s
     if not isinstance(s, str):
         raise TypeError("Input must be a string.")
     if s.lower() in ["true", "yes", "1", "t", "y", "on"]:
