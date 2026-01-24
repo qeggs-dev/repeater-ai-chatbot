@@ -204,7 +204,7 @@ class Core:
             image_url: str | list[str] | None = None,
             load_prompt: bool = True,
             continue_completion: bool = False,
-            cross_user_data_flow: CrossUserDataFlow | None = None,
+            cross_user_data_flow: CrossUserDataFlow[str | None] | None = None,
             prompt_vp: PromptVP = PromptVP()
         ) -> tuple[ContextObject, ContentUnit | None]:
         """
@@ -223,26 +223,21 @@ class Core:
         :param prompt_vp: PromptVP模板解析器
         :return: 上下文对象
         """
-        context_load_source = user_id
-        prompt_load_source = user_id
+        cross_user_data_flow: CrossUserDataFlow[str] = self.cross_user_data_flow_fill_undefined(user_id, cross_user_data_flow)
 
-        if cross_user_data_flow is not None:
-            if cross_user_data_flow.context.from_user_id_load is not None:
-                context_load_source = cross_user_data_flow.context.from_user_id_load
-            if cross_user_data_flow.prompt.from_user_id_load is not None:
-                prompt_load_source = cross_user_data_flow.prompt.from_user_id_load
+        context_load_source = cross_user_data_flow.context.load_from_user_id
+        prompt_load_source = cross_user_data_flow.prompt.load_from_user_id
         
         logger.info(
-            "Load Context From [{context_load_source}]",
-            user_id=user_id,
-            context_load_source=context_load_source
+            "Load Context",
+            user_id=context_load_source,
         )
         context: ContextObject = await context_loader.load_context(
             user_id = context_load_source
         )
 
         if load_prompt:
-            logger.info("Load Prompt", user_id=user_id)
+            logger.info("Load Prompt", user_id=prompt_load_source)
             prompt: ContentUnit = await context_loader.load_prompt(
                 user_id = prompt_load_source,
                 temporary_prompt = temporary_prompt,
@@ -311,7 +306,7 @@ class Core:
         return False
     # endregion
 
-    # region Print_Request_Log
+    # region > print request log
     @staticmethod
     def _text_content_cutter(text: str) -> str:
         max_log_length = ConfigManager.get_configs().context.max_log_length_for_non_text_content
@@ -422,6 +417,17 @@ class Core:
                 user_id = user_id,
                 role_name = role_name
             )
+    
+    # region > Cross User Data Flow Fill Undefined
+    @staticmethod
+    def cross_user_data_flow_fill_undefined(user_id: str, cross_user_data_flow: CrossUserDataFlow[str | None] | None = None) -> CrossUserDataFlow[str]:
+        if cross_user_data_flow is None:
+            cross_user_data_flow = CrossUserDataFlow()
+        if not cross_user_data_flow.is_all_defined():
+            cross_user_data_flow.fill_undefined(user_id = user_id)
+        return cross_user_data_flow
+    # endregion
+
     # region > Chat
     async def chat(
             self,
@@ -437,7 +443,7 @@ class Core:
             load_prompt: bool | None = None,
             save_context: bool | None = None,
             save_new_only: bool | None = None,
-            cross_user_data_flow: CrossUserDataFlow | None = None,
+            cross_user_data_flow: CrossUserDataFlow[str | None] | None = None,
             continue_completion: bool = False,
             stream: bool = False,
         ) -> Response | AsyncIterator[dict[str, Any]]:
@@ -493,15 +499,11 @@ class Core:
                 
                 if not ConfigManager.get_configs().user_data.allow_cross_user_data_flow:
                     cross_user_data_flow = None
-
-                if cross_user_data_flow is not None:
-                    allow_cross_user_data_flow = config.allow_cross_user_data_flow
-                    if allow_cross_user_data_flow is not None:
-                        config = await self.get_config(allow_cross_user_data_flow)
                 
-                if cross_user_data_flow is not None:
-                    if cross_user_data_flow.config.from_user_id_load is not None:
-                        config = await self.get_config(cross_user_data_flow.config.from_user_id_load)
+                cross_user_data_flow = self.cross_user_data_flow_fill_undefined(user_id, cross_user_data_flow)
+
+                if user_id != cross_user_data_flow.config.load_from_user_id:
+                    config = await self.get_config(cross_user_data_flow.config.load_from_user_id)
                 
                 # 获取默认模型uid
                 if model_uid is None:
@@ -668,7 +670,6 @@ class Core:
                             nonlocal output
                             output = await self._post_treatment(
                                 output = output,
-                                user_id = user_id,
                                 response = response,
                                 prompt_vp = prompt_vp,
                                 user_input = user_input,
@@ -695,7 +696,6 @@ class Core:
                         
                         output = await self._post_treatment(
                             output = output,
-                            user_id = user_id,
                             response = response,
                             prompt_vp = prompt_vp,
                             user_input = user_input,
@@ -730,24 +730,24 @@ class Core:
     # region > 处理结果
     async def _post_treatment(
         self,
-        user_id: str,
         prompt_vp: PromptVP,
         response: CompletionsAPI.Response,
         task_start_time: Request_Log.TimeStamp,
         context_loader: ContextLoader,
         prepare_end_time: Request_Log.TimeStamp,
+        cross_user_data_flow: CrossUserDataFlow[str],
         user_input: ContentUnit | None = None,
         output: Response = Response(),
         save_context: bool | None = None,
         save_only_text: bool = False,
         save_new_only: bool = False,
-        cross_user_data_flow: CrossUserDataFlow | None = None,
     ) -> Response:
         # 补充调用日志的时间信息
         response.calling_log.task_start_time = task_start_time
         response.calling_log.prepare_start_time = task_start_time
         response.calling_log.prepare_end_time = prepare_end_time
         response.calling_log.created_time = response.created
+        user_id = cross_user_data_flow.context.save_to_user_id
 
         # 展开模型输出内容中的变量
         response.context.last_content.content = prompt_vp.process(response.context.last_content.content)
@@ -768,10 +768,9 @@ class Core:
                 )
             else:
                 context: ContextObject = response.context
-                if cross_user_data_flow is not None and cross_user_data_flow.context.to_user_id_save is not None:
-                    historical_context = await context_loader.load_context(cross_user_data_flow.context.to_user_id_save)
-                    historical_context.append(user_input)
-                    context = historical_context
+                historical_context = await context_loader.load_context(user_id)
+                historical_context.append(user_input)
+                context = historical_context
                 logger.info(
                     "Saving context...",
                     user_id = user_id,
