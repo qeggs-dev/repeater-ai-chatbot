@@ -38,7 +38,7 @@ from .Global_Config_Manager import ConfigManager
 from .Assist_Struct import (
     Response,
     Request_User_Info,
-    CrossUserDataFlow
+    CrossUserDataRouting
 )
 from .ApiInfo import (
     ApiInfo,
@@ -204,7 +204,7 @@ class Core:
             image_url: str | list[str] | None = None,
             load_prompt: bool = True,
             continue_completion: bool = False,
-            cross_user_data_flow: CrossUserDataFlow[str | None] | None = None,
+            cross_user_data_flow: CrossUserDataRouting[str | None] | None = None,
             prompt_vp: PromptVP = PromptVP()
         ) -> tuple[ContextObject, ContentUnit | None]:
         """
@@ -223,7 +223,7 @@ class Core:
         :param prompt_vp: PromptVP模板解析器
         :return: 上下文对象
         """
-        cross_user_data_flow: CrossUserDataFlow[str] = self.cross_user_data_flow_fill_undefined(user_id, cross_user_data_flow)
+        cross_user_data_flow: CrossUserDataRouting[str] = self.fill_missing_cross_user_data_routing(user_id, cross_user_data_flow)
 
         context_load_source = cross_user_data_flow.context.load_from_user_id
         prompt_load_source = cross_user_data_flow.prompt.load_from_user_id
@@ -418,13 +418,13 @@ class Core:
                 role_name = role_name
             )
     
-    # region > Cross User Data Flow Fill Undefined
+    # region > Fill Missing Cross User Data Routing
     @staticmethod
-    def cross_user_data_flow_fill_undefined(user_id: str, cross_user_data_flow: CrossUserDataFlow[str | None] | None = None) -> CrossUserDataFlow[str]:
+    def fill_missing_cross_user_data_routing(user_id: str, cross_user_data_flow: CrossUserDataRouting[str | None] | None = None) -> CrossUserDataRouting[str]:
         if cross_user_data_flow is None:
-            cross_user_data_flow = CrossUserDataFlow()
+            cross_user_data_flow = CrossUserDataRouting()
         if not cross_user_data_flow.is_all_defined():
-            cross_user_data_flow.fill_undefined(user_id = user_id)
+            cross_user_data_flow.fill_missing(user_id = user_id)
         return cross_user_data_flow
     # endregion
 
@@ -443,7 +443,7 @@ class Core:
             load_prompt: bool | None = None,
             save_context: bool | None = None,
             save_new_only: bool | None = None,
-            cross_user_data_flow: CrossUserDataFlow[str | None] | None = None,
+            cross_user_data_routing: CrossUserDataRouting[str | None] | None = None,
             continue_completion: bool = False,
             stream: bool = False,
         ) -> Response | AsyncIterator[dict[str, Any]]:
@@ -462,7 +462,7 @@ class Core:
         :param load_prompt: 是否加载提示
         :param save_context: 是否保存上下文
         :param save_new_only: 是否只保存最新的内容
-        :param cross_user_data_flow: 跨用户数据流
+        :param cross_user_data_operations: 跨用户数据流
         :param continue_completion: 是否继续完成
         :param stream: 是否流式输出
         :return: 返回对话结果
@@ -497,14 +497,14 @@ class Core:
                 # 获取配置
                 config = await self.get_config(user_id)
                 
-                if not ConfigManager.get_configs().user_data.allow_cross_user_data_flow:
+                if not ConfigManager.get_configs().user_data.cross_user_data_access and cross_user_data_routing is not None:
                     logger.warning("Cross user data flow is not allowed.", user_id = user_id)
-                    cross_user_data_flow = None
+                    cross_user_data_routing = None
                 
-                cross_user_data_flow = self.cross_user_data_flow_fill_undefined(user_id, cross_user_data_flow)
+                cross_user_data_routing = self.fill_missing_cross_user_data_routing(user_id, cross_user_data_routing)
 
-                if user_id != cross_user_data_flow.config.load_from_user_id:
-                    config = await self.get_config(cross_user_data_flow.config.load_from_user_id)
+                if user_id != cross_user_data_routing.config.load_from_user_id:
+                    config = await self.get_config(cross_user_data_routing.config.load_from_user_id)
                 
                 # 获取默认模型uid
                 if model_uid is None:
@@ -567,7 +567,7 @@ class Core:
                     image_url = image_url,
                     load_prompt = load_prompt,
                     continue_completion = continue_completion,
-                    cross_user_data_flow = cross_user_data_flow,
+                    cross_user_data_flow = cross_user_data_routing,
                     prompt_vp = prompt_vp
                 )
 
@@ -678,7 +678,7 @@ class Core:
                                 save_new_only = save_new_only,
                                 context_loader = context_loader,
                                 task_start_time = task_start_time,
-                                cross_user_data_flow = cross_user_data_flow,
+                                cross_user_data_routing = cross_user_data_routing,
                                 prepare_end_time = prepare_end_time,
                                 save_only_text = save_only_text,
                             )
@@ -704,7 +704,7 @@ class Core:
                             save_new_only = save_new_only,
                             context_loader = context_loader,
                             task_start_time = task_start_time,
-                            cross_user_data_flow = cross_user_data_flow,
+                            cross_user_data_routing = cross_user_data_routing,
                             prepare_end_time = prepare_end_time,
                             save_only_text = save_only_text,
                         )
@@ -736,7 +736,7 @@ class Core:
         task_start_time: Request_Log.TimeStamp,
         context_loader: ContextLoader,
         prepare_end_time: Request_Log.TimeStamp,
-        cross_user_data_flow: CrossUserDataFlow[str],
+        cross_user_data_routing: CrossUserDataRouting[str],
         user_input: ContentUnit | None = None,
         output: Response = Response(),
         save_context: bool | None = None,
@@ -748,7 +748,7 @@ class Core:
         response.calling_log.prepare_start_time = task_start_time
         response.calling_log.prepare_end_time = prepare_end_time
         response.calling_log.created_time = response.created
-        user_id = cross_user_data_flow.context.save_to_user_id
+        user_id = cross_user_data_routing.context.save_to_user_id
 
         # 展开模型输出内容中的变量
         response.context.last_content.content = prompt_vp.process(response.context.last_content.content)
