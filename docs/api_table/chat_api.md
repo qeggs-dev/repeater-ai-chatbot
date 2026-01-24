@@ -22,7 +22,16 @@
       - `save_context(bool)` 是否在完成后保存上下文，如果不填则根据配置系统推断值
       - `save_new_only(bool)` 是否仅保存本次生成的上下文，而丢弃所有历史记录
       - `image_url(str | list[str])` 图片URL，用于视觉输入，支持单张或多张图片，需要保证链接**长期有效**或使用 `base64` ，以及确保模型可以正确处理视觉输入
-      - `reference_context_id(str)` 从指定的 `user_id` 获取上下文，如果指定了该项，则不会从 `user_id` 获取上下文，但是保存仍然指向 `user_id`
+      - `cross_user_data_flow`
+        - `context`
+          - `from_user_id_load` 从指定用户ID加载上下文数据
+          - `to_user_id_save` 将上下文数据保存到指定用户ID
+        - `prompt`
+          - `from_user_id_load` 从指定用户ID加载Prompt数据
+          - `to_user_id_save` 将Prompt数据保存到指定用户ID
+        - `config`
+          - `from_user_id_load` 从指定用户ID加载配置数据
+          - `to_user_id_save` 将配置数据保存到指定用户ID
       - `stream(bool)` 是否流式返回（设置该值为 `true` 需要保证在配置中启用了流式处理器，否则会返回`503`错误码）
   - **Response**
     - **type:** `JSON`
