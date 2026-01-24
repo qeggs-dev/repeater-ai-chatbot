@@ -89,11 +89,11 @@
     // (bool) 是否在保存时丢弃非文本数据
     "save_text_only": null,
 
-    // (bool) 是否允许跨用户数据流
+    // (bool) 是否允许跨用户数据访问
     // 如果为true, 则使用请求里指定的的用户进行加载和保存
-    // 如果为false, 则对当前用户操作
+    // 如果为false, 则只能对当前用户操作
     // 如果为null, 则继承全局配置
-    "allow_cross_user_data_flow": null,
+    "cross_user_data_access": null,
 
     // (dict[str, Any]) 用户附加配置数据
     // 用于存储某些与用户相关的数据

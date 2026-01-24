@@ -445,10 +445,10 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
         // 是否在获取文件大小时 readable 里使用缩写
         "file_size_use_abbreviation": true,
 
-        // 是否允许跨用户数据流
-        // 如果为 true，则请求时按照请求的ID来加载数据
-        // 否则，则按照当前的user_id来加载数据
-        "allow_cross_user_data_flow": false,
+        // 是否阻止跨用户数据访问
+        // 如果为 true，则请求时按照请求的 `cross_user_data_routing` 来加载数据
+        // 否则，则只能操作当前用户的数据
+        "cross_user_data_access": false,
 
         // 是否缓存
         // 这里的两个字段同时支持bool和cache_data结构
