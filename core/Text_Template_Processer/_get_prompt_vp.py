@@ -1,7 +1,6 @@
 import random
 import numpy as np
 
-
 from ..Global_Config_Manager import Global_Config
 from ..User_Config_Manager import UserConfigs
 from ..Assist_Struct import Request_User_Info
@@ -15,6 +14,7 @@ from datetime import datetime, timedelta
 from TimeParser import (
     get_timezone_offset,
     get_birthday_countdown,
+    format_time_duration,
     date_to_zodiac,
     format_timestamp,
     calculate_age,
@@ -30,6 +30,26 @@ class PromptVP_Loader:
     #     self.config = config
     #     self.prompt = prompt
     #     self.context = context
+
+    def _get_birthday_countdown(
+            self,
+            birthday_month: int | str,
+            birthday_day: int | str,
+            name: str,
+            precise: bool | str = False
+        ) -> str:
+        def time_format(name: str, td: timedelta):
+            if str_to_bool(precise):
+                return f"And to {name}'s birthday: {td.days} days left"
+            else:
+                return f"And to {name}'s birthday: {format_time_duration(td.total_seconds(), use_abbreviation=True)}"
+        
+        return get_birthday_countdown(
+            birthday_month = int(birthday_month),
+            birthday_day = int(birthday_day),
+            name = name,
+            time_format_func = time_format
+        )
 
     def get_prompt_vp(
             self,
@@ -90,12 +110,7 @@ class PromptVP_Loader:
         
         prompt_vp = self.get_prompt_vp(
             user_id = user_id,
-            birthday_countdown = lambda birthday_month = bot_birthday_month, birthday_day = bot_birthday_day, name = bot_name, detailed_mode = False: get_birthday_countdown(
-                int(birthday_month),
-                int(birthday_day),
-                name=name,
-                precise = str_to_bool(detailed_mode),
-            ),
+            birthday_countdown = lambda :self._get_birthday_countdown,
             reprs = lambda *args: "\n".join([repr(arg) for arg in args]),
             version = global_config.prompt_template.version or __version__,
             model_uid = model.uid,
