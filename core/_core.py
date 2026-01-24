@@ -32,12 +32,13 @@ from . User_Config_Manager import (
     ConfigManager as UserConfigManager,
     UserConfigs
 )
-from .Assist_Struct import Response
 from .Lock_Pool import AsyncLockPool
 from RegexChecker import RegexChecker
 from .Global_Config_Manager import ConfigManager
 from .Assist_Struct import (
-    Request_User_Info
+    Response,
+    Request_User_Info,
+    CrossUserDataFlow
 )
 from .ApiInfo import (
     ApiInfo,
@@ -203,7 +204,7 @@ class Core:
             image_url: str | list[str] | None = None,
             load_prompt: bool = True,
             continue_completion: bool = False,
-            reference_context_id: str | None = None,
+            cross_user_data_flow: CrossUserDataFlow | None = None,
             prompt_vp: PromptVP = PromptVP()
         ) -> tuple[ContextObject, ContentUnit | None]:
         """
@@ -222,10 +223,14 @@ class Core:
         :param prompt_vp: PromptVP模板解析器
         :return: 上下文对象
         """
-        if reference_context_id:
-            context_load_source = reference_context_id
-        else:
-            context_load_source = user_id
+        context_load_source = user_id
+        prompt_load_source = user_id
+
+        if cross_user_data_flow is not None:
+            if cross_user_data_flow.context.from_user_id_load is not None:
+                context_load_source = cross_user_data_flow.context.from_user_id_load
+            if cross_user_data_flow.prompt.from_user_id_load is not None:
+                prompt_load_source = cross_user_data_flow.prompt.from_user_id_load
         
         logger.info(
             "Load Context From [{context_load_source}]",
@@ -239,7 +244,7 @@ class Core:
         if load_prompt:
             logger.info("Load Prompt", user_id=user_id)
             prompt: ContentUnit = await context_loader.load_prompt(
-                user_id = user_id,
+                user_id = prompt_load_source,
                 temporary_prompt = temporary_prompt,
                 prompt_vp = prompt_vp
             )
@@ -432,7 +437,7 @@ class Core:
             load_prompt: bool | None = None,
             save_context: bool | None = None,
             save_new_only: bool | None = None,
-            reference_context_id: str | None = None,
+            cross_user_data_flow: CrossUserDataFlow | None = None,
             continue_completion: bool = False,
             stream: bool = False,
         ) -> Response | AsyncIterator[dict[str, Any]]:
@@ -451,7 +456,7 @@ class Core:
         :param load_prompt: 是否加载提示
         :param save_context: 是否保存上下文
         :param save_new_only: 是否只保存最新的内容
-        :param reference_context_id: 引用上下文ID
+        :param cross_user_data_flow: 跨用户数据流
         :param continue_completion: 是否继续完成
         :param stream: 是否流式输出
         :return: 返回对话结果
@@ -463,7 +468,7 @@ class Core:
             # 获取用户锁对象
             lock = await self._get_namespace_lock(user_id)
             
-            # 加锁执行
+            # 进入RUL执行
             async with lock:
                 logger.info("====================================", user_id = user_id)
                 logger.info("Start Task", user_id = user_id)
@@ -485,6 +490,18 @@ class Core:
 
                 # 获取配置
                 config = await self.get_config(user_id)
+                
+                if not ConfigManager.get_configs().user_data.allow_cross_user_data_flow:
+                    cross_user_data_flow = None
+
+                if cross_user_data_flow is not None:
+                    allow_cross_user_data_flow = config.allow_cross_user_data_flow
+                    if allow_cross_user_data_flow is not None:
+                        config = await self.get_config(allow_cross_user_data_flow)
+                
+                if cross_user_data_flow is not None:
+                    if cross_user_data_flow.config.from_user_id_load is not None:
+                        config = await self.get_config(cross_user_data_flow.config.from_user_id_load)
                 
                 # 获取默认模型uid
                 if model_uid is None:
@@ -547,7 +564,7 @@ class Core:
                     image_url = image_url,
                     load_prompt = load_prompt,
                     continue_completion = continue_completion,
-                    reference_context_id = reference_context_id,
+                    cross_user_data_flow = cross_user_data_flow,
                     prompt_vp = prompt_vp
                 )
 
@@ -659,7 +676,7 @@ class Core:
                                 save_new_only = save_new_only,
                                 context_loader = context_loader,
                                 task_start_time = task_start_time,
-                                reference_context_id = reference_context_id,
+                                cross_user_data_flow = cross_user_data_flow,
                                 prepare_end_time = prepare_end_time,
                                 save_only_text = save_only_text,
                             )
@@ -686,7 +703,7 @@ class Core:
                             save_new_only = save_new_only,
                             context_loader = context_loader,
                             task_start_time = task_start_time,
-                            reference_context_id = reference_context_id,
+                            cross_user_data_flow = cross_user_data_flow,
                             prepare_end_time = prepare_end_time,
                             save_only_text = save_only_text,
                         )
@@ -724,7 +741,7 @@ class Core:
         save_context: bool | None = None,
         save_only_text: bool = False,
         save_new_only: bool = False,
-        reference_context_id: str | None = None,
+        cross_user_data_flow: CrossUserDataFlow | None = None,
     ) -> Response:
         # 补充调用日志的时间信息
         response.calling_log.task_start_time = task_start_time
@@ -751,8 +768,8 @@ class Core:
                 )
             else:
                 context: ContextObject = response.context
-                if reference_context_id:
-                    historical_context = await context_loader.load_context(user_id)
+                if cross_user_data_flow is not None and cross_user_data_flow.context.to_user_id_save is not None:
+                    historical_context = await context_loader.load_context(cross_user_data_flow.context.to_user_id_save)
                     historical_context.append(user_input)
                     context = historical_context
                 logger.info(
