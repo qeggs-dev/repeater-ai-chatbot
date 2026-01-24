@@ -12,7 +12,7 @@ class DataFlowField(BaseModel, Generic[T]):
     load_from_user_id: T = None
     save_to_user_id: T = None
 
-    def fill_undefined(self, user_id: T):
+    def fill_missing(self, user_id: T):
         """
         Fill undefined fields.
         """
@@ -31,7 +31,7 @@ class DataFlowField(BaseModel, Generic[T]):
         )
 
 
-class CrossUserDataFlow(BaseModel, Generic[T]):
+class CrossUserDataRouting(BaseModel, Generic[T]):
     """
     Cross User Data Flow.
 
@@ -41,10 +41,10 @@ class CrossUserDataFlow(BaseModel, Generic[T]):
     prompt: DataFlowField[T] = Field(default_factory=DataFlowField)
     config: DataFlowField[T] = Field(default_factory=DataFlowField)
 
-    def fill_undefined(self, user_id: T):
-        self.context.fill_undefined(user_id)
-        self.prompt.fill_undefined(user_id)
-        self.config.fill_undefined(user_id)
+    def fill_missing(self, user_id: T):
+        self.context.fill_missing(user_id)
+        self.prompt.fill_missing(user_id)
+        self.config.fill_missing(user_id)
     
     def is_all_defined(self) -> bool:
         return (
