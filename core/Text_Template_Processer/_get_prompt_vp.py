@@ -40,9 +40,9 @@ class PromptVP_Loader:
         ) -> str:
         def time_format(name: str, td: timedelta):
             if str_to_bool(precise):
-                return f"And to {name}'s birthday: {td.days} days left"
-            else:
                 return f"And to {name}'s birthday: {format_time_duration(td.total_seconds(), use_abbreviation=True)}"
+            else:
+                return f"And to {name}'s birthday: {td.days} days left"
         
         return get_birthday_countdown(
             birthday_month = int(birthday_month),
