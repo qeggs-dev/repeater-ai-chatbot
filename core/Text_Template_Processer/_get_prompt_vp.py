@@ -31,26 +31,6 @@ class PromptVP_Loader:
     #     self.prompt = prompt
     #     self.context = context
 
-    def _get_birthday_countdown(
-            self,
-            birthday_month: int | str,
-            birthday_day: int | str,
-            name: str,
-            precise: bool | str = False
-        ) -> str:
-        def time_format(name: str, td: timedelta):
-            if str_to_bool(precise):
-                return f"And to {name}'s birthday: {format_time_duration(td.total_seconds(), use_abbreviation=True)}"
-            else:
-                return f"And to {name}'s birthday: {td.days} days left"
-        
-        return get_birthday_countdown(
-            birthday_month = int(birthday_month),
-            birthday_day = int(birthday_day),
-            name = name,
-            time_format_func = time_format
-        )
-
     def get_prompt_vp(
             self,
             **kwargs: Any
@@ -100,6 +80,32 @@ class PromptVP_Loader:
         timezone = config.timezone or global_config.prompt_template.time.timezone
         now = datetime.now()
 
+        def _birthday_countdown(
+                birthday_month: int | str | None = None,
+                birthday_day: int | str | None = None,
+                name: str | None = None,
+                precise: bool | str = False
+            ) -> str:
+            if birthday_month is None:
+                birthday_month = bot_birthday_month
+            if birthday_day is None:
+                birthday_day = bot_birthday_day
+            if name is None:
+                name = bot_name
+            
+            def time_format(name: str, td: timedelta):
+                if str_to_bool(precise):
+                    return f"And to {name}'s birthday: {format_time_duration(td.total_seconds(), use_abbreviation=True)}"
+                else:
+                    return f"And to {name}'s birthday: {td.days} days left"
+            
+            return get_birthday_countdown(
+                birthday_month = int(birthday_month),
+                birthday_day = int(birthday_day),
+                name = name,
+                time_format_func = time_format
+            )
+
         if isinstance(timezone, str):
             time_offset = get_timezone_offset(
                 timezone = timezone,
@@ -110,7 +116,7 @@ class PromptVP_Loader:
         
         prompt_vp = self.get_prompt_vp(
             user_id = user_id,
-            birthday_countdown = self._get_birthday_countdown,
+            birthday_countdown = _birthday_countdown,
             reprs = lambda *args: "\n".join([repr(arg) for arg in args]),
             version = global_config.prompt_template.version or __version__,
             model_uid = model.uid,
