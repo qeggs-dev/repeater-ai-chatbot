@@ -110,7 +110,7 @@ class PromptVP_Loader:
         
         prompt_vp = self.get_prompt_vp(
             user_id = user_id,
-            birthday_countdown = lambda :self._get_birthday_countdown,
+            birthday_countdown = self._get_birthday_countdown,
             reprs = lambda *args: "\n".join([repr(arg) for arg in args]),
             version = global_config.prompt_template.version or __version__,
             model_uid = model.uid,
