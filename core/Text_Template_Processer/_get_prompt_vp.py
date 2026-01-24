@@ -1,6 +1,7 @@
 import random
 import numpy as np
 
+
 from ..Global_Config_Manager import Global_Config
 from ..User_Config_Manager import UserConfigs
 from ..Assist_Struct import Request_User_Info
@@ -9,6 +10,7 @@ from .._info import __version__
 from ._value_comparison import value_comparison, ComparisonOperator
 from ..ApiInfo import ApiObject
 
+from loguru import logger
 from datetime import datetime, timedelta
 from TimeParser import (
     get_timezone_offset,
@@ -35,6 +37,18 @@ class PromptVP_Loader:
         ) -> PromptVP:
         """Get prompt variable processor"""
         prompt_vp = PromptVP()
+        
+        raw_exception_handler = prompt_vp.exception_handler
+        def exception_handler(variable_name: str, variable_value: Any, exception: Exception) -> str:
+            logger.exception(exception)
+            return raw_exception_handler(variable_name, variable_value, exception)
+        prompt_vp.escape_exception_handler = exception_handler
+        
+        raw_escape_exception_handler = prompt_vp.escape_exception_handler
+        def escape_exception_handler(exception: Exception, value: str) -> str:
+            logger.exception(exception)
+            return raw_escape_exception_handler(exception, value)
+        prompt_vp.escape_exception_handler = escape_exception_handler
 
         prompt_vp.bulk_register_variable(**self._variable)
         prompt_vp.bulk_register_variable(**kwargs)
