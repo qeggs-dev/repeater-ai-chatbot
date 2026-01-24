@@ -22,7 +22,7 @@
       - `save_context(bool)` 是否在完成后保存上下文，如果不填则根据配置系统推断值
       - `save_new_only(bool)` 是否仅保存本次生成的上下文，而丢弃所有历史记录
       - `image_url(str | list[str])` 图片URL，用于视觉输入，支持单张或多张图片，需要保证链接**长期有效**或使用 `base64` ，以及确保模型可以正确处理视觉输入
-      - `cross_user_data_flow`
+      - `cross_user_data_routing`
         - `context`
           - `load_from_user_id` 从指定用户ID加载上下文数据
           - `save_to_user_id` 将上下文数据保存到指定用户ID
