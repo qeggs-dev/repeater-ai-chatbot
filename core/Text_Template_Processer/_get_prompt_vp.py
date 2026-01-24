@@ -37,16 +37,16 @@ class PromptVP_Loader:
         ) -> PromptVP:
         """Get prompt variable processor"""
         prompt_vp = PromptVP()
-        
+
         raw_exception_handler = prompt_vp.exception_handler
         def exception_handler(variable_name: str, variable_value: Any, exception: Exception) -> str:
-            logger.exception(exception)
+            logger.exception("PromptVP Error: {exception}", exception=exception)
             return raw_exception_handler(variable_name, variable_value, exception)
         prompt_vp.escape_exception_handler = exception_handler
         
         raw_escape_exception_handler = prompt_vp.escape_exception_handler
         def escape_exception_handler(exception: Exception, value: str) -> str:
-            logger.exception(exception)
+            logger.exception("PromptVP Escape Error: {exception}", exception=exception)
             return raw_escape_exception_handler(exception, value)
         prompt_vp.escape_exception_handler = escape_exception_handler
 
