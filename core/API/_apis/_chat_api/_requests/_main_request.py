@@ -13,6 +13,6 @@ class ChatRequest(BaseModel):
     save_new_only: bool | None = None
     temporary_prompt: str | None = None
     image_url: str | list[str] | None = None
-    cross_user_data_flow: CrossUserDataFlow | None = None
+    cross_user_data_flow: CrossUserDataFlow[str | None] | None = None
     continue_completion: bool = False
     stream: bool = False
