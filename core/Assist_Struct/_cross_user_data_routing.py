@@ -3,9 +3,9 @@ from typing import TypeVar, Generic
 
 T = TypeVar('T')
 
-class DataFlowField(BaseModel, Generic[T]):
+class DataRoutingField(BaseModel, Generic[T]):
     """
-    Cross Data Flow.
+    Cross Data Routing Field.
 
     Where the mentor gets its resources.
     """
@@ -33,13 +33,13 @@ class DataFlowField(BaseModel, Generic[T]):
 
 class CrossUserDataRouting(BaseModel, Generic[T]):
     """
-    Cross User Data Flow.
+    Cross User Data Routing.
 
     Where the mentor gets its resources.
     """
-    context: DataFlowField[T] = Field(default_factory=DataFlowField)
-    prompt: DataFlowField[T] = Field(default_factory=DataFlowField)
-    config: DataFlowField[T] = Field(default_factory=DataFlowField)
+    context: DataRoutingField[T] = Field(default_factory=DataRoutingField)
+    prompt: DataRoutingField[T] = Field(default_factory=DataRoutingField)
+    config: DataRoutingField[T] = Field(default_factory=DataRoutingField)
 
     def fill_missing(self, user_id: T):
         self.context.fill_missing(user_id)
