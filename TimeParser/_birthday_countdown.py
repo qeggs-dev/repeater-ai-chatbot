@@ -1,10 +1,12 @@
-from datetime import datetime
+from datetime import datetime, timedelta
+from typing import Callable
 
 def get_birthday_countdown(
         birth_month:int,
         birth_day:int,
         name:str = "",
-        precise:bool = False
+        parse_func: Callable[[str, timedelta], str] = lambda name, td: f"And to {name}'s birthday: {(td.days)} days left",
+        is_today_parse_func: Callable[[str], str] = lambda name: f"Happy birthday to {name}!"
     ) -> str:
     """
     获取距离生日还有多少天
@@ -21,7 +23,7 @@ def get_birthday_countdown(
     
     # 判断当前是否在生日当天
     if now.date() == birthday_this_year.date():
-        return f"Today is {name} Birthday Happy Birthday!"
+        return is_today_parse_func(name)
     
     # 计算下一次生日的年份
     if now > birthday_this_year:
@@ -43,17 +45,4 @@ def get_birthday_countdown(
         next_birthday = datetime(next_year + 1, birth_month, birth_day)
         time_left = next_birthday - now
     
-    # 分解天、小时、分钟、秒
-    days = time_left.days
-    seconds = time_left.seconds
-    hours, remainder = divmod(seconds, 3600)
-    minutes, seconds = divmod(remainder, 60)
-    
-    # 如果剩余时间不足一天但大于0秒，且不精确模式，则天数加1（向上取整）
-    if not precise and seconds + minutes * 60 + hours * 3600 > 0:
-        days += 1
-    
-    if precise:
-        return f"And to {name}'s birthday: {days} days {hours} minutes {seconds} seconds"
-    else:
-        return f"And to {name}'s birthday: {days} days"
+    return parse_func(name, time_left)
