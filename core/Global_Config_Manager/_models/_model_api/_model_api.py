@@ -1,6 +1,6 @@
 from pydantic import BaseModel, ConfigDict
 
-class API_Info_Config(BaseModel):
+class Model_API_Config(BaseModel):
     model_config = ConfigDict(case_sensitive=False)
     
     api_file_path: str = "./configs/api_info.json"
