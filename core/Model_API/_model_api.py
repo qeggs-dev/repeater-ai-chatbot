@@ -4,7 +4,7 @@ from ._model_type import ModelType
 
 _env = Env()
 
-class ApiObject(BaseModel):
+class ModelAPI(BaseModel):
     model_config = ConfigDict(
         validate_assignment = True
     )

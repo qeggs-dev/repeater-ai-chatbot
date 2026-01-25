@@ -10,12 +10,12 @@ class Model(BaseModel):
     type: ModelType = ModelType.CHAT
     timeout: float | None = None
 
-class ApiInfoConfig(BaseModel):
+class ModelAPIConfig(BaseModel):
     name: str = ""
     api_key_env: str = "API_KEY"
     url: str = ""
     models: list[Model] = Field(default_factory=list)
     timeout: float = 600.0
     
-class ApiGroup(BaseModel):
-    api: list[ApiInfoConfig] = Field(default_factory=list)
+class ModelGroup(BaseModel):
+    api: list[ModelAPIConfig] = Field(default_factory=list)
