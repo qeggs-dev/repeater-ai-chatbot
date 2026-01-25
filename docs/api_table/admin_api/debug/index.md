@@ -8,3 +8,9 @@
 
 # 手动异常测试 API
   - [Raise Error API](./raise_error/raise_error.md)
+
+# 手动测试警告 API
+  - [Raise Warning API](./raise_warning/raise_warning.md)
+
+# 获取配置信息 API
+  - [Get Config API](./get_config/get_config.md)
