@@ -40,10 +40,10 @@ from .Assist_Struct import (
     Request_User_Info,
     CrossUserDataRouting
 )
-from .ApiInfo import (
-    ApiInfo,
+from .Model_API import (
+    ModelAPIManager,
     ModelType,
-    ApiObject,
+    ModelAPIManager,
 )
 from . import Request_Log
 from TextProcessors import (
@@ -78,13 +78,13 @@ class Core:
             if max_concurrency is None else max_concurrency
         )
 
-        # 初始化API INFO
-        self.apiinfo = ApiInfo(
-            ConfigManager.get_configs().api_info.case_sensitive
+        # 初始化 Model 管理器
+        self.model_api_manager = ModelAPIManager(
+            ConfigManager.get_configs().model_api.case_sensitive
         )
         # 从指定文件加载API数据
-        self.apiinfo.load(
-            ConfigManager.get_configs().api_info.api_file_path
+        self.model_api_manager.load(
+            ConfigManager.get_configs().model_api.api_file_path
         )
 
         # 初始化锁池
@@ -325,7 +325,7 @@ class Core:
     def _print_request_info(
             self,
             user_id: str,
-            api: ApiObject,
+            api: ModelAPIManager,
             user_input: ContentUnit | None,
             user_info: Request_User_Info,
             role_name: str | None = None
@@ -512,22 +512,22 @@ class Core:
                 
                 # 获取默认模型uid
                 if model_uid is None:
-                    model_uid: str = config.model_uid or ConfigManager.get_configs().api_info.default_model_uid
+                    model_uid: str = config.model_uid or ConfigManager.get_configs().model_api.default_model_uid
                 
                 # 获取API信息
-                apilist = self.apiinfo.find(
+                apilist = self.model_api_manager.find_model(
                     model_type = ModelType.CHAT,
                     model_uid = model_uid
                 )
                 # 取第一个API
                 if len(apilist) == 0:
                     logger.error(
-                        "API not found: {model_uid}",
+                        "Model API not found: {model_uid}",
                         user_id = user_id,
                         model_uid = model_uid
                     )
                     output = Response(
-                        content = f"API not found: {model_uid}",
+                        content = f"Model API not found: {model_uid}",
                         status = 404
                     )
                     return output
@@ -824,7 +824,7 @@ class Core:
     # endregion
     # region > 重新加载API信息
     async def reload_apiinfo(self):
-        await self.apiinfo.load_async(Path(ConfigManager.get_configs().api_info.api_file_path))
+        await self.model_api_manager.load_async(Path(ConfigManager.get_configs().model_api.api_file_path))
     # endregion
 
     # region > 加载指定API INFO文件
@@ -832,5 +832,5 @@ class Core:
         if not api_info_file_path.exists():
             logger.error(f"API INFO File not found: {api_info_file_path}")
             raise FileNotFoundError(f"File not found: {api_info_file_path}")
-        await self.apiinfo.load_async(api_info_file_path)
+        await self.model_api_manager.load_async(api_info_file_path)
     # endregion
