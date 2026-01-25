@@ -656,6 +656,12 @@ class Core:
                     save_only_text: bool = config.save_text_only
                 else:
                     save_only_text: bool = ConfigManager.get_configs().context.save_text_only
+                
+                if save_new_only is None:
+                    if config.save_new_only is not None:
+                        save_new_only = config.save_new_only
+                    else:
+                        save_new_only = ConfigManager.get_configs().context.save_new_only
 
                 # region >> 提交请求
                 try:
@@ -670,6 +676,7 @@ class Core:
                             """
                             nonlocal output
                             output = await self._post_treatment(
+                                user_id = user_id,
                                 output = output,
                                 response = response,
                                 prompt_vp = prompt_vp,
@@ -696,6 +703,7 @@ class Core:
                         )
                         
                         output = await self._post_treatment(
+                            user_id = user_id,
                             output = output,
                             response = response,
                             prompt_vp = prompt_vp,
@@ -731,6 +739,7 @@ class Core:
     # region > 处理结果
     async def _post_treatment(
         self,
+        user_id: str,
         prompt_vp: PromptVP,
         response: CompletionsAPI.Response,
         task_start_time: Request_Log.TimeStamp,
@@ -748,41 +757,46 @@ class Core:
         response.calling_log.prepare_start_time = task_start_time
         response.calling_log.prepare_end_time = prepare_end_time
         response.calling_log.created_time = response.created
-        user_id = cross_user_data_routing.context.save_to_user_id
+        saved_user_id = cross_user_data_routing.context.save_to_user_id
 
         # 展开模型输出内容中的变量
-        response.context.last_content.content = prompt_vp.process(response.context.last_content.content)
+        response.historical_context.last_content.content = prompt_vp.process(response.historical_context.last_content.content)
         # 记录Prompt_vp的命中情况
-        logger.info(f"Prompt Hits Variable: {prompt_vp.hit_var()}/{prompt_vp.discover_var()}({prompt_vp.hit_var() / prompt_vp.discover_var() if prompt_vp.discover_var() != 0 else 0:.2%})", user_id = user_id)
+        logger.info(f"Prompt Hits Variable: {prompt_vp.hit_var()}/{prompt_vp.discover_var()}({prompt_vp.hit_var() / prompt_vp.discover_var() if prompt_vp.discover_var() != 0 else 0:.2%})", user_id = saved_user_id)
+
+        if cross_user_data_routing.context.save_to_user_id == user_id:
+            historical_context = response.historical_context
+        else:
+            historical_context = await context_loader.load_context(saved_user_id)
+            historical_context.append(user_input)
 
         # 保存上下文
         if save_context:
             if save_new_only:
-                context: ContextObject = ContextObject()
+                saved_context: ContextObject = ContextObject()
                 if user_input is not None:
-                    context.append(user_input)
+                    saved_context.append(user_input)
                 if response.new_context:
-                    context.extend(response.new_context)
+                    saved_context.extend(response.new_context)
                 logger.info(
                     "Saving new context...",
-                    user_id = user_id,
+                    user_id = saved_user_id,
                 )
             else:
-                context: ContextObject = response.context
-                historical_context = await context_loader.load_context(user_id)
-                historical_context.append(user_input)
-                context = historical_context
+                saved_context = historical_context
+                if response.new_context:
+                    saved_context.extend(response.new_context)
                 logger.info(
                     "Saving context...",
-                    user_id = user_id,
+                    user_id = saved_user_id,
                 )
             await context_loader.save(
-                user_id = user_id,
-                context = context,
+                user_id = saved_user_id,
+                context = saved_context,
                 reduce_to_text = save_only_text,
             )
         else:
-            logger.warning("Context not saved", user_id = user_id)
+            logger.warning("Context not saved", user_id = saved_user_id)
 
         # 记录任务结束时间
         response.calling_log.task_end_time = Request_Log.TimeStamp()
@@ -791,11 +805,11 @@ class Core:
         await self.request_log.add_request_log(response.calling_log)
 
         # 记录API调用成功
-        logger.success(f"Task Finished!", user_id = user_id)
+        logger.success(f"Task Finished!", user_id = saved_user_id)
 
         # 返回模型输出内容
-        output.reasoning_content = response.context.last_content.reasoning_content
-        output.content = response.context.last_content.content
+        output.reasoning_content = response.historical_context.last_content.reasoning_content
+        output.content = response.historical_context.last_content.content
         output.create_time = response.created
         output.id = response.id
 
