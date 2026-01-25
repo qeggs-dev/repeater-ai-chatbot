@@ -13,7 +13,7 @@ from loguru import logger
 from datetime import datetime, timedelta
 from TimeParser import (
     get_timezone_offset,
-    get_birthday_countdown,
+    calculation_date_countdown,
     format_time_duration,
     date_to_zodiac,
     format_timestamp,
@@ -24,7 +24,7 @@ from typing import Any
 
 class PromptVP_Loader:
     def __init__(self, **kwargs):
-        self._variable = kwargs
+        self._variable: dict[str, Any] = kwargs
 
     # def __init__(self, config: UserConfigManager, prompt: PromptManager, context: ContextManager):
     #     self.config = config
@@ -54,6 +54,25 @@ class PromptVP_Loader:
         prompt_vp.bulk_register_variable(**kwargs)
     
         return prompt_vp
+
+    @staticmethod
+    def _date_countdown(
+            birthday_month: int | str,
+            birthday_day: int | str,
+            date_name: str,
+            precise: bool | str = False
+        ) -> str:
+        def time_format(td: timedelta, now: datetime):
+            if str_to_bool(precise):
+                return f"{format_time_duration(td.total_seconds(), use_abbreviation=True)} to {date_name}."
+            else:
+                return f"{td.days} days to {date_name}."
+        
+        return calculation_date_countdown(
+            target_month = int(birthday_month),
+            target_day = int(birthday_day),
+            time_format_func = time_format
+        )
 
     def get_prompt_vp_ex(
             self,
@@ -93,17 +112,17 @@ class PromptVP_Loader:
             if name is None:
                 name = bot_name
             
-            def time_format(name: str, td: timedelta):
+            def time_format(td: timedelta, now: datetime):
                 if str_to_bool(precise):
                     return f"And to {name}'s birthday: {format_time_duration(td.total_seconds(), use_abbreviation=True)}"
                 else:
                     return f"And to {name}'s birthday: {td.days} days left"
             
-            return get_birthday_countdown(
-                birthday_month = int(birthday_month),
-                birthday_day = int(birthday_day),
-                name = name,
-                time_format_func = time_format
+            return calculation_date_countdown(
+                target_month = int(birthday_month),
+                target_day = int(birthday_day),
+                time_format_func = time_format,
+                is_today_format_func = lambda now: f"Happy birthday to {name}!"
             )
 
         if isinstance(timezone, str):
@@ -117,6 +136,7 @@ class PromptVP_Loader:
         prompt_vp = self.get_prompt_vp(
             user_id = user_id,
             birthday_countdown = _birthday_countdown,
+            date_countdown = self._date_countdown,
             reprs = lambda *args: "\n".join([repr(arg) for arg in args]),
             version = global_config.prompt_template.version or __version__,
             model_uid = model.uid,
