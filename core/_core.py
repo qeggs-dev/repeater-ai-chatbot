@@ -501,6 +501,10 @@ class Core:
                     logger.warning("Cross user data flow is not allowed.", user_id = user_id)
                     cross_user_data_routing = None
                 
+                if not config.cross_user_data_access and cross_user_data_routing is not None:
+                    logger.warning("Cross user data flow is not allowed.", user_id = user_id)
+                    cross_user_data_routing = None
+                
                 cross_user_data_routing = self.fill_missing_cross_user_data_routing(user_id, cross_user_data_routing)
 
                 if user_id != cross_user_data_routing.config.load_from_user_id:
