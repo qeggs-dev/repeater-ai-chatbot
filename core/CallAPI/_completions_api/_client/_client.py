@@ -51,14 +51,14 @@ class ClientBase(ABC):
         assert isinstance(request, Request)
         assert isinstance(response, Response)
 
-        if response.context.last_content.reasoning_content:
+        if response.historical_context.last_content.reasoning_content:
             logger.info(
                 "Reasoning_Content: \n{reasoning_content}",
                 reasoning_content = request.context.last_content.reasoning_content,
                 user_id = user_id,
                 donot_send_console = True
             )
-        if response.context.last_content.content:
+        if response.historical_context.last_content.content:
             logger.info(
                 "Content: \n{content}",
                 content = request.context.last_content.content,
@@ -203,11 +203,11 @@ class ClientBase(ABC):
             logger.info(f"Average Generation Rate: {response.token_usage.completion_tokens / ((response.calling_log.stream_processing_end_time - response.calling_log.stream_processing_start_time) / 1e9):.2f} /s", user_id = user_id)
 
         logger.info("============= Content ==============", user_id = user_id)
-        logger.info(f"Total Content Length: {response.context.total_length}", user_id = user_id)
-        response.calling_log.total_context_length = response.context.total_length
-        logger.info(f"Reasoning Content Length: {len(response.context.last_content.reasoning_content)}", user_id = user_id)
-        response.calling_log.reasoning_content_length = len(response.context.last_content.reasoning_content)
-        logger.info(f"New Content Length: {len(response.context.last_content.content)}", user_id = user_id)
-        response.calling_log.new_content_length = len(response.context.last_content.content)
+        logger.info(f"Total Content Length: {response.historical_context.total_length}", user_id = user_id)
+        response.calling_log.total_context_length = response.historical_context.total_length
+        logger.info(f"Reasoning Content Length: {len(response.historical_context.last_content.reasoning_content)}", user_id = user_id)
+        response.calling_log.reasoning_content_length = len(response.historical_context.last_content.reasoning_content)
+        logger.info(f"New Content Length: {len(response.historical_context.last_content.content)}", user_id = user_id)
+        response.calling_log.new_content_length = len(response.historical_context.last_content.content)
 
         logger.info("====================================", user_id = user_id)
