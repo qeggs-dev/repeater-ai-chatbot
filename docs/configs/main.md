@@ -114,6 +114,11 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
         // 设为true可能会让你获得更快的解析速度
         "save_text_only": false,
 
+        // 是否只保存新数据
+        // 默认为false
+        // 设为 true 则只保存新消息，而不是追加到历史消息中
+        "save_new_only": false,
+
         // 非文本数据在日志中的最大显示长度
         // 默认为 null，表示不限制
         "max_log_length_for_non_text_content": 25
