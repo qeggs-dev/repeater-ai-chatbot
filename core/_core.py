@@ -497,13 +497,13 @@ class Core:
                 # 获取配置
                 config = await self.get_config(user_id)
                 
-                if not ConfigManager.get_configs().user_data.cross_user_data_access and cross_user_data_routing is not None:
-                    logger.warning("Cross user data flow is not allowed.", user_id = user_id)
-                    cross_user_data_routing = None
-                
-                if not config.cross_user_data_access and cross_user_data_routing is not None:
-                    logger.warning("Cross user data flow is not allowed.", user_id = user_id)
-                    cross_user_data_routing = None
+                if cross_user_data_routing is not None:
+                    if config.cross_user_data_access:
+                        logger.warning("Cross user data flow is not allowed.", user_id = user_id)
+                        cross_user_data_routing = None
+                    elif not ConfigManager.get_configs().user_data.cross_user_data_access:
+                        logger.warning("Cross user data flow is not allowed.", user_id = user_id)
+                        cross_user_data_routing = None
                 
                 cross_user_data_routing = self.fill_missing_cross_user_data_routing(user_id, cross_user_data_routing)
 
