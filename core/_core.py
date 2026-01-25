@@ -774,22 +774,22 @@ class Core:
         if save_context:
             if save_new_only:
                 saved_context: ContextObject = ContextObject()
-                if user_input is not None:
-                    saved_context.append(user_input)
-                if response.new_context:
-                    saved_context.extend(response.new_context)
                 logger.info(
                     "Saving new context...",
                     user_id = saved_user_id,
                 )
             else:
                 saved_context = historical_context
-                if response.new_context:
-                    saved_context.extend(response.new_context)
                 logger.info(
                     "Saving context...",
                     user_id = saved_user_id,
                 )
+            
+            if user_input is not None:
+                saved_context.append(user_input)
+            if response.new_context:
+                saved_context.extend(response.new_context)
+            
             await context_loader.save(
                 user_id = saved_user_id,
                 context = saved_context,

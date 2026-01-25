@@ -101,9 +101,9 @@ class StreamingResponseGenerationLayer:
         self.model_response_content_unit:ContentUnit = ContentUnit()
         self.model_response_content_unit.role = ContentRole.ASSISTANT
         if self._reasoning_buffer:
-            self.model_response_content_unit = "".join(self._reasoning_buffer)
+            self.model_response_content_unit.reasoning_content = "".join(self._reasoning_buffer)
         if self._content_buffer:
-            self.model_response_content_unit += "".join(self._content_buffer)
+            self.model_response_content_unit.content = "".join(self._content_buffer)
         self.response.historical_context = self.request.context
         self.response.new_context.append(self.model_response_content_unit)
 
