@@ -7,8 +7,13 @@
   - **Response**
     - **type:** `JSON`
     - **Response Body**
-      - `message (str)` 错误信息
-      - `data (list[str])` 模型列表
+      - *\*List:*
+        - `name(str)`: 模型名称
+        - `url(str)`: 模型地址
+        - `id(str)`: API方的模型ID
+        - `parent(str)`: 所在组ID
+        - `type(str)`: 模型类型
+        - `timeout(int)`: 请求超时时间
 
 模型类型请参考：
 [模型类型](../../model_type.md)
