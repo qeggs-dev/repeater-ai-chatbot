@@ -1,3 +1,4 @@
+import asyncio
 from ..._resource import Resource
 from ....Context_Manager import (
     ContextObject
@@ -30,17 +31,18 @@ async def get_userdata_file(user_id: str):
     buffer = BytesIO()
     context_loader = await Resource.core.get_context_loader()
     context = await context_loader.load_context(user_id = user_id)
-    config = await Resource.core.user_config_manager.load(user_id = user_id)
     prompt = await Resource.core.prompt_manager.load(user_id = user_id, default = "")
+    config = await Resource.core.user_config_manager.load(user_id = user_id)
     
-    make_user_file(
+    await asyncio.to_thread(
+        make_user_file,
         file = buffer,
         context = context,
         prompt = prompt,
         user_configs = config
     )
 
-    logger.info(f"downloaded userdata file", user_id = user_id)
+    logger.info(f"Downloaded userdata file", user_id = user_id)
 
     # 返回zip文件
     return StreamingResponse(buffer, media_type = "application/zip")

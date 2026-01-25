@@ -80,6 +80,7 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
     // CallAPI 配置
     "callapi": {
         // 协程池最大并发数
+        // 仅在 AI 请求路径下生效
         "max_concurrency": 1000,
 
         // 当为 true 时，将启用流混淆。
@@ -115,7 +116,7 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
 
         // 非文本数据在日志中的最大显示长度
         // 默认为 null，表示不限制
-        "max_log_length_for_non_text_content": 100
+        "max_log_length_for_non_text_content": 25
     },
 
     // 全局异常处理器配置
@@ -264,7 +265,9 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
     // 注：此选项不会改变实际的其他系统内容，而只会改变模板展开器中的变量
     "prompt_template": {
         // 模板展开器中显示的程序版本
-        "version": "",
+        // 如果为 null 或空字符串
+        // 则程序会使用 core 版本号填充
+        "version": null,
 
         // 模板展开器中显示的 Bot 信息
         "bot_info": {
@@ -294,7 +297,8 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
         // 预设提示词文件应该用什么编码打开
         "encoding": "utf-8",
 
-        // 如果用户没设置路由到其他提示词，应该使用哪一个提示词
+        // 如果用户没有指定用一个预设提示词时
+        // 应该使用哪一个提示词
         "preset_name": "default",
 
         // 是否在用户未指定的情况下
@@ -434,6 +438,12 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
 
         // 元数据文件名称
         "metadata_file_name": "metadata.json",
+
+        // 默认分支名称
+        "default_branch_id": "main",
+
+        // 是否在获取文件大小时 readable 里使用缩写
+        "file_size_use_abbreviation": true,
 
         // 是否缓存
         // 这里的两个字段同时支持bool和cache_data结构

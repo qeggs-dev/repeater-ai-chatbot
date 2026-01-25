@@ -1,5 +1,4 @@
 import warnings
-import aiofiles
 
 from typing import TextIO
 from loguru import logger
@@ -29,7 +28,7 @@ class WarningHandler:
             file: TextIO | None = None,
             line: str | None = None
         ) -> None:
-        if ConfigManager().get_configs().global_exception_handler.record_warnings:
+        if ConfigManager().get_configs().global_exception_handler.repeater_traceback.record_warnings:
             warning_time = datetime.now()
             file_path = Path(filename)
 

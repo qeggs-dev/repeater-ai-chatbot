@@ -16,15 +16,15 @@ class Render_Response(BaseModel):
         validate_assignment=True
     )
 
-    image_url: str | None = None,
-    file_uuid: str | None = None,
-    style: str | None = None,
-    status: HTML_Render.RenderStatus | None = None,
-    browser_used: str | None = None,
-    url_expiry_time: float | None = None,
-    error: str | None = None,
-    text: str | None = None,
-    image_render_time_ms: float | None = None,
-    created: int | None = None,
-    created_ms: int | None = None,
+    image_url: str | None = None
+    file_uuid: str | None = None
+    style: str | None = None
+    status: HTML_Render.RenderStatus | None = None
+    browser_used: str | None = None
+    url_expiry_time: float | None = None
+    error: str | None = None
+    text: str | None = None
+    image_render_time_ms: float | None = None
+    created: int | None = None
+    created_ms: int | None = None
     details_time: RenderTime | None = None

@@ -3,8 +3,19 @@ from ....Context_Manager import (
 )
 
 def readable_context(context: ContextObject) -> str:
-    text = "======== Context  ========\n"
+    text_buffer: list[str] = []
+    text_buffer.append("======== Context  ========")
     for item in context.context_list:
-        text += f"[{item.role}]: \n{item.content}\n\n"
-        text += "==========================\n\n"
-    return text
+        text_buffer.append(f"[{item.role.name}]:")
+        if item.reasoning_content:
+            text_buffer.append("Reasoning:")
+            text_buffer.append(item.reasoning_content)
+            text_buffer.append("")
+        if item.content:
+            text_buffer.append("Content:")
+            text_buffer.append(item.content)
+            text_buffer.append("")
+        
+        text_buffer.append("==========================")
+        text_buffer.append("")
+    return "\n".join(text_buffer)

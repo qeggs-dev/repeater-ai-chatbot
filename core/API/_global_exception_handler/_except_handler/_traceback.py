@@ -12,6 +12,7 @@ def is_library_code(filename: str | os.PathLike):
         return True
     
     file_path = Path(filename)
+    file_name_str = str(filename)
     
     stdlib_dirs: list[str] = [
         sys.prefix,
@@ -26,12 +27,12 @@ def is_library_code(filename: str | os.PathLike):
             return True
     
     for path in sys.path:
-        if "site-packages" in path and filename.startswith(path):
+        if "site-packages" in path and file_name_str.startswith(path):
             return True
-        if "dist-packages" in path and filename.startswith(path):
+        if "dist-packages" in path and file_name_str.startswith(path):
             return True
     
-    if filename.startswith("<") and filename.endswith(">"):
+    if file_name_str.startswith("<") and file_name_str.endswith(">"):
         return True
     
     return False
@@ -60,6 +61,11 @@ async def format_traceback(exclude_library: bool = False, enable_code_reader: bo
     exc_type, exc_value, exc_traceback = sys.exc_info()
     frames = traceback.extract_tb(exc_traceback)
     last_frame = frames[-1]
+    last_code_frame: traceback.FrameSummary | None = None
+    for frame in reversed(frames):
+        if not is_library_code(frame.filename):
+            last_code_frame = frame
+            break
     total_frame_depth = len(frames)
     raiser = Path(last_frame.filename)
     line_start = last_frame.lineno
@@ -75,13 +81,13 @@ async def format_traceback(exclude_library: bool = False, enable_code_reader: bo
     indented_traceback = traceback_str.replace("\n", "\n" + " " * 8)
 
     if enable_code_reader:
-        if raiser.exists() and raiser.is_file() and last_frame.lineno is not None and last_frame.lineno > 0:
+        if raiser.exists() and raiser.is_file() and last_code_frame.lineno is not None and last_code_frame.lineno > 0:
             get_code = GetCode(
                 raiser,
-                last_frame.lineno,
-                last_frame.end_lineno,
-                last_frame.colno,
-                last_frame.end_colno
+                last_code_frame.lineno,
+                last_code_frame.end_lineno,
+                last_code_frame.colno,
+                last_code_frame.end_colno
             )
             try:
                 code = await get_code.get_code_async()
@@ -112,6 +118,8 @@ async def format_traceback(exclude_library: bool = False, enable_code_reader: bo
             "File Context: \n"
             f"{code}\n"
         )
+    
+    format_text += f"\n{error_name}:\n{str(exc_value)}\n"
     
     return format_text
     
