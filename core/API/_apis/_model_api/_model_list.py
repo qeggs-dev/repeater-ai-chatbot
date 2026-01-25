@@ -1,5 +1,5 @@
 from ..._resource import Resource
-from ....ApiInfo import ModelType
+from ....Model_API import ModelType
 from fastapi.responses import ORJSONResponse
 from fastapi import HTTPException
 from ._resources import MODEL_TYPES
@@ -11,11 +11,11 @@ async def model_list(model_type: str):
             status_code=400,
             detail="Invalid model type."
         )
-    model_uid_list = Resource.core.apiinfo.uid_list(
+    model_list = Resource.core.model_api_manager.model_list(
         ModelType(model_type)
     )
 
     return ORJSONResponse(
-        status_code=200,
-        content=model_uid_list
+        status_code = 200,
+        content = [model.model_dump() for model in model_list]
     )
