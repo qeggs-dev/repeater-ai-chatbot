@@ -65,7 +65,7 @@ def format_carry_duration(
         unit = end_level_abbreviation if use_abbreviation else end_level
         if remaining_part != 1 and not use_abbreviation:
             unit += "s"
-        data_level_stack.append(f"{remaining_part} {unit}")
+        data_level_stack.append(f"{int(remaining_part)} {unit}")
     
     # Reverse the stack to get the correct order (largest to smallest)
     text = delimiter.join(data_level_stack[::-1])
