@@ -7,7 +7,7 @@ from ..Assist_Struct import Request_User_Info
 from TextProcessors import PromptVP, str_to_bool
 from .._info import __version__
 from ._value_comparison import value_comparison, ComparisonOperator
-from ..ApiInfo import ApiObject
+from ..Model_API import ModelAPI
 
 from loguru import logger
 from datetime import datetime, timedelta
@@ -77,7 +77,7 @@ class PromptVP_Loader:
     def get_prompt_vp_ex(
             self,
             user_id: str,
-            model: ApiObject = ApiObject(),
+            model: ModelAPI = ModelAPI(),
             user_info: Request_User_Info = Request_User_Info(),
             global_config: Global_Config = Global_Config(),
             config: UserConfigs = UserConfigs(),
