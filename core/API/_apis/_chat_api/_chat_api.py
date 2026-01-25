@@ -12,7 +12,7 @@ from fastapi.exceptions import (
 )
 from ..._resource import Resource
 from ....Assist_Struct import Response
-from ....ApiInfo import APIGroupNotFoundError
+from ....Model_API import ModelGroupNotFoundError
 from ....CallAPI import CompletionsAPI
 
 import orjson
@@ -62,5 +62,5 @@ async def chat_endpoint(
                     yield orjson.dumps(chunk.model_dump(exclude_none=True)) + b"\n"
 
             return StreamingResponse(generator_wrapper(context), media_type="application/x-ndjson")
-    except APIGroupNotFoundError as e:
+    except ModelGroupNotFoundError as e:
         raise HTTPException(detail=str(e), status_code=404)
