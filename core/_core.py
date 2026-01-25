@@ -808,8 +808,8 @@ class Core:
         logger.success(f"Task Finished!", user_id = saved_user_id)
 
         # 返回模型输出内容
-        output.reasoning_content = response.historical_context.last_content.reasoning_content
-        output.content = response.historical_context.last_content.content
+        output.reasoning_content = response.new_context.last_content.reasoning_content
+        output.content = response.new_context.last_content.content
         output.create_time = response.created
         output.id = response.id
 
