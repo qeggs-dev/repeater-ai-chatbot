@@ -1,4 +1,4 @@
-from pydantic import BaseModel, Field
+from pydantic import BaseModel, Field, ConfigDict
 from typing import TypeVar, Generic
 
 T = TypeVar('T')
@@ -9,6 +9,10 @@ class DataRoutingField(BaseModel, Generic[T]):
 
     Where the mentor gets its resources.
     """
+    model_config = ConfigDict(
+        validate_assignment=True,
+    )
+
     load_from_user_id: T = None
     save_to_user_id: T = None
 
@@ -37,6 +41,10 @@ class CrossUserDataRouting(BaseModel, Generic[T]):
 
     Where the mentor gets its resources.
     """
+    model_config = ConfigDict(
+        validate_assignment=True,
+    )
+
     context: DataRoutingField[T] = Field(default_factory=DataRoutingField)
     prompt: DataRoutingField[T] = Field(default_factory=DataRoutingField)
     config: DataRoutingField[T] = Field(default_factory=DataRoutingField)
