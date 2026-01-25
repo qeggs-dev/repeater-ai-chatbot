@@ -44,25 +44,6 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
 ## 详细字段信息：
 ```json
 {
-    // API INFO 配置
-    "api_info": {
-        // API INFO 文件路径
-        "api_file_path": "./config/api_info.json",
-
-        // 默认使用的模型uid
-        // 这里需要填写你在api_info.json中配置的模型uid
-        // 如果用户没有指定模型，则使用这个模型进行响应
-        // uid匹配默认是不分大小写的
-        // 不建议使用默认UID，因为chat指定的太过宽泛
-        // 建议在部署时，自己定一个或是根据厂商和模型的名字来定一个
-        // 比如deepseek-chat之类的
-        "default_model_uid": "chat",
-
-        // 在匹配UID时是否启用大小写敏感
-        // 此选项需要更改后需要重新录入API INFO
-        // 因为 API INFO 中实现这个的方法是全部转换为小写
-        "case_sensitive": false
-    },
     "blacklist": {
         // 黑名单配置
 
@@ -264,6 +245,26 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
         // 那么/chat/completion接口调用时stream参数可以为true或false
         // 且控制台和日志会打印当前chunk，并生成chunk统计数据
         "stream": true
+    },
+
+    // MODEL API 配置
+    "model_api": {
+        // MODEL API 文件路径
+        "api_file_path": "./config/api_info.json",
+
+        // 默认使用的模型uid
+        // 这里需要填写你在api_info.json中配置的模型uid
+        // 如果用户没有指定模型，则使用这个模型进行响应
+        // uid匹配默认是不分大小写的
+        // 不建议使用默认UID，因为chat指定的太过宽泛
+        // 建议在部署时，自己定一个或是根据厂商和模型的名字来定一个
+        // 比如deepseek-chat之类的
+        "default_model_uid": "chat",
+
+        // 在匹配UID时是否启用大小写敏感
+        // 此选项需要更改后需要重新录入API INFO
+        // 因为 API INFO 中实现这个的方法是全部转换为小写
+        "case_sensitive": false
     },
 
     // template 提示词文本模板展开器配置
