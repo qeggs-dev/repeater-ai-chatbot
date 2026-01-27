@@ -788,7 +788,11 @@ class Core:
         saved_user_id = cross_user_data_routing.context.save_to_user_id
 
         # 展开模型输出内容中的变量
-        response.historical_context.last_content.content = prompt_vp.process(response.historical_context.last_content.content)
+        for index in range(len(response.new_context.context_list)):
+            response.new_context.context_list[index] = prompt_vp.process(
+                text = response.new_context.context_list[index],
+            )
+
         # 记录Prompt_vp的命中情况
         logger.info(f"Prompt Hits Variable: {prompt_vp.hit_var()}/{prompt_vp.discover_var()}({prompt_vp.hit_var() / prompt_vp.discover_var() if prompt_vp.discover_var() != 0 else 0:.2%})", user_id = saved_user_id)
 
