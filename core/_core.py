@@ -586,6 +586,7 @@ class Core:
                 user_input: ContentUnit = self.make_user_content(
                     context_loader = context_loader,
                     user_id = user_id,
+                    message = message,
                     role = role,
                     role_name = role_name,
                     image_url = image_url,
