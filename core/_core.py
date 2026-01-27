@@ -789,8 +789,13 @@ class Core:
 
         # 展开模型输出内容中的变量
         for index in range(len(response.new_context.context_list)):
-            response.new_context.context_list[index] = prompt_vp.process(
-                text = response.new_context.context_list[index],
+            response.new_context.context_list[index] = ContentUnit(
+                reasoning_content = prompt_vp.process(
+                    response.new_context.context_list[index].reasoning_content
+                ),
+                content = prompt_vp.process(
+                    text = response.new_context.context_list[index].content,
+                )
             )
 
         # 记录Prompt_vp的命中情况
