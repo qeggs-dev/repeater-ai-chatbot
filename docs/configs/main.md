@@ -100,9 +100,8 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
         // 设为 true 则只保存新消息，而不是追加到历史消息中
         "save_new_only": false,
 
-
         // 是否忽略新请求中的非文本数据
-        "ignore_request_additional_data": false,
+        "new_requests_text_only": false,
 
         // 非文本数据在日志中的最大显示长度
         // 默认为 null，表示不限制

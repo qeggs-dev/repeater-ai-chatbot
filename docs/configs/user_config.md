@@ -100,7 +100,7 @@
     "cross_user_data_access": null,
 
     // (bool) 是否忽略新请求中的非文本数据
-    "ignore_request_additional_data": null,
+    "new_requests_text_only": null,
 
     // (dict[str, Any]) 用户附加配置数据
     // 用于存储某些与用户相关的数据
