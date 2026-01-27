@@ -8,6 +8,7 @@ class Global_Config(BaseModel):
     callapi: CallAPI_Config = Field(default_factory=CallAPI_Config)
     context: Context_Config = Field(default_factory=Context_Config)
     global_exception_handler: Global_Exception_Handler_Config = Field(default_factory=Global_Exception_Handler_Config)
+    licenses: Licenses_Config = Field(default_factory=Licenses_Config)
     logger: Logger_Config = Field(default_factory=Logger_Config)
     model: Model_Config = Field(default_factory=Model_Config)
     model_api: Model_API_Config = Field(default_factory=Model_API_Config)
