@@ -354,6 +354,18 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
             // 默认使用的 HTML 模板文件
             "default_html_template": "default.html",
 
+            // 是否允许文本跳过 Mardown 解析
+            "allow_direct_output": false,
+
+            // 不进行 HTML 转义
+            // 为 null 时使用请求中的值
+            // 如果开启，则默认你完全信任 API 传递给你的数据
+            "no_escape": false,
+
+            // 在使用 direct_output 时，是否不添加 pre 标签
+            // 为 null 时使用请求中的值
+            "no_pre_labels": false,
+
             // Markdown 预处理器配置
             "preprocess_map": {
                 // Before 预处理器
