@@ -37,16 +37,19 @@ class LicenseLoader:
         """
         Scan a directory for licenses.
         """
-        loaded_count: int = 0
+        loaded_requirement_count: int = 0
+        loaded_license_count: int = 0
         for license_path, name in self._scan_dir():
             licenses: dict[str, Path] = {}
             for path in license_path.iterdir():
                 licenses[path.name] = path
+                loaded_license_count += 1
             self._licenses[name] = licenses
-            loaded_count += 1
+            loaded_requirement_count += 1
         logger.info(
-            "Loaded {loaded_count} licenses from {base_path}",
-            loaded_count = loaded_count,
+            "{loaded_license_count} license files loaded with {loaded_requirement_count} requirements",
+            loaded_requirement_count = loaded_requirement_count,
+            loaded_license_count = loaded_license_count,
             base_path = self._base_path,
         )
     
