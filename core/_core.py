@@ -197,16 +197,11 @@ class Core:
             self,
             context_loader: ContextLoader,
             user_id: str,
-            message: str,
-            role: ContentRole = ContentRole.USER,
-            role_name: str | None = None,
             temporary_prompt: str | None = None,
-            image_url: str | list[str] | None = None,
             load_prompt: bool = True,
-            continue_completion: bool = False,
-            cross_user_data_flow: CrossUserDataRouting[str | None] | None = None,
+            cross_user_data_routing: CrossUserDataRouting[str | None] | None = None,
             prompt_vp: PromptVP = PromptVP()
-        ) -> tuple[ContextObject, ContentUnit | None]:
+        ) -> ContextObject:
         """
         获取上下文
 
@@ -223,10 +218,10 @@ class Core:
         :param prompt_vp: PromptVP模板解析器
         :return: 上下文对象
         """
-        cross_user_data_flow: CrossUserDataRouting[str] = self.fill_missing_cross_user_data_routing(user_id, cross_user_data_flow)
+        cross_user_data_routing: CrossUserDataRouting[str] = self.fill_missing_cross_user_data_routing(user_id, cross_user_data_routing)
 
-        context_load_source = cross_user_data_flow.context.load_from_user_id
-        prompt_load_source = cross_user_data_flow.prompt.load_from_user_id
+        context_load_source = cross_user_data_routing.context.load_from_user_id
+        prompt_load_source = cross_user_data_routing.prompt.load_from_user_id
         
         logger.info(
             "Load Context",
@@ -245,20 +240,33 @@ class Core:
             )
             context.prompt = prompt
 
-        if not continue_completion:
-            new_message: ContentUnit = context_loader.make_user_content(
-                user_id = user_id,
-                new_message = message,
-                role = role,
-                role_name = role_name,
-                image_url = image_url,
-                prompt_vp = prompt_vp
-            )
-            context.append(new_message)
-        else:
-            new_message: None = None
+        return context
+    # endregion
 
-        return context, new_message
+    # region Make User Content
+    def make_user_content(
+        self,
+        context_loader: ContextLoader,
+        user_id: str,
+        message: str,
+        role: ContentRole = ContentRole.USER,
+        role_name: str | None = None,
+        image_url: str | list[str] | None = None,
+        prompt_vp: str | None = None,
+        ignore_additional_data: bool = False,
+    ):
+        if ignore_additional_data:
+            image_url = None
+        
+        user_input: ContentUnit = context_loader.make_user_content(
+            user_id = user_id,
+            new_message = message,
+            role = role,
+            role_name = role_name,
+            image_url = image_url,
+            prompt_vp = prompt_vp
+        )
+        return user_input
     # endregion
 
     # region > load blacklist
@@ -519,6 +527,7 @@ class Core:
                     model_type = ModelType.CHAT,
                     model_uid = model_uid
                 )
+
                 # 取第一个API
                 if len(apilist) == 0:
                     logger.error(
@@ -561,27 +570,39 @@ class Core:
                     else:
                         load_prompt = config.load_prompt
                 
-                context, user_input = await self.get_context(
+                loaded_context: ContextObject = await self.get_context(
                     context_loader = context_loader,
                     user_id = user_id,
-                    message = message,
+                    temporary_prompt = temporary_prompt,
+                    load_prompt = load_prompt,
+                    cross_user_data_routing = cross_user_data_routing,
+                    prompt_vp = prompt_vp,
+                )
+
+                ignore_additional_data = config.ignore_request_additional_data
+                if ignore_additional_data is None:
+                    ignore_additional_data = ConfigManager.get_configs().context.ignore_request_additional_data
+                
+                user_input: ContentUnit = self.make_user_content(
+                    context_loader = context_loader,
+                    user_id = user_id,
                     role = role,
                     role_name = role_name,
-                    temporary_prompt = temporary_prompt,
                     image_url = image_url,
-                    load_prompt = load_prompt,
-                    continue_completion = continue_completion,
-                    cross_user_data_flow = cross_user_data_routing,
-                    prompt_vp = prompt_vp
+                    prompt_vp = prompt_vp,
+                    ignore_additional_data = ignore_additional_data,
                 )
+
+                submit_context: ContextObject = loaded_context.copy()
+                submit_context.append(user_input)
 
                 # 如果上下文需要收缩，则进行收缩(为零或类型不对则不进行操作)
                 max_context_length = config.context_shrink_limit or ConfigManager.get_configs().context.context_shrink_limit
                 if isinstance(max_context_length, int) and max_context_length > 0:
-                    if len(context) > max_context_length:
+                    if submit_context.total_length > max_context_length:
                         logger.info(f"Context length exceeds {max_context_length}, auto shrink", user_id = user_id)
                         try:
-                            context.shrink(max_context_length)
+                            submit_context.shrink(max_context_length)
                         except Exception as e:
                             logger.error(f"Failed to shrink context: {e}", user_id = user_id)
                             return Response(
@@ -589,7 +610,8 @@ class Core:
                                     "Sorry, I failed to shrink the context.\n"
                                     "This can be caused by an incorrect parameter input.\n"
                                     "Please check that the context field is working properly in your configuration.\n"
-                                    "Or whether the Context data does not contain the specified header Role."
+                                    "Or whether the Context data does not contain the specified header Role.\n"
+                                    f"Error: {e}"
                                 ),
                                 status_code = 400,
                                 finish_reason_cause = "shrink_context_failed",
@@ -598,7 +620,7 @@ class Core:
                 # 创建请求对象
                 request = CompletionsAPI.Request()
                 # 设置上下文
-                request.context = context
+                request.context = submit_context
                 
                 # 设置请求对象的API信息
                 request.url = model.url
