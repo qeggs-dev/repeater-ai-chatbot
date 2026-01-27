@@ -49,7 +49,7 @@ async def markdown_to_html(
             ]
         )
     else:
-        f"<pre>\n{input_text}\n</pre>"
+        html_content = f"<pre>\n{input_text}\n</pre>"
 
     # 4. 预处理 HTML 文本
     if preprocess_map_after:
