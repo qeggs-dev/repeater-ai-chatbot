@@ -107,11 +107,12 @@ async def render(
 
     # 调用生成HTML
     html = await markdown_to_html(
-        markdown_text = render_request.text,
+        input_text = render_request.text,
         html_template = html_template,
         width = width,
         title = title,
         css = css,
+        direct_output = render_request.direct_output,
         preprocess_map_before = preprocess_map_before,
         preprocess_map_after = preprocess_map_after,
     )
