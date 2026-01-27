@@ -31,6 +31,7 @@ class UserConfigs(BaseModel):
     timezone: float | str | None = None
     save_text_only: bool | None = None
     cross_user_data_access: bool | None = None
+    ignore_request_additional_data: bool | None = None
     additional_user_data: dict[str, Any] = Field(default_factory=dict)
 
     @field_validator("timezone")
