@@ -11,14 +11,14 @@ versions = {
     "api": __api_version__
 }
 
-@Resource.app.route("/version")
+@Resource.app.get("/version")
 def version():
     """
     Return the version of the API and the core
     """
     return ORJSONResponse(versions)
 
-@Resource.app.route("/version/{module}")
+@Resource.app.get("/version/{module}")
 def module_version(module: str):
     """
     Return the version of the specified module
