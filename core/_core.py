@@ -579,9 +579,9 @@ class Core:
                     prompt_vp = prompt_vp,
                 )
 
-                ignore_additional_data = config.ignore_request_additional_data
-                if ignore_additional_data is None:
-                    ignore_additional_data = ConfigManager.get_configs().context.ignore_request_additional_data
+                new_requests_text_only = config.new_requests_text_only
+                if new_requests_text_only is None:
+                    new_requests_text_only = ConfigManager.get_configs().context.new_requests_text_only
                 
                 user_input: ContentUnit = self.make_user_content(
                     context_loader = context_loader,
@@ -590,7 +590,7 @@ class Core:
                     role_name = role_name,
                     image_url = image_url,
                     prompt_vp = prompt_vp,
-                    ignore_additional_data = ignore_additional_data,
+                    ignore_additional_data = new_requests_text_only,
                 )
 
                 submit_context: ContextObject = loaded_context.copy()
