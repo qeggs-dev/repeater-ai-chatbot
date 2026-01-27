@@ -15,6 +15,7 @@ from ..Markdown_Render import HTML_Render
 from ..Logger_Init import logger_init
 from ._lifespan import lifespan
 from ._info import __version__
+from ..Licenses_Loader import LicenseLoader
 
 class Resource:
     startup: ClassVar[Sequence[Callable[[], Any]] | None] = None
@@ -30,6 +31,7 @@ class Resource:
     core: ClassVar[Core | None] = None
     admin_key_manager: ClassVar[AdminKeyManager | None] = None
     browser_pool_manager: ClassVar[HTML_Render.BrowserPoolManager | None] = None
+    licenses: ClassVar[LicenseLoader | None] = None
     _instance: ClassVar[Resource | None] = None
 
     def __new__(cls):
@@ -51,6 +53,7 @@ class Resource:
     def init_all(cls):
         cls.init_logger()
         cls.init_core()
+        cls.init_licenses_data()
         cls.init_admin_key_manager()
         cls.init_browser_pool_manager()
     
@@ -69,6 +72,11 @@ class Resource:
     def init_admin_key_manager(cls):
         # 生成或读取API Key
         cls.admin_key_manager = AdminKeyManager()
+    
+    @classmethod
+    def init_licenses_data(cls):
+        cls.licenses = LicenseLoader(ConfigManager.get_configs().licenses)
+        cls.licenses.scan_licenses()
 
     @classmethod
     def init_browser_pool_manager(cls):
