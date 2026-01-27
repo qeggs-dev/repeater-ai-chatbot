@@ -8,11 +8,12 @@ from ._extensions import (
 from TextProcessors import PromptVP
 
 async def markdown_to_html(
-    markdown_text: str,
+    input_text: str,
     html_template: str,
     css: str,
     title: str = "Markdown Render",
     width: int = 800,
+    direct_output: bool = False,
     preprocess_map_before: dict[str, str] | None = None,
     preprocess_map_after: dict[str, str] | None = None,
 ) -> str:
@@ -32,20 +33,23 @@ async def markdown_to_html(
     # 1. 预处理 Markdown 文本
     if preprocess_map_before:
         for key, value in preprocess_map_before.items():
-            markdown_text = markdown_text.replace(key, value)
+            input_text = input_text.replace(key, value)
     
     # 2. 转义以安全包含内容
-    markdown_text = html.escape(markdown_text)
+    input_text = html.escape(input_text)
     
     # 3. 渲染 Markdown 为 HTML
-    html_content = markdown.markdown(
-        markdown_text,
-        extensions=[
-            CodeBlockExtension(),
-            BrExtension(),
-            DividingLineExtension(),
-        ]
-    )
+    if not direct_output:
+        html_content = markdown.markdown(
+            input_text,
+            extensions=[
+                CodeBlockExtension(),
+                BrExtension(),
+                DividingLineExtension(),
+            ]
+        )
+    else:
+        f"<pre>\n{input_text}\n</pre>"
 
     # 4. 预处理 HTML 文本
     if preprocess_map_after:
@@ -57,7 +61,7 @@ async def markdown_to_html(
 
     template_handler = PromptVP()
     template_handler.bulk_register_variable(
-        markdown = markdown_text,
+        markdown = input_text,
         html_content = html_content,
         css = css,
         title = html.escape(title)
