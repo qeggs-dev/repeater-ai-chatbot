@@ -253,9 +253,10 @@ class Core:
         role_name: str | None = None,
         image_url: str | list[str] | None = None,
         prompt_vp: str | None = None,
-        ignore_additional_data: bool = False,
+        new_requests_text_only: bool = False,
     ):
-        if ignore_additional_data:
+        if new_requests_text_only:
+            logger.warning("Removed Additional Data", user_id=user_id)
             image_url = None
         
         user_input: ContentUnit = context_loader.make_user_content(
@@ -591,7 +592,7 @@ class Core:
                     role_name = role_name,
                     image_url = image_url,
                     prompt_vp = prompt_vp,
-                    ignore_additional_data = new_requests_text_only,
+                    new_requests_text_only = new_requests_text_only,
                 )
 
                 submit_context: ContextObject = loaded_context.copy()
