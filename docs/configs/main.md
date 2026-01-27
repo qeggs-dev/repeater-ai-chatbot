@@ -182,6 +182,20 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
         }
     },
 
+    "licenses": {
+        // 依赖项的许可证文件所在目录
+        // 注意：这个目录需要保持正确的结构才能被程序正确解析
+        "license_dir": "./LICENSES",
+
+        // 许可证文件读取时使用的编码
+        "license_encoding": "utf-8",
+
+        // 项目自己的许可证文件
+        "self_license_files": {
+            "MIT": "./LICENSE"
+        }
+    },
+
     // Logger 配置
     "logger": {
         // Log 文件输出路径
