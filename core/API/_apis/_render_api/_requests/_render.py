@@ -9,5 +9,6 @@ class RenderRequest(BaseModel):
     width: int | None = None
     height: int | None = None
     direct_output: bool | None = None
-    no_pre_labels: bool | None = None
+    no_escape: bool = False
+    no_pre_labels: bool = False
     quality: int | None = None
