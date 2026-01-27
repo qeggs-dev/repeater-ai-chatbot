@@ -11,5 +11,8 @@ class Markdown_To_HTML_Config(BaseModel):
     html_template_file_encoding: str = "utf-8"
     default_html_template: str = "default"
     html_template_suffix: str = ".html"
+    allow_direct_output: bool = False
+    no_escape: bool = False
+    no_pre_label: bool = False
     preprocess_map: Preprocess_Map_Config = Field(default_factory=Preprocess_Map_Config)
     title: str = "Repeater Image Generator"
