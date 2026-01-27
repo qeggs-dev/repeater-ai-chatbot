@@ -14,6 +14,7 @@
       - `html_template` HTML模板
       - `width(int)` 图片宽度
       - `height(int)` 图片高度
+      - `direct_output(bool)` 是否直接开始渲染而不经过Markdown解析
       - `quality(int)` 图片质量
   - **Response**
     - **type:** `JSON`
