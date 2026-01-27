@@ -12,14 +12,14 @@ versions = {
 }
 
 @Resource.app.get("/version")
-def version():
+async def version():
     """
     Return the version of the API and the core
     """
     return ORJSONResponse(versions)
 
 @Resource.app.get("/version/{module}")
-def module_version(module: str):
+async def module_version(module: str):
     """
     Return the version of the specified module
     """
