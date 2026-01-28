@@ -354,6 +354,12 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
             // 默认使用的 HTML 模板文件
             "default_html_template": "default.html",
 
+            // 是否允许请求自定义 CSS
+            "allow_custom_styles": false,
+
+            // 是否允许请求自定义 HTML 模板
+            "allow_custom_html_templates": false,
+
             // 是否允许文本跳过 Mardown 解析
             "allow_direct_output": false,
 
