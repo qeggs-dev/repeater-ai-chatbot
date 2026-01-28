@@ -45,11 +45,18 @@ async def render(
     """
     start_time = time.monotonic_ns()
 
+    # 检查请求是否合法
     if not render_request.text:
         raise HTTPException(status_code=400, detail="text is required")
     
     if render_request.direct_output and not ConfigManager.get_configs().render.markdown.allow_direct_output:
         raise HTTPException(status_code=400, detail="direct_output is not allowed")
+    
+    if render_request.style and not ConfigManager.get_configs().render.markdown.allow_custom_styles:
+        raise HTTPException(status_code=400, detail="custom style is not allowed")
+    
+    if render_request.html_template and not ConfigManager.get_configs().render.markdown.allow_custom_html_templates: 
+        raise HTTPException(status_code=400, detail="custom html_template is not allowed")
     
     # 生成图片ID
     fuuid = uuid4()
