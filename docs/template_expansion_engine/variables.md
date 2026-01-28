@@ -22,6 +22,8 @@
 | `randchoice` | 随机选择 | 抽取内容(*str) |
 | `reprs` | 显示对象的字符串表示 | 任何内容(*Any) |
 | `random` | 随机数 | 随机数下限(int)，随机数上下限(int) |
+| `user_configs` | 用户配置 | 缩进(int), 转义为ANSI(bool) |
+| `global_configs` | 全局配置 | 缩进(int), 转义为ANSI(bool) |
 | `random_matrix` | 0~1随机矩阵 | 矩阵行数(int)，矩阵列数(int) |
 | `randfloat` | 随机浮点数 | 随机数下限(float)，随机数上下限(float) |
 | `copytext` | 重复文本 | 重复文本(str)， 重复次数(int), 间隔符(str) |
