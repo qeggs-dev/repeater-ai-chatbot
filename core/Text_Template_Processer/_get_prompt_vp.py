@@ -166,7 +166,6 @@ class PromptVP_Loader:
             text_matrix = lambda text, columns, lines, spacers = " ", line_breaks = "\n": line_breaks.join(spacers.join([text] * int(columns)) for _ in range(int(lines))),
             random_matrix = lambda rows, cols: np.random.rand(int(rows), int(cols)),
             user_profile = lambda: config.user_profile if config.user_profile is not None else global_config.prompt_template.default_user_profile,
-            global_configs = lambda indent = 4, ensure_ascii = False: json.dumps(global_config.model_dump(), indent = int(indent), ensure_ascii = str_to_bool(ensure_ascii)),
             user_configs = lambda indent = 4, ensure_ascii = False: json.dumps(config.model_dump(exclude_none=True), indent = int(indent), ensure_ascii = str_to_bool(ensure_ascii)),
             **kwargs
         )
