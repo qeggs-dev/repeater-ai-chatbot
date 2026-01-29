@@ -1,5 +1,5 @@
 def format_carry_duration(
-    value: int,
+    value: int | float,
     levels: list[tuple[str, str, int]],
     start_with: int = 0,
     use_abbreviation: bool = False,
@@ -38,10 +38,10 @@ def format_carry_duration(
     
     end_level, end_level_abbreviation = final_level
     data_level_stack: list[str] = []
-    remaining_part: int = value
+    remaining_part: int | float = value
     
     # Process each level starting from the specified level
-    for name, abbreviation, divisor in levels[start_with:]:
+    for index, (name, abbreviation, divisor) in enumerate(levels[start_with:]):
         if remaining_part == 0:
             break
             
@@ -53,6 +53,8 @@ def format_carry_duration(
             # Handle pluralization
             if current_value != 1 and not use_abbreviation:
                 unit += "s"
+            if index != 0:
+                current_value = int(current_value)
             data_level_stack.append(f"{current_value} {unit}")
         
         if remaining_part == 0:
@@ -63,7 +65,7 @@ def format_carry_duration(
         unit = end_level_abbreviation if use_abbreviation else end_level
         if remaining_part != 1 and not use_abbreviation:
             unit += "s"
-        data_level_stack.append(f"{remaining_part} {unit}")
+        data_level_stack.append(f"{int(remaining_part)} {unit}")
     
     # Reverse the stack to get the correct order (largest to smallest)
     text = delimiter.join(data_level_stack[::-1])

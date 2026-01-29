@@ -22,4 +22,4 @@
   - [Config Branch Info API](./branch/info.md)
 
 ## 用户管理
-  - [Config Users API](./userlist.md)
+  - [Config Users API](./user/userlist.md)

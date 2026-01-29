@@ -44,25 +44,6 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
 ## 详细字段信息：
 ```json
 {
-    // API INFO 配置
-    "api_info": {
-        // API INFO 文件路径
-        "api_file_path": "./config/api_info.json",
-
-        // 默认使用的模型uid
-        // 这里需要填写你在api_info.json中配置的模型uid
-        // 如果用户没有指定模型，则使用这个模型进行响应
-        // uid匹配默认是不分大小写的
-        // 不建议使用默认UID，因为chat指定的太过宽泛
-        // 建议在部署时，自己定一个或是根据厂商和模型的名字来定一个
-        // 比如deepseek-chat之类的
-        "default_model_uid": "chat",
-
-        // 在匹配UID时是否启用大小写敏感
-        // 此选项需要更改后需要重新录入API INFO
-        // 因为 API INFO 中实现这个的方法是全部转换为小写
-        "case_sensitive": false
-    },
     "blacklist": {
         // 黑名单配置
 
@@ -113,6 +94,14 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
         // 默认为false
         // 设为true可能会让你获得更快的解析速度
         "save_text_only": false,
+
+        // 是否只保存新数据
+        // 默认为false
+        // 设为 true 则只保存新消息，而不是追加到历史消息中
+        "save_new_only": false,
+
+        // 是否忽略新请求中的非文本数据
+        "new_requests_text_only": false,
 
         // 非文本数据在日志中的最大显示长度
         // 默认为 null，表示不限制
@@ -193,6 +182,20 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
         }
     },
 
+    "licenses": {
+        // 依赖项的许可证文件所在目录
+        // 注意：这个目录需要保持正确的结构才能被程序正确解析
+        "license_dir": "./LICENSES",
+
+        // 许可证文件读取时使用的编码
+        "license_encoding": "utf-8",
+
+        // 项目自己的许可证文件
+        "self_license_files": {
+            "MIT": "./LICENSE"
+        }
+    },
+
     // Logger 配置
     "logger": {
         // Log 文件输出路径
@@ -259,6 +262,26 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
         // 那么/chat/completion接口调用时stream参数可以为true或false
         // 且控制台和日志会打印当前chunk，并生成chunk统计数据
         "stream": true
+    },
+
+    // MODEL API 配置
+    "model_api": {
+        // MODEL API 文件路径
+        "api_file_path": "./config/api_info.json",
+
+        // 默认使用的模型uid
+        // 这里需要填写你在api_info.json中配置的模型uid
+        // 如果用户没有指定模型，则使用这个模型进行响应
+        // uid匹配默认是不分大小写的
+        // 不建议使用默认UID，因为chat指定的太过宽泛
+        // 建议在部署时，自己定一个或是根据厂商和模型的名字来定一个
+        // 比如deepseek-chat之类的
+        "default_model_uid": "chat",
+
+        // 在匹配UID时是否启用大小写敏感
+        // 此选项需要更改后需要重新录入API INFO
+        // 因为 API INFO 中实现这个的方法是全部转换为小写
+        "case_sensitive": false
     },
 
     // template 提示词文本模板展开器配置
@@ -330,6 +353,24 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
 
             // 默认使用的 HTML 模板文件
             "default_html_template": "default.html",
+
+            // 是否允许请求自定义 CSS
+            "allow_custom_styles": false,
+
+            // 是否允许请求自定义 HTML 模板
+            "allow_custom_html_templates": false,
+
+            // 是否允许文本跳过 Mardown 解析
+            "allow_direct_output": false,
+
+            // 不进行 HTML 转义
+            // 为 null 时使用请求中的值
+            // 如果开启，则默认你完全信任 API 传递给你的数据
+            "no_escape": false,
+
+            // 在使用 direct_output 时，是否不添加 pre 标签
+            // 为 null 时使用请求中的值
+            "no_pre_labels": false,
 
             // Markdown 预处理器配置
             "preprocess_map": {
@@ -444,6 +485,11 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
 
         // 是否在获取文件大小时 readable 里使用缩写
         "file_size_use_abbreviation": true,
+
+        // 是否阻止跨用户数据访问
+        // 如果为 true，则请求时按照请求的 `cross_user_data_routing` 来加载数据
+        // 否则，则只能操作当前用户的数据
+        "cross_user_data_access": false,
 
         // 是否缓存
         // 这里的两个字段同时支持bool和cache_data结构

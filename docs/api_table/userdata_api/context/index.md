@@ -12,6 +12,9 @@
 ## 删除上下文
   - [Delete Context API](./delete/delete.md)
 
+## 检查上下文
+  - [Check Role Structure API](./check/role_structure.md)
+
  ## 分支管理
   - [Get Context Branch List API](./branch/branchs.md)
   - [Get Now Context Branch API](./branch/now_branch.md)
@@ -23,4 +26,4 @@
   - [Context Info API](./branch/info.md)
 
 ## 用户管理
-  - [Context Users API](./userlist.md)
+  - [Context Users API](./user/userlist.md)

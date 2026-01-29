@@ -24,25 +24,23 @@ from .Context_Manager import (
     ContextObject,
     ContentUnit,
     TextBlock,
-    ImageBlock,
-    AudioBlock,
-    FileBlock,
 )
 from . User_Config_Manager import (
     ConfigManager as UserConfigManager,
     UserConfigs
 )
-from .Assist_Struct import Response
 from .Lock_Pool import AsyncLockPool
 from RegexChecker import RegexChecker
 from .Global_Config_Manager import ConfigManager
 from .Assist_Struct import (
-    Request_User_Info
+    Response,
+    Request_User_Info,
+    CrossUserDataRouting
 )
-from .ApiInfo import (
-    ApiInfo,
+from .Model_API import (
+    ModelAPIManager,
     ModelType,
-    ApiObject,
+    ModelAPI,
 )
 from . import Request_Log
 from TextProcessors import (
@@ -77,13 +75,13 @@ class Core:
             if max_concurrency is None else max_concurrency
         )
 
-        # 初始化API INFO
-        self.apiinfo = ApiInfo(
-            ConfigManager.get_configs().api_info.case_sensitive
+        # 初始化 Model 管理器
+        self.model_api_manager = ModelAPIManager(
+            ConfigManager.get_configs().model_api.case_sensitive
         )
         # 从指定文件加载API数据
-        self.apiinfo.load(
-            ConfigManager.get_configs().api_info.api_file_path
+        self.model_api_manager.load(
+            ConfigManager.get_configs().model_api.api_file_path
         )
 
         # 初始化锁池
@@ -196,16 +194,11 @@ class Core:
             self,
             context_loader: ContextLoader,
             user_id: str,
-            message: str,
-            role: ContentRole = ContentRole.USER,
-            role_name: str | None = None,
             temporary_prompt: str | None = None,
-            image_url: str | list[str] | None = None,
             load_prompt: bool = True,
-            continue_completion: bool = False,
-            reference_context_id: str | None = None,
+            cross_user_data_routing: CrossUserDataRouting[str | None] | None = None,
             prompt_vp: PromptVP = PromptVP()
-        ) -> tuple[ContextObject, ContentUnit | None]:
+        ) -> ContextObject:
         """
         获取上下文
 
@@ -222,43 +215,56 @@ class Core:
         :param prompt_vp: PromptVP模板解析器
         :return: 上下文对象
         """
-        if reference_context_id:
-            context_load_source = reference_context_id
-        else:
-            context_load_source = user_id
+        cross_user_data_routing: CrossUserDataRouting[str] = self.fill_missing_cross_user_data_routing(user_id, cross_user_data_routing)
+
+        context_load_source = cross_user_data_routing.context.load_from_user_id
+        prompt_load_source = cross_user_data_routing.prompt.load_from_user_id
         
         logger.info(
-            "Load Context From [{context_load_source}]",
-            user_id=user_id,
-            context_load_source=context_load_source
+            "Load Context",
+            user_id=context_load_source,
         )
         context: ContextObject = await context_loader.load_context(
             user_id = context_load_source
         )
 
         if load_prompt:
-            logger.info("Load Prompt", user_id=user_id)
+            logger.info("Load Prompt", user_id=prompt_load_source)
             prompt: ContentUnit = await context_loader.load_prompt(
-                user_id = user_id,
+                user_id = prompt_load_source,
                 temporary_prompt = temporary_prompt,
                 prompt_vp = prompt_vp
             )
             context.prompt = prompt
 
-        if not continue_completion:
-            new_message: ContentUnit = context_loader.make_user_content(
-                user_id = user_id,
-                new_message = message,
-                role = role,
-                role_name = role_name,
-                image_url = image_url,
-                prompt_vp = prompt_vp
-            )
-            context.append(new_message)
-        else:
-            new_message: None = None
+        return context
+    # endregion
 
-        return context, new_message
+    # region Make User Content
+    def make_user_content(
+        self,
+        context_loader: ContextLoader,
+        user_id: str,
+        message: str,
+        role: ContentRole = ContentRole.USER,
+        role_name: str | None = None,
+        image_url: str | list[str] | None = None,
+        prompt_vp: str | None = None,
+        new_requests_text_only: bool = False,
+    ):
+        if new_requests_text_only:
+            logger.warning("Removed Additional Data", user_id=user_id)
+            image_url = None
+        
+        user_input: ContentUnit = context_loader.make_user_content(
+            user_id = user_id,
+            new_message = message,
+            role = role,
+            role_name = role_name,
+            image_url = image_url,
+            prompt_vp = prompt_vp
+        )
+        return user_input
     # endregion
 
     # region > load blacklist
@@ -306,7 +312,7 @@ class Core:
         return False
     # endregion
 
-    # region Print_Request_Log
+    # region > print request log
     @staticmethod
     def _text_content_cutter(text: str) -> str:
         max_log_length = ConfigManager.get_configs().context.max_log_length_for_non_text_content
@@ -325,7 +331,7 @@ class Core:
     def _print_request_info(
             self,
             user_id: str,
-            api: ApiObject,
+            api: ModelAPI,
             user_input: ContentUnit | None,
             user_info: Request_User_Info,
             role_name: str | None = None
@@ -352,27 +358,9 @@ class Core:
                         user_id = user_id
                     )
                 else:
-                    message_texts: list[str] = []
-                    for block in user_input.content:
-                        if isinstance(block, TextBlock):
-                            message_texts.append(block.text)
-                        elif isinstance(block, ImageBlock):
-                            message_texts.append(
-                                f"[Image: {self._text_content_cutter(block.image_url.url)}]"
-                            )
-                        elif isinstance(block, AudioBlock):
-                            message_texts.append(
-                                f"[Audio: {self._text_content_cutter(block.input_audio.data)}]"
-                            )
-                        elif isinstance(block, FileBlock):
-                            message_texts.append(
-                                f"[File: {self._text_content_cutter(block.file.filename)}]"
-                            )
-                        else:
-                            message_texts.append(f"[Unknown Block: {block}]")
                     logger.info(
                         "Message:\n{message}",
-                        message = "\n".join(message_texts),
+                        message = user_input.content_to_string(ConfigManager.get_configs().context.max_log_length_for_non_text_content),
                         user_id = user_id
                     )
             else:
@@ -417,6 +405,17 @@ class Core:
                 user_id = user_id,
                 role_name = role_name
             )
+    
+    # region > Fill Missing Cross User Data Routing
+    @staticmethod
+    def fill_missing_cross_user_data_routing(user_id: str, cross_user_data_flow: CrossUserDataRouting[str | None] | None = None) -> CrossUserDataRouting[str]:
+        if cross_user_data_flow is None:
+            cross_user_data_flow = CrossUserDataRouting()
+        if not cross_user_data_flow.is_all_defined():
+            cross_user_data_flow.fill_missing(user_id = user_id)
+        return cross_user_data_flow
+    # endregion
+
     # region > Chat
     async def chat(
             self,
@@ -432,7 +431,7 @@ class Core:
             load_prompt: bool | None = None,
             save_context: bool | None = None,
             save_new_only: bool | None = None,
-            reference_context_id: str | None = None,
+            cross_user_data_routing: CrossUserDataRouting[str | None] | None = None,
             continue_completion: bool = False,
             stream: bool = False,
         ) -> Response | AsyncIterator[dict[str, Any]]:
@@ -451,7 +450,7 @@ class Core:
         :param load_prompt: 是否加载提示
         :param save_context: 是否保存上下文
         :param save_new_only: 是否只保存最新的内容
-        :param reference_context_id: 引用上下文ID
+        :param cross_user_data_operations: 跨用户数据流
         :param continue_completion: 是否继续完成
         :param stream: 是否流式输出
         :return: 返回对话结果
@@ -463,7 +462,7 @@ class Core:
             # 获取用户锁对象
             lock = await self._get_namespace_lock(user_id)
             
-            # 加锁执行
+            # 进入RUL执行
             async with lock:
                 logger.info("====================================", user_id = user_id)
                 logger.info("Start Task", user_id = user_id)
@@ -486,24 +485,38 @@ class Core:
                 # 获取配置
                 config = await self.get_config(user_id)
                 
+                if not cross_user_data_routing:
+                    if config.cross_user_data_access:
+                        logger.warning("Cross user data flow is not allowed.", user_id = user_id)
+                        cross_user_data_routing = None
+                    elif not ConfigManager.get_configs().user_data.cross_user_data_access:
+                        logger.warning("Cross user data flow is not allowed.", user_id = user_id)
+                        cross_user_data_routing = None
+                
+                cross_user_data_routing = self.fill_missing_cross_user_data_routing(user_id, cross_user_data_routing)
+
+                if user_id != cross_user_data_routing.config.load_from_user_id:
+                    config = await self.get_config(cross_user_data_routing.config.load_from_user_id)
+                
                 # 获取默认模型uid
                 if model_uid is None:
-                    model_uid: str = config.model_uid or ConfigManager.get_configs().api_info.default_model_uid
+                    model_uid: str = config.model_uid or ConfigManager.get_configs().model_api.default_model_uid
                 
                 # 获取API信息
-                apilist = self.apiinfo.find(
+                apilist = self.model_api_manager.find_model(
                     model_type = ModelType.CHAT,
                     model_uid = model_uid
                 )
+
                 # 取第一个API
                 if len(apilist) == 0:
                     logger.error(
-                        "API not found: {model_uid}",
+                        "Model API not found: {model_uid}",
                         user_id = user_id,
                         model_uid = model_uid
                     )
                     output = Response(
-                        content = f"API not found: {model_uid}",
+                        content = f"Model API not found: {model_uid}",
                         status = 404
                     )
                     return output
@@ -537,27 +550,40 @@ class Core:
                     else:
                         load_prompt = config.load_prompt
                 
-                context, user_input = await self.get_context(
+                loaded_context: ContextObject = await self.get_context(
+                    context_loader = context_loader,
+                    user_id = user_id,
+                    temporary_prompt = temporary_prompt,
+                    load_prompt = load_prompt,
+                    cross_user_data_routing = cross_user_data_routing,
+                    prompt_vp = prompt_vp,
+                )
+
+                new_requests_text_only = config.new_requests_text_only
+                if new_requests_text_only is None:
+                    new_requests_text_only = ConfigManager.get_configs().context.new_requests_text_only
+                
+                user_input: ContentUnit = self.make_user_content(
                     context_loader = context_loader,
                     user_id = user_id,
                     message = message,
                     role = role,
                     role_name = role_name,
-                    temporary_prompt = temporary_prompt,
                     image_url = image_url,
-                    load_prompt = load_prompt,
-                    continue_completion = continue_completion,
-                    reference_context_id = reference_context_id,
-                    prompt_vp = prompt_vp
+                    prompt_vp = prompt_vp,
+                    new_requests_text_only = new_requests_text_only,
                 )
+
+                submit_context: ContextObject = loaded_context.copy()
+                submit_context.append(user_input)
 
                 # 如果上下文需要收缩，则进行收缩(为零或类型不对则不进行操作)
                 max_context_length = config.context_shrink_limit or ConfigManager.get_configs().context.context_shrink_limit
                 if isinstance(max_context_length, int) and max_context_length > 0:
-                    if len(context) > max_context_length:
+                    if submit_context.total_length > max_context_length:
                         logger.info(f"Context length exceeds {max_context_length}, auto shrink", user_id = user_id)
                         try:
-                            context.shrink(max_context_length)
+                            submit_context.shrink(max_context_length)
                         except Exception as e:
                             logger.error(f"Failed to shrink context: {e}", user_id = user_id)
                             return Response(
@@ -565,7 +591,8 @@ class Core:
                                     "Sorry, I failed to shrink the context.\n"
                                     "This can be caused by an incorrect parameter input.\n"
                                     "Please check that the context field is working properly in your configuration.\n"
-                                    "Or whether the Context data does not contain the specified header Role."
+                                    "Or whether the Context data does not contain the specified header Role.\n"
+                                    f"Error: {e}"
                                 ),
                                 status_code = 400,
                                 finish_reason_cause = "shrink_context_failed",
@@ -574,7 +601,7 @@ class Core:
                 # 创建请求对象
                 request = CompletionsAPI.Request()
                 # 设置上下文
-                request.context = context
+                request.context = submit_context
                 
                 # 设置请求对象的API信息
                 request.url = model.url
@@ -636,6 +663,12 @@ class Core:
                     save_only_text: bool = config.save_text_only
                 else:
                     save_only_text: bool = ConfigManager.get_configs().context.save_text_only
+                
+                if save_new_only is None:
+                    if config.save_new_only is not None:
+                        save_new_only = config.save_new_only
+                    else:
+                        save_new_only = ConfigManager.get_configs().context.save_new_only
 
                 # region >> 提交请求
                 try:
@@ -650,8 +683,8 @@ class Core:
                             """
                             nonlocal output
                             output = await self._post_treatment(
-                                output = output,
                                 user_id = user_id,
+                                output = output,
                                 response = response,
                                 prompt_vp = prompt_vp,
                                 user_input = user_input,
@@ -659,7 +692,7 @@ class Core:
                                 save_new_only = save_new_only,
                                 context_loader = context_loader,
                                 task_start_time = task_start_time,
-                                reference_context_id = reference_context_id,
+                                cross_user_data_routing = cross_user_data_routing,
                                 prepare_end_time = prepare_end_time,
                                 save_only_text = save_only_text,
                             )
@@ -677,8 +710,8 @@ class Core:
                         )
                         
                         output = await self._post_treatment(
-                            output = output,
                             user_id = user_id,
+                            output = output,
                             response = response,
                             prompt_vp = prompt_vp,
                             user_input = user_input,
@@ -686,7 +719,7 @@ class Core:
                             save_new_only = save_new_only,
                             context_loader = context_loader,
                             task_start_time = task_start_time,
-                            reference_context_id = reference_context_id,
+                            cross_user_data_routing = cross_user_data_routing,
                             prepare_end_time = prepare_end_time,
                             save_only_text = save_only_text,
                         )
@@ -719,53 +752,72 @@ class Core:
         task_start_time: Request_Log.TimeStamp,
         context_loader: ContextLoader,
         prepare_end_time: Request_Log.TimeStamp,
+        cross_user_data_routing: CrossUserDataRouting[str],
         user_input: ContentUnit | None = None,
         output: Response = Response(),
         save_context: bool | None = None,
         save_only_text: bool = False,
         save_new_only: bool = False,
-        reference_context_id: str | None = None,
     ) -> Response:
         # 补充调用日志的时间信息
         response.calling_log.task_start_time = task_start_time
         response.calling_log.prepare_start_time = task_start_time
         response.calling_log.prepare_end_time = prepare_end_time
         response.calling_log.created_time = response.created
+        saved_user_id = cross_user_data_routing.context.save_to_user_id
 
         # 展开模型输出内容中的变量
-        response.context.last_content.content = prompt_vp.process(response.context.last_content.content)
+        for index in range(len(response.new_context.context_list)):
+            content_unit = response.new_context.context_list[index]
+            content = content_unit.content
+            if isinstance(content, str):
+                content = prompt_vp.process(content)
+                content_unit.content = content
+            else:
+                content = content_unit.to_plaintext_content()
+                content = prompt_vp.process(content)
+                content_unit.remove_context_block(TextBlock)
+                content_unit.content.append(
+                    TextBlock(content)
+                )
+            content_unit.reasoning_content = prompt_vp.process(content_unit.reasoning_content)
+        
         # 记录Prompt_vp的命中情况
-        logger.info(f"Prompt Hits Variable: {prompt_vp.hit_var()}/{prompt_vp.discover_var()}({prompt_vp.hit_var() / prompt_vp.discover_var() if prompt_vp.discover_var() != 0 else 0:.2%})", user_id = user_id)
+        logger.info(f"Prompt Hits Variable: {prompt_vp.hit_var()}/{prompt_vp.discover_var()}({prompt_vp.hit_var() / prompt_vp.discover_var() if prompt_vp.discover_var() != 0 else 0:.2%})", user_id = saved_user_id)
+
+        if cross_user_data_routing.context.save_to_user_id == user_id:
+            historical_context = response.historical_context
+        else:
+            historical_context = await context_loader.load_context(saved_user_id)
+            historical_context.append(user_input)
 
         # 保存上下文
         if save_context:
             if save_new_only:
-                context: ContextObject = ContextObject()
+                saved_context: ContextObject = ContextObject()
                 if user_input is not None:
-                    context.append(user_input)
+                    saved_context.append(user_input)
                 if response.new_context:
-                    context.extend(response.new_context)
+                    saved_context.extend(response.new_context)
                 logger.info(
                     "Saving new context...",
-                    user_id = user_id,
+                    user_id = saved_user_id,
                 )
             else:
-                context: ContextObject = response.context
-                if reference_context_id:
-                    historical_context = await context_loader.load_context(user_id)
-                    historical_context.append(user_input)
-                    context = historical_context
+                saved_context = historical_context
+                if response.new_context:
+                    saved_context.extend(response.new_context)
                 logger.info(
                     "Saving context...",
-                    user_id = user_id,
+                    user_id = saved_user_id,
                 )
             await context_loader.save(
-                user_id = user_id,
-                context = context,
+                user_id = saved_user_id,
+                context = saved_context,
                 reduce_to_text = save_only_text,
             )
         else:
-            logger.warning("Context not saved", user_id = user_id)
+            logger.warning("Context not saved", user_id = saved_user_id)
 
         # 记录任务结束时间
         response.calling_log.task_end_time = Request_Log.TimeStamp()
@@ -774,11 +826,11 @@ class Core:
         await self.request_log.add_request_log(response.calling_log)
 
         # 记录API调用成功
-        logger.success(f"Task Finished!", user_id = user_id)
+        logger.success(f"Task Finished!", user_id = saved_user_id)
 
         # 返回模型输出内容
-        output.reasoning_content = response.context.last_content.reasoning_content
-        output.content = response.context.last_content.content
+        output.reasoning_content = response.new_context.last_content.reasoning_content
+        output.content = response.new_context.last_content.content
         output.create_time = response.created
         output.id = response.id
 
@@ -789,7 +841,7 @@ class Core:
     # endregion
     # region > 重新加载API信息
     async def reload_apiinfo(self):
-        await self.apiinfo.load_async(Path(ConfigManager.get_configs().api_info.api_file_path))
+        await self.model_api_manager.load_async(Path(ConfigManager.get_configs().model_api.api_file_path))
     # endregion
 
     # region > 加载指定API INFO文件
@@ -797,5 +849,5 @@ class Core:
         if not api_info_file_path.exists():
             logger.error(f"API INFO File not found: {api_info_file_path}")
             raise FileNotFoundError(f"File not found: {api_info_file_path}")
-        await self.apiinfo.load_async(api_info_file_path)
+        await self.model_api_manager.load_async(api_info_file_path)
     # endregion

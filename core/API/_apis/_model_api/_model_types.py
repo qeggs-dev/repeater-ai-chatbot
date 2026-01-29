@@ -1,5 +1,5 @@
 from ..._resource import Resource
-from ....ApiInfo import ModelType
+from ....Model_API import ModelType
 from fastapi.responses import ORJSONResponse
 from ._resources import MODEL_TYPES
 

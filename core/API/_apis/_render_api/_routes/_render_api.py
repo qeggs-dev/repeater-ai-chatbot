@@ -34,7 +34,6 @@ from .._responses import (
 delayed_tasks_pool = DelayedTasksPool()
 ExitHandler.add_function(delayed_tasks_pool.cancel_all())
 
-
 @Resource.app.post("/render/{user_id}")
 async def render(
     request: Request,
@@ -46,8 +45,18 @@ async def render(
     """
     start_time = time.monotonic_ns()
 
+    # 检查请求是否合法
     if not render_request.text:
         raise HTTPException(status_code=400, detail="text is required")
+    
+    if render_request.direct_output and not ConfigManager.get_configs().render.markdown.allow_direct_output:
+        raise HTTPException(status_code=400, detail="direct_output is not allowed")
+    
+    if render_request.style and not ConfigManager.get_configs().render.markdown.allow_custom_styles:
+        raise HTTPException(status_code=400, detail="custom style is not allowed")
+    
+    if render_request.html_template and not ConfigManager.get_configs().render.markdown.allow_custom_html_templates: 
+        raise HTTPException(status_code=400, detail="custom html_template is not allowed")
     
     # 生成图片ID
     fuuid = uuid4()
@@ -83,6 +92,12 @@ async def render(
     width = render_request.width if render_request.width is not None else ConfigManager.get_configs().render.to_image.width
     height = render_request.height if render_request.height is not None else ConfigManager.get_configs().render.to_image.height
     quality = render_request.quality if render_request.quality is not None else ConfigManager.get_configs().render.to_image.quality
+    no_pre_labels = ConfigManager.get_configs().render.markdown.no_pre_labels
+    if no_pre_labels is None:
+        no_pre_labels = render_request.no_pre_labels
+    no_escape = ConfigManager.get_configs().render.markdown.no_escape
+    if no_escape is None:
+        no_escape = render_request.no_escape
 
     # 读取HTML模板
     if render_request.html_template is not None:
@@ -107,11 +122,14 @@ async def render(
 
     # 调用生成HTML
     html = await markdown_to_html(
-        markdown_text = render_request.text,
+        input_text = render_request.text,
         html_template = html_template,
         width = width,
         title = title,
         css = css,
+        direct_output = render_request.direct_output,
+        no_escape = no_escape,
+        no_pre_labels = no_pre_labels,
         preprocess_map_before = preprocess_map_before,
         preprocess_map_after = preprocess_map_after,
     )

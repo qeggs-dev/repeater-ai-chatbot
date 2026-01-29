@@ -60,7 +60,7 @@
 项目中提供了模板展开系统
 用于对提示词模板和用户输入模板进行变量展开
 充分利用好模板展开器，可以实现很多有趣的功能
-详情请参阅：[模板展开系统](./docs/template_expansion_engine/main.md)
+详情请参阅：[模板展开系统](./template_expansion_engine/main.md)
 
 ---
 

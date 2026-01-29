@@ -101,10 +101,12 @@ class PromptVP:
     def __init__(self, indent: int | None = 4, mode: SerializationMode = SerializationMode.STR):
         self.variables: dict[str, str | Callable] = {}
         # 命中计数器
-        self.discovered_variable = 0
-        self.hit_variable = 0
-        self.indent = indent
-        self.mode = mode
+        self.discovered_variable: int = 0
+        self.hit_variable: int = 0
+        self.indent: int | types.NoneType = indent
+        self.mode: SerializationMode = mode
+        self.exception_handler: Callable[[str, Any, Exception], str] = lambda var_name, value, exception: f"[PromptVP Error | {var_name}]: {exception}"
+        self.escape_exception_handler: Callable[[Exception, str], str] = lambda var_name, exception: f"[PromptVP EscError | {var_name}]: {exception}"
 
     def register_variable(self, name: str, value: str | Callable):
         """注册变量"""
@@ -167,7 +169,7 @@ class PromptVP:
             try:
                 return escape_string(content)
             except Exception as e:
-                return f"[Escape Error: {str(e)}]"
+                return self.escape_exception_handler(e, content)
         
         return self._ESCAPE_BLOCK_PATTERN.sub(replacer, text)
 
@@ -189,7 +191,7 @@ class PromptVP:
                     try:
                         value = value(*var_args, **kwargs)
                     except Exception as e:
-                        return f"[Function Error: {str(e)}]"
+                        return self.exception_handler(var_name, value, e)
                 
                 # 检查值是否应该显示内容块
                 if self._should_display(value):
@@ -279,7 +281,7 @@ class PromptVP:
                 try:
                     return preserved_slashes + str(value(*args, **kwargs))
                 except Exception as e:
-                    return preserved_slashes + f"[PromptPV Error | {var_name}]: {e}"
+                    return preserved_slashes + self.exception_handler(var_name, value, e)
             else:
                 try:
                     if self.mode == SerializationMode.JSON:
