@@ -19,6 +19,7 @@ from TimeParser import (
     date_to_zodiac,
     format_timestamp,
     calculate_age,
+    calculate_precise_age
 )
 from uuid import uuid4
 from typing import Any
@@ -154,14 +155,28 @@ class PromptVP_Loader:
             user_age = user_info.age or "Unknown",
             user_gender = user_info.gender or "Unknown",
             user_info = user_info.model_dump(exclude_none=True),
-            birthday = f"{bot_birthday_year}-{bot_birthday_month}-{bot_birthday_day}",
-            zodiac = lambda **kw: date_to_zodiac(bot_birthday_month, bot_birthday_day),
+            bot_birthday = f"{bot_birthday_year}-{bot_birthday_month}-{bot_birthday_day}",
+            zodiac = lambda: date_to_zodiac(bot_birthday_month, bot_birthday_day),
             time = lambda time_format = "%Y-%m-%d(%A) %H:%M:%S %Z": format_timestamp(now, time_offset, time_format),
-            age = lambda **kw: calculate_age(bot_birthday_year, bot_birthday_month, bot_birthday_day, offset_timezone = time_offset),
+            age = lambda birthday_year = bot_birthday_year, birthday_month = bot_birthday_month, birthday_day = bot_birthday_day: calculate_age(
+                int(birthday_year),
+                int(birthday_month),
+                int(birthday_day),
+                offset_timezone = time_offset
+            ),
+            precise_age = lambda birthday_year, birthday_month, birthday_day, birthday_hour = None, birthday_minute = None, birthday_second = None: calculate_precise_age(
+                int(birthday_year),
+                int(birthday_month),
+                int(birthday_day),
+                int(birthday_hour) if birthday_hour is not None else None,
+                int(birthday_minute) if birthday_minute is not None else None,
+                int(birthday_second) if birthday_second is not None else None,
+                offset_timezone = time_offset
+            ),
             random = lambda min, max: random.randint(int(min), int(max)),
             randfloat = lambda min, max: random.uniform(float(min), float(max)),
             randchoice = lambda *args: random.choice(args),
-            generate_uuid = lambda **kw: uuid4(),
+            generate_uuid = lambda: uuid4(),
             copytext = lambda text, number, spacers = "": spacers.join([text] * int(number)),
             text_matrix = lambda text, columns, lines, spacers = " ", line_breaks = "\n": line_breaks.join(spacers.join([text] * int(columns)) for _ in range(int(lines))),
             random_matrix = lambda rows, cols: np.random.rand(int(rows), int(cols)),
