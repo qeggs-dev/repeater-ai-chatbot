@@ -1,6 +1,6 @@
 # Check Role Structure API
 
-检查上下文中的角色结构是否正确
+检查上下文中的角色结构是否符合 user - assistant 的结构
 
 - **`/userdata/context/structure_check/role/{user_id:str}`**
   - **Requset**
