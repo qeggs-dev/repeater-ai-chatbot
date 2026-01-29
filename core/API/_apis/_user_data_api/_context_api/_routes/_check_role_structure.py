@@ -41,13 +41,12 @@ async def check_role_structure(user_id: str):
     for index, content in enumerate(context.context_list):
         expected_role = role_rule[index % len(role_rule)]
         if content.role not in expected_role:
-            display_expected_role = [role.value for role in expected_role]
             return ORJSONResponse(
                 content = RoleStructureCheckerResponse(
-                    message = f"At index {index}, expected role is ({' or '.join(display_expected_role)}), but got {content.role.value}",
+                    message = f"At index {index}, expected role is ({' or '.join(role.value for role in expected_role)}), but got {content.role.value}",
                     index = index,
                     role = content.role.value,
-                    expected_role = display_expected_role,
+                    expected_role = expected_role,
                 ).model_dump(exclude_none=True),
                 status_code = 500
             )
