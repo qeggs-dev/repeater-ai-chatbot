@@ -1,6 +1,7 @@
 <center>
 
 # @复读机Repeater
+
 **- Only Chat, Focus Chat. -**
 
 [![Python 3.11+](https://img.shields.io/badge/Python-3.11+-blue.svg?logo=python)](https://www.python.org/downloads/) [![License: MIT](https://img.shields.io/badge/License-MIT-63b9ff.svg)](https://opensource.org/licenses/MIT) [![Model Protocol](https://img.shields.io/badge/Model%20Protocol-OpenAI%20Completions%20API-brightgreen.svg)](https://platform.openai.com/docs/overview)
@@ -26,6 +27,7 @@
 ---
 
 ## 注意事项:
+
  - 使用者需确认生成内容的合法性，并自行承担使用本服务可能产生的风险。
  - 如果你觉得这个Bot非常好用，请去看一下 [`Deepseek`](https://www.deepseek.com/) 的官网吧，这个Bot最初就是基于他们的模型API文档开发的。(OpenAI兼容就是省事啊~)
  - 机器人本体是免费的，开发者不承担使用时的API费用，还请注意。
@@ -33,11 +35,13 @@
 ---
 
 ## License
+
 这个项目基于[MIT License](LICENSE)发布。
 
 ---
 
 ### 依赖项:
+
 | Name              | Version  | License                              | License Link                                                                        | Where it is used                    | Reasons                               |
 |-------------------|----------|--------------------------------------|-------------------------------------------------------------------------------------|-------------------------------------|---------------------------------------|
 | Markdown          | 3.8.2    | BSD 3-Clause License                 | [BSD-3-Clause](https://github.com/Python-Markdown/markdown/blob/master/LICENSE.md)  | `Markdown`                          | Parses Markdown text into HTML        |
@@ -57,7 +61,7 @@
 | python-box        | 7.3.2    | MIT License                          | [MIT](https://github.com/cdgriffith/Box/blob/master/LICENSE)                        | `core.Global_Config_Manager`        | Mixed configuration files             |
 | tzdata            | 2025.2   | Apache Software License              | [Apache-2.0](https://github.com/python/tzdata/blob/master/LICENSE)                  | `core.Text_Template_Processer`      | Get timezone information              |
 
-具体依赖的License请查看[LICENSES.md](LICENSES.md)
+具体依赖的License请查看[LICENSES](./LICENSES/index.md)
 
 ---
 

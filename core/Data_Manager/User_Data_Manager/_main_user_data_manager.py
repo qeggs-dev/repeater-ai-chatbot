@@ -104,8 +104,9 @@ class UserDataManager(Generic[T]):
         default_value = self._get_default_value(default)
 
         logger.info(
-            "Loading [Branch:{src_branch_id}]",
+            "Loading [Branch:{base_name}/{user_id}/{src_branch_id}]",
             user_id = user_id,
+            base_name = self._base_name,
             src_branch_id = active_branch_id
         )
         
@@ -123,8 +124,9 @@ class UserDataManager(Generic[T]):
         active_branch_id = await self._get_active_branch_id(user_id)
 
         logger.info(
-            "Saving [Branch:{dst_branch_id}]",
+            "Saving [Branch:{base_name}/{user_id}/{dst_branch_id}]",
             user_id = user_id,
+            base_name = self._base_name,
             dst_branch_id = active_branch_id
         )
 
@@ -141,8 +143,9 @@ class UserDataManager(Generic[T]):
         active_branch_id = await self._get_active_branch_id(user_id)
 
         logger.info(
-            "Deleting [Branch:{dst_branch_id}]",
+            "Deleting [Branch:{base_name}/{user_id}/{dst_branch_id}]",
             user_id = user_id,
+            base_name = self._base_name,
             dst_branch_id = active_branch_id
         )
 
@@ -162,8 +165,9 @@ class UserDataManager(Generic[T]):
         default_value = self._get_default_value(default)
 
         logger.info(
-            "Cloning [Branch:{src_branch_id}] to [Branch:{dst_branch_id}]",
+            "Cloning [Branch:{base_name}/{user_id}/{src_branch_id}] to [Branch:{base_name}/{user_id}/{dst_branch_id}]",
             user_id = user_id,
+            base_name = self._base_name,
             src_branch_id = active_branch_id,
             dst_branch_id = dst_branch_id
         )
@@ -185,8 +189,9 @@ class UserDataManager(Generic[T]):
         default_value = self._get_default_value(default)
 
         logger.info(
-            "Cloning [Branch:{src_branch_id}] to [Branch:{dst_branch_id}]",
+            "Cloning [Branch:{base_name}/{user_id}/{src_branch_id}] to [Branch:{base_name}/{user_id}/{dst_branch_id}]",
             user_id = user_id,
+            base_name = self._base_name,
             src_branch_id = source_branch_id,
             dst_branch_id = active_branch_id
         )
@@ -207,23 +212,26 @@ class UserDataManager(Generic[T]):
         default_value = self._get_default_value(default)
 
         logger.info(
-            "Binding [Branch:{src_branch_id}] to [Branch:{dst_branch_id}]",
+            "Binding [Branch:{base_name}/{user_id}/{src_branch_id}] to [Branch:{base_name}/{user_id}/{dst_branch_id}]",
             user_id = user_id,
+            base_name = self._base_name,
             src_branch_id = active_branch_id,
             dst_branch_id = dst_branch_id
         )
 
         if not manager.exists(active_branch_id):
             logger.warning(
-                "{user_id} branch {src_branch_id} does not exist, creating...",
+                "[Branch:{base_name}/{user_id}/{src_branch_id}] does not exist, creating...",
                 user_id = user_id,
+                base_name = self._base_name,
                 src_branch_id = active_branch_id
             )
             await manager.save(active_branch_id, default_value)
         if manager.exists(dst_branch_id):
             logger.warning(
-                "{user_id} branch {dst_branch_id} already exists, deleting...",
+                "[Branch:{base_name}/{user_id}/{dst_branch_id}] already exists, deleting...",
                 user_id = user_id,
+                base_name = self._base_name,
                 dst_branch_id = dst_branch_id
             )
             await manager.delete(dst_branch_id)
@@ -245,23 +253,26 @@ class UserDataManager(Generic[T]):
         default_value = self._get_default_value(default)
 
         logger.info(
-            "Binding [Branch:{src_branch_id}] to [Branch:{branch_id}]...",
+            "Binding [Branch:{base_name}/{user_id}/{src_branch_id}] to [Branch:{base_name}/{user_id}/{branch_id}]...",
             user_id = user_id,
+            base_name = self._base_name,
             src_branch_id = src_branch_id,
             branch_id = active_branch_id
         )
 
         if not manager.exists(active_branch_id):
             logger.warning(
-                "[Branch:{src_branch_id}] does not exist, creating...",
+                "[Branch:{base_name}/{user_id}/{src_branch_id}] does not exist, creating...",
                 user_id = user_id,
+                base_name = self._base_name,
                 src_branch_id = src_branch_id
             )
             await manager.save(src_branch_id, default_value)
         if manager.exists(active_branch_id):
             logger.warning(
-                "[Branch:{dst_branch_id}] already exists, deleting...",
+                "[Branch:{base_name}/{user_id}/{dst_branch_id}] already exists, deleting...",
                 user_id = user_id,
+                base_name = self._base_name,
                 dst_branch_id = active_branch_id
             )
             await manager.delete(active_branch_id)
@@ -284,8 +295,9 @@ class UserDataManager(Generic[T]):
             metadata = {ConfigManager.get_configs().user_data.metadata_fields.branch_field: branch_id}
         
         logger.info(
-            "Set Active Branch to [Branch:{branch_id}]",
+            "Set Active Branch to [Branch:{base_name}/{user_id}/{branch_id}]",
             user_id = user_id,
+            base_name = self._base_name,
             dst_branch_id = branch_id,
             branch_id = branch_id
         )

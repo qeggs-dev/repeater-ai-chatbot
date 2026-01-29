@@ -55,7 +55,7 @@ class ConfigManager(UserConfigManager):
                 else:
                     config = await self._load_configs(user_id)
                     cache[user_id] = config
-                    logger.info("Get user config from database and save to cache", user_id = user_id)
+                    logger.info("Get user config from storage and save to cache", user_id = user_id)
                 
                 # 如果已有任务，先取消
                 if user_id in self._downgrade_tasks and not self._downgrade_tasks[user_id].done():

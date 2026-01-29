@@ -1,6 +1,7 @@
 from __future__ import annotations
 from pydantic import BaseModel, Field, ConfigDict
 from typing import overload, Iterable, Any
+from copy import deepcopy
 from .._exceptions import *
 from ._func_calling_objects import CallingFunctionResponse
 from ._content_role import ContentRole
@@ -402,6 +403,16 @@ class ContextObject(BaseModel):
         return ContextObject(
             prompt = self.prompt,
             context_list = self.context_list.copy(),
+        )
+    
+    def deepcopy(self) -> ContextObject:
+        """
+        深度复制对象
+        :return: 深度复制后的对象
+        """
+        return ContextObject(
+            prompt = deepcopy(self.prompt),
+            context_list = deepcopy(self.context_list),
         )
     
     @classmethod

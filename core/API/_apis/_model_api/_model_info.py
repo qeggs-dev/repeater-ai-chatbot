@@ -1,5 +1,5 @@
 from ..._resource import Resource
-from ....ApiInfo import ModelType
+from ....Model_API import ModelType
 from fastapi.responses import ORJSONResponse
 from fastapi import HTTPException
 from ._resources import MODEL_TYPES
@@ -11,7 +11,7 @@ async def model_info(model_type: str, model_uid: str):
             status_code=400,
             detail="Invalid model type."
         )
-    model_list = Resource.core.apiinfo.find(
+    model_list = Resource.core.model_api_manager.find_model(
         ModelType(model_type),
         model_uid
     )

@@ -143,16 +143,6 @@ class CallAPI(CallNstreamAPIBase):
                                 arguments = tool_call.function.arguments
                             else:
                                 arguments = ""
-                        
-                        # 添加调用函数信息
-                        model_response_content_unit.funcResponse.callingFunctionResponse.append(
-                            FunctionResponseUnit(
-                                id = id,
-                                type = type,
-                                name = name,
-                                arguments_str = arguments
-                            )
-                        )
         
         # 处理logprobs
         if hasattr(response.choices, "logprobs"):
@@ -206,8 +196,7 @@ class CallAPI(CallNstreamAPIBase):
         model_response.calling_log.cache_miss_count = model_response.token_usage.prompt_cache_miss_tokens
 
         # 添加上下文
-        model_response.context = request.context
-        model_response.context.context_list.append(model_response_content_unit)
+        model_response.historical_context = request.context
         model_response.new_context.append(model_response_content_unit)
 
         return model_response
