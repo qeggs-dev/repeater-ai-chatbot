@@ -6,9 +6,9 @@
 | `botname` | Bot名称 | 无 |
 | `age` | 年龄 | 出生年份(Optional[int]) <br/> 出生月份(Optional[int]) <br/> 出生日期(Optional[int]) |
 | `precise_age` | 精确年龄 | 出生年份(int) <br/> 出生月份(int) <br/> 出生日期(int) <br/> 出生小时(Optional[int]) <br/> 出生分钟(Optional[int]) <br/> 出生秒(Optional[int]) |
-| `birthday` | Bot生日 | 无 |
+| `bot_birthday` | Bot生日 | 无 |
 | `birthday_countdown` | 生日倒计时 | 生日月份(Optional[int]) <br/> 生日日期(Optional[int]) <br/> 寿星姓名(Optional[str]) <br/> 启用详细信息(Optional[bool]) |
-| `zodiac` | Bot星座 | 出生月份(Optional[int]) <br/> 出生日期(Optional[int]) |
+| `zodiac` | 星座 | 出生月份(Optional[int]) <br/> 出生日期(Optional[int]) |
 | `user_info` | 用户信息 | 无 |
 | `user_name` | 用户名 | 无 |
 | `nickname` | 用户昵称 | 无 |
