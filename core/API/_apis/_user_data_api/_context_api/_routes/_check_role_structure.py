@@ -47,11 +47,9 @@ async def check_role_structure(user_id: str):
                     index = index,
                     role = content.role.value,
                     expected_role = expected_role,
-                ).model_dump(exclude_none=True),
-                status_code = 500
+                ).model_dump(exclude_none=True)
             )
     
     return ORJSONResponse(
-        content = RoleStructureCheckerResponse().model_dump(exclude_none=True),
-        status_code = 200
+        content = RoleStructureCheckerResponse().model_dump(exclude_none=True)
     )
