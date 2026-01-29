@@ -156,7 +156,7 @@ class PromptVP_Loader:
             user_gender = user_info.gender or "Unknown",
             user_info = user_info.model_dump(exclude_none=True),
             bot_birthday = f"{bot_birthday_year}-{bot_birthday_month}-{bot_birthday_day}",
-            zodiac = lambda: date_to_zodiac(bot_birthday_month, bot_birthday_day),
+            zodiac = lambda birthday_month = bot_birthday_month, birthday_day = bot_birthday_day: date_to_zodiac(int(birthday_month), int(birthday_day)),
             time = lambda time_format = "%Y-%m-%d(%A) %H:%M:%S %Z": format_timestamp(now, time_offset, time_format),
             age = lambda birthday_year = bot_birthday_year, birthday_month = bot_birthday_month, birthday_day = bot_birthday_day: calculate_age(
                 int(birthday_year),
