@@ -24,9 +24,6 @@ from .Context_Manager import (
     ContextObject,
     ContentUnit,
     TextBlock,
-    ImageBlock,
-    AudioBlock,
-    FileBlock,
 )
 from . User_Config_Manager import (
     ConfigManager as UserConfigManager,
@@ -43,7 +40,7 @@ from .Assist_Struct import (
 from .Model_API import (
     ModelAPIManager,
     ModelType,
-    ModelAPIManager,
+    ModelAPI,
 )
 from . import Request_Log
 from TextProcessors import (
@@ -334,7 +331,7 @@ class Core:
     def _print_request_info(
             self,
             user_id: str,
-            api: ModelAPIManager,
+            api: ModelAPI,
             user_input: ContentUnit | None,
             user_info: Request_User_Info,
             role_name: str | None = None
@@ -361,27 +358,9 @@ class Core:
                         user_id = user_id
                     )
                 else:
-                    message_texts: list[str] = []
-                    for block in user_input.content:
-                        if isinstance(block, TextBlock):
-                            message_texts.append(block.text)
-                        elif isinstance(block, ImageBlock):
-                            message_texts.append(
-                                f"[Image: {self._text_content_cutter(block.image_url.url)}]"
-                            )
-                        elif isinstance(block, AudioBlock):
-                            message_texts.append(
-                                f"[Audio: {self._text_content_cutter(block.input_audio.data)}]"
-                            )
-                        elif isinstance(block, FileBlock):
-                            message_texts.append(
-                                f"[File: {self._text_content_cutter(block.file.filename)}]"
-                            )
-                        else:
-                            message_texts.append(f"[Unknown Block: {block}]")
                     logger.info(
                         "Message:\n{message}",
-                        message = "\n".join(message_texts),
+                        message = user_input.content_to_string(ConfigManager.get_configs().context.max_log_length_for_non_text_content),
                         user_id = user_id
                     )
             else:
@@ -506,7 +485,7 @@ class Core:
                 # 获取配置
                 config = await self.get_config(user_id)
                 
-                if cross_user_data_routing is not None:
+                if not cross_user_data_routing:
                     if config.cross_user_data_access:
                         logger.warning("Cross user data flow is not allowed.", user_id = user_id)
                         cross_user_data_routing = None
@@ -789,15 +768,20 @@ class Core:
 
         # 展开模型输出内容中的变量
         for index in range(len(response.new_context.context_list)):
-            response.new_context.context_list[index] = ContentUnit(
-                reasoning_content = prompt_vp.process(
-                    response.new_context.context_list[index].reasoning_content
-                ),
-                content = prompt_vp.process(
-                    text = response.new_context.context_list[index].content,
+            content_unit = response.new_context.context_list[index]
+            content = content_unit.content
+            if isinstance(content, str):
+                content = prompt_vp.process(content)
+                content_unit.content = content
+            else:
+                content = content_unit.to_plaintext_content()
+                content = prompt_vp.process(content)
+                content_unit.remove_context_block(TextBlock)
+                content_unit.content.append(
+                    TextBlock(content)
                 )
-            )
-
+            content_unit.reasoning_content = prompt_vp.process(content_unit.reasoning_content)
+        
         # 记录Prompt_vp的命中情况
         logger.info(f"Prompt Hits Variable: {prompt_vp.hit_var()}/{prompt_vp.discover_var()}({prompt_vp.hit_var() / prompt_vp.discover_var() if prompt_vp.discover_var() != 0 else 0:.2%})", user_id = saved_user_id)
 
