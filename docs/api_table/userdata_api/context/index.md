@@ -13,7 +13,7 @@
   - [Delete Context API](./delete/delete.md)
 
 ## 检查上下文
-  - [Role Structure Check API](./check/role_structure_check.md)
+  - [Check Role Structure API](./check/check_role_structure.md)
 
  ## 分支管理
   - [Get Context Branch List API](./branch/branchs.md)
