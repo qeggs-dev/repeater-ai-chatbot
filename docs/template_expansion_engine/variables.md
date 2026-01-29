@@ -3,13 +3,12 @@
 | 变量 | 描述 | 参数 |
 | :---: | :---: | :---: |
 | `user_id` | 用户ID | 无 |
+| `botname` | Bot名称 | 无 |
 | `age` | 年龄 | 出生年份(Optional[int])， 出生月份(Optional[int]), 出生日期(Optional[int]) |
 | `precise_age` | 精确年龄 | 出生年份(int)， 出生月份(int), 出生日期(int)， 出生小时(Optional[int]), 出生分钟(Optional[int])，出生秒(Optional[int]) |
-| `time` | 当前时间 | 格式字符串(str) |
 | `birthday` | Bot生日 | 无 |
-| `zodiac` | Bot星座 | 出生月份(Optional[int]), 出生日期(Optional[int]) |
 | `birthday_countdown` | 生日倒计时 | 生日月份(int), 生日日期(int), 寿星姓名(str), 启用详细信息(bool) |
-| `botname` | Bot名称 | 无 |
+| `zodiac` | Bot星座 | 出生月份(Optional[int]), 出生日期(Optional[int]) |
 | `user_info` | 用户信息 | 无 |
 | `user_name` | 用户名 | 无 |
 | `nickname` | 用户昵称 | 无 |
@@ -21,6 +20,7 @@
 | `user_gender` | 用户性别 | 无 |
 | `user_profile` | 用户资料 | 无 |
 | `generate_uuid` | 生成UUID | 无 |
+| `time` | 当前时间 | 格式字符串(str) |
 | `reprs` | 显示对象的字符串表示 | 任何内容(*Any) |
 | `random` | 随机数 | 随机数下限(int)，随机数上下限(int) |
 | `randfloat` | 随机浮点数 | 随机数下限(float)，随机数上下限(float) |
