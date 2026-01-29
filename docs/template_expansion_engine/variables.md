@@ -10,14 +10,14 @@
 | `birthday_countdown` | 生日倒计时 | 生日月份(Optional[int]) <br/> 生日日期(Optional[int]) <br/> 寿星姓名(Optional[str]) <br/> 启用详细信息(Optional[bool]) |
 | `zodiac` | 星座 | 出生月份(Optional[int]) <br/> 出生日期(Optional[int]) |
 | `user_info` | 用户信息 | 无 |
-| `user_name` | 用户名 | 无 |
+| `username` | 用户名 | 无 |
 | `nickname` | 用户昵称 | 无 |
 | `user_age` | 用户年龄 | 无 |
+| `user_gender` | 用户性别 | 无 |
 | `model_uid` | 模型UID | 无 |
 | `model_name` | 模型名称 | 无 |
 | `model_type` | 模型类型 | 无 |
 | `model_group` | 模型组 | 无 |
-| `user_gender` | 用户性别 | 无 |
 | `user_profile` | 用户资料 | 无 |
 | `generate_uuid` | 生成UUID | 无 |
 | `time` | 当前时间 | 格式字符串(Optional[str]) |
