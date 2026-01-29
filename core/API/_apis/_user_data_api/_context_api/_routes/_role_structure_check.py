@@ -6,13 +6,7 @@ from fastapi.responses import (
     ORJSONResponse
 )
 from loguru import logger
-from pydantic import BaseModel
-
-class RoleStructureCheckerResponse(BaseModel):
-    message: str = "No role structure error found"
-    index: int = -1
-    role: ContentRole | None = None
-    expected_role: ContentRole | None = None
+from .._responses import RoleStructureCheckerResponse
 
 @Resource.app.get("/userdata/context/structure_check/role/{user_id}")
 async def role_structure_check(user_id: str):
