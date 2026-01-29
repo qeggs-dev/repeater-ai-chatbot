@@ -9,7 +9,7 @@ from loguru import logger
 from .._responses import RoleStructureCheckerResponse
 
 @Resource.app.get("/userdata/context/structure_check/role/{user_id}")
-async def role_structure_check(user_id: str):
+async def check_role_structure(user_id: str):
     """
     Endpoint to check the role structure error of a user's context.
 
@@ -24,7 +24,7 @@ async def role_structure_check(user_id: str):
     context = await context_loader.load_context(user_id)
     
     logger.info(
-        "Getting role structure error",
+        "Checking role structure error",
         user_id = user_id,
     )
 
