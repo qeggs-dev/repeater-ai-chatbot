@@ -1,6 +1,6 @@
 # Third-Party Licenses
 
-This project is released under the [MIT](LICENSE) License.
+This project is released under the [MIT](./../LICENSE) License.
 
 This project includes the following third-party software components, licensed under their respective licenses:
 
