@@ -4,13 +4,13 @@ from loguru import logger
 from pathlib import Path
 from typing import Generator
 
-from ..Global_Config_Manager import Licenses_Config
+from ..Global_Config_Manager import LicensesConfig
 
 class LicenseLoader:
     """
     A class for loading licenses from a file.
     """
-    def __init__(self, licenses_config: Licenses_Config) -> None:
+    def __init__(self, licenses_config: LicensesConfig) -> None:
         """
         Initialize the class.
 

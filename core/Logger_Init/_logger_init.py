@@ -3,9 +3,9 @@ import logging
 from pathlib import Path
 from loguru import logger
 from ._intercept_handler import InterceptHandler
-from ..Global_Config_Manager import Logger_Config
+from ..Global_Config_Manager import LoggerConfig
 
-def logger_init(config: Logger_Config):
+def logger_init(config: LoggerConfig):
     logging.root.handlers = [InterceptHandler()]
     logging.root.setLevel(logging.INFO)
 
