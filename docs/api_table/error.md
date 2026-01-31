@@ -10,6 +10,8 @@
 
 - `error_message` 错误消息，该字段由配置定义，不包含什么详细信息
 - `error_code` 错误码，通常为 `500`
+- `timestamp_ns` 错误发生的时间，单位为纳秒
+- `unix_timestamp` 错误发生的时间，单位为秒
 - `source_exception` 源异常名称，比如 `ValueError`、`TypeError` 等
 - `exception_message` 源异常消息，比如 `invalid literal for int() with base 10: 'abc'`
 - `exception_traceback` 源异常的调用栈，通常该字段为隐藏状态，可以通过配置的方式启用
