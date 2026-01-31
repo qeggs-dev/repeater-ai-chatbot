@@ -7,7 +7,6 @@ class GlobalExceptionHandlerConfig(BaseModel):
 
     error_message: str = "Internal Server Error"
     critical_error_message: str = "Critical Server Error!"
-    timeformat: str = "%Y-%m-%d %H:%M:%S"
     crash_exit: bool = True
     traceback_save_to: str | None = None
     record_all_exceptions: bool = False

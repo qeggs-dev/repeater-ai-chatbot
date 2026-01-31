@@ -4,6 +4,7 @@ class Repeater_Traceback_Config(BaseModel):
     model_config = ConfigDict(case_sensitive=False)
 
     enable: bool = True
+    timeformat: str = "%Y-%m-%d %H:%M:%S"
     exclude_library_code: bool = True
     format_validation_error: bool = True
     record_warnings: bool = True
