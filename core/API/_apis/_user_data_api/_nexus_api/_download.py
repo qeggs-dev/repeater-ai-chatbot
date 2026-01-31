@@ -3,6 +3,7 @@ from pydantic import BaseModel
 
 from ...._resource import Resource
 from .._user_data_type import UserDataType, get_manager
+from .....Nexus_Client import InvalidUUIDError
 
 class DownloadRequest(BaseModel):
     id: str
@@ -10,7 +11,15 @@ class DownloadRequest(BaseModel):
 @Resource.app.post("/nexus/download/{user_id}/{user_data_type}")
 async def download_nexus(user_id: str, user_data_type: UserDataType, request: DownloadRequest):
     manager = get_manager(user_data_type)
-    response = await Resource.nexus_client.download(user_data_type.value, request.id)
+    try:
+        response = await Resource.nexus_client.download(user_data_type.value, request.id)
+    except InvalidUUIDError as e:
+        return ORJSONResponse(
+            content={
+                "message": "Invalid UUID",
+                "nexus_message": str(e)
+            }
+        )
     if response.code != 200:
         return ORJSONResponse(
             content={

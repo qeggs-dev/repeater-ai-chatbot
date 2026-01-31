@@ -3,6 +3,7 @@ from pydantic import BaseModel
 
 from ...._resource import Resource
 from .._user_data_type import UserDataType, get_manager
+from .....Nexus_Client import InvalidUUIDError
 
 class UploadRequest(BaseModel):
     timeout: int | None = None
@@ -11,11 +12,20 @@ class UploadRequest(BaseModel):
 async def upload_nexus(user_id: str, user_data_type: UserDataType, request: UploadRequest):
     manager = get_manager(user_data_type)
     data = await manager.load(user_id)
-    response = await Resource.nexus_client.submit(
-        data,
-        user_data_type.value,
-        request.timeout
-    )
+    try:
+        response = await Resource.nexus_client.submit(
+            data,
+            user_data_type.value,
+            request.timeout
+        )
+    except InvalidUUIDError as e:
+        return ORJSONResponse(
+            content={
+                "message": "Invalid uuid",
+                "nexus_message": str(e)
+            },
+            status_code = 400
+        )
     if 500 <= response.code < 600:
         ORJSONResponse(
             content={
