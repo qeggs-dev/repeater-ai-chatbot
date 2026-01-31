@@ -1,6 +1,6 @@
 from pydantic import BaseModel, ConfigDict
 
-class Prompt_Config(BaseModel):
+class PromptConfig(BaseModel):
     model_config = ConfigDict(case_sensitive=False)
 
     dir: str = "./configs/prompt/presets"

@@ -1,6 +1,6 @@
 from pydantic import BaseModel, ConfigDict
 
-class Server_Config(BaseModel):
+class ServerConfig(BaseModel):
     model_config = ConfigDict(case_sensitive=False)
 
     host: str | None = None

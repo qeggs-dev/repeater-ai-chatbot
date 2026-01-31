@@ -1,6 +1,6 @@
 from pydantic import BaseModel, ConfigDict
 
-class Static_Config(BaseModel):
+class StaticConfig(BaseModel):
     model_config = ConfigDict(case_sensitive=False)
 
     readme_file_path: str = "./README.md"

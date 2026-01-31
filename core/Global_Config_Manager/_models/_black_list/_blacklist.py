@@ -1,7 +1,7 @@
 from pydantic import BaseModel, ConfigDict
 
 
-class Backlist_Config(BaseModel):
+class BacklistConfig(BaseModel):
     model_config = ConfigDict(case_sensitive=False)
 
     file_path: str = "./configs/blacklist.regex"

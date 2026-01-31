@@ -2,7 +2,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from ._code_reader import Code_Reader_Config
 from ._repeater_traceback import Repeater_Traceback_Config
 
-class Global_Exception_Handler_Config(BaseModel):
+class GlobalExceptionHandlerConfig(BaseModel):
     model_config = ConfigDict(case_sensitive=False)
 
     error_message: str = "Internal Server Error"

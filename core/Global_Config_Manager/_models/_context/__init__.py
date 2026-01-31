@@ -1,5 +1,5 @@
-from ._context import Context_Config
+from ._context import ContextConfig
 
 __all__ = [
-    "Context_Config"
+    "ContextConfig"
 ]

@@ -1,5 +1,5 @@
-from ._web import Web_Config
+from ._web import WebConfig
 
 __all__ = [
-    "Web_Config"
+    "WebConfig"
 ]

@@ -2,7 +2,7 @@ from pydantic import BaseModel, ConfigDict, Field
 from ._cache_data import Cache_Data_Config
 from ._metadata_fields import MetadataFields
 
-class User_Data_Config(BaseModel):
+class UserDataConfig(BaseModel):
     model_config = ConfigDict(case_sensitive=False)
 
     dir: str = "./workspace/data/user_data"

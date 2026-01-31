@@ -1,5 +1,5 @@
-from ._callapi import CallAPI_Config
+from ._callapi import CallAPIConfig
 
 __all__ = [
-    "CallAPI_Config"
+    "CallAPIConfig"
 ]

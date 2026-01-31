@@ -1,5 +1,5 @@
-from ._user_nickname_mapping import User_Nickname_Mapping_Config
+from ._user_nickname_mapping import UserNicknameMappingConfig
 
 __all__ = [
-    "User_Nickname_Mapping_Config",
+    "UserNicknameMappingConfig",
 ]
