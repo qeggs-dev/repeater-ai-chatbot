@@ -28,7 +28,7 @@ async def exception_handler(error: BaseException) -> None:
     if ConfigManager.get_configs().global_exception_handler.repeater_traceback.enable:
         traceback_str = await format_traceback(
             time.strftime(
-                ConfigManager.get_configs().global_exception_handler.timeformat,
+                ConfigManager.get_configs().global_exception_handler.repeater_traceback.timeformat,
                 time.localtime(error_time / 1e9)
             ),
             ConfigManager.get_configs().global_exception_handler.repeater_traceback.exclude_library_code,
