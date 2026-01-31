@@ -8,6 +8,11 @@ from .....Nexus_Client import InvalidUUIDError
 class UploadRequest(BaseModel):
     timeout: int | None = None
 
+class UploadResponse(BaseModel):
+    message: str = ""
+    nexus_message: str = ""
+    file_uuid: str | None = None
+
 @Resource.app.post("/nexus/upload/{user_id}/{user_data_type}")
 async def upload_nexus(user_id: str, user_data_type: UserDataType, request: UploadRequest):
     manager = get_manager(user_data_type)
@@ -20,35 +25,36 @@ async def upload_nexus(user_id: str, user_data_type: UserDataType, request: Uplo
         )
     except InvalidUUIDError as e:
         return ORJSONResponse(
-            content={
-                "message": "Invalid uuid",
-                "nexus_message": str(e)
-            },
+            content=UploadResponse(
+                message = "Invalid uuid",
+                nexus_message = str(e)
+            ).model_dump(exclude_none=True),
             status_code = 400
         )
     if 500 <= response.code < 600:
-        ORJSONResponse(
-            content={
-                "message": "Nexus server error",
-                "nexus_message": response.content
-            },
+        return ORJSONResponse(
+            content=UploadResponse(
+                message = "Nexus server error",
+                nexus_message = response.content
+            ).model_dump(exclude_none=True),
             status_code = 502
         )
     if response.code == 200:
         data = response.data()
         if data is None:
             return ORJSONResponse(
-                content={
-                    "message": "Nexus response error",
-                    "nexus_message": response.content
-                },
+                content=UploadResponse(
+                    message = "Nexus response error",
+                    nexus_message = response.content
+                ).model_dump(exclude_none=True),
                 status_code = 502
             )
         else:
             return ORJSONResponse(
-                content={
-                    "message": "Success",
-                    "nexus_message": response.content
-                },
+                content = UploadResponse(
+                    file_uuid = data.file_uuid,
+                    message = "File uploaded",
+                    nexus_message = response.content
+                ).model_dump(exclude_none=True),
                 status_code = 200
             )
