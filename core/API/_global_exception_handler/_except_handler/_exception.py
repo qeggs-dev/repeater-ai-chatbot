@@ -27,6 +27,10 @@ async def exception_handler(error: BaseException) -> None:
 
     if ConfigManager.get_configs().global_exception_handler.repeater_traceback.enable:
         traceback_str = await format_traceback(
+            time.strftime(
+                ConfigManager.get_configs().global_exception_handler.timeformat,
+                time.localtime(error_time / 1e9)
+            ),
             ConfigManager.get_configs().global_exception_handler.repeater_traceback.exclude_library_code,
             ConfigManager.get_configs().global_exception_handler.code_reader.enable,
             ConfigManager.get_configs().global_exception_handler.repeater_traceback.traditional_stack_frame,
@@ -74,6 +78,8 @@ async def exception_handler(error: BaseException) -> None:
     
     error_response = ErrorResponse(
         error_code = 500,
+        timestamp_ns = error_time,
+        unix_timestamp = error_time // 1_000_000_000,
         source_exception = type(error).__name__,
         exception_message = str(error)
     )
