@@ -57,7 +57,7 @@ def format_stack_frame(frames: traceback.StackSummary, exclude_library: bool = F
         yield f"        {indented_locals}"
 
 
-async def format_traceback(exclude_library: bool = False, enable_code_reader: bool = False, traditional_stack_frame: bool = False):
+async def format_traceback(time_str: str, exclude_library: bool = False, enable_code_reader: bool = False, traditional_stack_frame: bool = False):
     exc_type, exc_value, exc_traceback = sys.exc_info()
     frames = traceback.extract_tb(exc_traceback)
     last_frame = frames[-1]
@@ -100,6 +100,8 @@ async def format_traceback(exclude_library: bool = False, enable_code_reader: bo
     
     format_text = (
         f"{error_name}\n"
+        "    - Time:\n"
+        f"        {time_str}\n"
         "    - Depth of stack frame:\n"
         f"        {total_frame_depth}\n"
         "    - Raised from:\n"
