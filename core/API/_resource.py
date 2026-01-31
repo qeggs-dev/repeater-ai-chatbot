@@ -55,6 +55,7 @@ class Resource:
     def init_all(cls):
         cls.init_logger()
         cls.init_core()
+        cls.init_nexus_client()
         cls.init_licenses_data()
         cls.init_admin_key_manager()
         cls.init_browser_pool_manager()
@@ -84,7 +85,7 @@ class Resource:
     def init_nexus_client(cls):
         cls.nexus_client = NexusClient(
             base_url = ConfigManager.get_configs().nexus.base_url,
-            request_timeout = ConfigManager.get_configs().nexus.request_timeout,
+            request_timeout = ConfigManager.get_configs().nexus.api_timeout,
         )
 
     @classmethod
