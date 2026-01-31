@@ -36,6 +36,7 @@ async def download_nexus(user_id: str, user_data_type: UserDataType, request: Do
         )
     
     data = response.data()
+    
     if data is None:
         return ORJSONResponse(
             content = DownloadResponse(
