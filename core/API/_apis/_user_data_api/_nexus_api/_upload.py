@@ -19,8 +19,8 @@ async def upload_nexus(user_id: str, user_data_type: UserDataType, request: Uplo
     data = await manager.load(user_id)
     try:
         response = await Resource.nexus_client.submit(
-            data,
             user_data_type.value,
+            data,
             request.timeout
         )
     except InvalidUUIDError as e:
@@ -31,14 +31,7 @@ async def upload_nexus(user_id: str, user_data_type: UserDataType, request: Uplo
             ).model_dump(exclude_none=True),
             status_code = 400
         )
-    if 500 <= response.code < 600:
-        return ORJSONResponse(
-            content=UploadResponse(
-                message = "Nexus server error",
-                nexus_message = response.content
-            ).model_dump(exclude_none=True),
-            status_code = 502
-        )
+
     if response.code == 200:
         data = response.data()
         if data is None:
@@ -58,3 +51,11 @@ async def upload_nexus(user_id: str, user_data_type: UserDataType, request: Uplo
                 ).model_dump(exclude_none=True),
                 status_code = 200
             )
+    else:
+        return ORJSONResponse(
+            content=UploadResponse(
+                message = "Nexus server error",
+                nexus_message = response.content
+            ).model_dump(exclude_none=True),
+            status_code = 500
+        )

@@ -32,6 +32,7 @@ async def download_nexus(user_id: str, user_data_type: UserDataType, request: Do
                 message = "Nexus server error",
                 nexus_message = response.content
             ).model_dump(),
+            status_code = 500
         )
     
     data = response.data()
