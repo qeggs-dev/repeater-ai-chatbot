@@ -1,7 +1,8 @@
 import orjson
 
 from typing import (
-    AsyncGenerator
+    AsyncGenerator,
+    Any,
 )
 from uuid import UUID
 
@@ -32,7 +33,7 @@ class NexusClient:
         except ValueError as e:
             raise InvalidUUIDError(f"{uuid} is not a valid UUID") from e
     
-    async def submit(self, pool: str, content: str, timeout: int | None = None) -> NexusResponse[SubmitResponse]:
+    async def submit(self, pool: str, content: Any, timeout: int | None = None) -> NexusResponse[SubmitResponse]:
         response = await self._client.post(
             f"/api/{pool}/submit/json",
             data = {
@@ -55,9 +56,13 @@ class NexusClient:
             model = DownloadResponse
         )
     
-    async def update(self, pool: str, file_uuid: str) -> NexusResponse[UpdateResponse]:
+    async def update(self, pool: str, file_uuid: str, content: Any, timeout: int | None = None) -> NexusResponse[UpdateResponse]:
         response = await self._client.put(
-            f"/api/{pool}/files/{self._check_uuid(file_uuid)}/update"
+            f"/api/{pool}/files/{self._check_uuid(file_uuid)}/update",
+            json = {
+                "content": content,
+                "timeout": timeout
+            }
         )
         return NexusResponse(
             response = response,
