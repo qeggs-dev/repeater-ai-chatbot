@@ -34,9 +34,13 @@ class NexusClient:
             raise InvalidUUIDError(f"{uuid} is not a valid UUID") from e
     
     async def submit(self, pool: str, content: Any, timeout: int | None = None) -> NexusResponse[SubmitResponse]:
+        logger.info(
+            "Submitting content to pool {pool}",
+            pool = pool
+        )
         response = await self._client.post(
             f"/api/{pool}/submit/json",
-            data = {
+            json = {
                 "content": content,
                 "timeout": timeout
             }
@@ -47,6 +51,11 @@ class NexusClient:
         )
     
     async def download(self, pool: str, file_uuid: str) -> NexusResponse[DownloadResponse]:
+        logger.info(
+            "Downloading file {file_uuid} from pool {pool}",
+            file_uuid = file_uuid,
+            pool = pool
+        )
         response = await self._client.get(
             f"/api/{pool}/files/{self._check_uuid(file_uuid)}/download/json"
         )
@@ -57,6 +66,11 @@ class NexusClient:
         )
     
     async def update(self, pool: str, file_uuid: str, content: Any, timeout: int | None = None) -> NexusResponse[UpdateResponse]:
+        logger.info(
+            "Updating file {file_uuid} in pool {pool}",
+            file_uuid = file_uuid,
+            pool = pool
+        )
         response = await self._client.put(
             f"/api/{pool}/files/{self._check_uuid(file_uuid)}/update",
             json = {
@@ -70,6 +84,10 @@ class NexusClient:
         )
     
     async def list(self, pool: str) -> AsyncGenerator[str, None]:
+        logger.info(
+            "Listing files in pool {pool}",
+            pool = pool
+        )
         response = await self._client.get(
             f"/api/{pool}/files/list/json"
         )
@@ -93,6 +111,11 @@ class NexusClient:
                 )
     
     async def remove(self, pool: str, file_uuid: str) -> NexusResponse[RemoveResponse]:
+        logger.info(
+            "Removing file {file_uuid} from pool {pool}",
+            file_uuid = file_uuid,
+            pool = pool
+        )
         response = await self._client.delete(
             f"/api/{pool}/files/{self._check_uuid(file_uuid)}/remove"
         )
