@@ -287,6 +287,16 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
         "case_sensitive": false
     },
 
+    // Nexus Client 配置
+    "nexus": {
+
+        // Nexus Client 的服务器 URL
+        "base_url": "",
+
+        // Nexus Client 的请求超时时间
+        "api_timeout": 60
+    }
+
     // template 提示词文本模板展开器配置
     // 注：此选项不会改变实际的其他系统内容，而只会改变模板展开器中的变量
     "prompt_template": {
