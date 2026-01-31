@@ -14,6 +14,9 @@ Repeater 提供了许多接口，
 ## User Data API
   - [User Data API](./userdata_api/index.md)
 
+## Nexus API
+  - [Nexus API](./nexus_api/index.md)
+
 ## Admin API
   - [Admin API](./admin_api/index.md)
 
