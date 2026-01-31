@@ -168,6 +168,9 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
             // 是否启用
             "enable": false,
 
+            // 在 Traceback 中格式化时间使用的格式
+            "timeformat": "YYYY-MM-DD HH:mm:ss",
+
             // 是否排除库函数的 Traceback
             "exclude_library_code": true,
         
