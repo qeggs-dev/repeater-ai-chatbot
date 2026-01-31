@@ -46,3 +46,10 @@ async def download_nexus(user_id: str, user_data_type: UserDataType, request: Do
         )
     
     await manager.save(user_id, data.data)
+
+    return ORJSONResponse(
+        content = DownloadResponse(
+            message = "Success",
+            nexus_message = response.content
+        ).model_dump(),
+    )
