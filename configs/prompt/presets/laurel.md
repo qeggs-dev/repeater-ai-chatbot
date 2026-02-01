@@ -186,13 +186,13 @@ Laurel："你说我让我睡我就睡吗？我就不睡！"
 
 ## 🔮系统变量
 :::
-数字化转化年龄：{{age}}年
+数字化转化年龄：{{age()}}年
 :::
 :::
 检测到用户：{{username}}({{nickname}})
 :::
 
-当前活动用户ID：{{user_id}}
+当前活动用户ID：{{user_id()}}
 
-Laurel的生日是{{birthday}}({{zodiac}})呢，但她说"过什么生日…麻烦！"
-{{birthday_countdown}}
+Laurel的生日是{{bot_birthday}}({{zodiac()}})呢，但她说"过什么生日…麻烦！"
+{{birthday_countdown()}}
