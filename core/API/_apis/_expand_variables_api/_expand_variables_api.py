@@ -37,9 +37,3 @@ async def expand_variables(user_id: str, request: ExpandVariableRequest):
             output,
             status_code = 400
         )
-    except Exception as e:
-        output = str(e)
-        return PlainTextResponse(
-            output,
-            status_code = 500
-        )
