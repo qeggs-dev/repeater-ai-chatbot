@@ -1,4 +1,4 @@
-# API_INFO 模型配置文件
+# Model API 模型配置文件
 
 此配置用于告诉 Repeater 有哪些可用模型
 它们的 API Key 在哪里
