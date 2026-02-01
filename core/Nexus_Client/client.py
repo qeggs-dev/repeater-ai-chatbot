@@ -35,7 +35,7 @@ class NexusClient:
     
     async def submit(self, pool: str, content: Any, timeout: int | None = None) -> NexusResponse[SubmitResponse]:
         logger.info(
-            "Submitting content to pool {pool}",
+            "Submitting content to {pool}",
             pool = pool
         )
         response = await self._client.post(
@@ -52,7 +52,7 @@ class NexusClient:
     
     async def download(self, pool: str, file_uuid: str) -> NexusResponse[DownloadResponse]:
         logger.info(
-            "Downloading file {file_uuid} from pool {pool}",
+            "Downloading file {file_uuid} from {pool}",
             file_uuid = file_uuid,
             pool = pool
         )
@@ -67,7 +67,7 @@ class NexusClient:
     
     async def update(self, pool: str, file_uuid: str, content: Any, timeout: int | None = None) -> NexusResponse[UpdateResponse]:
         logger.info(
-            "Updating file {file_uuid} in pool {pool}",
+            "Updating file {file_uuid} in {pool}",
             file_uuid = file_uuid,
             pool = pool
         )
@@ -83,13 +83,28 @@ class NexusClient:
             model = UpdateResponse
         )
     
-    async def list(self, pool: str) -> AsyncGenerator[str, None]:
+    async def list(self, pool: str) -> list[str]:
         logger.info(
-            "Listing files in pool {pool}",
+            "Listing files in {pool}",
             pool = pool
         )
         response = await self._client.get(
-            f"/api/{pool}/files/list/json"
+            f"/api/{pool}/list"
+        )
+        data = response.json()
+        if not isinstance(data, list):
+            raise ResponseTypeError(
+                "Invalid response from server"
+            )
+        return data
+    
+    async def list_stream(self, pool: str) -> AsyncGenerator[str, None]:
+        logger.info(
+            "Listing files in {pool}",
+            pool = pool
+        )
+        response = await self._client.get(
+            f"/api/{pool}/list/stream"
         )
         async for line in response.aiter_lines():
             try:
@@ -112,7 +127,7 @@ class NexusClient:
     
     async def remove(self, pool: str, file_uuid: str) -> NexusResponse[RemoveResponse]:
         logger.info(
-            "Removing file {file_uuid} from pool {pool}",
+            "Removing file {file_uuid} from {pool}",
             file_uuid = file_uuid,
             pool = pool
         )
