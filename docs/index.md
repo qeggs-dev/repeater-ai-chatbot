@@ -13,7 +13,7 @@
 ## 配置文件
 
 - [Main Config](./configs/main.md)
-- [API_INFO](./configs/api_info.md)
+- [Model API](./configs/model_api.md)
 - [Blacklist](./configs/blacklist.md)
 - [User_Nickname_Mapping](./configs/uer_nickname_mapping.md)
 
