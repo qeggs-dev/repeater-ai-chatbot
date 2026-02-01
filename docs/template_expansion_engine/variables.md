@@ -1,7 +1,7 @@
 # 模板变量表
 
 | 变量 | 类型 | 描述 | 参数 |
-| :---: | :---: | :---: | :---: |
+| --- | :---: | :---: | :---: |
 | `version` | 字面量 | 版本 | 无 |
 | `user_id` | 字面量 | 用户ID | 无 |
 | `botname` | 字面量 | Bot名称 | 无 |
@@ -31,3 +31,5 @@
 | `random_matrix` | 函数 | 0~1随机矩阵 | 矩阵行数(int) <br/> 矩阵列数(int) |
 | `date_countdown` | 函数 | 日期倒计时 | 目标月份(int) <br/> 目标日期(int) <br/> 日期名称(str) <br/> 启用详细信息(Optional[bool]) |
 | `user_configs` | 函数 | 用户配置 | 缩进(Optional[int]) <br/> 转义为ANSI(Optional[bool]) |
+
+函数变量需要在后面加括号，无论是否传参
