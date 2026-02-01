@@ -6,3 +6,7 @@ class NexusException(Exception):
 class InvalidUUIDError(NexusException):
     """Raised when a file UUID is invalid."""
     pass
+
+class ResponseTypeError(NexusException):
+    """Raised when a response type is invalid."""
+    pass
