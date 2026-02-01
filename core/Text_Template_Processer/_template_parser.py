@@ -5,11 +5,12 @@ import numpy as np
 from ..Global_Config_Manager import Global_Config
 from ..User_Config_Manager import UserConfigs
 from ..Assist_Struct import Request_User_Info
-from TextProcessors import PromptVP, str_to_bool
 from .._info import __version__
-from ._value_comparison import value_comparison, ComparisonOperator
 from ..Model_API import ModelAPI
-
+from jinja2 import Template
+from TextProcessors import (
+    escape_string
+)
 from loguru import logger
 from datetime import datetime, timedelta
 from TimeParser import (
@@ -24,48 +25,39 @@ from TimeParser import (
 from uuid import uuid4
 from typing import Any
 
-class PromptVP_Loader:
-    def __init__(self, **kwargs):
-        self._variable: dict[str, Any] = kwargs
-
-    # def __init__(self, config: UserConfigManager, prompt: PromptManager, context: ContextManager):
-    #     self.config = config
-    #     self.prompt = prompt
-    #     self.context = context
-
-    def get_prompt_vp(
+class TemplateParser:
+    def __init__(
             self,
+            model: ModelAPI = ModelAPI(),
+            user_info: Request_User_Info = Request_User_Info(),
+            global_config: Global_Config = Global_Config(),
+            config: UserConfigs = UserConfigs(),
+        ):
+        self._model = model
+        self._user_info = user_info
+        self._global_config = global_config
+        self._config = config
+
+    def render(
+            self,
+            text: str,
+            /,
             **kwargs: Any
-        ) -> PromptVP:
-        """Get prompt variable processor"""
-        prompt_vp = PromptVP()
-
-        raw_exception_handler = prompt_vp.exception_handler
-        def exception_handler(variable_name: str, variable_value: Any, exception: Exception) -> str:
-            logger.exception("PromptVP Error: {exception}", exception=exception)
-            return raw_exception_handler(variable_name, variable_value, exception)
-        prompt_vp.escape_exception_handler = exception_handler
-        
-        raw_escape_exception_handler = prompt_vp.escape_exception_handler
-        def escape_exception_handler(exception: Exception, value: str) -> str:
-            logger.exception("PromptVP Escape Error: {exception}", exception=exception)
-            return raw_escape_exception_handler(exception, value)
-        prompt_vp.escape_exception_handler = escape_exception_handler
-
-        prompt_vp.bulk_register_variable(**self._variable)
-        prompt_vp.bulk_register_variable(**kwargs)
-    
-        return prompt_vp
+        ) -> str:
+        template: Template = Template(text)
+        return template.render(
+            **kwargs,
+        )
 
     @staticmethod
     def _date_countdown(
-            birthday_month: int | str,
-            birthday_day: int | str,
+            birthday_month: int,
+            birthday_day: int ,
             date_name: str,
-            precise: bool | str = False
+            precise: bool = False
         ) -> str:
         def time_format(td: timedelta, now: datetime):
-            if str_to_bool(precise):
+            if precise:
                 return f"{format_time_duration(td.total_seconds(), use_abbreviation=True)} to {date_name}."
             else:
                 return f"{td.days} days to {date_name}."
@@ -76,39 +68,37 @@ class PromptVP_Loader:
             time_format_func = time_format
         )
 
-    def get_prompt_vp_ex(
+    def render_ex(
             self,
+            text: str,
             user_id: str,
-            model: ModelAPI = ModelAPI(),
-            user_info: Request_User_Info = Request_User_Info(),
-            global_config: Global_Config = Global_Config(),
-            config: UserConfigs = UserConfigs(),
             **kwargs
-        ) -> PromptVP:
+        ) -> str:
         """
-        获取指定用户的PromptVP实例
+        渲染文本
 
+        :param text: 待渲染的文本
         :param user_id: 用户ID
         :param model_uid: 模型UID
         :param user_info: 用户信息
         :param config: 用户配置
         :return: PromptVP实例
         """
-        bot_name = global_config.prompt_template.bot_info.name
-        bot_birthday_year = global_config.prompt_template.bot_info.birthday.year
-        bot_birthday_month = global_config.prompt_template.bot_info.birthday.month
-        bot_birthday_day = global_config.prompt_template.bot_info.birthday.day
-        timezone = config.timezone
+        bot_name = self._global_config.prompt_template.bot_info.name
+        bot_birthday_year = self._global_config.prompt_template.bot_info.birthday.year
+        bot_birthday_month = self._global_config.prompt_template.bot_info.birthday.month
+        bot_birthday_day = self._global_config.prompt_template.bot_info.birthday.day
+        timezone = self._config.timezone
         if timezone is None:
-            timezone = global_config.prompt_template.time.timezone
+            timezone = self._global_config.prompt_template.time.timezone
         
         now = datetime.now()
 
         def _birthday_countdown(
-                birthday_month: int | str | None = None,
-                birthday_day: int | str | None = None,
+                birthday_month: int | None = None,
+                birthday_day: int | None = None,
                 name: str | None = None,
-                precise: bool | str = False
+                precise: bool = False
             ) -> str:
             if birthday_month is None:
                 birthday_month = bot_birthday_month
@@ -118,7 +108,7 @@ class PromptVP_Loader:
                 name = bot_name
             
             def time_format(td: timedelta, now: datetime):
-                if str_to_bool(precise):
+                if precise:
                     return f"And to {name}'s birthday: {format_time_duration(td.total_seconds(), use_abbreviation=True)}"
                 else:
                     return f"And to {name}'s birthday: {td.days} days left"
@@ -138,23 +128,25 @@ class PromptVP_Loader:
         else:
             time_offset = timedelta(hours=timezone)
         
-        prompt_vp = self.get_prompt_vp(
+        return self.render(
+            text,
             user_id = user_id,
             birthday_countdown = _birthday_countdown,
             date_countdown = self._date_countdown,
             reprs = lambda *args: "\n".join([repr(arg) for arg in args]),
-            version = global_config.prompt_template.version or __version__,
-            model_uid = model.uid,
-            model_name = model.name,
-            model_id = model.id,
-            model_type = model.type.value,
-            model_group = model.parent,
+            escape_str = escape_string,
+            version = self._global_config.prompt_template.version or __version__,
+            model_uid = self._model.uid,
+            model_name = self._model.name,
+            model_id = self._model.id,
+            model_type = self._model.type.value,
+            model_group = self._model.parent,
             botname = bot_name,
-            username = user_info.username or "Unknown",
-            nickname = user_info.nickname or "Unknown",
-            user_age = user_info.age or "Unknown",
-            user_gender = user_info.gender or "Unknown",
-            user_info = user_info.model_dump(exclude_none=True),
+            username = self._user_info.username or "Unknown",
+            nickname = self._user_info.nickname or "Unknown",
+            user_age = self._user_info.age or "Unknown",
+            user_gender = self._user_info.gender or "Unknown",
+            user_info = self._user_info.model_dump(exclude_none=True),
             bot_birthday = f"{bot_birthday_year}-{bot_birthday_month}-{bot_birthday_day}",
             zodiac = lambda birthday_month = bot_birthday_month, birthday_day = bot_birthday_day: date_to_zodiac(int(birthday_month), int(birthday_day)),
             time = lambda time_format = "%Y-%m-%d(%A) %H:%M:%S %Z": format_timestamp(now, time_offset, time_format),
@@ -180,12 +172,7 @@ class PromptVP_Loader:
             copytext = lambda text, number, spacers = "": spacers.join([text] * int(number)),
             text_matrix = lambda text, columns, lines, spacers = " ", line_breaks = "\n": line_breaks.join(spacers.join([text] * int(columns)) for _ in range(int(lines))),
             random_matrix = lambda rows, cols: np.random.rand(int(rows), int(cols)),
-            user_profile = lambda: config.user_profile if config.user_profile is not None else global_config.prompt_template.default_user_profile,
-            user_configs = lambda indent = 4, ensure_ascii = False: json.dumps(config.model_dump(exclude_none=True), indent = int(indent), ensure_ascii = str_to_bool(ensure_ascii)),
+            user_profile = lambda: self._config.user_profile if self._config.user_profile is not None else self._global_config.prompt_template.default_user_profile,
+            user_configs = lambda indent = 4, ensure_ascii = False: json.dumps(self._config.model_dump(exclude_none=True), indent = int(indent), ensure_ascii = ensure_ascii),
             **kwargs
         )
-
-        # if 是 Python 关键字，所以需要单独处理
-        prompt_vp.register_variable("if", lambda value_1, compare_operator, value_2: value_comparison(value_1, value_2, ComparisonOperator(compare_operator), True))
-
-        return prompt_vp
