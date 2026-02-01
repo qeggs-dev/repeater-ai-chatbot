@@ -23,9 +23,8 @@ from ._objects import (
     ImageUrlBlock,
 )
 from ._exceptions import *
-from TextProcessors import (
-    PromptVP,
-    limit_blank_lines,
+from ..Text_Template_Processer import (
+    TemplateParser
 )
 from PathProcessors import validate_path, sanitize_filename
 from ..Global_Config_Manager import ConfigManager as GlobalConfigManager
@@ -51,7 +50,7 @@ class ContextLoader:
             self,
             user_id: str,
             temporary_prompt: str | None = None,
-            prompt_vp: PromptVP | None = None
+            template_parser: TemplateParser | None = None
         ) -> ContentUnit:
         """
         加载提示词
@@ -98,11 +97,11 @@ class ContextLoader:
                 prompt = ""
         
         # 展开变量
-        if prompt_vp is not None:
+        if template_parser is not None:
             prompt = self._expand_variables(
                 user_id = user_id,
                 prompt = prompt,
-                variables_parser = prompt_vp
+                template_parser = template_parser
             )
         logger.debug("Prompt Content:\n{prompt}", user_id = user_id, prompt = prompt)
 
@@ -138,25 +137,22 @@ class ContextLoader:
             user_id: str,
             temporary_prompt: str | None = None,
             load_prompt: bool = True,
-            prompt_vp: PromptVP | None = None,
+            template_parser: TemplateParser | None = None,
         ) -> ContextObject:
         """
         加载整个上下文
 
         :param user_id: 用户ID
-        :param message: 消息内容
-        :param role: 角色
-        :param role_name: 角色名称
         :param temporary_prompt: 临时提示词
         :param load_prompt: 是否加载提示词
-        :param continue_completion: 是否继续生成
+        :param template_parser: 模板解析器
         :return: 上下文对象
         """
         # 如果允许添加提示词，就加载提示词，否则使用空上下文对象
         if load_prompt:
             prompt = await self.load_prompt(
                 user_id=user_id,
-                prompt_vp = prompt_vp,
+                template_parser = template_parser,
                 temporary_prompt = temporary_prompt
             )
         else:
@@ -176,7 +172,7 @@ class ContextLoader:
             role: ContentRole = ContentRole.USER,
             role_name: str | None = None,
             image_url: str | list[str] | None = None,
-            prompt_vp: PromptVP | None = None
+            template_parser: TemplateParser | None = None
         ) -> ContentUnit:
         """
         Make User Content
@@ -186,14 +182,14 @@ class ContextLoader:
         :param role: Content Role
         :param role_name: An optional name for the participant. Provides the model information to differentiate between participants of the same role.
         :param image_url: Possible visual content
-        :param prompt_vp: `Prompt_VP` Variable template expansion engine.
+        :param template_parser: Template Parser
         """
         content = ContentUnit()
-        if prompt_vp is not None:
+        if template_parser is not None:
             new_message = self._expand_variables(
                 user_id = user_id,
                 prompt = new_message,
-                variables_parser = prompt_vp
+                template_parser = template_parser
             )
         if image_url:
             if isinstance(image_url, str):
@@ -235,26 +231,18 @@ class ContextLoader:
         content.role_name = role_name
         return content
     
-    def _expand_variables(self, user_id: str, prompt: str, variables_parser: PromptVP) -> str:
+    def _expand_variables(self, user_id: str, prompt: str, template_parser: TemplateParser) -> str:
         """
         展开变量
 
         :param prompt: 提示词
-        :param variables: 变量
         :param user_id: 用户ID
+        :param template_parser: 模板解析器
         """
-        variables_parser.reset_counter()
-        prompt = variables_parser.process(prompt)
-        logger.info(
-            "Prompt Hits Variable: {hit_var}/{discover_var}({hit_rate:.2%})",
+        return template_parser.render_ex(
+            text = prompt,
             user_id = user_id,
-            hit_var = variables_parser.hit_var(),
-            discover_var = variables_parser.discover_var(),
-            hit_rate = variables_parser.hit_var() / variables_parser.discover_var() if variables_parser.discover_var() != 0 else 0
         )
-        variables_parser.reset_counter()
-        prompt = limit_blank_lines(prompt)
-        return prompt
 
     async def save(
             self,
