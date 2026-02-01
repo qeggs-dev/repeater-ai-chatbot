@@ -5,7 +5,7 @@ from ._extensions import (
     CodeBlockExtension,
     DividingLineExtension
 )
-from TextProcessors import PromptVP
+from jinja2 import Template
 
 async def markdown_to_html(
     input_text: str,
@@ -69,14 +69,13 @@ async def markdown_to_html(
     # 5. 添加自适应宽度
     css += f"\nbody {{ width: {max(width, 60) - 60}px; }}"
 
-    template_handler = PromptVP()
-    template_handler.bulk_register_variable(
+    template: Template = Template(html_template)
+
+    full_html = template.render(
         markdown = input_text,
         html_content = html_content,
         css = css,
         title = html.escape(title)
     )
-
-    # 6. 生成 HTML 文本
-    full_html = template_handler.process(html_template)
+    
     return full_html
