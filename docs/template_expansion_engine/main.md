@@ -15,12 +15,11 @@
 
 ---
 
-例如 `{username}` 表示用户名
-模板展开系统会自动将变量替换为实际值，例如 `{username}` 可能会被替换为 `张三`
-而在Repeater内，模板展开器是允许注册函数变量的
-所以你可以给变量传参，按照Shell的风格进行
-例如 `{randchoice 1 2 3}` 表示随机选择1、2、3中的一个
-`{copytext "hello" 5 " "}` 表示将`hello`复制5次，并用空格连接
+例如 `{{username}}` 表示用户名
+模板展开系统会自动将变量替换为实际值，例如 `{{username}}` 可能会被替换为 `张三`
+而在Repeater内，模板展开器是有函数变量的
+例如 `{{randchoice(1,2,3)}}` 表示随机选择1、2、3中的一个
+`{{copytext("hello", 5, " ")}}` 表示将`hello`复制5次，并用空格连接
 
 ---
 
@@ -28,36 +27,14 @@
 
 优先使用shell格式分割，失败时再按空格分割
 ```Plaintext
-{random 1 10}
-{randchoice a b c d e}
-{copytext a 5 " "}
-{text_matrix a 5 5 " " <esc:"\n">}
+{{random(1, 10)}}
+{{randchoice("a", "b", "c", "d", "e")}}
+{{copytext("a", 5, " ")}}
+{{text_matrix("a", 5, 5, " ", "")}}
 ```
 
----
+## 语法
 
-## 转义序列
-
-```Plaintext
-转义处理器：<esc:"">
-<esc:"\0">空字符
-<esc:"\n">换行符
-<esc:"\r">回车符
-<esc:"\t">制表符
-<esc:"\a">响铃符
-<esc:"\b">退格符
-<esc:"\f">换页符
-<esc:"\v">垂直制表符
-<esc:"\e">转义符
-<esc:"\xhh">二位16进制字符
-<esc:"\uHHHH">四位16进制字符
-<esc:"\UHHHHHHHH">八位16进制字符
-<esc:"\oOOO">8进制字符
-<esc:"\dDDD">10进制字符
-```
-
-PS: 转义处理器不能丢掉引号
-这是为了正确的识别转义边界
-内部不仅可以写转义字符
-也可以写正常内容
-它总是会先于变量展开执行
+Repeater 使用 Jinja2 作为模板引擎
+你可以去任何一个搜索引擎搜索 Jinja2 语法
+以学习如何使用
