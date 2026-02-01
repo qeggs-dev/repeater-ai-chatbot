@@ -44,7 +44,9 @@ class TemplateParser:
             /,
             **kwargs: Any
         ) -> str:
-        template: Template = Template(text)
+        template: Template = Template(
+            source = text
+        )
         return template.render(
             **kwargs,
         )
