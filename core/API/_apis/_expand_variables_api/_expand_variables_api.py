@@ -4,6 +4,7 @@ from ....Text_Template_Processer import TemplateParser
 from ....Global_Config_Manager import ConfigManager as Global_Config_Manager
 from ....User_Config_Manager import ConfigManager
 from ._requests import ExpandVariableRequest
+from jinja2 import TemplateError
 
 @Resource.app.post("/variable_expand/{user_id}")
 async def expand_variables(user_id: str, request: ExpandVariableRequest):
@@ -23,10 +24,22 @@ async def expand_variables(user_id: str, request: ExpandVariableRequest):
     )
 
     # 调用PromptVP类处理文本
-    output = template_parser.render_ex(
-        request.text,
-        user_id = user_id,
-    )
-
-    # 返回结果
-    return PlainTextResponse(output)
+    try:
+        output = template_parser.render_ex(
+            request.text,
+            user_id = user_id,
+        )
+        # 返回结果
+        return PlainTextResponse(output)
+    except TemplateError as e:
+        output = str(e)
+        return PlainTextResponse(
+            output,
+            status_code = 400
+        )
+    except Exception as e:
+        output = str(e)
+        return PlainTextResponse(
+            output,
+            status_code = 500
+        )
