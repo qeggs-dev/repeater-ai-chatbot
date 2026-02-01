@@ -6,4 +6,5 @@ class SubmitResponse(BaseModel):
     Submit Response Model
     """
     status: str = ""
+    message: str = ""
     file_uuid: str = ""
