@@ -59,6 +59,7 @@
 | uvicorn           | 0.34.3   | BSD License                          | [BSD-3-Clause](https://github.com/Kludex/uvicorn/blob/main/LICENSE.md)              | `run_repeater.py`                   | Run FastAPI                           |
 | numpy             | 2.3.4    | BSD License                          | [BSD-3-Clause](https://github.com/numpy/numpy/blob/main/LICENSE.txt)                | *Entire Project*                    | Speed up batch computing of data      |
 | python-box        | 7.3.2    | MIT License                          | [MIT](https://github.com/cdgriffith/Box/blob/master/LICENSE)                        | `core.Global_Config_Manager`        | Mixed configuration files             |
+| jinja2            | 3.1.6    | BSD-3-Clause license                 | [BSD-3-Clause](https://github.com/pallets/jinja/blob/main/LICENSE.txt)              | `core.Text_Template_Processer`      | Render text templates                 |
 | tzdata            | 2025.2   | Apache Software License              | [Apache-2.0](https://github.com/python/tzdata/blob/master/LICENSE)                  | `core.Text_Template_Processer`      | Get timezone information              |
 
 具体依赖的License请查看[LICENSES](./LICENSES/index.md)
