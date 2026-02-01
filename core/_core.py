@@ -17,7 +17,10 @@ from loguru import logger
 from .CallAPI import (
     CompletionsAPI
 )
-from . import Data_Manager
+from .Data_Manager import (
+    ContextManager,
+    PromptManager
+)
 from .Context_Manager import (
     ContextLoader,
     ContentRole,
@@ -25,7 +28,7 @@ from .Context_Manager import (
     ContentUnit,
     TextBlock,
 )
-from . User_Config_Manager import (
+from .User_Config_Manager import (
     ConfigManager as UserConfigManager,
     UserConfigs
 )
@@ -43,11 +46,8 @@ from .Model_API import (
     ModelAPI,
 )
 from . import Request_Log
-from TextProcessors import (
-    PromptVP
-)
 from .Text_Template_Processer import (
-    PromptVP_Loader
+    TemplateParser
 )
 
 # ==== 本模块代码 ==== #
@@ -59,12 +59,10 @@ class Core:
         self.lock = asyncio.Lock()
 
         # 初始化用户数据管理器
-        self.context_manager = Data_Manager.ContextManager()
-        self.prompt_manager = Data_Manager.PromptManager()
+        self.context_manager = ContextManager()
+        self.prompt_manager = PromptManager()
         self.user_config_manager: UserConfigManager = UserConfigManager()
 
-        # 初始化变量加载器
-        self.prompt_pv_loader = PromptVP_Loader()
         # 初始化Client并设置并发大小
         self.api_client = CompletionsAPI.ClientNoStream(
             ConfigManager.get_configs().callapi.max_concurrency
@@ -197,7 +195,7 @@ class Core:
             temporary_prompt: str | None = None,
             load_prompt: bool = True,
             cross_user_data_routing: CrossUserDataRouting[str | None] | None = None,
-            prompt_vp: PromptVP = PromptVP()
+            template_parser: TemplateParser | None = None
         ) -> ContextObject:
         """
         获取上下文
@@ -212,7 +210,7 @@ class Core:
         :param load_prompt: 是否加载提示
         :param continue_completion: 是否继续完成
         :param reference_context_id: 引用上下文ID
-        :param prompt_vp: PromptVP模板解析器
+        :param template_parser: 模板解析器
         :return: 上下文对象
         """
         cross_user_data_routing: CrossUserDataRouting[str] = self.fill_missing_cross_user_data_routing(user_id, cross_user_data_routing)
@@ -233,7 +231,7 @@ class Core:
             prompt: ContentUnit = await context_loader.load_prompt(
                 user_id = prompt_load_source,
                 temporary_prompt = temporary_prompt,
-                prompt_vp = prompt_vp
+                template_parser = template_parser
             )
             context.prompt = prompt
 
@@ -249,7 +247,7 @@ class Core:
         role: ContentRole = ContentRole.USER,
         role_name: str | None = None,
         image_url: str | list[str] | None = None,
-        prompt_vp: str | None = None,
+        template_parser: str | None = None,
         new_requests_text_only: bool = False,
     ):
         if new_requests_text_only:
@@ -262,7 +260,7 @@ class Core:
             role = role,
             role_name = role_name,
             image_url = image_url,
-            prompt_vp = prompt_vp
+            template_parser = template_parser
         )
         return user_input
     # endregion
@@ -531,11 +529,10 @@ class Core:
                 # 进行用户名映射
                 user_info = await self.nickname_mapping(user_id, user_info)
 
-                # 获取Prompt_vp以展开变量内容
-                prompt_vp = self.prompt_pv_loader.get_prompt_vp_ex(
-                    user_id = user_id,
-                    user_info = user_info,
+                # 获取变量展开器以展开变量内容
+                template_parser = TemplateParser(
                     model = model,
+                    user_info = user_info,
                     global_config = ConfigManager.get_configs(),
                     config = config
                 )
@@ -556,7 +553,7 @@ class Core:
                     temporary_prompt = temporary_prompt,
                     load_prompt = load_prompt,
                     cross_user_data_routing = cross_user_data_routing,
-                    prompt_vp = prompt_vp,
+                    template_parser = template_parser,
                 )
 
                 new_requests_text_only = config.new_requests_text_only
@@ -570,7 +567,7 @@ class Core:
                     role = role,
                     role_name = role_name,
                     image_url = image_url,
-                    prompt_vp = prompt_vp,
+                    template_parser = template_parser,
                     new_requests_text_only = new_requests_text_only,
                 )
 
@@ -686,7 +683,7 @@ class Core:
                                 user_id = user_id,
                                 output = output,
                                 response = response,
-                                prompt_vp = prompt_vp,
+                                template_parser = template_parser,
                                 user_input = user_input,
                                 save_context = save_context,
                                 save_new_only = save_new_only,
@@ -713,7 +710,7 @@ class Core:
                             user_id = user_id,
                             output = output,
                             response = response,
-                            prompt_vp = prompt_vp,
+                            template_parser = template_parser,
                             user_input = user_input,
                             save_context = save_context,
                             save_new_only = save_new_only,
@@ -747,7 +744,7 @@ class Core:
     async def _post_treatment(
         self,
         user_id: str,
-        prompt_vp: PromptVP,
+        template_parser: TemplateParser,
         response: CompletionsAPI.Response,
         task_start_time: Request_Log.TimeStamp,
         context_loader: ContextLoader,
@@ -771,20 +768,26 @@ class Core:
             content_unit = response.new_context.context_list[index]
             content = content_unit.content
             if isinstance(content, str):
-                content = prompt_vp.process(content)
+                content = template_parser.render_ex(
+                    content,
+                    user_id,
+                )
                 content_unit.content = content
             else:
                 content = content_unit.to_plaintext_content()
-                content = prompt_vp.process(content)
+                content = template_parser.render_ex(
+                    content,
+                    user_id
+                )
                 content_unit.remove_context_block(TextBlock)
                 content_unit.content.append(
                     TextBlock(content)
                 )
-            content_unit.reasoning_content = prompt_vp.process(content_unit.reasoning_content)
+            content_unit.reasoning_content = template_parser.render_ex(
+                content_unit.reasoning_content,
+                user_id,
+            )
         
-        # 记录Prompt_vp的命中情况
-        logger.info(f"Prompt Hits Variable: {prompt_vp.hit_var()}/{prompt_vp.discover_var()}({prompt_vp.hit_var() / prompt_vp.discover_var() if prompt_vp.discover_var() != 0 else 0:.2%})", user_id = saved_user_id)
-
         if cross_user_data_routing.context.save_to_user_id == user_id:
             historical_context = response.historical_context
         else:
@@ -835,7 +838,7 @@ class Core:
         output.id = response.id
 
         output.finish_reason_cause = response.finish_reason_cause
-        output.finish_reason_code = response.finish_reason
+        output.finish_reason_code = response.finish_reason.value
 
         return output
     # endregion
