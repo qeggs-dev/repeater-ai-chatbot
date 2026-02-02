@@ -360,7 +360,7 @@ class ClientBase(ABC):
         logger.info(
             "New Reasoning Content Length: {reasoning_content_length}",
             user_id = user_id,
-            reasoning_content_length = sum(len(content) for content in response.new_context.context_list)
+            reasoning_content_length = response.calling_log.reasoning_content_length
         )
         logger.info(
             "New Answer Content Length: {new_content_length}",
