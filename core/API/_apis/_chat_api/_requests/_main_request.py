@@ -14,5 +14,4 @@ class ChatRequest(BaseModel):
     temporary_prompt: str | None = None
     image_url: str | list[str] | None = None
     cross_user_data_routing: CrossUserDataRouting[str | None] | None = None
-    continue_completion: bool = False
     stream: bool = False
