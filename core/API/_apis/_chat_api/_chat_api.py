@@ -46,7 +46,6 @@ async def chat_endpoint(
             save_context = request.save_context,
             save_new_only = request.save_new_only,
             cross_user_data_routing = request.cross_user_data_routing,
-            continue_completion = request.continue_completion,
             stream = request.stream
         )
         if isinstance(context, Response):
