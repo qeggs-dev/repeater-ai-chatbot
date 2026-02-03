@@ -430,7 +430,6 @@ class Core:
             save_context: bool | None = None,
             save_new_only: bool | None = None,
             cross_user_data_routing: CrossUserDataRouting[str | None] | None = None,
-            continue_completion: bool = False,
             stream: bool = False,
         ) -> Response | AsyncIterator[dict[str, Any]]:
         """
@@ -449,7 +448,6 @@ class Core:
         :param save_context: 是否保存上下文
         :param save_new_only: 是否只保存最新的内容
         :param cross_user_data_operations: 跨用户数据流
-        :param continue_completion: 是否继续完成
         :param stream: 是否流式输出
         :return: 返回对话结果
         """
