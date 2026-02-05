@@ -4,9 +4,10 @@ from typing import Callable
 def calculation_date_countdown(
         target_month:int,
         target_day:int,
-        time_format_func: Callable[[timedelta, datetime], str] = lambda td, now: f"{td.days} days to target date.",
-        is_today_format_func: Callable[[datetime], str] = lambda now: f"Today is the day."
-    ) -> str:
+        target_hour:int | None = None,
+        target_minute:int | None = None,
+        target_second:int | None = None,
+    ) -> timedelta:
     """
     获取距离目标日期还有多少天
     """
@@ -15,14 +16,21 @@ def calculation_date_countdown(
     
     try:
         # 尝试创建今年的日期（判断闰年兼容性）
-        birthday_this_year = datetime(current_year, target_month, target_day)
+        birthday_this_year = datetime(
+            current_year,
+            target_month,
+            target_day,
+            target_hour or 0,
+            target_minute or 0,
+            target_second or 0,
+        )
     except ValueError:
         # 处理闰年日期（如2月29日，非闰年时调整为3月1日）
         birthday_this_year = datetime(current_year, 3, 1)
     
     # 判断当前是否在当天
     if now.date() == birthday_this_year.date():
-        return is_today_format_func(now)
+        return timedelta()
     
     # 计算下一次的年份
     if now > birthday_this_year:
@@ -44,4 +52,4 @@ def calculation_date_countdown(
         next_birthday = datetime(next_year + 1, target_month, target_day)
         time_left = next_birthday - now
     
-    return time_format_func(time_left, now)
+    return time_left
