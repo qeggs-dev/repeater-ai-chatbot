@@ -32,12 +32,12 @@ class TemplateParser:
             model: ModelAPI = ModelAPI(),
             user_info: Request_User_Info = Request_User_Info(),
             global_config: Global_Config = Global_Config(),
-            config: UserConfigs = UserConfigs(),
+            user_config: UserConfigs = UserConfigs(),
         ):
         self._model = model
         self._user_info = user_info
         self._global_config = global_config
-        self._config = config
+        self._user_config = user_config
 
     def render(
             self,
@@ -102,7 +102,7 @@ class TemplateParser:
         :param config: 用户配置
         :return: PromptVP实例
         """
-        timezone = self._config.timezone
+        timezone = self._user_config.timezone
         if timezone is None:
             timezone = self._global_config.text_template.time.timezone
         
@@ -133,6 +133,7 @@ class TemplateParser:
             nick_name = self._user_info.nickname or "Unknown",
             user_age = self._user_info.age or "Unknown",
             user_gender = self._user_info.gender or "Unknown",
+            user_custom_name = self._user_config.user_name,
             user_info = self._user_info.model_dump(exclude_none=True),
             zodiac = date_to_zodiac,
             time = lambda time_format = default_time_format: format_timestamp(now, time_offset, time_format),
