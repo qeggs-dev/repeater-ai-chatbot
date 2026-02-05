@@ -29,8 +29,6 @@ async def chat_endpoint(
     """
     Endpoint for chat
     """
-    if request.continue_completion and request.message:
-        raise HTTPException(detail="Cannot send message when continuing completion", status_code=400)
     try:
         context = await Resource.core.chat(
             user_id = user_id,
