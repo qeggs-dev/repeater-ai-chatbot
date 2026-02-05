@@ -44,7 +44,8 @@ class TemplateParser:
             /,
             **kwargs: Any
         ) -> str:
-        template: Template = Template(
+        environment = self._global_config.text_template.sandbox.get_jinja_env()
+        template: Template = environment.from_string(
             source = text
         )
         return template.render(
@@ -53,22 +54,29 @@ class TemplateParser:
 
     @staticmethod
     def _date_countdown(
-            birthday_month: int,
-            birthday_day: int ,
-            date_name: str,
-            precise: bool = False
-        ) -> str:
-        def time_format(td: timedelta, now: datetime):
-            if precise:
-                return f"{format_time_duration(td.total_seconds(), use_abbreviation=True)} to {date_name}."
-            else:
-                return f"{td.days} days to {date_name}."
-        
-        return calculation_date_countdown(
-            target_month = int(birthday_month),
-            target_day = int(birthday_day),
-            time_format_func = time_format
+            target_month:int,
+            target_day:int,
+            target_hour:int | None = None,
+            target_minute:int | None = None,
+            target_second:int | None = None,
+            precise: bool = False,
+            float_output: bool = False,
+        ) -> str | float:
+        time_delta = calculation_date_countdown(
+            target_month = target_month,
+            target_day = target_day,
+            target_hour = target_hour,
+            target_minute = target_minute,
+            target_second = target_second
         )
+        
+        if float_output:
+            return time_delta.days
+        elif precise:
+            return format_time_duration(time_delta.total_seconds(), use_abbreviation=True)
+        else:
+            return f"{time_delta.days} days"
+        
 
     def render_ex(
             self,
@@ -86,41 +94,11 @@ class TemplateParser:
         :param config: 用户配置
         :return: PromptVP实例
         """
-        bot_name = self._global_config.prompt_template.bot_info.name
-        bot_birthday_year = self._global_config.prompt_template.bot_info.birthday.year
-        bot_birthday_month = self._global_config.prompt_template.bot_info.birthday.month
-        bot_birthday_day = self._global_config.prompt_template.bot_info.birthday.day
         timezone = self._config.timezone
         if timezone is None:
-            timezone = self._global_config.prompt_template.time.timezone
+            timezone = self._global_config.text_template.time.timezone
         
         now = datetime.now()
-
-        def _birthday_countdown(
-                birthday_month: int | None = None,
-                birthday_day: int | None = None,
-                name: str | None = None,
-                precise: bool = False
-            ) -> str:
-            if birthday_month is None:
-                birthday_month = bot_birthday_month
-            if birthday_day is None:
-                birthday_day = bot_birthday_day
-            if name is None:
-                name = bot_name
-            
-            def time_format(td: timedelta, now: datetime):
-                if precise:
-                    return f"And to {name}'s birthday: {format_time_duration(td.total_seconds(), use_abbreviation=True)}"
-                else:
-                    return f"And to {name}'s birthday: {td.days} days left"
-            
-            return calculation_date_countdown(
-                target_month = int(birthday_month),
-                target_day = int(birthday_day),
-                time_format_func = time_format,
-                is_today_format_func = lambda now: f"Happy birthday to {name}!"
-            )
 
         if isinstance(timezone, str):
             time_offset = get_timezone_offset(
@@ -130,29 +108,28 @@ class TemplateParser:
         else:
             time_offset = timedelta(hours=timezone)
         
+        default_time_format = self._global_config.text_template.time.time_format
+        
         return self.render(
             text,
             user_id = user_id,
-            birthday_countdown = _birthday_countdown,
             date_countdown = self._date_countdown,
             reprs = lambda *args: "\n".join([repr(arg) for arg in args]),
             escape_str = escape_string,
-            version = self._global_config.prompt_template.version or __version__,
+            version = self._global_config.text_template.version or __version__,
             model_uid = self._model.uid,
             model_name = self._model.name,
             model_id = self._model.id,
             model_type = self._model.type.value,
             model_group = self._model.parent,
-            botname = bot_name,
-            username = self._user_info.username or "Unknown",
-            nickname = self._user_info.nickname or "Unknown",
+            user_name = self._user_info.username or "Unknown",
+            nick_name = self._user_info.nickname or "Unknown",
             user_age = self._user_info.age or "Unknown",
             user_gender = self._user_info.gender or "Unknown",
             user_info = self._user_info.model_dump(exclude_none=True),
-            bot_birthday = f"{bot_birthday_year}-{bot_birthday_month}-{bot_birthday_day}",
-            zodiac = lambda birthday_month = bot_birthday_month, birthday_day = bot_birthday_day: date_to_zodiac(int(birthday_month), int(birthday_day)),
-            time = lambda time_format = "%Y-%m-%d(%A) %H:%M:%S %Z": format_timestamp(now, time_offset, time_format),
-            age = lambda birthday_year = bot_birthday_year, birthday_month = bot_birthday_month, birthday_day = bot_birthday_day: calculate_age(
+            zodiac = lambda birthday_month, birthday_day: date_to_zodiac(int(birthday_month), int(birthday_day)),
+            time = lambda time_format = default_time_format: format_timestamp(now, time_offset, time_format),
+            age = lambda birthday_year, birthday_month, birthday_day: calculate_age(
                 int(birthday_year),
                 int(birthday_month),
                 int(birthday_day),
@@ -169,12 +146,12 @@ class TemplateParser:
             ),
             random = lambda min, max: random.randint(int(min), int(max)),
             randfloat = lambda min, max: random.uniform(float(min), float(max)),
-            randchoice = lambda *args: random.choice(args),
+            rand_choice = lambda *args: random.choice(args),
             generate_uuid = lambda: uuid4(),
-            copytext = lambda text, number, spacers = "": spacers.join([text] * int(number)),
+            copy_text = lambda text, number, spacers = "": spacers.join([text] * int(number)),
             text_matrix = lambda text, columns, lines, spacers = " ", line_breaks = "\n": line_breaks.join(spacers.join([text] * int(columns)) for _ in range(int(lines))),
             random_matrix = lambda rows, cols: np.random.rand(int(rows), int(cols)),
-            user_profile = lambda: self._config.user_profile if self._config.user_profile is not None else self._global_config.prompt_template.default_user_profile,
+            user_profile = lambda: self._config.user_profile if self._config.user_profile is not None else self._global_config.text_template.default_user_profile,
             user_configs = lambda indent = 4, ensure_ascii = False: json.dumps(self._config.model_dump(exclude_none=True), indent = int(indent), ensure_ascii = ensure_ascii),
             **kwargs
         )
