@@ -5,11 +5,12 @@ from ._extensions import (
     CodeBlockExtension,
     DividingLineExtension
 )
-from jinja2 import Template
+from jinja2 import Template, Environment
 
 async def markdown_to_html(
     input_text: str,
     html_template: str,
+    environment: Environment,
     css: str,
     title: str = "Markdown Render",
     width: int = 800,
@@ -69,7 +70,7 @@ async def markdown_to_html(
     # 5. 添加自适应宽度
     css += f"\nbody {{ width: {max(width, 60) - 60}px; }}"
 
-    template: Template = Template(html_template)
+    template: Template = environment.from_string(html_template)
 
     full_html = template.render(
         markdown = input_text,
