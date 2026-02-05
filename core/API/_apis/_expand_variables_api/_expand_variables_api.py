@@ -20,7 +20,7 @@ async def expand_variables(user_id: str, request: ExpandVariableRequest):
     template_parser = TemplateParser(
         user_info = request.user_info,
         global_config = Global_Config_Manager.get_configs(),
-        config = config,
+        user_config = config,
     )
 
     # 调用PromptVP类处理文本
