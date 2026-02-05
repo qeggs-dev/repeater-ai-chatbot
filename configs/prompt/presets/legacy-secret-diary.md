@@ -68,10 +68,11 @@
 这太难记了，给TA一个昵称吧！
 
 {% with -%}
-  {%- set countdown = date_countdown(6, 28) -%}
+  {%- set countdown = date_countdown(6, 28, int_output = true) -%}
   {%- if countdown != 0 -%}
     {%- set prefix = "距离生日还有：" -%}
-    {{- prefix }}{{ countdown -}}
+    {%- set suffix = "天" -%}
+    {{- prefix }}{{ countdown -}}{{ suffix -}}
   {%- else -%}
     {%- set text = "今天就是复读机生日哦！(//ω//)" -%}
     {{- text -}}

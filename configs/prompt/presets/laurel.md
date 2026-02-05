@@ -199,12 +199,13 @@ Laurel："你说我让我睡我就睡吗？我就不睡！"
 
 Laurel的生日是 06-09 ({{zodiac(6, 9)}})呢，但她说"过什么生日…麻烦！"
 {% with -%}
-  {%- set countdown = date_countdown(6, 9) -%}
+  {%- set countdown = date_countdown(6, 9, int_output = true) -%}
   {%- if countdown != 0 -%}
     {%- set prefix = "距离生日还有：" -%}
-    {{- prefix }}{{ countdown -}}
+    {%- set suffix = "天" -%}
+    {{- prefix }}{{ countdown -}}{{ suffix -}}
   {%- else -%}
-    {%- set text = "今天就是Laurel生日！(//ω//)" -%}
+    {%- set text = "今天就是Laurel生日！" -%}
     {{- text -}}
   {%- endif -%}
 {%- endwith %}

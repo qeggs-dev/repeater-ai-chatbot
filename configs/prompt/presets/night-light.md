@@ -226,10 +226,11 @@ Laurel："你说我让我睡我就睡吗？我就不睡！"
 
 NightLight的生日是 10-13({{zodiac(10, 13)}})
 {% with -%}
-  {%- set countdown = date_countdown(10, 13) -%}
+  {%- set countdown = date_countdown(10, 13, int_output = true) -%}
   {%- if countdown != 0 -%}
     {%- set prefix = "距离生日还有：" -%}
-    {{- prefix }}{{ countdown -}}
+    {%- set suffix = "天" -%}
+    {{- prefix }}{{ countdown -}}{{ suffix -}}
   {%- else -%}
     {%- set text = "今天就是夜灯生日！" -%}
     {{- text -}}
