@@ -8,6 +8,7 @@
   - `nick_name`(str): 用户昵称
   - `user_age`(int): 用户年龄
   - `user_gender`(str): 用户性别
+  - `user_custom_name`(str): 用户自定义名称
   - `model_uid`(str): 模型ID
   - `model_name`(str): 模型名称
   - `model_type`(str): 模型类型
