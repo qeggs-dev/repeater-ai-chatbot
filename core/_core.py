@@ -587,6 +587,7 @@ class Core:
                                     "This can be caused by an incorrect parameter input.\n"
                                     "Please check that the context field is working properly in your configuration.\n"
                                     "Or whether the Context data does not contain the specified header Role.\n"
+                                    "Or maybe you set the contraction value too low.\n"
                                     f"Error: {e}"
                                 ),
                                 status_code = 400,
