@@ -13,7 +13,7 @@ class Global_Config(BaseModel):
     model: ModelConfig = Field(default_factory=ModelConfig)
     model_api: ModelAPIConfig = Field(default_factory=ModelAPIConfig)
     nexus: NexusConfig = Field(default_factory=NexusConfig)
-    prompt_template: PromptTemplateConfig = Field(default_factory=PromptTemplateConfig)
+    text_template: TextTemplateConfig = Field(default_factory=TextTemplateConfig)
     prompt: PromptConfig = Field(default_factory=PromptConfig)
     render: RenderConfig = Field(default_factory=RenderConfig)
     request_log: RequestLogConfig = Field(default_factory=RequestLogConfig)

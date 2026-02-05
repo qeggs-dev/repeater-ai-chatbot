@@ -5,6 +5,7 @@ class Time_Config(BaseModel):
     model_config = ConfigDict(case_sensitive=False)
 
     timezone: str | float = "UTC"
+    time_format: str = "%Y-%m-%d(%A) %H:%M:%S %Z"
 
     @field_validator("timezone")
     def check_timezone(cls, v):
