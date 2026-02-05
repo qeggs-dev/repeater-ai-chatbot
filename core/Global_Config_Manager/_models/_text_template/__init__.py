@@ -1,9 +1,9 @@
 from ._text_template import TextTemplateConfig
-from ._sandbox import Bot_Info_Config
+from ._sandbox import SandboxConfig
 from ._time import Time_Config
 
 __all__ = [
     "TextTemplateConfig",
-    "Bot_Info_Config",
+    "SandboxConfig",
     "Time_Config"
 ]
