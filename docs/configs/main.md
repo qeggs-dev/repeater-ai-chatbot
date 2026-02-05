@@ -295,30 +295,32 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
 
         // Nexus Client 的请求超时时间
         "api_timeout": 60
-    }
+    },
 
     // template 提示词文本模板展开器配置
     // 注：此选项不会改变实际的其他系统内容，而只会改变模板展开器中的变量
-    "prompt_template": {
+    "text_template": {
         // 模板展开器中显示的程序版本
         // 如果为 null 或空字符串
         // 则程序会使用 core 版本号填充
         "version": null,
 
-        // 模板展开器中显示的 Bot 信息
-        "bot_info": {
-            // 模板展开器中显示的 Bot 名称
-            "name": "Repeater",
-            // Bot 的生日
-            "birthday": {
-                "day": 28,
-                "month": 6,
-                "year": 2024
-            }
+        // 模板展开器的沙箱模式
+        "sandbox": {
+            // 沙箱模式选项
+            // 可选值：
+            // "sandboxed" - 普通沙箱模式，限制私有内容、危险内置函数、特殊方法、内置类型修改、高危模块等内容
+            // "immutable_sandboxed" - 不可变沙箱模式，一切数据都将是不可变，列表的修改将会失效
+            // "none" - 无沙箱模式，程序将对用户输入不做任何限制
+            "sandbox_mode": "sandboxed",
         },
         "time": {
             // 时区字符串
-            "timezone": "Asia/Shanghai"
+            "timezone": "Asia/Shanghai",
+
+            // 时间格式字符串
+            // 在 time 函数未指定 time_format 参数时使用
+            "time_format": "%Y-%m-%d(%A) %H:%M:%S %Z"
         }
     },
 
