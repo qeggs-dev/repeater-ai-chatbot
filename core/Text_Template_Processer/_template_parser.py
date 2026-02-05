@@ -166,7 +166,7 @@ class TemplateParser:
             text_matrix = lambda text, columns, lines, spacers = " ", line_breaks = "\n": line_breaks.join(spacers.join([text] * int(columns)) for _ in range(int(lines))),
             random_matrix = np.random.rand,
             user_profile = self._user_config.user_profile if self._user_config.user_profile is not None else self._global_config.text_template.default_user_profile,
-            user_configs = lambda: self._user_config.model_dump(exclude_none=True),
+            user_configs = self._user_config.model_dump(exclude_none=True),
             json_loads = json.loads,
             json_dumps = json.dumps,
             **kwargs
