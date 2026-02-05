@@ -1,5 +1,6 @@
 import json
 import random
+import secrets
 import numpy as np
 
 from ..Global_Config_Manager import Global_Config
@@ -44,13 +45,20 @@ class TemplateParser:
             /,
             **kwargs: Any
         ) -> str:
-        environment = self._global_config.text_template.sandbox.get_jinja_env()
-        template: Template = environment.from_string(
-            source = text
-        )
-        return template.render(
-            **kwargs,
-        )
+        try:
+            environment = self._global_config.text_template.sandbox.get_jinja_env()
+            template: Template = environment.from_string(
+                source = text
+            )
+            return template.render(
+                **kwargs,
+            )
+        except Exception as e:
+            logger.error(
+                "Template Render Error: {error}",
+                error = e
+            )
+            raise
 
     @staticmethod
     def _date_countdown(
@@ -60,8 +68,8 @@ class TemplateParser:
             target_minute:int | None = None,
             target_second:int | None = None,
             precise: bool = False,
-            float_output: bool = False,
-        ) -> str | float:
+            int_output: bool = False,
+        ) -> str | int:
         time_delta = calculation_date_countdown(
             target_month = target_month,
             target_day = target_day,
@@ -70,7 +78,7 @@ class TemplateParser:
             target_second = target_second
         )
         
-        if float_output:
+        if int_output:
             return time_delta.days
         elif precise:
             return format_time_duration(time_delta.total_seconds(), use_abbreviation=True)
@@ -114,7 +122,6 @@ class TemplateParser:
             text,
             user_id = user_id,
             date_countdown = self._date_countdown,
-            reprs = lambda *args: "\n".join([repr(arg) for arg in args]),
             escape_str = escape_string,
             version = self._global_config.text_template.version or __version__,
             model_uid = self._model.uid,
@@ -127,7 +134,7 @@ class TemplateParser:
             user_age = self._user_info.age or "Unknown",
             user_gender = self._user_info.gender or "Unknown",
             user_info = self._user_info.model_dump(exclude_none=True),
-            zodiac = lambda birthday_month, birthday_day: date_to_zodiac(int(birthday_month), int(birthday_day)),
+            zodiac = date_to_zodiac,
             time = lambda time_format = default_time_format: format_timestamp(now, time_offset, time_format),
             age = lambda birthday_year, birthday_month, birthday_day: calculate_age(
                 int(birthday_year),
@@ -146,12 +153,20 @@ class TemplateParser:
             ),
             random = lambda min, max: random.randint(int(min), int(max)),
             randfloat = lambda min, max: random.uniform(float(min), float(max)),
-            rand_choice = lambda *args: random.choice(args),
+            randchoice = lambda *args: random.choice(args),
+            secrets_random = secrets.randbelow,
+            secrets_randbits = secrets.randbits,
+            secrets_token_hex = secrets.token_hex,
+            secrets_token_urlsafe = secrets.token_urlsafe,
+            secrets_token_bytes = secrets.token_bytes,
+            secrets_random_choice = lambda *args: secrets.choice(args),
             generate_uuid = lambda: uuid4(),
             copy_text = lambda text, number, spacers = "": spacers.join([text] * int(number)),
             text_matrix = lambda text, columns, lines, spacers = " ", line_breaks = "\n": line_breaks.join(spacers.join([text] * int(columns)) for _ in range(int(lines))),
-            random_matrix = lambda rows, cols: np.random.rand(int(rows), int(cols)),
-            user_profile = lambda: self._config.user_profile if self._config.user_profile is not None else self._global_config.text_template.default_user_profile,
-            user_configs = lambda indent = 4, ensure_ascii = False: json.dumps(self._config.model_dump(exclude_none=True), indent = int(indent), ensure_ascii = ensure_ascii),
+            random_matrix = np.random.rand,
+            user_profile = self._config.user_profile if self._config.user_profile is not None else self._global_config.text_template.default_user_profile,
+            user_configs = lambda: self._config.model_dump(exclude_none=True),
+            json_loads = json.loads,
+            json_dumps = json.dumps,
             **kwargs
         )
