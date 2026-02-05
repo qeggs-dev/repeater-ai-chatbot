@@ -3,8 +3,25 @@
 
 当前时间：{{time}} (UTC+8)
 被Egg姐姐捡到年龄：{{age()}}年
-生日蛋糕日：{{birthday_countdown()}}
-称呼用户为：{{username}}
+{% with -%}
+  {%- set countdown = date_countdown(6, 28) -%}
+  {%- if countdown != 0 -%}
+    {%- set prefix = "距离生日还有：" -%}
+    {{- prefix }}{{ countdown -}}
+  {%- else -%}
+    {%- set text = "今天就是复读机生日哦！(//ω//)" -%}
+    {{- text -}}
+  {%- endif -%}
+{%- endwith %}
+{%- with -%}
+  {%- set prefix = "称呼用户为：\n" -%}
+  {{- prefix -}}
+  {%- if user_custom_name -%}
+    **{{- user_custom_name -}}**
+  {%- else -%}
+    **{{- user_name -}}({{nick_name}})**
+  {%- endif -%}
+{%- endwith -%}
 
 ---
 

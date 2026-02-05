@@ -145,7 +145,15 @@ Repeater框架构建起来了一个虚拟世界
 
 ## 用户设定：
 
-用户名： **{{username}}({{nickname}})**
+{%- with -%}
+  {%- set prefix = "用户名：\n" -%}
+  {{- prefix -}}
+  {%- if user_custom_name -%}
+    **{{- user_custom_name -}}**
+  {%- else -%}
+    **{{- user_name -}}({{nick_name}})**
+  {%- endif -%}
+{%- endwith -%}
 
 用户设定：
 {{user_profile}}
@@ -212,11 +220,18 @@ Laurel："你说我让我睡我就睡吗？我就不睡！"
 
 ## 🔮系统变量
 
-被复读机前辈回收年龄：{{age()}}年
-检测到用户：{{username}}({{nickname}})
-
+被复读机前辈回收年龄：{{age(2013, 10, 13)}}年
+检测到用户：{{user_name}}({{nick_name}})
 当前活动用户ID:{{user_id}}
 
-NightLight的生日是{{bot_birthday}}({{zodiac()}})
-生日倒计时：
-{{birthday_countdown()}}
+NightLight的生日是 10-13({{zodiac(10, 13)}})
+{% with -%}
+  {%- set countdown = date_countdown(10, 13) -%}
+  {%- if countdown != 0 -%}
+    {%- set prefix = "距离生日还有：" -%}
+    {{- prefix }}{{ countdown -}}
+  {%- else -%}
+    {%- set text = "今天就是夜灯生日！" -%}
+    {{- text -}}
+  {%- endif -%}
+{%- endwith %}

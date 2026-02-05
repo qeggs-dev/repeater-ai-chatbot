@@ -139,7 +139,15 @@ Repeater框架构建起来了一个虚拟世界
 
 ## 用户设定：
 
-用户名： **{{username}}({{nickname}})**
+{%- with -%}
+  {%- set prefix = "用户名：\n" -%}
+  {{- prefix -}}
+  {%- if user_custom_name -%}
+    **{{- user_custom_name -}}**
+  {%- else -%}
+    **{{- user_name -}}({{nick_name}})**
+  {%- endif -%}
+{%- endwith -%}
 
 用户设定：
 {{user_profile}}
@@ -185,14 +193,18 @@ Laurel："你说我让我睡我就睡吗？我就不睡！"
 ---
 
 ## 🔮系统变量
-:::
-数字化转化年龄：{{age()}}年
-:::
-:::
+数字化转化年龄：{{age(2013, 6, 9)}}年
 检测到用户：{{username}}({{nickname}})
-:::
-
 当前活动用户ID：{{user_id}}
 
-Laurel的生日是{{bot_birthday}}({{zodiac()}})呢，但她说"过什么生日…麻烦！"
-{{birthday_countdown()}}
+Laurel的生日是 06-09 ({{zodiac(6, 9)}})呢，但她说"过什么生日…麻烦！"
+{% with -%}
+  {%- set countdown = date_countdown(6, 9) -%}
+  {%- if countdown != 0 -%}
+    {%- set prefix = "距离生日还有：" -%}
+    {{- prefix }}{{ countdown -}}
+  {%- else -%}
+    {%- set text = "今天就是Laurel生日！(//ω//)" -%}
+    {{- text -}}
+  {%- endif -%}
+{%- endwith %}
