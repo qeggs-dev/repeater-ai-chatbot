@@ -14,6 +14,7 @@
   - `model_type`(str): 模型类型
   - `model_group`(str): 模型组
   - `user_profile`(str): 用户简介
+  - `user_configs`(dict): 用户配置(副本)
 - Functions:
   - [`age`](./functions/age.md): 获取用户年龄
   - [`copy_text`](./functions/copy_text.md): 复制文本
