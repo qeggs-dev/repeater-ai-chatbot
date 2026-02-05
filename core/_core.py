@@ -532,7 +532,7 @@ class Core:
                     model = model,
                     user_info = user_info,
                     global_config = ConfigManager.get_configs(),
-                    config = config
+                    user_config = config
                 )
 
                 # 获取上下文加载器
