@@ -20,4 +20,4 @@
   - [Prompt Info API](./branch/info.md)
 
 ## 用户管理
-  - [Prompt Users API](./userlist.md)
+  - [Prompt Users API](./user/userlist.md)

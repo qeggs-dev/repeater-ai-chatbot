@@ -60,11 +60,6 @@ class StreamingResponseGenerationLayer:
         # 请求流式连接
         self.request_start_time = TimeStamp()
         self.request_end_time = TimeStamp()
-
-        # 创建响应缓冲区单元
-        self.model_response_content_unit:ContentUnit = ContentUnit()
-        # 设置角色
-        self.model_response_content_unit.role = ContentRole.ASSISTANT
         # chunk计数器
         self.chunk_count:int = 0
         # 空chunk计数器
@@ -78,6 +73,10 @@ class StreamingResponseGenerationLayer:
         self.created:TimeStamp = TimeStamp()
         # chunk耗时列表
         self.chunk_times:list[TimeStamp] = []
+
+        # 文本缓冲区
+        self._content_buffer: list[str] = []
+        self._reasoning_buffer: list[str] = []
 
         self._print_chunk = config_to_log_level(ConfigManager.get_configs().logger.level) > LogLevel.TRACE
     
@@ -99,8 +98,13 @@ class StreamingResponseGenerationLayer:
         self.response.calling_log.cache_miss_count = self.response.token_usage.prompt_cache_miss_tokens
 
         # 添加上下文
-        self.response.context = self.request.context
-        self.response.context.context_list.append(self.model_response_content_unit)
+        self.model_response_content_unit:ContentUnit = ContentUnit()
+        self.model_response_content_unit.role = ContentRole.ASSISTANT
+        if self._reasoning_buffer:
+            self.model_response_content_unit.reasoning_content = "".join(self._reasoning_buffer)
+        if self._content_buffer:
+            self.model_response_content_unit.content = "".join(self._content_buffer)
+        self.response.historical_context = self.request.context
         self.response.new_context.append(self.model_response_content_unit)
 
     def __aiter__(self) -> Self:
@@ -151,35 +155,24 @@ class StreamingResponseGenerationLayer:
         # 记录模型推理响应内容
         if delta_data.reasoning_content:
             if self.request.print_chunk:
-                if not self.model_response_content_unit.reasoning_content:
+                if not self._reasoning_buffer:
                     self._print_file.write("\n\n")
                 if self._print_chunk:
                     self._print_file.write(f"\033[7m{delta_data.reasoning_content}\033[0m")
                     self._print_file.flush()
                 logger.trace("Received Reasoning_Content chunk: {reasoning_content}", user_id = self.user_id, reasoning_content = repr(delta_data.reasoning_content))
-            self.model_response_content_unit.reasoning_content += delta_data.reasoning_content
+            self._reasoning_buffer.append(delta_data.reasoning_content)
         
         # 记录模型响应内容
         if delta_data.content:
             if self.request.print_chunk:
-                if not self.model_response_content_unit.content:
+                if not self._content_buffer:
                     self._print_file.write("\n\n")
                 if self._print_chunk:
                     self._print_file.write(delta_data.content)
                     self._print_file.flush()
                 logger.trace("Received Content chunk: {content}", user_id = self.user_id, content = repr(delta_data.content))
-            self.model_response_content_unit.content += delta_data.content
-        
-        # 记录模型工具调用内容
-        if delta_data.function_id:
-            self.model_response_content_unit.funcResponse.callingFunctionResponse.append(
-                FunctionResponseUnit(
-                    id = delta_data.function_id,
-                    type = delta_data.function_type,
-                    name = delta_data.function_name,
-                    arguments_str = delta_data.function_arguments,
-                )
-            )
+            self._content_buffer.append(delta_data.content)
         
         if delta_data.system_fingerprint:
             self.response.system_fingerprint = delta_data.system_fingerprint

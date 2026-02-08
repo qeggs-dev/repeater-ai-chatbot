@@ -27,3 +27,6 @@ class InvalidPromptPathError(ContextManagerException):
 
 class IndexOutOfRangeError(ContextObjectException):
     pass
+
+class ContentUnitError(ContextObjectException):
+    pass

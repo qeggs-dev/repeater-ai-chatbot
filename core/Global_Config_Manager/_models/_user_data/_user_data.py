@@ -12,4 +12,5 @@ class User_Data_Config(BaseModel):
     metadata_file_name: str = "metadata.json"
     cache_medadata: bool | Cache_Data_Config = False
     cache_data: bool | Cache_Data_Config = False
+    cross_user_data_access: bool = False
     metadata_fields:MetadataFields = Field(default_factory=MetadataFields)

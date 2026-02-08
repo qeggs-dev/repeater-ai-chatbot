@@ -6,10 +6,13 @@ Repeater 提供了许多接口，
 ## Normal API
   - [Chat API](./chat_api.md)
   - [Render API](./render_api.md)
-  - [Request Log API](./request_log/index.md)
-  - [User Data API](./userdata_api/index.md)
   - [Variable Expand API](./variable_expand.md)
-  - [Version API](./version_api.md)
+
+## Statistics API
+  - [Request Log API](./request_log/index.md)
+
+## User Data API
+  - [User Data API](./userdata_api/index.md)
 
 ## Admin API
   - [Admin API](./admin_api/index.md)
@@ -20,3 +23,10 @@ Repeater 提供了许多接口，
 
 ## API Error
   - [API Error](./error.md)
+
+## Model API
+  - [Model API](./model_api/index.md)
+
+## Server Info API
+  - [License API](./license_api.md)
+  - [Version API](./version_api.md)
