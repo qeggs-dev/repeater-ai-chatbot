@@ -763,32 +763,33 @@ class Core:
         saved_user_id = cross_user_data_routing.context.save_to_user_id
 
         # 展开模型输出内容中的变量
-        for index in range(len(response.new_context.context_list)):
-            content_unit = response.new_context.context_list[index]
-            content = content_unit.content
-            if isinstance(content, str):
-                content = await asyncio.to_thread(
-                    template_parser.render_ex,
-                    content,
+        def expand_variables():
+            for index in range(len(response.new_context.context_list)):
+                content_unit = response.new_context.context_list[index]
+                content = content_unit.content
+                if isinstance(content, str):
+                    content = template_parser.render_ex(
+                        content,
+                        user_id,
+                    )
+                    content_unit.content = content
+                else:
+                    content = content_unit.to_plaintext_content()
+                    content = template_parser.render_ex(
+                        content,
+                        user_id
+                    )
+                    content_unit.remove_context_block(TextBlock)
+                    content_unit.content.append(
+                        TextBlock(content)
+                    )
+                content_unit.reasoning_content = template_parser.render_ex(
+                    content_unit.reasoning_content,
                     user_id,
                 )
-                content_unit.content = content
-            else:
-                content = content_unit.to_plaintext_content()
-                content = await asyncio.to_thread(
-                    template_parser.render_ex,
-                    content,
-                    user_id
-                )
-                content_unit.remove_context_block(TextBlock)
-                content_unit.content.append(
-                    TextBlock(content)
-                )
-            content_unit.reasoning_content = await asyncio.to_thread(
-                template_parser.render_ex,
-                content_unit.reasoning_content,
-                user_id,
-            )
+        
+        # 通过合并频繁的同步操作，减少创建 Thread 带来的开销
+        await asyncio.to_thread(expand_variables)
         
         if cross_user_data_routing.context.save_to_user_id == user_id:
             historical_context = response.historical_context
