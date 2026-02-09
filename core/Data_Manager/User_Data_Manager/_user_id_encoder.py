@@ -9,11 +9,6 @@ def user_id_encode(user_id: str) -> str:
         encoded = base64.urlsafe_b64encode(
             user_id.encode("utf-8")
         ).decode("utf-8")
-        logger.info(
-            "Encoded user_id: {user_id} -> {encoded}",
-            user_id=user_id,
-            encoded=encoded
-        )
         return "b64_" + encoded
     else:
         return user_id
@@ -23,11 +18,6 @@ def user_id_decode(user_id: str) -> str:
         decoded = base64.urlsafe_b64decode(
             user_id[4:].encode("utf-8")
         ).decode("utf-8")
-        logger.debug(
-            "Decoded user_id: {user_id} -> {decoded}",
-            user_id=user_id,
-            decoded=decoded
-        )
         return decoded
     else:
         return user_id
