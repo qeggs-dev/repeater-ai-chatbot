@@ -1,3 +1,5 @@
+import asyncio
+
 from ..._resource import Resource
 from fastapi.responses import PlainTextResponse
 from ....Text_Template_Processer import TemplateParser
@@ -25,7 +27,8 @@ async def expand_variables(user_id: str, request: ExpandVariableRequest):
 
     # 调用PromptVP类处理文本
     try:
-        output = template_parser.render_ex(
+        output = await asyncio.to_thread(
+            template_parser.render_ex,
             request.text,
             user_id = user_id,
         )
