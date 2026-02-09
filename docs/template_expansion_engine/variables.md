@@ -1,6 +1,6 @@
 # 模板变量表
 
-- Variables:
+- **Variables:**
   - `version`(str): 当前版本号
   - `user_id`(str): 用户ID
   - `user_name`(str): 用户名
@@ -15,7 +15,7 @@
   - `model_group`(str): 模型组
   - `user_profile`(str): 用户简介
   - `user_configs`(dict): 用户配置(副本)
-- Functions:
+- **Functions:**
   - [`age`](./functions/age.md): 获取用户年龄
   - [`copy_text`](./functions/copy_text.md): 复制文本
   - [`date_countdown`](./functions/date_countdown.md): 获取日期倒计时
