@@ -1,4 +1,5 @@
 import html
+import asyncio
 import markdown
 from ._extensions import (
     BrExtension,
@@ -72,7 +73,8 @@ async def markdown_to_html(
 
     template: Template = environment.from_string(html_template)
 
-    full_html = template.render(
+    full_html = await asyncio.to_thread(
+        template.render,
         markdown = input_text,
         html_content = html_content,
         css = css,
