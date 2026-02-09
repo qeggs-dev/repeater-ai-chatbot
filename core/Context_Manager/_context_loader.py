@@ -1,4 +1,5 @@
 # ==== 标准库 ==== #
+import asyncio
 import aiofiles
 from pathlib import Path
 import orjson
@@ -98,7 +99,7 @@ class ContextLoader:
         
         # 展开变量
         if template_parser is not None:
-            prompt = self._expand_variables(
+            prompt = await self._expand_variables(
                 user_id = user_id,
                 prompt = prompt,
                 template_parser = template_parser
@@ -165,7 +166,7 @@ class ContextLoader:
         context.prompt = prompt
         return context
     
-    def make_user_content(
+    async def make_user_content(
             self,
             user_id: str,
             new_message: str,
@@ -186,7 +187,7 @@ class ContextLoader:
         """
         content = ContentUnit()
         if template_parser is not None:
-            new_message = self._expand_variables(
+            new_message = await self._expand_variables(
                 user_id = user_id,
                 prompt = new_message,
                 template_parser = template_parser
@@ -231,7 +232,7 @@ class ContextLoader:
         content.role_name = role_name
         return content
     
-    def _expand_variables(self, user_id: str, prompt: str, template_parser: TemplateParser) -> str:
+    async def _expand_variables(self, user_id: str, prompt: str, template_parser: TemplateParser) -> str:
         """
         展开变量
 
@@ -239,7 +240,8 @@ class ContextLoader:
         :param user_id: 用户ID
         :param template_parser: 模板解析器
         """
-        return template_parser.render_ex(
+        return asyncio.to_thread(
+            template_parser.render_ex,
             text = prompt,
             user_id = user_id,
         )
