@@ -239,7 +239,7 @@ class Core:
     # endregion
 
     # region Make User Content
-    def make_user_content(
+    async def make_user_content(
         self,
         context_loader: ContextLoader,
         user_id: str,
@@ -254,7 +254,7 @@ class Core:
             logger.warning("Removed Additional Data", user_id=user_id)
             image_url = None
         
-        user_input: ContentUnit = context_loader.make_user_content(
+        user_input: ContentUnit = await context_loader.make_user_content(
             user_id = user_id,
             new_message = message,
             role = role,
@@ -558,7 +558,7 @@ class Core:
                 if new_requests_text_only is None:
                     new_requests_text_only = ConfigManager.get_configs().context.new_requests_text_only
                 
-                user_input: ContentUnit = self.make_user_content(
+                user_input: ContentUnit = await self.make_user_content(
                     context_loader = context_loader,
                     user_id = user_id,
                     message = message,
@@ -767,14 +767,16 @@ class Core:
             content_unit = response.new_context.context_list[index]
             content = content_unit.content
             if isinstance(content, str):
-                content = template_parser.render_ex(
+                content = await asyncio.to_thread(
+                    template_parser.render_ex,
                     content,
                     user_id,
                 )
                 content_unit.content = content
             else:
                 content = content_unit.to_plaintext_content()
-                content = template_parser.render_ex(
+                content = await asyncio.to_thread(
+                    template_parser.render_ex,
                     content,
                     user_id
                 )
@@ -782,7 +784,8 @@ class Core:
                 content_unit.content.append(
                     TextBlock(content)
                 )
-            content_unit.reasoning_content = template_parser.render_ex(
+            content_unit.reasoning_content = await asyncio.to_thread(
+                template_parser.render_ex,
                 content_unit.reasoning_content,
                 user_id,
             )
