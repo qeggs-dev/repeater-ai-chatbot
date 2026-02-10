@@ -324,7 +324,7 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
         },
 
         // 默认用户信息
-        // 当用户未填写用户信息时，将使用此信息
+        // 当用户未填写个人设定时，将使用此文本作为值
         "default_user_profile": "The user has not filled out the field for the time being."
     },
 
