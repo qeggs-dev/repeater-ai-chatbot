@@ -321,7 +321,11 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
             // 时间格式字符串
             // 在 time 函数未指定 time_format 参数时使用
             "time_format": "%Y-%m-%d(%A) %H:%M:%S %Z"
-        }
+        },
+
+        // 默认用户信息
+        // 当用户未填写用户信息时，将使用此信息
+        "default_user_profile": "The user has not filled out the field for the time being."
     },
 
     // Prompt 配置
