@@ -232,21 +232,28 @@ class ClientBase(ABC):
         logger.info(
             "Total Time: {total_time:.2f}s({format_time_duration})",
             user_id = user_id,
-            total_time = total_time,
+            total_time = total_time / 1e9,
             format_time_duration = format_time_duration_ns(total_time, use_abbreviation=True)
         )
+        preprocessing_time = response.calling_log.request_start_time.monotonic - response.calling_log.task_start_time.monotonic
+        logger.info(
+            "Preprocessing Time: {preprocessing_time:.2f}s({format_time_duration})",
+            user_id = user_id,
+            preprocessing_time = preprocessing_time / 1e9,
+            format_time_duration = format_time_duration_ns(preprocessing_time, use_abbreviation=True)
+        ) 
         requests_time = response.calling_log.request_end_time.monotonic - response.calling_log.request_start_time.monotonic
         logger.info(
             "API Request Time: {requests_time:.2f}s({format_time_duration})",
             user_id = user_id,
-            requests_time = requests_time / 10**9,
+            requests_time = requests_time / 1e9,
             format_time_duration = format_time_duration_ns(requests_time, use_abbreviation=True)
         )
         stream_processing_time = response.calling_log.stream_processing_end_time.monotonic - response.calling_log.stream_processing_start_time.monotonic
         logger.info(
             "Stream Processing Time: {stream_processing_time:.2f}s({format_time_duration})",
             user_id = user_id,
-            stream_processing_time = stream_processing_time / 10**9,
+            stream_processing_time = stream_processing_time / 1e9,
             format_time_duration = format_time_duration_ns(stream_processing_time, use_abbreviation=True)
         )
 
@@ -273,7 +280,7 @@ class ClientBase(ABC):
             max_chunk_spawn_time = int(np.max(time_differences))
             min_chunk_spawn_time = int(np.min(non_zero_time_differences))
             ave_chunk_spawn_time = int(np.mean(time_differences))
-            chunk_generation_rate = 10**9 / ave_chunk_spawn_time
+            chunk_generation_rate = 1e9 / ave_chunk_spawn_time
             chunk_stability_cv = self._calculate_stability_cv(time_differences)
             logger.info(
                 "Chunk Generation Rate: {chunk_generation_rate:.2f} Chunks/s",
@@ -309,6 +316,11 @@ class ClientBase(ABC):
             "Total Tokens: {total_tokens}",
             user_id = user_id,
             total_tokens = response.token_usage.total_tokens
+        )
+        logger.info(
+            "Generation Speed: {generation_speed:.2%}",
+            user_id = user_id,
+            generation_speed = response.token_usage.total_tokens / stream_processing_time
         )
         logger.info(
             "Context Input Tokens: {prompt_tokens}",
