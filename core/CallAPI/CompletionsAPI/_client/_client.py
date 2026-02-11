@@ -256,6 +256,12 @@ class ClientBase(ABC):
             stream_processing_time = stream_processing_time / 1e9,
             format_time_duration = format_time_duration_ns(stream_processing_time, use_abbreviation=True)
         )
+        
+        logger.info(
+            "Generation Speed: {generation_speed}Tokens/s",
+            user_id = user_id,
+            generation_speed = response.token_usage.total_tokens / (stream_processing_time / 1e9)
+        )
 
         created_utc_dt = datetime.fromtimestamp(response.created, tz=timezone.utc)
         created_utc_str = created_utc_dt.strftime("%Y-%m-%d %H:%M:%S (UTC)")
@@ -290,19 +296,19 @@ class ClientBase(ABC):
             logger.info(
                 "Chunk Average Spawn Time: {ave_chunk_spawn_time:.2f}ms({format_time_duration})",
                 user_id = user_id,
-                ave_chunk_spawn_time = ave_chunk_spawn_time / 10**6,
+                ave_chunk_spawn_time = ave_chunk_spawn_time / 1e6,
                 format_time_duration = format_time_duration_ns(ave_chunk_spawn_time, use_abbreviation=True)
             )
             logger.info(
                 "Chunk Max Spawn Time: {max_chunk_spawn_time:.2f}ms({format_time_duration})",
                 user_id = user_id,
-                max_chunk_spawn_time = max_chunk_spawn_time / 10**6,
+                max_chunk_spawn_time = max_chunk_spawn_time / 1e6,
                 format_time_duration = format_time_duration_ns(max_chunk_spawn_time, use_abbreviation=True)
             )
             logger.info(
                 "Chunk Min Spawn Time: {min_chunk_spawn_time:.2f}ms({format_time_duration})",
                 user_id = user_id,
-                min_chunk_spawn_time = min_chunk_spawn_time / 10**6,
+                min_chunk_spawn_time = min_chunk_spawn_time / 1e6,
                 format_time_duration = format_time_duration_ns(min_chunk_spawn_time, use_abbreviation=True)
             )
             logger.info(
@@ -316,11 +322,6 @@ class ClientBase(ABC):
             "Total Tokens: {total_tokens}",
             user_id = user_id,
             total_tokens = response.token_usage.total_tokens
-        )
-        logger.info(
-            "Generation Speed: {generation_speed:.2%}",
-            user_id = user_id,
-            generation_speed = response.token_usage.total_tokens / stream_processing_time
         )
         logger.info(
             "Context Input Tokens: {prompt_tokens}",
