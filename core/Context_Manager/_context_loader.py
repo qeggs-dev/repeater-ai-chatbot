@@ -240,7 +240,7 @@ class ContextLoader:
         :param user_id: 用户ID
         :param template_parser: 模板解析器
         """
-        return asyncio.to_thread(
+        return await asyncio.to_thread(
             template_parser.render_ex,
             text = prompt,
             user_id = user_id,
