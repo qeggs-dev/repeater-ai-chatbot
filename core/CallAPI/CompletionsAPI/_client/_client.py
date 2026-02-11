@@ -228,6 +228,7 @@ class ClientBase(ABC):
             )
         
         logger.info("========== Time Statistics =========", user_id = user_id)
+        
         total_time = response.calling_log.stream_processing_end_time.monotonic - response.calling_log.request_start_time.monotonic
         logger.info(
             "Total Time: {total_time:.2f}s({format_time_duration})",
@@ -235,13 +236,15 @@ class ClientBase(ABC):
             total_time = total_time / 1e9,
             format_time_duration = format_time_duration_ns(total_time, use_abbreviation=True)
         )
-        preprocessing_time = response.calling_log.request_start_time.monotonic - response.calling_log.task_start_time.monotonic
+
+        preprocessing_time = response.calling_log.prepare_end_time.monotonic - response.calling_log.prepare_start_time.monotonic
         logger.info(
-            "Preprocessing Time: {preprocessing_time:.2f}s({format_time_duration})",
+            "Preprocessing Time: {preprocessing_time:.2f}ms({format_time_duration})",
             user_id = user_id,
-            preprocessing_time = preprocessing_time / 1e9,
+            preprocessing_time = preprocessing_time / 1e6,
             format_time_duration = format_time_duration_ns(preprocessing_time, use_abbreviation=True)
-        ) 
+        )
+
         requests_time = response.calling_log.request_end_time.monotonic - response.calling_log.request_start_time.monotonic
         logger.info(
             "API Request Time: {requests_time:.2f}s({format_time_duration})",
@@ -249,6 +252,7 @@ class ClientBase(ABC):
             requests_time = requests_time / 1e9,
             format_time_duration = format_time_duration_ns(requests_time, use_abbreviation=True)
         )
+
         stream_processing_time = response.calling_log.stream_processing_end_time.monotonic - response.calling_log.stream_processing_start_time.monotonic
         logger.info(
             "Stream Processing Time: {stream_processing_time:.2f}s({format_time_duration})",
@@ -256,9 +260,9 @@ class ClientBase(ABC):
             stream_processing_time = stream_processing_time / 1e9,
             format_time_duration = format_time_duration_ns(stream_processing_time, use_abbreviation=True)
         )
-        
+
         logger.info(
-            "Generation Speed: {generation_speed}Tokens/s",
+            "Generation Speed: {generation_speed} Tokens/s",
             user_id = user_id,
             generation_speed = response.token_usage.total_tokens / (stream_processing_time / 1e9)
         )
