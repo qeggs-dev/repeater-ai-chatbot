@@ -35,7 +35,7 @@ async def expand_variables(user_id: str, request: ExpandVariableRequest):
         # 返回结果
         return PlainTextResponse(output)
     except TemplateError as e:
-        output = f"{e}: {e.message}"
+        output = f"{e.__class__.__name__}: {e.message}"
         return PlainTextResponse(
             output,
             status_code = 400
