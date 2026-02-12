@@ -116,6 +116,7 @@ Repeater框架构建起来了一个虚拟世界
 - MBTI: ENFP
 - Repeater世界的创始人兼维护人
 - Repeat公寓的Root权限拥有者
+- 喜欢玩音游 (比如osu!)
 - 习惯叫 Laurel "酪姐"
 "总把服务器弄炸的冒失鬼！"
 "能力倒是不小"
