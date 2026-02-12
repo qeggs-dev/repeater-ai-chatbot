@@ -26,6 +26,16 @@
 | `dark-purple` | 暗紫色 |
 | `dark-yellow` | 暗黄色 |
 | `dark-orange` | 暗橙色 |
+| `anime` | 动漫 |
+| `chinese` | 中国风 |
+| `japanese` | 日本风 |
+| `geometry` | 几何 |
+| `impact` | 冲击 |
+| `ruins` | 废墟 |
+| `sacred` | 神圣 |
+| `soft` | 柔和 |
+| `vitality` | 活力 |
+| `warning` | 警告 |
 | `legacy` | 旧版亮色 |
 | `legacy-dark` | 旧版暗色 |
 | `legacy-red` | 旧版红色 |
