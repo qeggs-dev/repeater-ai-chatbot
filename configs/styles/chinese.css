@@ -1,0 +1,420 @@
+:root {
+    /* 中国风 · 水墨朱砂 */
+    --chinese-gold: #c49a6c;
+    --chinese-red: #9e2a2b;
+    --chinese-ink: #2b2b2b;
+    --chinese-paper: #fef3e2;
+    --chinese-cyan: #4a7c7c;
+    --chinese-bamboo: #5f8575;
+    --chinese-ash: #bc9a6c;
+    --chinese-gray: #5d5348;
+    --chinese-light-paper: #fff9ef;
+    --chinese-seal: #b34141;
+    --chinese-ink-wash: rgba(43, 43, 43, 0.06);
+    --chinese-cloud: rgba(255, 245, 235, 0.7);
+}
+
+/* 中国风 · 水墨底色 */
+body {
+    background: linear-gradient(145deg, #e7d9c5 0%, #d6c5b0 100%);
+    font-family: "Songti SC", "Noto Serif SC", "SimSun", "宋体", "Times New Roman", serif;
+    color: var(--chinese-ink);
+    position: relative;
+}
+
+.geometric-bg {
+    opacity: 0.4;
+    mix-blend-mode: multiply;
+}
+
+/* 水墨晕染背景元素 —— 由JS生成的几何图形会叠加墨韵 */
+.geometric-bg div {
+    background: rgba(155, 110, 80, 0.06) !important;  /* 统一墨色 */
+    border-radius: 60% 40% 50% 50% / 45% 55% 45% 55% !important; /* 不规则边缘，仿泼墨 */
+    filter: blur(25px) !important;
+    transform: scale(1.2) !important;
+}
+
+/* 标题区：增加中式匾额风格 */
+.title-area h1.title-header {
+    font-family: "Noto Serif SC", "Songti SC", serif;
+    font-size: 2.4rem;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    background: none;
+    -webkit-background-clip: unset;
+    background-clip: unset;
+    color: var(--chinese-red);
+    text-shadow: 2px 2px 4px rgba(120, 70, 40, 0.1);
+    border-bottom: 2px solid var(--chinese-gold);
+    display: inline-block;
+    padding-bottom: 8px;
+    position: relative;
+}
+
+.title-area h1.title-header::before,
+.title-area h1.title-header::after {
+    content: "❁";
+    color: var(--chinese-gold);
+    font-size: 1.4rem;
+    margin: 0 12px;
+    opacity: 0.7;
+}
+
+/* 主容器：仿古书页 + 装订线 */
+.content-container {
+    background: var(--chinese-light-paper);
+    border-radius: 2px 2px 32px 2px;
+    box-shadow: 
+        0 15px 30px rgba(60, 40, 20, 0.2),
+        0 5px 12px rgba(100, 70, 40, 0.1),
+        inset 0 0 0 1px rgba(200, 170, 130, 0.4);
+    border: none;
+    border-left: 6px solid var(--chinese-gold);
+    position: relative;
+    padding: 48px 48px 48px 56px;
+}
+
+/* 装订线仿古籍 */
+.content-container::before {
+    display: block;
+    content: '';
+    position: absolute;
+    left: 16px;
+    top: 20px;
+    bottom: 20px;
+    width: 2px;
+    background: repeating-linear-gradient(
+        to bottom,
+        var(--chinese-gold) 0px,
+        var(--chinese-gold) 8px,
+        transparent 8px,
+        transparent 16px
+    );
+    opacity: 0.4;
+}
+
+/* 移除原有title-bar，代以中式挂轴 */
+.title-bar {
+    display: none;
+}
+.content-container .title-bar + * { /* 适配原结构：隐藏原有的bar，新增装饰 */
+    position: relative;
+}
+
+/* 中式“开光”或“窗格”点缀 */
+.content-container::after {
+    content: "⿅";
+    position: absolute;
+    bottom: 16px;
+    right: 24px;
+    font-size: 42px;
+    color: var(--chinese-gold);
+    opacity: 0.18;
+    font-family: "KaiTi", "楷体", serif;
+    transform: rotate(6deg);
+}
+
+/* 所有正文标题 增加印章风格下划线 */
+.content-container h1,
+.content-container h2,
+.content-container h3 {
+    font-family: "Noto Serif SC", "Songti SC", serif;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    border-bottom: none;
+    position: relative;
+    display: inline-block;  /* 适应中文标题长度 */
+    padding-right: 0.5em;
+}
+
+.content-container h1 {
+    color: #5f3e34;
+    background: none;
+    -webkit-background-clip: unset;
+    background-clip: unset;
+    color: #6f4e3c;
+    font-size: 2.2rem;
+    border-left: 8px solid var(--chinese-red);
+    padding-left: 20px;
+    margin-top: 0.5em;
+    margin-bottom: 0.8em;
+    width: 100%;
+}
+
+.content-container h1::after {
+    display: none; /* 移除原有装饰条 */
+}
+
+/* 朱砂红标题点缀——仿印章 */
+.content-container h2 {
+    color: #7b3e3e;
+    font-size: 1.8rem;
+    border-bottom: 1px dashed var(--chinese-gold);
+    padding-bottom: 6px;
+    width: 100%;
+}
+
+.content-container h2::before {
+    content: "⚘";
+    color: var(--chinese-red);
+    font-size: 1.6rem;
+    margin-right: 8px;
+    opacity: 0.7;
+    vertical-align: middle;
+}
+
+.content-container h3 {
+    color: #4e3e37;
+    border-left: 4px solid var(--chinese-ash);
+    padding-left: 14px;
+    font-size: 1.5rem;
+}
+
+.content-container h4 {
+    color: #62524b;
+    font-weight: 600;
+    border-bottom: 1px dotted var(--chinese-gold);
+    display: inline-block;
+    padding-bottom: 4px;
+}
+
+/* 段落：首行缩进两字，竖排不适于web，保持横排但增加仿古籍韵味 */
+.content-container p {
+    font-family: "Songti SC", "Noto Serif SC", serif;
+    font-size: 1.1rem;
+    line-height: 1.95;
+    color: #3e3a37;
+    margin: 1.4em 0;
+    text-align: justify;
+    text-justify: inter-ideograph;
+    text-indent: 2em; /* 首行缩进2字符，中式排版特色 */
+    letter-spacing: 0.02em;
+    word-spacing: 0.05em;
+    width: 100%;
+}
+
+/* 首段不下沉，但可以加引首章效果 */
+.content-container p:first-of-type::first-letter {
+    font-size: 2.2em;
+    float: left;
+    line-height: 0.85;
+    margin-right: 0.15em;
+    color: var(--chinese-red);
+    font-family: "KaiTi", serif;
+    font-weight: 600;
+    border: 1px solid var(--chinese-gold);
+    padding: 0.1em 0.2em;
+    background: rgba(196, 154, 108, 0.08);
+}
+
+/* 链接改作仿绶带式样 */
+.content-container a {
+    color: #6b4f3a;
+    text-decoration: none;
+    border-bottom: 1px solid var(--chinese-gold);
+    transition: border 0.2s ease;
+    font-weight: 500;
+    background: linear-gradient(to right, rgba(196,154,108,0.1), transparent);
+}
+
+.content-container a:hover {
+    color: #9e2a2b;
+    border-bottom: 2px solid var(--chinese-red);
+    background: rgba(190, 140, 90, 0.05);
+}
+
+.content-container a::after {
+    display: none; /* 移除下划线动画，已用border代替 */
+}
+
+/* 列表 改为中式传统符号 */
+.content-container ul {
+    list-style: none;
+    padding-left: 1.8em;
+}
+
+.content-container ul li {
+    position: relative;
+    margin-bottom: 0.7em;
+}
+
+.content-container ul li::before {
+    content: "❦";  /* 中式花符 */
+    color: var(--chinese-red);
+    font-weight: 400;
+    position: absolute;
+    left: -1.2em;
+    top: -0.05em;
+    font-size: 1.2rem;
+    opacity: 0.8;
+}
+
+.content-container ol {
+    padding-left: 2em;
+    list-style: none;
+    counter-reset: chinese-counter;
+}
+
+.content-container ol li {
+    counter-increment: chinese-counter;
+    position: relative;
+    margin-bottom: 0.7em;
+}
+
+.content-container ol li::before {
+    content: "第" counter(chinese-counter) "则";
+    color: var(--chinese-gold);
+    font-weight: 500;
+    position: absolute;
+    left: -4.5em;
+    width: 4em;
+    text-align: right;
+    font-size: 0.9rem;
+    letter-spacing: 2px;
+    border-right: 2px solid var(--chinese-gold);
+    padding-right: 10px;
+    opacity: 0.9;
+}
+
+/* 引用块：竖线装饰，仿古籍眉批 */
+.content-container blockquote {
+    background: #f9f1e6;
+    border-left: 6px solid var(--chinese-cyan);
+    border-radius: 0 12px 12px 0;
+    padding: 1.4em 2em;
+    margin: 1.8em 0;
+    font-family: "KaiTi", serif;
+    color: #4d4a46;
+    box-shadow: inset 0 0 0 1px rgba(128, 108, 80, 0.1);
+    position: relative;
+}
+
+.content-container blockquote::before {
+    content: "「」";
+    font-size: 3.2rem;
+    color: var(--chinese-cyan);
+    opacity: 0.2;
+    position: absolute;
+    left: 8px;
+    top: -8px;
+    font-family: "Noto Serif SC", serif;
+    transform: rotate(5deg);
+}
+
+/* 代码块：仿碑拓风格 */
+.content-container pre {
+    background: #37322e;
+    color: #ede7d9;
+    border-left: 8px solid #a65e4e;
+    border-radius: 0 12px 12px 0;
+    box-shadow: 0 8px 16px rgba(30, 25, 20, 0.3);
+    font-family: "Fira Code", "Consolas", monospace;
+    padding: 1.4em 1.8em;
+}
+
+.content-container pre code {
+    color: #f5eeda;
+    text-shadow: 0 0 5px #68422c;
+    font-size: 0.95rem;
+}
+
+.content-container code:not(pre code) {
+    background: #e2dcd0;
+    color: #a13a2f;
+    border: 1px solid #bc9a6c;
+    border-radius: 4px;
+    padding: 0.15em 0.6em;
+    font-weight: 500;
+    white-space: nowrap;
+}
+
+/* 表格：加细框，表头仿织锦 */
+.content-container table {
+    border-collapse: collapse;
+    width: 100%;
+    border: 1px solid #c0a086;
+    font-family: "Noto Serif SC", serif;
+}
+
+.content-container th {
+    background: #b0875a;
+    color: #fffcf0;
+    font-weight: 600;
+    padding: 0.9em 1.2em;
+    border: 1px solid #9f7a5b;
+    letter-spacing: 2px;
+}
+
+.content-container td {
+    padding: 0.7em 1em;
+    border: 1px solid #d6c0aa;
+    background: #fffbf4;
+}
+
+.content-container tr:nth-child(even) td {
+    background: #faefe5;
+}
+
+/* 图片增加中式装裱效果 */
+.content-container img {
+    border-radius: 4px;
+    border: 12px solid #efe1cf;
+    box-shadow: 0 8px 20px rgba(70, 50, 30, 0.2);
+    padding: 8px;
+    background: #fff3e4;
+    transform: rotate(0.2deg);
+}
+
+/* 水平线：波浪纹 */
+.content-container hr {
+    border: none;
+    height: 2px;
+    background: repeating-linear-gradient(90deg, #b2947c, #b2947c 6px, transparent 6px, transparent 14px);
+    margin: 2.2em 0;
+}
+
+/* 落款区域 ———— 预留印章风格 */
+.content-container .signature,
+.content-container .muted {
+    font-family: "KaiTi", serif;
+    color: #8c6e54;
+    text-align: right;
+    border-top: 1px solid #c9ad93;
+    padding-top: 12px;
+    margin-top: 30px;
+    font-size: 0.95rem;
+    position: relative;
+}
+
+.content-container .signature::after {
+    content: "●印";
+    color: #b34141;
+    font-size: 0.8rem;
+    margin-left: 12px;
+    border: 1px solid #b55a4a;
+    padding: 2px 6px;
+    border-radius: 2px;
+    opacity: 0.9;
+}
+
+/* 移动端适配：保持古籍手感 */
+@media (max-width: 768px) {
+    .content-container {
+        padding: 32px 24px 32px 40px;
+        border-left-width: 4px;
+    }
+    .content-container::before {
+        left: 12px;
+    }
+    .content-container h1 {
+        font-size: 1.8rem;
+    }
+    .content-container p {
+        text-indent: 1.8em;
+    }
+    .content-container ol li::before {
+        left: -4em;
+        width: 3.2em;
+    }
+}
