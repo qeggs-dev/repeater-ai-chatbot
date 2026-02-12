@@ -1,20 +1,18 @@
-/* 
- * 日系和风 (Japanese) 艺术化变种
- * 灵感：侘寂、悬川、纸墨、浮世绘
- * 特点：柔和暖调、和纸纹理、墨色渐变、金线点缀
- */
+/* =========  japanese / 和モダン・ベクター風 ========= */
+/* 意象：琳派水文、市松格子、朱印、薄茶金箔、铃虫抄 */
 :root {
-    --japanese-sumi: #1a1b1e;        /* 墨黑 */
-    --japanese-washi: #fbfaf5;       /* 和纸白 */
-    --japanese-kaki: #c17c5e;        /* 柿色 (温和红棕) */
-    --japanese-matcha: #809671;      /* 抹茶绿 */
-    --japanese-ai: #5d7a7c;          /* 蓝染 (蓝绿) */
-    --japanese-kin: #c4a77d;         /* 金茶 (点缀) */
-    --japanese-sakura: #f3d7d3;      /* 樱粉极淡 */
-    --japanese-ume: #c27f7a;         /* 梅子色 */
-    --japanese-take: #7a8b74;        /* 竹绿 */
-    --gray-fog: #ece8e0;            /* 霞雾 */
-    --gray-cloud: #d6d2c4;           /* 云灰 */
+    /* 日系传统色 – 雅致・低饱和・大地与植物 */
+    --japanese-indigo: #1e3a4e;      /* 蓝染/紺 */
+    --japanese-vermilion: #b3412d;   /* 朱红・印泥色 */
+    --japanese-washi: #fef9e7;       /* 和纸白 */
+    --japanese-kiri: #b89a7b;        /* 桐色・暖灰褐 */
+    --japanese-matcha: #5f6b3d;       /* 抹茶 */
+    --japanese-susuki: #d6c294;       /* 薄穂・芒草 */
+    --japanese-ume: #e9cacb;          /* 梅鼠 */
+    --japanese-murasaki: #6f4b5e;      /* 紫・江戸紫 */
+    --japanese-waves: #d6e2e0;        /* 薄水色・波纹 */
+    --gold-soft: rgba(226, 191, 130, 0.2); /* 金箔光 */
+    --ink: #2b2b2b;                  /* 墨色 */
 }
 
 * {
@@ -24,23 +22,25 @@
 }
 
 body {
-    font-family: "Yu Gothic", "游ゴシック", "Hiragino Sans", "Noto Sans JP", "Helvetica Neue", sans-serif;
-    background: #e3dbcf;  /* 背景模仿古代草纸 */
-    background-image: radial-gradient(circle at 30% 40%, rgba(193, 124, 94, 0.03) 2px, transparent 2px),
-                      radial-gradient(circle at 70% 80%, rgba(128, 150, 113, 0.03) 1px, transparent 2px);
-    background-size: 40px 40px, 30px 30px;
-    color: var(--japanese-sumi);
+    font-family: "游明朝", YuMincho, "Hiragino Mincho ProN", "Hiragino Mincho Pro", "MS PMincho", "Times New Roman", "Noto Serif JP", serif;
+    background: var(--japanese-washi);
+    color: var(--japanese-indigo);
     min-height: 100vh;
-    padding: 20px 16px;
+    padding: 20px;
     display: flex;
     flex-direction: column;
     align-items: center;
+    justify-content: flex-start;
     position: relative;
     line-height: 1.8;
-    letter-spacing: 0.02em;
+    letter-spacing: 0.03em;
+    background-image: 
+        radial-gradient(circle at 10% 30%, rgba(214, 194, 148, 0.1) 0px, transparent 25%),
+        radial-gradient(circle at 95% 70%, rgba(179, 65, 45, 0.03) 0px, transparent 35%),
+        linear-gradient(to bottom, rgba(254, 249, 231, 0.4), rgba(251, 244, 222, 0.8));
 }
 
-/* 和纸纹理层（几何背景替换为和风朦胧光晕） */
+/* 几何背景 — 日式波纹+市松纹，极浅矢量感 */
 .geometric-bg {
     position: fixed;
     top: 0;
@@ -49,390 +49,447 @@ body {
     height: 100%;
     z-index: 0;
     pointer-events: none;
-    opacity: 0.5;
-    background: repeating-linear-gradient(45deg, rgba(199, 178, 153, 0.1) 0px, rgba(199, 178, 153, 0.1) 2px,
-                                          transparent 2px, transparent 8px),
-                radial-gradient(ellipse at 30% 50%, rgba(193,124,94,0.08) 0%, transparent 50%),
-                radial-gradient(ellipse at 80% 70%, rgba(128,150,113,0.06) 0%, transparent 60%);
+    opacity: 0.3;
+    background-size: 48px 48px, 32px 32px, 100% 100%;
+    background-image: 
+        /* 市松格子 (ichimatsu) – 极细矢印风格 */
+        linear-gradient(45deg, rgba(94, 107, 61, 0.08) 25%, transparent 25%),
+        linear-gradient(-45deg, rgba(94, 107, 61, 0.08) 25%, transparent 25%),
+        /* 流水・青海波风 – 透明感波纹 */
+        repeating-linear-gradient(90deg, 
+            rgba(179, 141, 106, 0.02) 0px, 
+            rgba(179, 141, 106, 0.02) 2px, 
+            transparent 2px, 
+            transparent 16px);
+    background-position: 0 0, 0 0, 0 0;
+    background-blend-mode: overlay;
 }
 
-/* 标题区融入挂轴意象 */
+/* 标题区域 – 融入「短册」意象 */
 .title-area {
     width: 100%;
-    max-width: 860px;
+    max-width: 900px;
     min-height: 70px;
-    margin-bottom: 10px;
+    margin-bottom: 20px;
     display: flex;
     justify-content: center;
     align-items: center;
     position: relative;
     z-index: 2;
-    background: transparent;
-    border-bottom: 1px solid rgba(193, 124, 94, 0.2);
-    border-image: repeating-linear-gradient(90deg, transparent, var(--japanese-kaki) 1px, transparent 2px) 1;
+    border-bottom: 1px dashed var(--japanese-kiri);
+    border-top: 1px dashed var(--japanese-kiri);
+    background: rgba(254, 249, 231, 0.5);
+    backdrop-filter: blur(2px);
+    border-radius: 0;  /* 直线美学 */
 }
 
-.title-area h1.title-header {
-    font-size: 2.6rem;
-    font-weight: 400;          /* 和风书法避免过度粗重 */
-    font-family: "Yu Mincho", "游明朝", "Noto Serif JP", serif;
-    background: transparent;
-    color: var(--japanese-sumi);
-    text-shadow: 2px 2px 3px rgba(0,0,0,0.02);
+.title-area h1 {
+    font-size: 2.4rem;
+    font-weight: 500;
+    font-family: "游明朝", YuMincho, "Hiragino Mincho ProN", serif;
     letter-spacing: 0.2em;
+    color: var(--japanese-indigo);
+    background: none;
     -webkit-background-clip: unset;
     background-clip: unset;
-    color: #2e2b27;
-    border-right: 1px solid var(--japanese-kin);
-    border-left: 1px solid var(--japanese-kin);
-    padding: 0 1.2em;
-    line-height: 1.6;
+    color: var(--japanese-indigo);
+    text-shadow: 2px 2px 0 rgba(226, 191, 130, 0.2);
+    margin: 0;
+    padding: 12px 0;
     position: relative;
     display: inline-block;
 }
 
-/* 内容容器 – 仿和纸折贴 */
+.title-area h1::before {
+    content: "☿";
+    font-size: 1.8rem;
+    color: var(--japanese-vermilion);
+    opacity: 0.4;
+    position: absolute;
+    left: -30px;
+    top: 5px;
+}
+.title-area h1::after {
+    content: "☿";
+    font-size: 1.8rem;
+    color: var(--japanese-vermilion);
+    opacity: 0.4;
+    position: absolute;
+    right: -30px;
+    top: 5px;
+}
+
+/* 内容容器 — 和纸・折叠挂幅风 */
 .content-container {
     width: 100%;
-    max-width: 860px;
-    background: var(--japanese-washi);
-    border-radius: 0;           /* 和风多用直角，略温和 */
-    padding: 48px 60px;
-    box-shadow: 0 8px 20px rgba(55, 45, 35, 0.08),
-                0 2px 6px rgba(0,0,0,0.02),
-                inset 0 0 0 1px rgba(255, 255, 240, 0.9),
-                inset 0 0 20px rgba(193,124,94,0.05);
+    max-width: 900px;
+    background: rgba(254, 249, 231, 0.75);
+    backdrop-filter: blur(4px);
+    border-radius: 0px; /* 锐利边缘，日式直角 */
+    padding: 50px 60px;
+    box-shadow: 
+        0 10px 25px -5px rgba(44, 62, 54, 0.08),
+        0 0 0 1px rgba(184, 154, 123, 0.2),
+        inset 0 0 30px rgba(226, 191, 130, 0.1);
     position: relative;
     z-index: 2;
-    border: 1px solid #e6daca;
-    backdrop-filter: blur(2px);
-    overflow-wrap: break-word;
-    word-break: break-word;
+    border: none;
+    /* 和纸褶皱质感 */
+    background-image: 
+        linear-gradient(to right, rgba(214, 194, 148, 0.05) 1px, transparent 1px),
+        linear-gradient(to bottom, rgba(184, 154, 123, 0.05) 1px, transparent 1px);
+    background-size: 20px 20px, 20px 20px;
 }
 
-/* “水引” 绳结意向 – 取代原来的title-bar */
+/* 朱印风 – 标题条 抽象“契” */
 .title-bar {
     position: absolute;
-    top: -15px;
-    left: 50%;
-    transform: translateX(-50%);
-    width: 180px;
-    height: 4px;
-    background: repeating-linear-gradient(90deg, transparent, transparent 4px, var(--japanese-kin) 4px, var(--japanese-kin) 8px);
-    border-radius: 0;
+    top: -6px;
+    left: 10%;
+    width: 80%;
+    height: 12px;
+    background: repeating-linear-gradient(45deg, 
+        var(--japanese-vermilion) 0px, 
+        var(--japanese-vermilion) 4px, 
+        transparent 4px, 
+        transparent 10px);
+    opacity: 0.25;
+    border-radius: 0px;
     z-index: 3;
-    box-shadow: 0 1px 2px rgba(196, 167, 125, 0.3);
+    box-shadow: none;
+    transform: none;
 }
-.title-bar::before,
-.title-bar::after {
-    content: "⚭";
-    font-size: 14px;
-    color: var(--japanese-kaki);
-    position: absolute;
-    top: -10px;
-    opacity: 0.7;
-}
-.title-bar::before { left: -20px; }
-.title-bar::after { right: -20px; }
 
-/* ========= 文本排版：融合和式印刷 ========= */
+/* ----- 和文排版・纵溢感 但尊重西方阅读习惯，保留横排，强化纤细 ----- */
 .content-container h1,
 .content-container h2,
 .content-container h3,
 .content-container h4,
 .content-container h5,
 .content-container h6 {
-    font-family: "Yu Mincho", "游明朝", "Noto Serif JP", serif;
-    font-weight: 450;
-    letter-spacing: 0.15em;
+    font-family: "游明朝", YuMincho, "Hiragino Mincho ProN", serif;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    color: var(--japanese-indigo);
     text-align: center;
     width: 100%;
-    color: #2e3a31;
-    line-height: 1.6;
+    margin-top: 1.2em;
+    margin-bottom: 0.6em;
+    border-bottom: none;
+    position: relative;
 }
 
 .content-container h1 {
-    color: #4a3b30;
     font-size: 2.2rem;
-    margin-top: 0.5em;
-    margin-bottom: 0.8em;
+    color: var(--japanese-indigo);
     background: none;
     -webkit-background-clip: unset;
     background-clip: unset;
-    color: #46382e;
-    padding-bottom: 18px;
-    border-bottom: 2px dotted rgba(193,124,94,0.3);
-    position: relative;
-    font-weight: 500;
+    color: var(--japanese-indigo);
+    padding-bottom: 0.3em;
+    border-bottom: 2px solid var(--japanese-susuki);
+    display: inline-block;  /* 适应内容宽度，但仍居中 */
+    width: auto;
+    padding-left: 2rem;
+    padding-right: 2rem;
 }
 .content-container h1::after {
-    content: "✧";
-    position: absolute;
-    bottom: -14px;
-    left: 50%;
-    transform: translateX(-50%);
-    color: var(--japanese-kaki);
-    font-size: 18px;
-    background: var(--japanese-washi);
-    padding: 0 12px;
-    letter-spacing: 0;
+    display: none; /* 移除默认的下划线，采用border */
 }
 
 .content-container h2 {
     font-size: 1.9rem;
-    color: #4d5640;
-    border-bottom: 1px solid var(--gray-cloud);
-    padding-bottom: 10px;
-    margin-bottom: 1.2em;
-    border-image: repeating-linear-gradient(90deg, var(--japanese-matcha) 0px, var(--japanese-matcha) 1px, transparent 2px, transparent 6px) 1;
+    border-bottom: 1px dotted var(--japanese-kiri);
+    padding-bottom: 6px;
+    color: var(--japanese-indigo);
+    width: 100%;
 }
 
 .content-container h3 {
-    font-size: 1.65rem;
-    color: #5d6150;
-    padding-left: 0.8rem;
-    border-left: 5px solid var(--japanese-kaki);
+    font-size: 1.6rem;
+    color: var(--japanese-matcha);
+    border-left: 6px solid var(--japanese-vermilion);
+    padding-left: 16px;
     text-align: left;
+    font-weight: 450;
 }
 
 .content-container h4 {
-    font-size: 1.4rem;
-    color: #5d534a;
-    padding-left: 0.5rem;
-    border-left: 3px solid var(--japanese-kin);
+    font-size: 1.35rem;
+    color: var(--japanese-murasaki);
+    text-align: left;
+    font-style: italic;
 }
 
-/* 段落 – 如同和纸上的活字 */
+/* 段落 — 和文自然行，悬挂标点感 */
 .content-container p {
-    margin: 1.4em 0;
+    margin: 1.6em 0;
     text-align: justify;
     text-justify: inter-ideograph;
-    color: #3f3d3a;
+    color: var(--ink);
     font-size: 1.1rem;
     line-height: 1.9;
     width: 100%;
-    hyphens: auto;
     word-break: break-word;
+    hyphens: auto;
+    font-feature-settings: "palt";  /* 日文间距压缩 */
 }
 
+/* リンク — 水引风 */
 .content-container a {
-    color: var(--japanese-ai);
+    color: var(--japanese-vermilion);
     text-decoration: none;
-    border-bottom: 1px dashed var(--japanese-kaki);
-    transition: border 0.2s, color 0.2s;
-    font-weight: 400;
-    word-break: break-all;
+    border-bottom: 1px solid var(--japanese-vermilion);
+    border-bottom-width: 1px;
+    border-bottom-style: dashed;
+    padding-bottom: 1px;
+    transition: border 0.15s;
+    font-weight: normal;
 }
 .content-container a:hover {
-    color: var(--japanese-ume);
-    border-bottom: 1px solid var(--japanese-ume);
+    border-bottom: 1px solid var(--japanese-indigo);
+    color: var(--japanese-indigo);
 }
 .content-container a::after {
-    display: none; /* 移除现代下划线动画，更含蓄 */
+    display: none; /* 去掉现代滑动线，用传统破线 */
 }
 
-/* 列表 – 简洁留白 */
-.content-container ul,
-.content-container ol {
-    text-align: left;
-    margin: 1.8em 0;
-    padding-left: 2.5em;
+/* 列表 — 优雅 梅花・剑先 */
+.content-container ul {
+    list-style: none;
+    padding-left: 1.2em;
+    margin: 1.5em 0;
     width: 100%;
 }
-.content-container li {
-    margin-bottom: 0.7em;
-    color: #4f4c47;
-    line-height: 1.8;
-    list-style-type: none;
+.content-container ul li {
     position: relative;
+    padding-left: 1.8em;
+    margin-bottom: 0.7em;
+    color: var(--japanese-indigo);
+    line-height: 1.7;
 }
 .content-container ul li::before {
-    content: "•";
-    color: var(--japanese-matcha);
-    font-weight: bold;
+    content: "⚘";  /* 花菱 */
     position: absolute;
-    left: -1.2em;
-    font-size: 1.3em;
+    left: 0;
+    color: var(--japanese-matcha);
+    font-size: 1.1em;
+    opacity: 0.9;
 }
+
 .content-container ol {
+    padding-left: 2em;
+    list-style-type: none; 
     counter-reset: jp-counter;
+    margin: 1.5em 0;
+    width: 100%;
 }
 .content-container ol li {
     counter-increment: jp-counter;
-    list-style: none;
+    margin-bottom: 0.7em;
+    padding-left: 1.8em;
+    position: relative;
+    color: var(--japanese-indigo);
 }
 .content-container ol li::before {
-    content: counter(jp-counter) ".";
-    color: var(--japanese-kaki);
-    font-weight: 500;
+    content: counter(jp-counter, decimal-leading-zero);
     position: absolute;
-    left: -1.8em;
+    left: 0;
+    color: var(--japanese-vermilion);
+    font-weight: 500;
+    font-size: 0.95em;
+    border-right: 1px solid var(--japanese-susuki);
+    padding-right: 6px;
 }
 
-/* 代码块 – 模仿墨书 */
-.content-container pre {
-    background: #efebe6;        /* 浅草纸色 */
-    border: 1px solid #d9cfc1;
-    border-left: 6px solid var(--japanese-matcha);
-    border-radius: 0;          /* 和风极少大圆角 */
-    color: #3d3d3d;
-    padding: 1.4em 1.8em;
-    margin: 2em 0;
-    box-shadow: inset 0 0 0 1px rgba(255,255,250,0.7), 2px 2px 8px rgba(0,0,0,0.02);
-    white-space: pre-wrap;
-    word-break: break-all;
-    font-size: 0.95em;
-}
+/* code 和纸短册 */
 .content-container code {
-    background: rgba(193,124,94,0.08);
-    color: #774b3a;           /* 焦茶色 */
-    padding: 0.2em 0.6em;
-    border-radius: 0;
-    font-family: "SF Mono", "JetBrains Mono", "Cascadia Code", "Noto Sans Mono", monospace;
-    border: 1px solid #e4d5c0;
+    background: rgba(226, 191, 130, 0.15);
+    color: var(--japanese-vermilion);
+    font-family: "SFMono-Regular", "Consolas", "游ゴシック", "YuGothic", monospace;
+    padding: 0.2em 0.5em;
+    border-radius: 0px;
+    border: 1px solid var(--japanese-susuki);
+    font-size: 0.9em;
     white-space: pre-wrap;
     word-break: break-all;
+}
+
+.content-container pre {
+    background: rgba(30, 58, 78, 0.92);
+    color: #f0ebd8;
+    padding: 1.5em 1.8em;
+    border-radius: 0px;
+    margin: 1.8em 0;
+    border-left: 6px solid var(--japanese-vermilion);
+    box-shadow: inset 0 0 15px rgba(0,0,0,0.3);
+    font-size: 0.95em;
+    white-space: pre-wrap;
+    word-break: break-word;
+    width: 100%;
 }
 .content-container pre code {
     background: transparent;
+    color: #f5e6d3;
     border: none;
-    color: #4b3c32;
+    padding: 0;
+    white-space: pre-wrap;
 }
 
-/* 引用 – 仿古怀纸 */
+/* 引用 ・ 短歌装饰 */
 .content-container blockquote {
-    background: #f6f3ed;
-    border-left: 6px solid var(--japanese-kin);
-    padding: 1.2em 1.8em 1.2em 2.5em;
+    background: rgba(214, 194, 148, 0.1);
+    border-left: 6px solid var(--japanese-matcha);
+    padding: 1.2em 2em;
     margin: 1.8em 0;
-    color: #56514a;
-    border-radius: 0;
-    position: relative;
     font-style: normal;
-    box-shadow: inset 2px 0 0 rgba(196,167,125,0.2);
+    color: var(--japanese-indigo);
+    border-radius: 0;
+    width: 100%;
+    position: relative;
 }
 .content-container blockquote::before {
     content: "『";
-    font-size: 3.2em;
-    color: rgba(128,150,113,0.2);
+    font-size: 3rem;
+    color: var(--japanese-susuki);
+    opacity: 0.4;
     position: absolute;
-    left: 8px;
-    top: -10px;
-    font-family: "Yu Mincho", serif;
+    left: 5px;
+    top: -15px;
+    font-family: serif;
 }
 .content-container blockquote::after {
     content: "』";
-    font-size: 3.2em;
-    color: rgba(128,150,113,0.2);
+    font-size: 3rem;
+    color: var(--japanese-susuki);
+    opacity: 0.4;
     position: absolute;
-    right: 8px;
-    bottom: -20px;
-    font-family: "Yu Mincho", serif;
+    right: 5px;
+    bottom: -30px;
+    font-family: serif;
 }
 
-/* 表格 – 简约细线 */
+/* 表格 – 市松格子，纤细 */
 .content-container table {
     border-collapse: collapse;
     width: 100%;
-    margin: 2em 0;
-    background: #fefcf8;
-    border: 1px solid #dad3c6;
+    margin: 1.8em 0;
+    border: 1px solid var(--japanese-kiri);
+    background: white;
     font-size: 0.98em;
+    table-layout: auto;
 }
 .content-container th {
-    background: #dad3c6;       /* 鼠色 */
-    color: #2c3a35;
+    background: var(--japanese-indigo);
+    color: var(--japanese-washi);
     font-weight: 500;
-    padding: 0.9em 1.2em;
-    border-bottom: 1px solid #b8aa98;
+    padding: 0.8em 1em;
+    border-right: 1px solid var(--japanese-susuki);
     letter-spacing: 0.1em;
 }
 .content-container td {
-    padding: 0.8em 1.2em;
-    border-bottom: 1px solid #e1d9cf;
-    color: #4f4a45;
+    padding: 0.7em 1em;
+    border: 1px solid var(--japanese-susuki);
+    color: var(--japanese-indigo);
+    background-color: rgba(255, 250, 235, 0.6);
 }
-.content-container tr:last-child td {
-    border-bottom: none;
-}
-.content-container tr:nth-child(even) {
-    background: #f8f6f2;
+.content-container tr:nth-child(even) td {
+    background-color: rgba(214, 226, 224, 0.2);
 }
 
-/* 图片 – 朦胧晕影 */
-.content-container img {
-    max-width: 100%;
-    border-radius: 0;
-    filter: sepia(0.12) contrast(0.98) brightness(1.02);
-    box-shadow: 0 5px 15px rgba(90, 70, 50, 0.08);
-    border: 1px solid #ded7cc;
-    margin: 2.2em auto;
-    padding: 4px;
-    background: #fffcf7;
-}
-
-/* 水平线 – 淡墨 */
+/* 水平线 – 水引细工 */
 .content-container hr {
     border: none;
-    height: 1px;
-    background: linear-gradient(90deg, transparent, #bba88b, #bba88b, transparent);
+    height: 2px;
+    background: repeating-linear-gradient(90deg, 
+        var(--japanese-vermilion) 0px, 
+        var(--japanese-vermilion) 6px, 
+        transparent 6px, 
+        transparent 14px);
+    opacity: 0.2;
     margin: 2.5em 0;
     width: 100%;
-    opacity: 0.5;
 }
 
-/* 标记 – 薄朱 */
+/* 印・肉笔画 */
 .content-container mark {
-    background: linear-gradient(120deg, rgba(193,124,94,0.15) 0%, rgba(193,124,94,0.04) 90%);
-    color: #3a2e2a;
-    padding: 0.1em 0.4em;
-    border-radius: 0;
+    background: linear-gradient(120deg, rgba(179, 65, 45, 0.08), transparent 80%);
+    color: var(--japanese-vermilion);
+    font-style: italic;
+    padding: 0.1em 0.3em;
 }
 
-/* 其他和风元素 */
+/* 和风特殊调整 */
 .content-container kbd {
-    background: #5c534c;
-    color: #f0ede8;
-    border-radius: 0;
-    box-shadow: 0 2px 0 #3a3531;
-    padding: 0.15em 0.8em;
-    font-size: 0.85em;
+    background: var(--japanese-indigo);
+    color: #ffeac2;
+    border-radius: 0px;
+    border: 1px solid #ac8e68;
 }
 
-/* 响应式保留和风气质 */
+/* 宽度完全利用 */
+.content-container > * {
+    width: 100%;
+}
+
+/* 移动端响应 */
 @media (max-width: 768px) {
     body {
-        padding: 12px;
+        padding: 10px;
     }
     .content-container {
-        padding: 30px 24px;
+        padding: 30px 25px;
     }
-    .title-area h1.title-header {
-        font-size: 2rem;
-        border: none;
+    .title-area h1 {
+        font-size: 1.9rem;
+    }
+    .title-area h1::before,
+    .title-area h1::after {
+        display: none;
     }
     .content-container h1 {
         font-size: 1.9rem;
+        width: 100%;
     }
     .content-container h2 {
         font-size: 1.6rem;
     }
 }
 
-/* 宽度充分利用 – 继承自 light.css 的同时保留日系克制 */
-.content-container > * {
-    width: 100%;
-    max-width: 100%;
+/* 枯山水・余白美 */
+.content-container .lead {
+    font-size: 1.25rem;
+    color: var(--japanese-murasaki);
+    font-weight: 400;
 }
 
-/* 辅助类：金継ぎ（金色修缮） */
-.content-container .kintsugi {
-    background: linear-gradient(90deg, transparent 60%, rgba(196,167,125,0.2));
-    border-left: 3px solid var(--japanese-kin);
-    padding-left: 0.8rem;
+/* 矢量点缀：通过js生成几何背景时，保留极简淡彩，但我们用额外静态装饰强化和风 */
+.geometric-bg {
+    /* 增加矢车草・桔梗纹样 */
+    background-image: 
+        radial-gradient(circle at 20% 40%, rgba(111, 75, 94, 0.03) 8px, transparent 12px),
+        radial-gradient(circle at 80% 85%, rgba(94, 107, 61, 0.04) 15px, transparent 20px),
+        repeating-linear-gradient(60deg, 
+            rgba(184, 154, 123, 0.02) 0px, 
+            rgba(184, 154, 123, 0.02) 1px, 
+            transparent 1px, 
+            transparent 30px);
 }
 
-/* 自定义文字下坠 – 浮世绘感 */
-.content-container .floating {
-    text-shadow: 3px 5px 5px rgba(0,0,0,0.03);
+/* 修改js生成的形状风格，保留但通过css限制为更和色 */
+/* 内嵌style覆盖默认js颜色；但考虑到动态生成，我们在css里设定默认形状？不用，后台颜色可以自定义，现在在style重新定义几何形状？但不去掉js，我们通过提升z-index及覆盖方式将动态元素色调统一 */
+/* 然而动态几何色我们控制不了，故在这里对.geometric-bg div进行限定 —— 但div由js生成，没有特殊类，不过可以用css属性选择器或直接设置 .geometric-bg div */
+.geometric-bg div {
+    background-color: rgba(156, 126, 90, 0.04) !important;  /* 统一为和色，覆盖原有随机色，保留透明度，柔和 */
+    border-radius: 0px 20% 0 20% !important; /* 随机感降低，保留矢车菊感 */
+    filter: blur(20px) !important;
+    opacity: 0.2 !important;
+    transform: rotate(15deg) !important;
+    mix-blend-mode: multiply;
+}
+
+/* 保留些许随机变化: 无法控制，但统一柔和 */
+/* 添加和风静态浮世绘波纹 */
+.content-container::after {
+    display: none; /* 原本无 */
 }
