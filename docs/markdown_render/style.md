@@ -27,8 +27,6 @@
 | `dark-yellow` | 暗黄色 |
 | `dark-orange` | 暗橙色 |
 | `anime` | 动漫 |
-| `chinese` | 中国风 |
-| `japanese` | 日本风 |
 | `geometry` | 几何 |
 | `impact` | 冲击 |
 | `ruins` | 废墟 |
