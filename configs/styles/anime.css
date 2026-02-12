@@ -58,6 +58,7 @@ body {
     background-size: 600px 600px;
     opacity: 0.5;
     animation: floatClouds 36s infinite alternate ease-in-out;
+    background-repeat: repeat;
 }
 
 /* 添加手绘星星 (伪元素) */
