@@ -44,7 +44,7 @@ class BrowserPoolManager:
         max_browsers: int = 3,
         default_browser: BrowserType = BrowserType.AUTO,
         headless: bool = True,
-        route_blacklist_file: str | None = None,
+        route_blacklist: RegexChecker | None = None,
         browser_args: BrowserArgs | None = None,
         default_config: RenderConfig | None = None
     ):
@@ -69,10 +69,8 @@ class BrowserPoolManager:
 
         # 路由黑名单
         self._route_blacklist: RegexChecker = RegexChecker()
-        if route_blacklist_file:
-            with open(route_blacklist_file, "r", encoding = "utf-8") as f:
-                data = f.read()
-                self._route_blacklist.load(data)
+        if route_blacklist is not None:
+            self._route_blacklist = route_blacklist
         
         # 注册实例
         BrowserPoolManager._instances.append(self)
