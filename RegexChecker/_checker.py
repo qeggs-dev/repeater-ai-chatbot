@@ -50,12 +50,12 @@ class RegexChecker:
         
         if self._mode == CheckerMode.SERIES:
             for regex, enable in self._regexs:
-                if enable and not func(text):
+                if enable and not func(regex, text, self._flags):
                     return CheckDetailsData(regex=regex, matched=False)
             return CheckDetailsData(regex=None, matched=True)
         elif self._mode == CheckerMode.PARALLEL:
             for regex, enable in self._regexs:
-                if enable and func(text):
+                if enable and func(regex, text, self._flags):
                     return CheckDetailsData(regex=regex, matched=True)
             return CheckDetailsData(regex=None, matched=False)
     
