@@ -544,7 +544,13 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
         // Index Web 文件路径
         // 如果不填写这个项目，那么默认会使用内置的索引页面
         // 你也可以使用这个来为 Repeater 创建一个自定义前端
-        "index_web_file": "./static/index.html"
+        "index_web_file": "./static/index.html",
+
+        // 更多的 Web 页面
+        // 虽然这里其实可以用 static 来代替
+        // 但一个 Web 页面要是 static 出现在 URL 上
+        // 不美观不是吗？
+        "web_directory": "./configs/web"
     }
 }
 ```
