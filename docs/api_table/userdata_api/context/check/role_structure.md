@@ -8,9 +8,9 @@
   - **Response**
     - **type:** `JSON`
     - **Response Body:**
-      - `message (str)`: 错误信息
-      - `index (int)`: 错误的上下文索引
-      - `role (str)`: 错误的上下文角色
-      - `expected_role (str)`: 预期的上下文角色
+      - `message` (str): 错误信息
+      - `index` (int): 错误的上下文索引
+      - `role` (str): 错误的上下文角色
+      - `expected_role` (str): 预期的上下文角色
 
 如果没有错误，索引会返回 `-1`

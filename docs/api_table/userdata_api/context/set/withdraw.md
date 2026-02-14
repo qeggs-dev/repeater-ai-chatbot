@@ -7,15 +7,15 @@
     - **method:** `POST`
     - **type:** `FORM`
     - **Request Body**:
-      - `context_pair_num (int)` 删除的组数
+      - `context_pair_num` (int): 删除的组数
   - **Response**
     - **type:** `JSON`
     - **Response Body**:
-      - `status (str)` 状态码，如果 `http code` 为 `200` 则必为`success`
-      - `deleted (int)` 删除的上下文单元数量
-      - `deleted_context (Context)` 删除的上下文内容
-      - `delete_context_pair (int)` 删除的上下文组数量
-      - `context (Context)` 剩余的上下文内容
+      - `status` (str): 状态码，如果 `http code` 为 `200` 则必为`success`
+      - `deleted` (int): 删除的上下文单元数量
+      - `deleted_context` (Context): 删除的上下文内容
+      - `delete_context_pair` (int): 删除的上下文组数量
+      - `context` (Context): 剩余的上下文内容
 
 注：该API默认以一对上下文单元为单位进行删除
 也就是

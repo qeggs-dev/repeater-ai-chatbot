@@ -7,7 +7,6 @@ from pathlib import Path
 from loguru import logger
 from datetime import datetime
 from fastapi.responses import ORJSONResponse
-from pydantic import ValidationError
 
 from ....CriticalException import CriticalException
 from ....Global_Config_Manager import ConfigManager
@@ -27,9 +26,14 @@ async def exception_handler(error: BaseException) -> None:
 
     if ConfigManager.get_configs().global_exception_handler.repeater_traceback.enable:
         traceback_str = await format_traceback(
+            time.strftime(
+                ConfigManager.get_configs().global_exception_handler.repeater_traceback.timeformat,
+                time.localtime(error_time / 1e9)
+            ),
             ConfigManager.get_configs().global_exception_handler.repeater_traceback.exclude_library_code,
             ConfigManager.get_configs().global_exception_handler.code_reader.enable,
             ConfigManager.get_configs().global_exception_handler.repeater_traceback.traditional_stack_frame,
+            ConfigManager.get_configs().global_exception_handler.repeater_traceback.format_validation_error
         )
     else:
         traceback_str = traceback.format_exc()
@@ -74,6 +78,8 @@ async def exception_handler(error: BaseException) -> None:
     
     error_response = ErrorResponse(
         error_code = 500,
+        timestamp_ns = error_time,
+        unix_timestamp = error_time // 1_000_000_000,
         source_exception = type(error).__name__,
         exception_message = str(error)
     )

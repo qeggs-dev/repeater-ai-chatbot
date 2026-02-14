@@ -1,6 +1,6 @@
 from pydantic import BaseModel, ConfigDict
 
-class Request_Log_Config(BaseModel):
+class RequestLogConfig(BaseModel):
     model_config = ConfigDict(case_sensitive=False)
 
     dir: str = "./workspace/request_log"

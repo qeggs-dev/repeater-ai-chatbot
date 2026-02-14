@@ -168,6 +168,9 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
             // 是否启用
             "enable": false,
 
+            // 在 Traceback 中格式化时间使用的格式
+            "timeformat": "YYYY-MM-DD HH:mm:ss",
+
             // 是否排除库函数的 Traceback
             "exclude_library_code": true,
         
@@ -284,29 +287,45 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
         "case_sensitive": false
     },
 
+    // Nexus Client 配置
+    "nexus": {
+
+        // Nexus Client 的服务器 URL
+        "base_url": "",
+
+        // Nexus Client 的请求超时时间
+        "api_timeout": 60
+    },
+
     // template 提示词文本模板展开器配置
     // 注：此选项不会改变实际的其他系统内容，而只会改变模板展开器中的变量
-    "prompt_template": {
+    "text_template": {
         // 模板展开器中显示的程序版本
         // 如果为 null 或空字符串
         // 则程序会使用 core 版本号填充
         "version": null,
 
-        // 模板展开器中显示的 Bot 信息
-        "bot_info": {
-            // 模板展开器中显示的 Bot 名称
-            "name": "Repeater",
-            // Bot 的生日
-            "birthday": {
-                "day": 28,
-                "month": 6,
-                "year": 2024
-            }
+        // 模板展开器的沙箱模式
+        "sandbox": {
+            // 沙箱模式选项
+            // 可选值：
+            // "sandboxed" - 普通沙箱模式，限制私有内容、危险内置函数、特殊方法、内置类型修改、高危模块等内容
+            // "immutable_sandboxed" - 不可变沙箱模式，一切数据都将是不可变，列表的修改将会失效
+            // "none" - 无沙箱模式，程序将对用户输入不做任何限制
+            "sandbox_mode": "sandboxed",
         },
         "time": {
             // 时区字符串
-            "timezone": "Asia/Shanghai"
-        }
+            "timezone": "Asia/Shanghai",
+
+            // 时间格式字符串
+            // 在 time 函数未指定 time_format 参数时使用
+            "time_format": "%Y-%m-%d(%A) %H:%M:%S %Z"
+        },
+
+        // 默认用户信息
+        // 当用户未填写个人设定时，将使用此文本作为值
+        "default_user_profile": "The user has not filled out the field for the time being."
     },
 
     // Prompt 配置
@@ -483,6 +502,11 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
         // 默认分支名称
         "default_branch_id": "main",
 
+        // 使用 Base64 编码处理文件路径
+        // 以安全的包含用户传入的字符串
+        // 而不是触发异常文件名或路径穿越
+        "b64_encode_path": true,
+
         // 是否在获取文件大小时 readable 里使用缩写
         "file_size_use_abbreviation": true,
 
@@ -520,7 +544,13 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
         // Index Web 文件路径
         // 如果不填写这个项目，那么默认会使用内置的索引页面
         // 你也可以使用这个来为 Repeater 创建一个自定义前端
-        "index_web_file": "./static/index.html"
+        "index_web_file": "./static/index.html",
+
+        // 更多的 Web 页面
+        // 虽然这里其实可以用 static 来代替
+        // 但一个 Web 页面要是 static 出现在 URL 上
+        // 不美观不是吗？
+        "web_directory": "./configs/web"
     }
 }
 ```

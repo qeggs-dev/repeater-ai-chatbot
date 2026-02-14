@@ -1,1 +1,1 @@
-from ._get_prompt_vp import PromptVP_Loader
+from ._template_parser import TemplateParser

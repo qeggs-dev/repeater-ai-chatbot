@@ -1,6 +1,6 @@
 # Third-Party Licenses
 
-This project is released under the [MIT](LICENSE) License.
+This project is released under the [MIT](./../LICENSE) License.
 
 This project includes the following third-party software components, licensed under their respective licenses:
 
@@ -12,6 +12,7 @@ This project includes the following third-party software components, licensed un
 - [Environs](./environs/index.md)
 - [FastAPI](./fastapi/index.md)
 - [Httpx](./httpx/index.md)
+- [Jinja2](./jinja2/index.md)
 - [Playwright](./playwright/index.md)
 - [Loguru](./loguru/index.md)
 - [Orjson](./orjson/index.md)

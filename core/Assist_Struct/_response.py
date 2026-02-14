@@ -1,5 +1,4 @@
 from pydantic import BaseModel, ConfigDict
-from ..CallAPI import CompletionsAPI
 from ..Context_Manager import ContentBlock
 
 class Response(BaseModel):
@@ -19,5 +18,5 @@ class Response(BaseModel):
     create_time: int | None = None
     id: str | None = None
     finish_reason_cause: str | None = None
-    finish_reason_code: CompletionsAPI.FinishReason | None = None
+    finish_reason_code: str | None = None
     status: int = 200

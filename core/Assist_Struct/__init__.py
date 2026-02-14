@@ -4,3 +4,4 @@ from ._cross_user_data_routing import (
     CrossUserDataRouting,
     DataRoutingField
 )
+from ._additional_data import AdditionalData

@@ -1,5 +1,5 @@
-from ._licenses import Licenses_Config
+from ._licenses import LicensesConfig
 
 __all__ = [
-    "Licenses_Config"
+    "LicensesConfig"
 ]

@@ -1,7 +1,6 @@
 # ==== 标准库 ==== #
 import os
 import asyncio
-import weakref
 from typing import Any
 from pathlib import Path
 
@@ -11,6 +10,8 @@ import aiofiles
 
 # ==== 项目库 ==== #
 from PathProcessors import validate_path, sanitize_filename
+from ....Lock_Pool import AsyncLockPool
+from .._user_id_encoder import user_id_encode, user_id_decode
 from ....Global_Config_Manager import ConfigManager
 from ._branch_info import BranchInfo
 
@@ -20,7 +21,7 @@ class SubManager:
         sub_dir_name: str = sanitize_filename(sub_dir_name)
         self.sub_dir_name: str = sub_dir_name
         self._global_lock: asyncio.Lock = asyncio.Lock()
-        self._branches_locks: weakref.WeakValueDictionary[str, asyncio.Lock] = weakref.WeakValueDictionary()
+        self._branches_locks: AsyncLockPool = AsyncLockPool()
         
         self._metadata_filename = ConfigManager.get_configs().user_data.metadata_file_name
         
@@ -44,15 +45,15 @@ class SubManager:
         # if not self._default_base_file.exists():
         #     self._default_base_file.mkdir(parents=True, exist_ok=True)
         name = sanitize_filename(name)
-        return self._default_base_file / f"{name}.json"
+        file_name = f"{user_id_encode(name)}.json"
+        if not validate_path(self._default_base_file, file_name):
+            raise ValueError(f"Invalid file name: {file_name}")
+        return self._default_base_file / file_name
     
     async def _get_branch_lock(self, branch_id: str) -> asyncio.Lock:
         """获取 branch_id 对应的锁，如果没有则创建"""
         async with self._global_lock:
-            lock: asyncio.Lock | None = self._branches_locks.get(branch_id)
-            if lock is None:
-                lock = asyncio.Lock()
-                self._branches_locks[branch_id] = lock
+            lock: asyncio.Lock = await self._branches_locks.get_lock(branch_id)
         return lock
     
     async def load_metadata(self, default: Any | None = None) -> Any:

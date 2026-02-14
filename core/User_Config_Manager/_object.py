@@ -27,6 +27,7 @@ class UserConfigs(BaseModel):
     load_prompt: bool | None = None
     save_context: bool | None = None
     save_new_only: bool | None = None
+    user_name: str | None = None
     user_profile: str | None = None
     timezone: float | str | None = None
     save_text_only: bool | None = None

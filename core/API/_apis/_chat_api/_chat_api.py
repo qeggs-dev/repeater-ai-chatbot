@@ -29,8 +29,6 @@ async def chat_endpoint(
     """
     Endpoint for chat
     """
-    if request.continue_completion and request.message:
-        raise HTTPException(detail="Cannot send message when continuing completion", status_code=400)
     try:
         context = await Resource.core.chat(
             user_id = user_id,
@@ -39,14 +37,13 @@ async def chat_endpoint(
             role = request.role,
             role_name = request.role_name,
             temporary_prompt = request.temporary_prompt,
-            image_url = request.image_url,
+            additional_data = request.additional_data,
             model_uid = request.model_uid,
             print_chunk = True,
             load_prompt = request.load_prompt,
             save_context = request.save_context,
             save_new_only = request.save_new_only,
             cross_user_data_routing = request.cross_user_data_routing,
-            continue_completion = request.continue_completion,
             stream = request.stream
         )
         if isinstance(context, Response):

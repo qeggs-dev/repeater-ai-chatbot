@@ -6,6 +6,7 @@ import traceback
 from .._get_code import GetCode
 from pathlib import Path
 from typing import Generator
+from pydantic import ValidationError
 
 def is_library_code(filename: str | os.PathLike):
     if not filename:
@@ -57,7 +58,13 @@ def format_stack_frame(frames: traceback.StackSummary, exclude_library: bool = F
         yield f"        {indented_locals}"
 
 
-async def format_traceback(exclude_library: bool = False, enable_code_reader: bool = False, traditional_stack_frame: bool = False):
+async def format_traceback(
+            time_str: str,
+            exclude_library: bool = False,
+            enable_code_reader: bool = False,
+            traditional_stack_frame: bool = False,
+            format_validation_error: bool = False,
+        ):
     exc_type, exc_value, exc_traceback = sys.exc_info()
     frames = traceback.extract_tb(exc_traceback)
     last_frame = frames[-1]
@@ -73,7 +80,17 @@ async def format_traceback(exclude_library: bool = False, enable_code_reader: bo
     column_start = last_frame.colno
     column_end = last_frame.end_colno
     error_name = exc_value.__class__.__name__
-    indented_message = str(exc_value).replace("\n", "\n" + " " * 8)
+
+    if format_validation_error and isinstance(exc_value, ValidationError):
+        text_buffer: list[str] = []
+        errors = exc_value.errors()
+        for error in errors:
+            text_buffer.append(f"{'.'.join(error['loc'])} - {error['msg']}")
+        message = "\n".join(text_buffer)
+    else:
+        message = str(exc_value)
+
+    indented_message = message.replace("\n", "\n" + " " * 8)
     if traditional_stack_frame:
         traceback_str = traceback.format_exc()
     else:
@@ -100,6 +117,8 @@ async def format_traceback(exclude_library: bool = False, enable_code_reader: bo
     
     format_text = (
         f"{error_name}\n"
+        "    - Time:\n"
+        f"        {time_str}\n"
         "    - Depth of stack frame:\n"
         f"        {total_frame_depth}\n"
         "    - Raised from:\n"
@@ -119,7 +138,7 @@ async def format_traceback(exclude_library: bool = False, enable_code_reader: bo
             f"{code}\n"
         )
     
-    format_text += f"\n{error_name}:\n{str(exc_value)}\n"
+    format_text += f"\n{error_name}:\n{message}\n"
     
     return format_text
     

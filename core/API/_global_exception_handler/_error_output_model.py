@@ -10,6 +10,8 @@ class ErrorResponse(BaseModel):
     )
 
     error_message: str = "Internal Server Error"
+    timestamp_ns: int = 0
+    unix_timestamp: int = 0
     error_code: int = 500
     source_exception: str = ""
     exception_message: str = ""

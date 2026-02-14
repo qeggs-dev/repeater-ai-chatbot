@@ -13,7 +13,7 @@
 ## 配置文件
 
 - [Main Config](./configs/main.md)
-- [API_INFO](./configs/api_info.md)
+- [Model API](./configs/model_api.md)
 - [Blacklist](./configs/blacklist.md)
 - [User_Nickname_Mapping](./configs/uer_nickname_mapping.md)
 
@@ -67,9 +67,10 @@
 ## 多模态输入
 
 在 `/chat/completion` 端点下面
-传入 `image_url` 即可让后端构造视觉模态请求
-但需要保证目标模型支持视觉模态输入
-其他模态还请等待后续更新
+传入 `additional_data` 即可让后端构造多模态请求
+但需要保证目标模型支持你请求的模态输入
+目前图像视觉模态的支持会更多一些
+而其他模态则相对来说可能支持的比较少
 
 ---
 

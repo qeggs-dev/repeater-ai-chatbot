@@ -6,6 +6,7 @@ from ._content_block import (
     ContentBlock,
     TextBlock,
     ImageBlock,
+    VideoBlock,
     AudioBlock,
     FileBlock
 )
@@ -103,6 +104,10 @@ class ContentUnit(BaseModel):
             elif isinstance(block, ImageBlock):
                 message_texts.append(
                     f"[Image: {self._text_content_cutter(block.image_url.url, non_text_max_len)}]"
+                )
+            elif isinstance(block, VideoBlock):
+                message_texts.append(
+                    f"[Video: {self._text_content_cutter(block.video_url.url, non_text_max_len)}]"
                 )
             elif isinstance(block, AudioBlock):
                 message_texts.append(

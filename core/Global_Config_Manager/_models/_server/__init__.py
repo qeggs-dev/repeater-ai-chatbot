@@ -1,5 +1,5 @@
-from ._server import Server_Config
+from ._server import ServerConfig
 
 __all__ = [
-    "Server_Config"
+    "ServerConfig"
 ]

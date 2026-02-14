@@ -2,7 +2,7 @@ from pydantic import BaseModel, ConfigDict
 from ._log_level import LogLevel
 from ._log_compression import CompressionMode
 
-class Logger_Config(BaseModel):
+class LoggerConfig(BaseModel):
     model_config = ConfigDict(case_sensitive=False)
 
     file_path: str = "./logs/repeater-log-{time:YYYY-MM-DD_HH-mm-ss.SSS}.log"

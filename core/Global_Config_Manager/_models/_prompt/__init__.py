@@ -1,5 +1,5 @@
-from ._prompt import Prompt_Config
+from ._prompt import PromptConfig
 
 __all__ = [
-    "Prompt_Config",
+    "PromptConfig",
 ]

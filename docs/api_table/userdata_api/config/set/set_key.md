@@ -7,8 +7,8 @@
     - **method:** `PUT`
     - **type:** `JSON`
     - **Request Body**:
-      - `type (str)`:  配置类型
-      - `value (Any)`:  配置字段值
+      - `type` (str):  配置类型
+      - `value` (Any):  配置字段值
   - **Response**
     - **type:** `Text`
     - **Response Body**:

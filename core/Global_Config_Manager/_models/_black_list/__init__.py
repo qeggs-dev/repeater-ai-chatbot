@@ -1,5 +1,5 @@
-from ._blacklist import Backlist_Config
+from ._blacklist import BacklistConfig
 
 __all__ = [
-    "Backlist_Config"
+    "BacklistConfig"
 ]

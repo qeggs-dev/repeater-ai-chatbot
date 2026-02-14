@@ -1,0 +1,370 @@
+:root {
+    --sacred-gold: #b38b5b;
+    --sacred-gold-light: #d4b48c;
+    --sacred-cream: #fff9f0;
+    --sacred-parchment: #fcf3e1;
+    --sacred-incense: #5a4c3a;
+    --sacred-charcoal: #2e2a27;
+    --sacred-stone: #7a6a5a;
+    --sacred-stained-blue: rgba(58, 83, 115, 0.2);
+    --sacred-stained-ruby: rgba(139, 58, 71, 0.15);
+    --sacred-stained-amber: rgba(179, 139, 91, 0.2);
+    --sacred-gold-leaf: rgba(179, 139, 91, 0.1);
+    --sacred-prayer: #4a3f35;
+}
+
+.sacred-theme {
+    background: linear-gradient(145deg, #f5efe6, #e8dfd3);
+    font-family: "Cormorant Garamond", "Times New Roman", "Songti SC", "Noto Serif", Georgia, serif;
+    color: var(--sacred-charcoal);
+}
+
+.sacred-theme .geometric-bg {
+    opacity: 0.25;
+    background-image: 
+        radial-gradient(circle at 10% 20%, var(--sacred-stained-blue) 0%, transparent 30%),
+        radial-gradient(circle at 95% 70%, var(--sacred-stained-ruby) 0%, transparent 35%),
+        radial-gradient(circle at 40% 85%, var(--sacred-stained-amber) 0%, transparent 40%),
+        repeating-linear-gradient(45deg, 
+            var(--sacred-gold-leaf) 0px, 
+            var(--sacred-gold-leaf) 1px, 
+            transparent 1px, 
+            transparent 20px
+        );
+}
+
+/* 彩色玻璃窗格效果 - 动态生成强化神圣感 */
+.sacred-theme .geometric-bg div {
+    backdrop-filter: blur(6px);
+    border: 1px solid rgba(255, 215, 0, 0.1);
+    box-shadow: 
+        0 0 30px rgba(179, 139, 91, 0.1),
+        inset 0 0 20px rgba(255, 245, 220, 0.2);
+    background: radial-gradient(circle at 30% 30%, 
+        rgba(255, 245, 220, 0.2) 0%, 
+        rgba(179, 139, 91, 0.08) 80%
+    ) !important;
+}
+
+.sacred-theme .title-area h1 {
+    font-family: "Cormorant Garamond", "Times New Roman", serif;
+    font-weight: 600;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+    font-size: 2.2rem;
+    color: var(--sacred-incense);
+    text-shadow: 
+        2px 2px 0 rgba(179, 139, 91, 0.1),
+        4px 4px 8px rgba(0, 0, 0, 0.05);
+    background: none;
+    -webkit-background-clip: unset;
+    background-clip: unset;
+    border-bottom: 1px solid var(--sacred-gold-light);
+    display: inline-block;
+    padding-bottom: 12px;
+}
+
+.sacred-theme .content-container {
+    background: var(--sacred-cream);
+    background-image: 
+        linear-gradient(var(--sacred-parchment) 1px, transparent 1px),
+        linear-gradient(90deg, var(--sacred-parchment) 1px, transparent 1px);
+    background-size: 30px 30px;
+    box-shadow: 
+        0 20px 40px rgba(42, 37, 32, 0.08),
+        0 0 0 1px var(--sacred-gold-light),
+        0 0 0 2px rgba(255, 245, 240, 0.8);
+    border-radius: 4px 4px 24px 24px;
+    position: relative;
+}
+
+.sacred-theme .title-bar {
+    background: linear-gradient(90deg, 
+        var(--sacred-gold), 
+        var(--sacred-cream), 
+        var(--sacred-gold)
+    );
+    height: 6px;
+    width: 200px;
+    box-shadow: 
+        0 0 8px var(--sacred-gold-light),
+        0 0 16px rgba(179, 139, 91, 0.3);
+    border-radius: 3px;
+    top: -10px;
+}
+
+/* 圣咏式标题 */
+.sacred-theme .content-container h1 {
+    font-size: 2.8rem;
+    font-weight: 500;
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    color: var(--sacred-incense);
+    background: none;
+    -webkit-background-clip: unset;
+    background-clip: unset;
+    border-bottom: 1px solid var(--sacred-gold-light);
+    padding-bottom: 20px;
+    margin-bottom: 1.2em;
+    font-family: "Cormorant Unicase", "Times New Roman", serif;
+    text-shadow: 1px 1px 0 white;
+}
+
+.sacred-theme .content-container h1::after {
+    display: none;
+}
+
+.sacred-theme .content-container h2 {
+    font-size: 2rem;
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    border-bottom: 1px dashed var(--sacred-gold-light);
+    color: var(--sacred-incense);
+    font-style: italic;
+    padding-bottom: 8px;
+}
+
+.sacred-theme .content-container h3 {
+    font-size: 1.6rem;
+    font-weight: 500;
+    color: var(--sacred-stone);
+    letter-spacing: 0.05em;
+}
+
+.sacred-theme .content-container h4 {
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--sacred-gold);
+    text-transform: uppercase;
+    letter-spacing: 0.2em;
+}
+
+/* 经文般段落 */
+.sacred-theme .content-container p {
+    font-size: 1.25rem;
+    line-height: 2;
+    font-weight: 400;
+    color: var(--sacred-prayer);
+    text-align: justify;
+    margin: 1.8em auto;
+    font-family: "Cormorant Garamond", "Georgia", serif;
+    word-spacing: 0.05em;
+    text-shadow: 0 1px 0 rgba(255, 255, 255, 0.8);
+}
+
+.sacred-theme .content-container p:first-of-type::first-letter {
+    font-size: 4em;
+    float: left;
+    line-height: 0.8;
+    margin-right: 0.15em;
+    color: var(--sacred-gold);
+    font-weight: 600;
+    font-family: "Cormorant Unicase", "Times New Roman", serif;
+    text-shadow: 2px 2px 0 rgba(179, 139, 91, 0.1);
+}
+
+/* 金色圣物链接 */
+.sacred-theme .content-container a {
+    color: var(--sacred-gold);
+    text-decoration: none;
+    font-weight: 500;
+    border-bottom: 1px solid var(--sacred-gold-light);
+    padding-bottom: 2px;
+    transition: all 0.2s;
+}
+
+.sacred-theme .content-container a:hover {
+    color: var(--sacred-incense);
+    border-bottom-color: var(--sacred-incense);
+    background-color: rgba(179, 139, 91, 0.03);
+}
+
+.sacred-theme .content-container a::after {
+    display: none;
+}
+
+/* 圣器般的引用 */
+.sacred-theme .content-container blockquote {
+    background: var(--sacred-parchment);
+    border-left: 4px solid var(--sacred-gold);
+    font-size: 1.3rem;
+    font-style: italic;
+    padding: 1.5em 2.2em;
+    margin: 2em auto;
+    border-radius: 0 16px 16px 0;
+    color: var(--sacred-incense);
+    font-family: "Cormorant Garamond", "Georgia", serif;
+    box-shadow: inset 0 0 30px rgba(179, 139, 91, 0.05);
+    position: relative;
+}
+
+.sacred-theme .content-container blockquote::before {
+    content: "❦";
+    font-size: 2.4em;
+    color: var(--sacred-gold);
+    opacity: 0.25;
+    left: 15px;
+    top: -5px;
+    font-style: normal;
+}
+
+.sacred-theme .content-container blockquote::after {
+    content: "❧";
+    font-size: 2.4em;
+    color: var(--sacred-gold);
+    opacity: 0.2;
+    position: absolute;
+    right: 15px;
+    bottom: -15px;
+    font-style: normal;
+}
+
+/* 彩绘玻璃列表 */
+.sacred-theme .content-container ul,
+.sacred-theme .content-container ol {
+    padding-left: 2.5em;
+    list-style: none;
+    margin: 2em auto;
+}
+
+.sacred-theme .content-container ul li {
+    position: relative;
+    padding-left: 1.2em;
+    margin-bottom: 0.8em;
+    color: var(--sacred-prayer);
+    font-size: 1.2rem;
+}
+
+.sacred-theme .content-container ul li::before {
+    content: "✧";
+    color: var(--sacred-gold);
+    position: absolute;
+    left: -0.2em;
+    font-size: 1.1em;
+}
+
+.sacred-theme .content-container ol {
+    counter-reset: sacred-counter;
+}
+
+.sacred-theme .content-container ol li {
+    counter-increment: sacred-counter;
+    position: relative;
+    padding-left: 1.8em;
+    margin-bottom: 0.8em;
+    color: var(--sacred-prayer);
+    font-size: 1.2rem;
+}
+
+.sacred-theme .content-container ol li::before {
+    content: counter(sacred-counter) ".";
+    color: var(--sacred-gold);
+    font-weight: 600;
+    position: absolute;
+    left: 0;
+    font-family: "Cormorant Unicase", serif;
+}
+
+/* 经卷代码 */
+.sacred-theme .content-container pre {
+    background: var(--sacred-charcoal);
+    background-image: linear-gradient(45deg, #2e2a27 0%, #3a3530 100%);
+    border-left: 6px solid var(--sacred-gold);
+    border-radius: 0 12px 12px 0;
+    color: #e5ddd3;
+    font-family: "Cormorant Garamond", "Courier New", monospace;
+    font-size: 1.1rem;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.2);
+}
+
+.sacred-theme .content-container code {
+    background: rgba(179, 139, 91, 0.1);
+    color: var(--sacred-incense);
+    border: 1px solid var(--sacred-gold-light);
+    padding: 0.2em 0.6em;
+    border-radius: 4px;
+    font-family: "Cormorant Garamond", "Courier New", monospace;
+    font-size: 0.95em;
+}
+
+.sacred-theme .content-container pre code {
+    color: #f0e6d8;
+    background: none;
+    border: none;
+}
+
+/* 圣坛表格 */
+.sacred-theme .content-container table {
+    border-collapse: separate;
+    border-spacing: 0;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 0 0 1px var(--sacred-gold-light);
+    margin: 2.5em auto;
+    background: white;
+}
+
+.sacred-theme .content-container th {
+    background: var(--sacred-incense);
+    color: var(--sacred-cream);
+    font-weight: 500;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    font-size: 1rem;
+    padding: 1.2em 1.5em;
+    font-family: "Cormorant Unicase", serif;
+}
+
+.sacred-theme .content-container td {
+    padding: 1em 1.5em;
+    border-bottom: 1px solid var(--sacred-parchment);
+    background: rgba(255, 249, 240, 0.6);
+}
+
+.sacred-theme .content-container tr:last-child td {
+    border-bottom: none;
+}
+
+/* 圣饼分割线 */
+.sacred-theme .content-container hr {
+    height: 1px;
+    background: repeating-linear-gradient(90deg, 
+        var(--sacred-gold-light), 
+        var(--sacred-gold-light) 4px, 
+        transparent 4px, 
+        transparent 10px
+    );
+    margin: 2.5em auto;
+    border: none;
+}
+
+/* 神圣印记 */
+.sacred-theme .content-container .mark {
+    background: linear-gradient(145deg, 
+        rgba(179, 139, 91, 0.15), 
+        rgba(179, 139, 91, 0.05)
+    );
+    color: var(--sacred-incense);
+    border-bottom: 1px dotted var(--sacred-gold);
+    padding: 0.1em 0.2em;
+}
+
+/* 圣像守护 */
+@media (max-width: 768px) {
+    .sacred-theme .content-container {
+        padding: 25px 20px;
+    }
+    
+    .sacred-theme .content-container h1 {
+        font-size: 2.2rem;
+    }
+    
+    .sacred-theme .content-container p {
+        font-size: 1.1rem;
+        text-align: left;
+    }
+    
+    .sacred-theme .content-container p:first-of-type::first-letter {
+        font-size: 3.5em;
+    }
+}

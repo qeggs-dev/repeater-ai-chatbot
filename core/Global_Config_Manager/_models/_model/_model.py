@@ -1,6 +1,6 @@
 from pydantic import BaseModel, ConfigDict, Field
 
-class Model_Config(BaseModel):
+class ModelConfig(BaseModel):
     model_config = ConfigDict(case_sensitive=False)
 
     default_timeout: float = Field(600.0, ge = 0.0)

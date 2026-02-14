@@ -26,6 +26,14 @@
 | `dark-purple` | 暗紫色 |
 | `dark-yellow` | 暗黄色 |
 | `dark-orange` | 暗橙色 |
+| `anime` | 动漫 |
+| `geometry` | 几何 |
+| `impact` | 冲击 |
+| `ruins` | 废墟 |
+| `sacred` | 神圣 |
+| `soft` | 柔和 |
+| `vitality` | 活力 |
+| `warning` | 警告 |
 | `legacy` | 旧版亮色 |
 | `legacy-dark` | 旧版暗色 |
 | `legacy-red` | 旧版红色 |
@@ -46,3 +54,5 @@
 颜色风格默认在 `./configs/style` 文件夹下
 可以通过 `render.markdown.styles_dir` 这个全局配置来修改路径
 你也可以去编写你自己的 CSS 样式
+
+啊因为我不会写前端，所以此处的所有 CSS 全是由AI生成的

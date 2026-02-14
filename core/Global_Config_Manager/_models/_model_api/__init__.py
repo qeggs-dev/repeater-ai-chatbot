@@ -1,5 +1,5 @@
-from ._model_api import Model_API_Config
+from ._model_api import ModelAPIConfig
 
 __all__ = [
-    "Model_API_Config",
+    "ModelAPIConfig",
 ]

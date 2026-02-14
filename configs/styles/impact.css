@@ -1,0 +1,478 @@
+/* ========= 冲击 (Impact) 风格 ========= */
+/* 艺术化变种：高对比、力量感、动态张力 */
+/* 基于 light.css 重构，保留结构，强化视觉冲击 */
+
+:root {
+    /* 冲击色盘：高饱和、高对比、重金属质感 */
+    --impact-primary: #d32f2f;      /* 烈红，主攻冲击 */
+    --impact-primary-dark: #b71c1c;
+    --impact-primary-light: #ef5350;
+    --impact-accent: #ffb300;       /* 高压黄 */
+    --impact-iron: #212121;         /* 铁黑 */
+    --impact-iron-light: #424242;
+    --impact-steel: #616161;
+    --impact-silver: #e0e0e0;
+    --impact-white: #ffffff;
+    --impact-bg-start: #0a0c0e;     /* 深邃背景，突显前景 */
+    --impact-bg-end: #1f1f1f;
+    --impact-glow: rgba(211, 47, 47, 0.5);
+    --impact-edge: rgba(255, 179, 0, 0.7);
+    
+    /* 覆盖原有变量，确保冲击感 */
+    --primary: var(--impact-primary);
+    --primary-dark: var(--impact-primary-dark);
+    --primary-light: var(--impact-primary-light);
+    --accent: var(--impact-accent);
+    --secondary: var(--impact-iron);
+    --secondary-light: var(--impact-iron-light);
+    --dark: var(--impact-iron);
+    --gray-900: #121212;
+    --gray-800: #1e1e1e;
+    --gray-700: #2c2c2c;
+    --gray-600: #3d3d3d;
+    --gray-500: #6a6a6a;
+    --gray-300: #bdbdbd;
+    --gray-200: #e0e0e0;
+    --gray-100: #f5f5f5;
+    --light: #fafafa;
+    --danger: #d32f2f;
+    --warning: #ffb300;
+    --success: #2e7d32;
+}
+
+/* 全局冲击氛围 */
+body {
+    background: radial-gradient(circle at 20% 30%, #1e1e1e, #0a0c0f);
+    color: var(--gray-100);
+    font-weight: 400;
+    letter-spacing: 0.02em;
+    position: relative;
+    overflow-x: hidden;
+}
+
+/* 几何背景 —— 冲击版本：尖锐碎片+速度线 */
+.geometric-bg {
+    opacity: 0.5;
+    filter: blur(0px) !important; /* 局部清晰，更有锐度 */
+}
+
+/* 重写背景图形生成脚本感 —— 这里用纯CSS强化，同时保持JS生成的多样性 */
+.geometric-bg div {
+    mix-blend-mode: overlay !important;
+    filter: blur(2px) brightness(1.2) !important;
+    border: 1px solid rgba(255, 180, 0, 0.15) !important;
+    box-shadow: 0 0 15px rgba(211, 47, 47, 0.3) !important;
+}
+
+/* 标题区域：冲击标题，立体凿刻感 */
+.title-area h1.title-header {
+    font-size: 3.2rem;
+    font-weight: 900;
+    text-transform: uppercase;
+    background: linear-gradient(145deg, #ffffff, #b0bec5);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    text-shadow: 
+        4px 4px 0 var(--impact-primary-dark),
+        8px 8px 20px rgba(0,0,0,0.9),
+        0 0 40px var(--impact-glow);
+    letter-spacing: 6px;
+    transform: perspective(400px) rotateX(2deg);
+    position: relative;
+    z-index: 2;
+}
+
+/* 主容器 —— 重甲金属 */
+.content-container {
+    background: linear-gradient(145deg, #2a2a2a, #1a1a1a);
+    border: 2px solid var(--impact-primary-dark);
+    border-top: none;
+    border-radius: 0px 0px 16px 16px;  /* 刚硬直角为主，微圆角 */
+    box-shadow: 
+        0 15px 40px rgba(0, 0, 0, 0.7),
+        0 0 0 2px rgba(255, 179, 0, 0.2),
+        inset 0 0 30px rgba(0,0,0,0.6),
+        inset 0 -3px 0 rgba(255,179,0,0.3);
+    padding: 40px 50px;
+    backdrop-filter: blur(2px);
+    border-left: 8px solid var(--impact-primary);  /* 重击左侧光带 */
+}
+
+/* 顶部光条 —— 高压电光 */
+.title-bar {
+    height: 10px;
+    width: 200px;
+    background: linear-gradient(90deg, 
+        var(--impact-primary), 
+        var(--impact-accent), 
+        var(--impact-primary-dark),
+        var(--impact-primary)
+    );
+    box-shadow: 
+        0 0 30px var(--impact-primary),
+        0 0 60px var(--impact-accent);
+    border-radius: 0px;
+    top: -16px;
+    opacity: 1;
+    animation: pulse-impact 1.8s infinite alternate;
+}
+
+@keyframes pulse-impact {
+    0% { opacity: 0.9; width: 180px; box-shadow: 0 0 20px var(--impact-primary); }
+    100% { opacity: 1; width: 240px; box-shadow: 0 0 60px var(--impact-accent), 0 0 90px var(--impact-primary); }
+}
+
+/* 所有标题：粗犷、厚重、力量 */
+.content-container h1,
+.content-container h2,
+.content-container h3,
+.content-container h4,
+.content-container h5,
+.content-container h6 {
+    font-weight: 900;
+    letter-spacing: -0.01em;
+    text-transform: uppercase;  /* 全大写冲击力 */
+    border-bottom: none;
+    color: var(--gray-100);
+    text-shadow: 
+        2px 2px 0 #000,
+        4px 4px 0 var(--impact-primary-dark);
+    border-bottom: 3px solid var(--impact-accent);
+    padding-bottom: 10px;
+    width: 100%;
+}
+
+.content-container h1 {
+    font-size: 3.2rem;
+    background: none;
+    -webkit-background-clip: unset;
+    background-clip: unset;
+    color: var(--gray-100) !important; /* 覆盖渐变透明，改为金属实色加阴影 */
+    text-shadow: 
+        3px 3px 0 #000,
+        6px 6px 0 var(--impact-primary-dark),
+        0 0 20px var(--impact-primary);
+    border-bottom: 6px solid var(--impact-accent);
+    letter-spacing: 4px;
+}
+
+.content-container h1::after {
+    display: none; /* 移除原有装饰，用border-bottom代替 */
+}
+
+.content-container h2 {
+    font-size: 2.4rem;
+    border-bottom: 4px solid var(--impact-primary);
+    color: #f0f0f0;
+}
+
+.content-container h3 {
+    font-size: 2rem;
+    border-bottom: 3px dashed var(--impact-accent);
+    color: #f5f5f5;
+}
+
+/* 段落：冲击体，粗实 */
+.content-container p {
+    color: var(--gray-200);
+    font-size: 1.25rem;
+    font-weight: 500;
+    line-height: 1.7;
+    text-align: left;
+    border-left: 4px solid var(--impact-primary);
+    padding-left: 1.2rem;
+    margin: 1.8em 0;
+    background: linear-gradient(90deg, rgba(211,47,47,0.1), transparent 80%);
+}
+
+/* 链接 —— 带电的撕裂感 */
+.content-container a {
+    color: var(--impact-accent);
+    font-weight: 700;
+    text-decoration: none;
+    text-shadow: 0 0 5px rgba(255, 179, 0, 0.5);
+    border-bottom: 2px solid var(--impact-primary);
+    padding-bottom: 1px;
+    transition: 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94);
+}
+
+.content-container a:hover {
+    color: var(--impact-white);
+    border-bottom: 4px solid var(--impact-accent);
+    text-shadow: 0 0 15px var(--impact-accent), 0 0 30px var(--impact-primary);
+    background-color: rgba(211, 47, 47, 0.2);
+}
+
+.content-container a::after {
+    display: none; /* 移除柔和滑动线，使用硬朗边框 */
+}
+
+/* 列表：冲击标记 */
+.content-container ul,
+.content-container ol {
+    padding-left: 2.5em;
+    border-left: 5px solid var(--impact-primary);
+    background: rgba(0,0,0,0.2);
+    padding-top: 1em;
+    padding-bottom: 1em;
+}
+
+.content-container li {
+    color: var(--gray-200);
+    font-weight: 500;
+    margin-bottom: 0.8em;
+    list-style-type: none;
+    position: relative;
+}
+
+.content-container ul li::before {
+    content: "▶";  /* 冲击箭头 */
+    color: var(--impact-accent);
+    font-weight: 900;
+    position: absolute;
+    left: -1.5em;
+    font-size: 1.1em;
+    text-shadow: 0 0 8px var(--impact-primary);
+}
+
+.content-container ol {
+    counter-reset: impact-counter;
+}
+
+.content-container ol li {
+    counter-increment: impact-counter;
+    list-style: none;
+}
+
+.content-container ol li::before {
+    content: counter(impact-counter) "!";
+    color: var(--impact-accent);
+    font-weight: 900;
+    position: absolute;
+    left: -2em;
+    font-size: 1.1em;
+    text-shadow: 0 0 6px var(--impact-primary);
+    background: var(--impact-iron);
+    padding: 0 6px;
+    border-radius: 0;
+    border-bottom: 2px solid var(--impact-primary);
+}
+
+/* 代码块：工业警示 */
+.content-container pre {
+    background: #0f0f0f;
+    border: 2px solid var(--impact-primary);
+    border-left: 10px solid var(--impact-accent);
+    box-shadow: 0 0 40px rgba(0,0,0,0.8), inset 0 0 15px #000000;
+    color: var(--impact-silver);
+    border-radius: 0px;
+    font-weight: 500;
+}
+
+.content-container code {
+    background: #1e1e1e;
+    color: #ffb74d;  /* 炙热代码 */
+    border: 1px solid var(--impact-primary);
+    border-radius: 0px;
+    font-weight: 600;
+}
+
+.content-container pre code {
+    color: #ffd54f;
+    border: none;
+    text-shadow: 0 0 8px rgba(255, 179, 0, 0.5);
+}
+
+/* 引用块：冲击呐喊 */
+.content-container blockquote {
+    background: #151515;
+    border-left: 12px solid var(--impact-accent);
+    border-right: 2px solid var(--impact-primary);
+    color: #e0e0e0;
+    font-style: normal;
+    font-weight: 600;
+    padding: 1.5em 2em;
+    box-shadow: inset 0 0 30px #0a0a0a, 0 10px 20px black;
+    border-radius: 0px;
+}
+
+.content-container blockquote::before {
+    content: "⚡";
+    font-size: 4em;
+    color: var(--impact-accent);
+    opacity: 0.4;
+    left: 5px;
+    top: -15px;
+    text-shadow: 0 0 20px red;
+}
+
+/* 表格：金属铆接 */
+.content-container table {
+    border-collapse: collapse;
+    border: 3px solid var(--impact-iron-light);
+    background: #1c1c1c;
+    box-shadow: 0 10px 30px black;
+}
+
+.content-container th {
+    background: linear-gradient(145deg, #b71c1c, #d32f2f);
+    color: white;
+    font-weight: 900;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    border: 1px solid var(--impact-accent);
+    text-shadow: 2px 2px 0 #000;
+}
+
+.content-container td {
+    border: 1px solid #424242;
+    color: #e0e0e0;
+    background: rgba(0,0,0,0.5);
+    font-weight: 500;
+}
+
+.content-container tr:nth-child(even) td {
+    background: #262626;
+}
+
+/* 图片：碎裂边缘 */
+.content-container img {
+    border: 4px solid var(--impact-primary-dark);
+    filter: grayscale(30%) contrast(130%) brightness(90%);
+    box-shadow: 0 20px 40px black, 0 0 0 2px var(--impact-accent);
+    border-radius: 0px; /* 直角力量 */
+}
+
+/* 水平线：高压电弧 */
+.content-container hr {
+    height: 6px;
+    background: repeating-linear-gradient(45deg, 
+        var(--impact-primary), 
+        var(--impact-accent) 10px, 
+        var(--impact-primary-dark) 20px);
+    margin: 3em auto;
+    border: none;
+    box-shadow: 0 0 20px var(--impact-primary);
+}
+
+/* 按键标签 */
+.content-container kbd {
+    background: #2a2a2a;
+    border: 2px solid #bdbdbd;
+    color: white;
+    box-shadow: 0 4px 0 #616161, 0 0 15px black;
+    font-weight: 700;
+    border-radius: 0px;
+    text-transform: uppercase;
+}
+
+/* 标记文本 */
+.content-container mark {
+    background: var(--impact-accent);
+    color: #0a0a0a;
+    padding: 0.2em 0.5em;
+    border-left: 5px solid var(--impact-primary);
+    border-radius: 0px;
+    font-weight: 700;
+    text-transform: uppercase;
+}
+
+/* 额外冲击工具类 */
+.content-container .text-primary {
+    color: var(--impact-primary) !important;
+    text-shadow: 0 0 10px red;
+}
+
+.content-container .text-warning {
+    color: var(--impact-accent) !important;
+    text-shadow: 0 0 15px orange;
+}
+
+/* 移动端调整：冲击不减 */
+@media (max-width: 768px) {
+    .title-area h1.title-header {
+        font-size: 2.4rem;
+        letter-spacing: 2px;
+    }
+    .content-container {
+        padding: 30px 20px;
+        border-left: 6px solid var(--impact-primary);
+    }
+    .content-container h1 {
+        font-size: 2.4rem;
+    }
+    .content-container h2 {
+        font-size: 2rem;
+    }
+    .content-container p {
+        font-size: 1.1rem;
+    }
+}
+
+/* 确保所有元素都有冲击风格的边框或重影 */
+.content-container strong {
+    color: var(--impact-accent);
+    text-shadow: 0 0 6px rgba(255,179,0,0.8);
+}
+
+.content-container ::selection {
+    background: var(--impact-primary);
+    color: white;
+    text-shadow: none;
+}
+
+/* 背景几何图形 JS 生成物的冲击加强 —— 使用现有结构添加样式 */
+.geometric-bg div {
+    border: 2px solid rgba(211, 47, 47, 0.2) !important;
+    transform: scale(1.1) rotate(45deg) !important;
+    mix-blend-mode: hard-light !important;
+    filter: blur(3px) brightness(0.9) !important;
+    opacity: 0.25 !important;
+    box-shadow: 0 0 25px rgba(255, 179, 0, 0.3) inset, 0 0 30px rgba(211,47,47,0.3) !important;
+}
+
+/* 为页面额外增加动态速度线 —— 纯CSS冲击波 */
+body::after {
+    content: '';
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+    background: repeating-linear-gradient(45deg, 
+        rgba(255,179,0,0.02) 0px, 
+        rgba(211,47,47,0.02) 2px,
+        transparent 4px,
+        transparent 12px);
+    z-index: 999;
+    animation: shift-lines 0.4s infinite linear;
+}
+
+@keyframes shift-lines {
+    0% { background-position: 0 0; }
+    100% { background-position: 20px 20px; }
+}
+
+/* 标题区加冲击底纹 */
+.title-area {
+    position: relative;
+    z-index: 5;
+}
+
+.title-area::before {
+    content: "⚡⚡⚡";
+    position: absolute;
+    top: -20px;
+    left: 0;
+    width: 100%;
+    font-size: 3rem;
+    color: var(--impact-accent);
+    opacity: 0.2;
+    letter-spacing: 20px;
+    text-align: center;
+    pointer-events: none;
+    text-shadow: 0 0 30px red;
+    z-index: -1;
+}

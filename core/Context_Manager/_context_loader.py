@@ -1,4 +1,5 @@
 # ==== 标准库 ==== #
+import asyncio
 import aiofiles
 from pathlib import Path
 import orjson
@@ -7,6 +8,9 @@ import orjson
 from loguru import logger
 
 # ==== 自定义库 ==== #
+from ..Assist_Struct import (
+    AdditionalData
+)
 from ..Data_Manager import (
     PromptManager,
     ContextManager
@@ -21,11 +25,16 @@ from ._objects import (
     TextBlock,
     ImageBlock,
     ImageUrlBlock,
+    VideoBlock,
+    VideoUrlBlock,
+    AudioBlock,
+    AudioDataBlock,
+    FileBlock,
+    FileDataBlock,
 )
 from ._exceptions import *
-from TextProcessors import (
-    PromptVP,
-    limit_blank_lines,
+from ..Text_Template_Processer import (
+    TemplateParser
 )
 from PathProcessors import validate_path, sanitize_filename
 from ..Global_Config_Manager import ConfigManager as GlobalConfigManager
@@ -51,7 +60,7 @@ class ContextLoader:
             self,
             user_id: str,
             temporary_prompt: str | None = None,
-            prompt_vp: PromptVP | None = None
+            template_parser: TemplateParser | None = None
         ) -> ContentUnit:
         """
         加载提示词
@@ -98,11 +107,11 @@ class ContextLoader:
                 prompt = ""
         
         # 展开变量
-        if prompt_vp is not None:
-            prompt = self._expand_variables(
+        if template_parser is not None:
+            prompt = await self._expand_variables(
                 user_id = user_id,
                 prompt = prompt,
-                variables_parser = prompt_vp
+                template_parser = template_parser
             )
         logger.debug("Prompt Content:\n{prompt}", user_id = user_id, prompt = prompt)
 
@@ -138,25 +147,22 @@ class ContextLoader:
             user_id: str,
             temporary_prompt: str | None = None,
             load_prompt: bool = True,
-            prompt_vp: PromptVP | None = None,
+            template_parser: TemplateParser | None = None,
         ) -> ContextObject:
         """
         加载整个上下文
 
         :param user_id: 用户ID
-        :param message: 消息内容
-        :param role: 角色
-        :param role_name: 角色名称
         :param temporary_prompt: 临时提示词
         :param load_prompt: 是否加载提示词
-        :param continue_completion: 是否继续生成
+        :param template_parser: 模板解析器
         :return: 上下文对象
         """
         # 如果允许添加提示词，就加载提示词，否则使用空上下文对象
         if load_prompt:
             prompt = await self.load_prompt(
                 user_id=user_id,
-                prompt_vp = prompt_vp,
+                template_parser = template_parser,
                 temporary_prompt = temporary_prompt
             )
         else:
@@ -169,14 +175,14 @@ class ContextLoader:
         context.prompt = prompt
         return context
     
-    def make_user_content(
+    async def make_user_content(
             self,
             user_id: str,
             new_message: str,
             role: ContentRole = ContentRole.USER,
             role_name: str | None = None,
-            image_url: str | list[str] | None = None,
-            prompt_vp: PromptVP | None = None
+            additional_data: AdditionalData | None = None,
+            template_parser: TemplateParser | None = None
         ) -> ContentUnit:
         """
         Make User Content
@@ -185,49 +191,117 @@ class ContextLoader:
         :param new_message: User Input Message
         :param role: Content Role
         :param role_name: An optional name for the participant. Provides the model information to differentiate between participants of the same role.
-        :param image_url: Possible visual content
-        :param prompt_vp: `Prompt_VP` Variable template expansion engine.
+        :param additional_data: Additional Data
+        :param template_parser: Template Parser
         """
         content = ContentUnit()
-        if prompt_vp is not None:
-            new_message = self._expand_variables(
+        if template_parser is not None:
+            new_message = await self._expand_variables(
                 user_id = user_id,
                 prompt = new_message,
-                variables_parser = prompt_vp
+                template_parser = template_parser
             )
-        if image_url:
-            if isinstance(image_url, str):
+        if additional_data is not None:
+            if not isinstance(content.content, list):
                 content.content = []
-                content.content.append(
-                    TextBlock(
-                        text = new_message,
-                    )
-                )
-                content.content.append(
-                    ImageBlock(
-                        image_url = ImageUrlBlock(
-                            url = image_url,
+            if additional_data.image_url is not None:
+                if isinstance(additional_data.image_url, str):
+                    content.content.append(
+                        TextBlock(
+                            text = new_message,
                         )
                     )
-                )
-            elif isinstance(image_url, list):
-                content.content = []
-                content.content.append(
-                    TextBlock(
-                        text = new_message,
-                    )
-                )
-                for url in image_url:
                     content.content.append(
                         ImageBlock(
                             image_url = ImageUrlBlock(
-                                url = url,
+                                url = additional_data.image_url,
                             )
                         )
                     )
-            else:
-                raise TypeError(
-                    "Invalid content type, must be one of the following: str, list[str], list[ImageUrlBlock]"
+                elif isinstance(additional_data.image_url, list):
+                    for url in additional_data.image_url:
+                        content.content.append(
+                            ImageBlock(
+                                image_url = ImageUrlBlock(
+                                    url = url,
+                                )
+                            )
+                        )
+                else:
+                    raise TypeError(
+                        "Invalid content type, must be one of the following: str, list[str], list[ImageUrlBlock]"
+                    )
+            if additional_data.video_url:
+                if isinstance(additional_data.video_url, str):
+                    content.content.append(
+                        VideoBlock(
+                            video_url = VideoUrlBlock(
+                                url = additional_data.video_url,
+                            )
+                        )
+                    )
+                elif isinstance(additional_data.video_url, list):
+                    for url in additional_data.video_url:
+                        content.content.append(
+                            VideoBlock(
+                                video_url = VideoUrlBlock(
+                                    url = url,
+                                )
+                            )
+                        ) 
+                else:
+                    raise TypeError(
+                        "Invalid content type, must be one of the following: str, list[str], list[VideoUrlBlock]"
+                    )
+            if additional_data.audio_url:
+                if isinstance(additional_data.audio_url, str):
+                    content.content.append(
+                        AudioBlock(
+                            audio_url = AudioDataBlock(
+                                data = additional_data.audio_url,
+                            )
+                        )
+                    )
+                elif isinstance(additional_data.audio_url, list):
+                    for url in additional_data.audio_url:
+                        content.content.append(
+                            AudioBlock(
+                                audio_url = AudioDataBlock(
+                                    data = url,
+                                )
+                            )
+                        )
+                else:
+                    raise TypeError(
+                        "Invalid content type, must be one of the following: str, list[str], list[VideoUrlBlock]"
+                    )
+            if additional_data.file_url:
+                if isinstance(additional_data.file_url, str):
+                    content.content.append(
+                        FileBlock(
+                            file_url = FileDataBlock(
+                                data = additional_data.file_url,
+                            )
+                        )
+                    )
+                elif isinstance(additional_data.file_url, list):
+                    for url in additional_data.file_url:
+                        content.content.append(
+                            FileBlock(
+                                file_url = FileDataBlock(
+                                    data = url,
+                                )
+                            )
+                        )
+                else:
+                    raise TypeError(
+                        "Invalid content type, must be one of the following: str, list[str]"
+                    )
+            if new_message:
+                content.content.append(
+                    TextBlock(
+                        text = new_message
+                    )
                 )
         else:
             content.content = new_message
@@ -235,26 +309,19 @@ class ContextLoader:
         content.role_name = role_name
         return content
     
-    def _expand_variables(self, user_id: str, prompt: str, variables_parser: PromptVP) -> str:
+    async def _expand_variables(self, user_id: str, prompt: str, template_parser: TemplateParser) -> str:
         """
         展开变量
 
         :param prompt: 提示词
-        :param variables: 变量
         :param user_id: 用户ID
+        :param template_parser: 模板解析器
         """
-        variables_parser.reset_counter()
-        prompt = variables_parser.process(prompt)
-        logger.info(
-            "Prompt Hits Variable: {hit_var}/{discover_var}({hit_rate:.2%})",
+        return await asyncio.to_thread(
+            template_parser.render_ex,
+            text = prompt,
             user_id = user_id,
-            hit_var = variables_parser.hit_var(),
-            discover_var = variables_parser.discover_var(),
-            hit_rate = variables_parser.hit_var() / variables_parser.discover_var() if variables_parser.discover_var() != 0 else 0
         )
-        variables_parser.reset_counter()
-        prompt = limit_blank_lines(prompt)
-        return prompt
 
     async def save(
             self,

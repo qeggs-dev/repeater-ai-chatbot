@@ -2,12 +2,13 @@ from pydantic import BaseModel, ConfigDict, Field
 from ._cache_data import Cache_Data_Config
 from ._metadata_fields import MetadataFields
 
-class User_Data_Config(BaseModel):
+class UserDataConfig(BaseModel):
     model_config = ConfigDict(case_sensitive=False)
 
     dir: str = "./workspace/data/user_data"
     branches_dir_name: str = "branches"
     default_branch_id: str = "main"
+    b64_encode_path: bool = True
     file_size_use_abbreviation: bool = True
     metadata_file_name: str = "metadata.json"
     cache_medadata: bool | Cache_Data_Config = False

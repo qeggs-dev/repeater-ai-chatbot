@@ -1,9 +1,4 @@
 {
-    "api_info": {
-        "api_file_path": "./configs/api_info.json",
-        "default_model_uid": "chat",
-        "case_sensitive": false
-    },
     "blacklist": {
         "file_path": "./configs/blacklist.regex",
         "match_timeout": 10.0
@@ -17,6 +12,7 @@
         "auto_shrink_length": null,
         "save_context": true,
         "save_text_only": true,
+        "save_new_only": false,
         "max_log_length_for_non_text_content": 25
     },
     "global_exception_handler": {
@@ -43,12 +39,19 @@
             "traditional_stack_frame": false
         }
     },
+    "licenses": {
+        "license_dir": "./LICENSES",
+        "license_encoding": "utf-8",
+        "self_license_files": {
+            "MIT": "./LICENSE"
+        }
+    },
     "logger": {
         "file_path": "./logs/repeater-log-{time:YYYY-MM-DD_HH-mm-ss.SSS}.log",
         "console_format": "<green>{time:YYYY-MM-DD HH:mm:ss.SSS}</green> | <level>{level: <8}</level> | <cyan>{extra[user_id]}</cyan> - <level>{message}</level>",
         "file_format": "{time:YYYY-MM-DD HH:mm:ss.SSS} | {level: <8} | {extra[user_id]} - {message}",
         "level": "DEBUG",
-        "rotation": "10 MB",
+        "rotation": "1 days",
         "retention": "7 days",
         "compression": "zip"
     },
@@ -61,6 +64,15 @@
         "default_presence_penalty": 0.0,
         "default_stop": [],
         "stream": true
+    },
+    "model_api": {
+        "api_file_path": "./configs/api_info.json",
+        "default_model_uid": "chat",
+        "case_sensitive": false
+    },
+    "nexus": {
+        "base_url": "",
+        "api_timeout": 60.0
     },
     "prompt_template": {
         "version": null,
@@ -138,6 +150,7 @@
         "metadata_file_name": "metadata.json",
         "default_branch_id": "main",
         "file_size_use_abbreviation": true,
+        "allow_cross_user_data_flow": false,
         "cache_medadata": false,
         "cache_data": false
     },

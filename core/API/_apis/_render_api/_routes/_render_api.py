@@ -45,23 +45,25 @@ async def render(
     """
     start_time = time.monotonic_ns()
 
+    global_configs = ConfigManager.get_configs()
+
     # 检查请求是否合法
     if not render_request.text:
         raise HTTPException(status_code=400, detail="text is required")
     
-    if render_request.direct_output and not ConfigManager.get_configs().render.markdown.allow_direct_output:
+    if render_request.direct_output and not global_configs.render.markdown.allow_direct_output:
         raise HTTPException(status_code=400, detail="direct_output is not allowed")
     
-    if render_request.style and not ConfigManager.get_configs().render.markdown.allow_custom_styles:
+    if render_request.style and not global_configs.render.markdown.allow_custom_styles:
         raise HTTPException(status_code=400, detail="custom style is not allowed")
     
-    if render_request.html_template and not ConfigManager.get_configs().render.markdown.allow_custom_html_templates: 
+    if render_request.html_template and not global_configs.render.markdown.allow_custom_html_templates: 
         raise HTTPException(status_code=400, detail="custom html_template is not allowed")
     
     # 生成图片ID
     fuuid = uuid4()
-    filename = f"{fuuid}{ConfigManager.get_configs().render.to_image.output_suffix}"
-    render_output_image_dir = Path(ConfigManager.get_configs().render.to_image.output_dir)
+    filename = f"{fuuid}{global_configs.render.to_image.output_suffix}"
+    render_output_image_dir = Path(global_configs.render.to_image.output_dir)
     
     # 获取用户配置
     config = await Resource.core.user_config_manager.load(user_id)
@@ -73,29 +75,31 @@ async def render(
     )
     
     if not render_request.image_expiry_time:
-        render_url_expiry_time = ConfigManager.get_configs().render.default_image_timeout
+        render_url_expiry_time = global_configs.render.default_image_timeout
     else:
         render_url_expiry_time = render_request.image_expiry_time
     
     # 日志打印文件名和渲染风格
     logger.info(f"Rendering image {filename} for \"{style_name}\" style", user_id=user_id)
 
-    browser_type = ConfigManager.get_configs().render.to_image.browser_type
-    preprocess_map_before = ConfigManager.get_configs().render.markdown.preprocess_map.before
-    preprocess_map_after = ConfigManager.get_configs().render.markdown.preprocess_map.after
-    html_template_dir = Path(ConfigManager.get_configs().render.markdown.html_template_dir)
-    html_template_encoding = ConfigManager.get_configs().render.markdown.html_template_file_encoding
-    html_template_name = config.render_html_template if config.render_html_template is not None else ConfigManager.get_configs().render.markdown.default_html_template
-    html_template_suffix = ConfigManager.get_configs().render.markdown.html_template_suffix
-    title = config.render_title if config.render_title is not None else ConfigManager.get_configs().render.markdown.title
+    browser_type = global_configs.render.to_image.browser_type
+    preprocess_map_before = global_configs.render.markdown.preprocess_map.before
+    preprocess_map_after = global_configs.render.markdown.preprocess_map.after
+    html_template_dir = Path(global_configs.render.markdown.html_template_dir)
+    html_template_encoding = global_configs.render.markdown.html_template_file_encoding
+    html_template_name = config.render_html_template if config.render_html_template is not None else global_configs.render.markdown.default_html_template
+    html_template_suffix = global_configs.render.markdown.html_template_suffix
+    title = config.render_title if config.render_title is not None else global_configs.render.markdown.title
 
-    width = render_request.width if render_request.width is not None else ConfigManager.get_configs().render.to_image.width
-    height = render_request.height if render_request.height is not None else ConfigManager.get_configs().render.to_image.height
-    quality = render_request.quality if render_request.quality is not None else ConfigManager.get_configs().render.to_image.quality
-    no_pre_labels = ConfigManager.get_configs().render.markdown.no_pre_labels
+    width = render_request.width if render_request.width is not None else global_configs.render.to_image.width
+    height = render_request.height if render_request.height is not None else global_configs.render.to_image.height
+    quality = render_request.quality if render_request.quality is not None else global_configs.render.to_image.quality
+    environment = global_configs.text_template.sandbox.get_jinja_env()
+
+    no_pre_labels = global_configs.render.markdown.no_pre_labels
     if no_pre_labels is None:
         no_pre_labels = render_request.no_pre_labels
-    no_escape = ConfigManager.get_configs().render.markdown.no_escape
+    no_escape = global_configs.render.markdown.no_escape
     if no_escape is None:
         no_escape = render_request.no_escape
 
@@ -124,6 +128,7 @@ async def render(
     html = await markdown_to_html(
         input_text = render_request.text,
         html_template = html_template,
+        environment = environment,
         width = width,
         title = title,
         css = css,

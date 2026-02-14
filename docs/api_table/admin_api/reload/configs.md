@@ -5,7 +5,7 @@
 - **`/admin/configs/reload`**
   - **method**: `POST`
   - **Header**
-    - `X-Admin-API-Key (str)` API 密钥
+    - `X-Admin-API-Key` (str): API 密钥
   - **Response**
     - **type:** `Text`
     - **Response Body**

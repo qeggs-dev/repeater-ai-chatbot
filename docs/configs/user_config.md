@@ -81,6 +81,10 @@
     // 此选项会被API接口中传入的 save_context 参数覆盖
     "save_context": null,
 
+    // (str) 用户名
+    // 这个值在模板中为 `user_custom_name`
+    "user_name": null,
+
     // (str) 用户资料
     // 如果提示词中含有{user_profile}变量
     // 将会展开为该值

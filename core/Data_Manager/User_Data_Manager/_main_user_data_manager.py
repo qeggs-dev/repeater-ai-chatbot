@@ -1,7 +1,8 @@
 # ==== 标准库 ==== #
+import base64
+
 from typing import TypeVar, Generic, Callable
 from pathlib import Path
-from weakref import WeakValueDictionary
 
 # ==== 第三方库 ==== #
 from loguru import logger
@@ -9,6 +10,7 @@ from loguru import logger
 # ==== 自定义库 ==== #
 from .Sub_Manager import SubManager, BranchInfo
 from PathProcessors import validate_path, sanitize_filename
+from ._user_id_encoder import user_id_encode, user_id_decode
 from ...Global_Config_Manager import ConfigManager
 
 T = TypeVar("T")
@@ -49,7 +51,7 @@ class UserDataManager(Generic[T]):
     
     def _get_sub_manager(self, user_id: str) -> SubManager:
         manager = SubManager(
-            self.base_path / user_id,
+            self.base_path / user_id_encode(user_id),
             cache_metadata = self._cache_metadata,
             cache_data = self._cache_data,
             sub_dir_name = self._sub_dir_name,
@@ -339,7 +341,7 @@ class UserDataManager(Generic[T]):
         Returns:
             list: A list of all user IDs.
         """
-        return [f.name for f in (self.base_path).iterdir() if f.is_dir()]
+        return [user_id_decode(f.name) for f in (self.base_path).iterdir() if f.is_dir()]
 
     async def get_all_branch_id(self, user_id: str) -> list:
         """
@@ -351,4 +353,4 @@ class UserDataManager(Generic[T]):
         Returns:
             list: A list of branch IDs.
         """
-        return [f.stem for f in (self.base_path / user_id / self._sub_dir_name).iterdir() if f.is_file()]
+        return [f.stem for f in (self.base_path / user_id_encode(user_id) / self._sub_dir_name).iterdir() if f.is_file()]

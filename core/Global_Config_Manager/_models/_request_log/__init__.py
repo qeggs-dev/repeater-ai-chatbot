@@ -1,5 +1,5 @@
-from ._request_log import Request_Log_Config
+from ._request_log import RequestLogConfig
 
 __all__ = [
-    "Request_Log_Config"
+    "RequestLogConfig"
 ]

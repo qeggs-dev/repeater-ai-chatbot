@@ -1,5 +1,5 @@
-from ._static import Static_Config
+from ._static import StaticConfig
 
 __all__ = [
-    "Static_Config",
+    "StaticConfig",
 ]

@@ -17,7 +17,10 @@ from loguru import logger
 from .CallAPI import (
     CompletionsAPI
 )
-from . import Data_Manager
+from .Data_Manager import (
+    ContextManager,
+    PromptManager
+)
 from .Context_Manager import (
     ContextLoader,
     ContentRole,
@@ -25,7 +28,7 @@ from .Context_Manager import (
     ContentUnit,
     TextBlock,
 )
-from . User_Config_Manager import (
+from .User_Config_Manager import (
     ConfigManager as UserConfigManager,
     UserConfigs
 )
@@ -35,7 +38,8 @@ from .Global_Config_Manager import ConfigManager
 from .Assist_Struct import (
     Response,
     Request_User_Info,
-    CrossUserDataRouting
+    CrossUserDataRouting,
+    AdditionalData
 )
 from .Model_API import (
     ModelAPIManager,
@@ -43,11 +47,8 @@ from .Model_API import (
     ModelAPI,
 )
 from . import Request_Log
-from TextProcessors import (
-    PromptVP
-)
 from .Text_Template_Processer import (
-    PromptVP_Loader
+    TemplateParser
 )
 
 # ==== 本模块代码 ==== #
@@ -59,12 +60,10 @@ class Core:
         self.lock = asyncio.Lock()
 
         # 初始化用户数据管理器
-        self.context_manager = Data_Manager.ContextManager()
-        self.prompt_manager = Data_Manager.PromptManager()
+        self.context_manager = ContextManager()
+        self.prompt_manager = PromptManager()
         self.user_config_manager: UserConfigManager = UserConfigManager()
 
-        # 初始化变量加载器
-        self.prompt_pv_loader = PromptVP_Loader()
         # 初始化Client并设置并发大小
         self.api_client = CompletionsAPI.ClientNoStream(
             ConfigManager.get_configs().callapi.max_concurrency
@@ -197,7 +196,7 @@ class Core:
             temporary_prompt: str | None = None,
             load_prompt: bool = True,
             cross_user_data_routing: CrossUserDataRouting[str | None] | None = None,
-            prompt_vp: PromptVP = PromptVP()
+            template_parser: TemplateParser | None = None
         ) -> ContextObject:
         """
         获取上下文
@@ -212,7 +211,7 @@ class Core:
         :param load_prompt: 是否加载提示
         :param continue_completion: 是否继续完成
         :param reference_context_id: 引用上下文ID
-        :param prompt_vp: PromptVP模板解析器
+        :param template_parser: 模板解析器
         :return: 上下文对象
         """
         cross_user_data_routing: CrossUserDataRouting[str] = self.fill_missing_cross_user_data_routing(user_id, cross_user_data_routing)
@@ -233,7 +232,7 @@ class Core:
             prompt: ContentUnit = await context_loader.load_prompt(
                 user_id = prompt_load_source,
                 temporary_prompt = temporary_prompt,
-                prompt_vp = prompt_vp
+                template_parser = template_parser
             )
             context.prompt = prompt
 
@@ -241,28 +240,28 @@ class Core:
     # endregion
 
     # region Make User Content
-    def make_user_content(
+    async def make_user_content(
         self,
         context_loader: ContextLoader,
         user_id: str,
         message: str,
         role: ContentRole = ContentRole.USER,
         role_name: str | None = None,
-        image_url: str | list[str] | None = None,
-        prompt_vp: str | None = None,
+        additional_data: AdditionalData | None = None,
+        template_parser: str | None = None,
         new_requests_text_only: bool = False,
     ):
         if new_requests_text_only:
             logger.warning("Removed Additional Data", user_id=user_id)
-            image_url = None
+            additional_data = None
         
-        user_input: ContentUnit = context_loader.make_user_content(
+        user_input: ContentUnit = await context_loader.make_user_content(
             user_id = user_id,
             new_message = message,
             role = role,
             role_name = role_name,
-            image_url = image_url,
-            prompt_vp = prompt_vp
+            additional_data = additional_data,
+            template_parser = template_parser
         )
         return user_input
     # endregion
@@ -425,14 +424,13 @@ class Core:
             role: ContentRole = ContentRole.USER,
             role_name:  str = "",
             temporary_prompt: str | None = None,
-            image_url: str | list[str] | None = None,
+            additional_data: AdditionalData | None = None,
             model_uid: str | None = None,
             print_chunk: bool = True,
             load_prompt: bool | None = None,
             save_context: bool | None = None,
             save_new_only: bool | None = None,
             cross_user_data_routing: CrossUserDataRouting[str | None] | None = None,
-            continue_completion: bool = False,
             stream: bool = False,
         ) -> Response | AsyncIterator[dict[str, Any]]:
         """
@@ -444,14 +442,13 @@ class Core:
         :param role: 角色
         :param role_name: 角色名
         :param temporary_prompt: 临时提示词
-        :param image_url: 图片URL
+        :param additional_data: 额外数据
         :param model_uid: 模型UID
         :param print_chunk: 是否打印片段
         :param load_prompt: 是否加载提示
         :param save_context: 是否保存上下文
         :param save_new_only: 是否只保存最新的内容
         :param cross_user_data_operations: 跨用户数据流
-        :param continue_completion: 是否继续完成
         :param stream: 是否流式输出
         :return: 返回对话结果
         """
@@ -531,13 +528,12 @@ class Core:
                 # 进行用户名映射
                 user_info = await self.nickname_mapping(user_id, user_info)
 
-                # 获取Prompt_vp以展开变量内容
-                prompt_vp = self.prompt_pv_loader.get_prompt_vp_ex(
-                    user_id = user_id,
-                    user_info = user_info,
+                # 获取变量展开器以展开变量内容
+                template_parser = TemplateParser(
                     model = model,
+                    user_info = user_info,
                     global_config = ConfigManager.get_configs(),
-                    config = config
+                    user_config = config
                 )
 
                 # 获取上下文加载器
@@ -556,21 +552,21 @@ class Core:
                     temporary_prompt = temporary_prompt,
                     load_prompt = load_prompt,
                     cross_user_data_routing = cross_user_data_routing,
-                    prompt_vp = prompt_vp,
+                    template_parser = template_parser,
                 )
 
                 new_requests_text_only = config.new_requests_text_only
                 if new_requests_text_only is None:
                     new_requests_text_only = ConfigManager.get_configs().context.new_requests_text_only
                 
-                user_input: ContentUnit = self.make_user_content(
+                user_input: ContentUnit = await self.make_user_content(
                     context_loader = context_loader,
                     user_id = user_id,
                     message = message,
                     role = role,
                     role_name = role_name,
-                    image_url = image_url,
-                    prompt_vp = prompt_vp,
+                    additional_data = additional_data,
+                    template_parser = template_parser,
                     new_requests_text_only = new_requests_text_only,
                 )
 
@@ -592,6 +588,7 @@ class Core:
                                     "This can be caused by an incorrect parameter input.\n"
                                     "Please check that the context field is working properly in your configuration.\n"
                                     "Or whether the Context data does not contain the specified header Role.\n"
+                                    "Or maybe you set the contraction value too low.\n"
                                     f"Error: {e}"
                                 ),
                                 status_code = 400,
@@ -686,7 +683,7 @@ class Core:
                                 user_id = user_id,
                                 output = output,
                                 response = response,
-                                prompt_vp = prompt_vp,
+                                template_parser = template_parser,
                                 user_input = user_input,
                                 save_context = save_context,
                                 save_new_only = save_new_only,
@@ -713,7 +710,7 @@ class Core:
                             user_id = user_id,
                             output = output,
                             response = response,
-                            prompt_vp = prompt_vp,
+                            template_parser = template_parser,
                             user_input = user_input,
                             save_context = save_context,
                             save_new_only = save_new_only,
@@ -747,7 +744,7 @@ class Core:
     async def _post_treatment(
         self,
         user_id: str,
-        prompt_vp: PromptVP,
+        template_parser: TemplateParser,
         response: CompletionsAPI.Response,
         task_start_time: Request_Log.TimeStamp,
         context_loader: ContextLoader,
@@ -767,24 +764,34 @@ class Core:
         saved_user_id = cross_user_data_routing.context.save_to_user_id
 
         # 展开模型输出内容中的变量
-        for index in range(len(response.new_context.context_list)):
-            content_unit = response.new_context.context_list[index]
-            content = content_unit.content
-            if isinstance(content, str):
-                content = prompt_vp.process(content)
-                content_unit.content = content
-            else:
-                content = content_unit.to_plaintext_content()
-                content = prompt_vp.process(content)
-                content_unit.remove_context_block(TextBlock)
-                content_unit.content.append(
-                    TextBlock(content)
+        def expand_variables():
+            for index in range(len(response.new_context.context_list)):
+                content_unit = response.new_context.context_list[index]
+                content = content_unit.content
+                if isinstance(content, str):
+                    content = template_parser.render_ex(
+                        content,
+                        user_id,
+                    )
+                    content_unit.content = content
+                else:
+                    content = content_unit.to_plaintext_content()
+                    content = template_parser.render_ex(
+                        content,
+                        user_id
+                    )
+                    content_unit.remove_context_block(TextBlock)
+                    content_unit.content.append(
+                        TextBlock(content)
+                    )
+                content_unit.reasoning_content = template_parser.render_ex(
+                    content_unit.reasoning_content,
+                    user_id,
                 )
-            content_unit.reasoning_content = prompt_vp.process(content_unit.reasoning_content)
         
-        # 记录Prompt_vp的命中情况
-        logger.info(f"Prompt Hits Variable: {prompt_vp.hit_var()}/{prompt_vp.discover_var()}({prompt_vp.hit_var() / prompt_vp.discover_var() if prompt_vp.discover_var() != 0 else 0:.2%})", user_id = saved_user_id)
-
+        # 通过合并频繁的同步操作，减少创建 Thread 带来的开销
+        await asyncio.to_thread(expand_variables)
+        
         if cross_user_data_routing.context.save_to_user_id == user_id:
             historical_context = response.historical_context
         else:
@@ -835,7 +842,7 @@ class Core:
         output.id = response.id
 
         output.finish_reason_cause = response.finish_reason_cause
-        output.finish_reason_code = response.finish_reason
+        output.finish_reason_code = response.finish_reason.value
 
         return output
     # endregion

@@ -1,15 +1,17 @@
 import html
+import asyncio
 import markdown
 from ._extensions import (
     BrExtension,
     CodeBlockExtension,
     DividingLineExtension
 )
-from TextProcessors import PromptVP
+from jinja2 import Template, Environment
 
 async def markdown_to_html(
     input_text: str,
     html_template: str,
+    environment: Environment,
     css: str,
     title: str = "Markdown Render",
     width: int = 800,
@@ -69,14 +71,14 @@ async def markdown_to_html(
     # 5. 添加自适应宽度
     css += f"\nbody {{ width: {max(width, 60) - 60}px; }}"
 
-    template_handler = PromptVP()
-    template_handler.bulk_register_variable(
+    template: Template = environment.from_string(html_template)
+
+    full_html = await asyncio.to_thread(
+        template.render,
         markdown = input_text,
         html_content = html_content,
         css = css,
         title = html.escape(title)
     )
-
-    # 6. 生成 HTML 文本
-    full_html = template_handler.process(html_template)
+    
     return full_html
