@@ -7,6 +7,8 @@ from ._content_block import (
     TextBlock,
     ImageUrlBlock,
     ImageBlock,
+    VideoUrlBlock,
+    VideoBlock,
     AudioDataBlock,
     AudioBlock,
     FileDataBlock,

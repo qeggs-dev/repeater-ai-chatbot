@@ -35,6 +35,23 @@ class ImageBlock(BaseModel):
     type: Literal[ContentBlockType.IMAGE_URL] = ContentBlockType.IMAGE_URL
     image_url: ImageUrlBlock = Field(default_factory=ImageUrlBlock)
 
+class VideoUrlBlock(BaseModel):
+    model_config = ConfigDict(
+        validate_assignment = True,
+        exclude_none = True
+    )
+
+    url: str = ""
+
+class VideoBlock(BaseModel):
+    model_config = ConfigDict(
+        validate_assignment = True,
+        exclude_none = True
+    )
+
+    type: Literal[ContentBlockType.IMAGE_URL] = ContentBlockType.IMAGE_URL
+    video_url: ImageUrlBlock = Field(default_factory=ImageUrlBlock)
+
 class AudioDataBlock(BaseModel):
     model_config = ConfigDict(
         validate_assignment = True,
@@ -74,6 +91,7 @@ class FileBlock(BaseModel):
 ContentBlock = Union[
     TextBlock,
     ImageBlock,
+    VideoBlock,
     AudioBlock,
     FileBlock
 ]
