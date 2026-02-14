@@ -54,3 +54,5 @@
 颜色风格默认在 `./configs/style` 文件夹下
 可以通过 `render.markdown.styles_dir` 这个全局配置来修改路径
 你也可以去编写你自己的 CSS 样式
+
+啊因为我不会写前端，所以此处的所有 CSS 全是由AI生成的
