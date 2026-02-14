@@ -6,6 +6,7 @@ from enum import StrEnum
 class ContentBlockType(StrEnum):
     TEXT = "text"
     IMAGE_URL = "image_url"
+    VIDEO_URL = "video_url"
     INPUT_AUDIO = "input_audio"
     FILE = "file"
 
@@ -49,8 +50,8 @@ class VideoBlock(BaseModel):
         exclude_none = True
     )
 
-    type: Literal[ContentBlockType.IMAGE_URL] = ContentBlockType.IMAGE_URL
-    video_url: ImageUrlBlock = Field(default_factory=ImageUrlBlock)
+    type: Literal[ContentBlockType.VIDEO_URL] = ContentBlockType.VIDEO_URL
+    video_url: VideoUrlBlock = Field(default_factory=VideoUrlBlock)
 
 class AudioDataBlock(BaseModel):
     model_config = ConfigDict(
