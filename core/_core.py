@@ -38,7 +38,8 @@ from .Global_Config_Manager import ConfigManager
 from .Assist_Struct import (
     Response,
     Request_User_Info,
-    CrossUserDataRouting
+    CrossUserDataRouting,
+    AdditionalData
 )
 from .Model_API import (
     ModelAPIManager,
@@ -246,20 +247,20 @@ class Core:
         message: str,
         role: ContentRole = ContentRole.USER,
         role_name: str | None = None,
-        image_url: str | list[str] | None = None,
+        additional_data: AdditionalData | None = None,
         template_parser: str | None = None,
         new_requests_text_only: bool = False,
     ):
         if new_requests_text_only:
             logger.warning("Removed Additional Data", user_id=user_id)
-            image_url = None
+            additional_data = None
         
         user_input: ContentUnit = await context_loader.make_user_content(
             user_id = user_id,
             new_message = message,
             role = role,
             role_name = role_name,
-            image_url = image_url,
+            additional_data = additional_data,
             template_parser = template_parser
         )
         return user_input
@@ -423,7 +424,7 @@ class Core:
             role: ContentRole = ContentRole.USER,
             role_name:  str = "",
             temporary_prompt: str | None = None,
-            image_url: str | list[str] | None = None,
+            additional_data: AdditionalData | None = None,
             model_uid: str | None = None,
             print_chunk: bool = True,
             load_prompt: bool | None = None,
@@ -441,7 +442,7 @@ class Core:
         :param role: 角色
         :param role_name: 角色名
         :param temporary_prompt: 临时提示词
-        :param image_url: 图片URL
+        :param additional_data: 额外数据
         :param model_uid: 模型UID
         :param print_chunk: 是否打印片段
         :param load_prompt: 是否加载提示
@@ -564,7 +565,7 @@ class Core:
                     message = message,
                     role = role,
                     role_name = role_name,
-                    image_url = image_url,
+                    additional_data = additional_data,
                     template_parser = template_parser,
                     new_requests_text_only = new_requests_text_only,
                 )
