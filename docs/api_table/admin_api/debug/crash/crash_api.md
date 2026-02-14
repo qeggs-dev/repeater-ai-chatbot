@@ -6,7 +6,7 @@
 - **`/admin/debug/crash`**
   - **method**: `POST`
   - **Header**
-    - `X-Admin-API-Key (str)` API 密钥
+    - `X-Admin-API-Key` (str): API 密钥
   - **Response**
     - *\*服务器可能并不会返回一个有效的内容, 大概率会是`500 Internal Server Error`*
 

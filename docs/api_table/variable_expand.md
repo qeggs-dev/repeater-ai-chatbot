@@ -10,11 +10,11 @@
     - **type:** `JSON`
     - **Request Body**:
       - `user_info`
-        - `username (str)` 用户名
-        - `nickname (str)` 昵称
-        - `age (int | float)` 年龄
-        - `gender (str)` 性别
-      - `text (str)` 要处理的文本
+        - `username` (str): 用户名
+        - `nickname` (str): 昵称
+        - `age` (int | float): 年龄
+        - `gender` (str): 性别
+      - `text` (str): 要处理的文本
   - **Response**
     - **type:** `Text`
     - **Response Body**:

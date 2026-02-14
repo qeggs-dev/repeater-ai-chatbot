@@ -7,7 +7,7 @@
     - **method:** `PUT`
     - **type:** `FORM`
     - **Request Body**:
-      - `new_branch_id (str)`:  新的分支ID
+      - `new_branch_id` (str):  新的分支ID
   - **Response**
     - **type:** `Text`
     - **Response Body**:

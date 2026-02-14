@@ -7,7 +7,7 @@
     - **method:** `PUT`
     - **type:** `FORM`
     - **Request Body**:
-      - `prompt (str)`: 提示词内容
+      - `prompt` (str): 提示词内容
   - **Response**
     - **type:** `Text`
     - **Response Body**:

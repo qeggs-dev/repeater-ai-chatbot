@@ -7,8 +7,8 @@
     - **method:** `PUT`
     - **type:** `FORM`
     - **Request Body**:
-      - `src_branch_id (str)`: 源目标分支ID
+      - `src_branch_id` (str): 源目标分支ID
   - **Response**
     - **type:** `JSON`
     - **Response Body**:
-      - `status (str)`:  "success"
+      - `status` (str):  "success"

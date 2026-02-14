@@ -7,7 +7,7 @@
     - **method:** `PUT`
     - **type:** `FORM`
     - **Request Body**:
-      - `key (str)`:  配置字段名
+      - `key` (str):  配置字段名
   - **Response**
     - **type:** `Text`
     - **Response Body**:
