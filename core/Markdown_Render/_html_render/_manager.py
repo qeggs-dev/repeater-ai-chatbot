@@ -1,6 +1,9 @@
 from __future__ import annotations
 import asyncio
 import time
+import re
+from RegexChecker import RegexChecker
+from pathlib import Path
 from typing import Any
 from ._enums import (
     BrowserType,
@@ -16,7 +19,9 @@ from playwright.async_api import (
     Browser,
     Page,
     Playwright,
-    ProxySettings
+    ProxySettings,
+    Route,
+    Request
 )
 from ._image_format_detector import ImageFormatDetector
 from loguru import logger
@@ -39,6 +44,7 @@ class BrowserPoolManager:
         max_browsers: int = 3,
         default_browser: BrowserType = BrowserType.AUTO,
         headless: bool = True,
+        route_blacklist_file: str | None = None,
         browser_args: BrowserArgs | None = None,
         default_config: RenderConfig | None = None
     ):
@@ -60,6 +66,13 @@ class BrowserPoolManager:
         # 性能统计
         self._render_count = 0
         self._total_render_time_ms = 0
+
+        # 路由黑名单
+        self._route_blacklist: RegexChecker = RegexChecker()
+        if route_blacklist_file:
+            with open(route_blacklist_file, "r", encoding = "utf-8") as f:
+                data = f.read()
+                self._route_blacklist.load(data)
         
         # 注册实例
         BrowserPoolManager._instances.append(self)
@@ -111,6 +124,19 @@ class BrowserPoolManager:
             
             logger.info("Browser pool initialized")
     
+    def _block_intranet_resources(self, route: Route, request: Request):
+        url = request.url
+        resource_type = request.resource_type
+        
+        # 检查是否是允许的地址
+        if self._route_blacklist.check(url, re.match):
+            logger.warning(f"Blocked intranet {resource_type}: {url}")
+            route.abort()  # 中止请求
+            return
+        
+        # 允许其他请求
+        route.continue_()
+    
     async def render_html(
         self,
         html_content: str,
@@ -155,6 +181,9 @@ class BrowserPoolManager:
         # 执行渲染
         try:
             browser, page, browser_name = await self._acquire_page_for_render(browser_type)
+
+            # 创建路由拦截
+            await page.route("**/*", self._block_intranet_resources)
             
             # 配置页面
             await page.set_viewport_size({"width": config.width, "height": config.height})
