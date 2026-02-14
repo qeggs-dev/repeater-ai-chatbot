@@ -38,20 +38,46 @@
           - `save_to_user_id` (str): 将配置数据保存到指定用户ID
       - `stream` (bool): 是否流式返回（设置该值为 `true` 需要保证在配置中启用了流式处理器，否则会返回`503`错误码）
   - **Response**
-    - **type:** `JSON`
+    - **type:** `JSON` | `JSONL STREAM`
     - **Response Body**:
-      - `reasoning_content` (str): CoT回复内容，即使模型没有返回CoT它仍然存在，注意判断逻辑应为非null和非空字符串
-      - `content` (str): AI回复内容
-      - `user_raw_input` (str): 用户发送的原始消息
-      - `user_input` (str | list[ContentBlock]): 用户发送的消息经过格式化后处理后的内容，使用[OpenAI Chat Completion User Message Content](https://platform.openai.com/docs/api-reference/chat/create#chat_create-messages-user_message-content)格式
-      - `model_group` (str): 模型组，由[API_Info文件](../configs/api_info.md)决定
-      - `model_name` (str): 模型名称，通常是该模型的可读名称
-      - `model_type` (str): 模型类型, 由[API_Info文件](../configs/api_info.md)决定，通常这个接口返回的是`chat`
-      - `create_time` (int): 提交请求到API时API厂商报告的请求创建时间戳
-      - `id` (str): 请求ID，通常是一个随机的字符串，由API厂商生成，通常可以被作为唯一标识使用
-      - `finish_reason_code` (str): 模型结束生成的原因，由API厂商提供
-      - `finish_reason_cause` (str): 模型结束生成的原因，该字段为可读版本，由程序自动生成
-      - `status` (int): 状态码，这里和http状态码一致，只是为了报告而写，通常你应该优先选择检查http报告的状态码而不是这个字段
+      - `JSON`:
+        - `reasoning_content` (str): CoT回复内容，即使模型没有返回CoT它仍然存在，注意判断逻辑应为非null和非空字符串
+        - `content` (str): AI回复内容
+        - `user_raw_input` (str): 用户发送的原始消息
+        - `user_input` (str | list[ContentBlock]): 用户发送的消息经过格式化后处理后的内容，使用[OpenAI Chat Completion User Message Content](https://platform.openai.com/docs/api-reference/chat/create#chat_create-messages-user_message-content)格式
+        - `model_group` (str): 模型组，由[API_Info文件](../configs/api_info.md)决定
+        - `model_name` (str): 模型名称，通常是该模型的可读名称
+        - `model_type` (str): 模型类型, 由[API_Info文件](../configs/api_info.md)决定，通常这个接口返回的是`chat`
+        - `create_time` (int): 提交请求到API时API厂商报告的请求创建时间戳
+        - `id` (str): 请求ID，通常是一个随机的字符串，由API厂商生成，通常可以被作为唯一标识使用
+        - `finish_reason_code` (str): 模型结束生成的原因，由API厂商提供
+        - `finish_reason_cause` (str): 模型结束生成的原因，该字段为可读版本，由程序自动生成
+        - `status` (int): 状态码，这里和http状态码一致，只是为了报告而写，通常你应该优先选择检查http报告的状态码而不是这个字段
+      - `JSON STREAM`:
+        - *\*每一行*
+          - `id` (str): 请求ID
+          - `reasoning_content` (str): CoT回复内容，即使模型没有返回CoT它仍然存在，注意判断逻辑应为非null和非空字符串
+          - `content` (str): AI回复内容
+          - `function_id` (str): 函数ID，如果模型没有返回函数ID，则该字段为空字符串
+          - `function_type` (str): 函数类型，如果模型没有返回函数ID，则该字段为空字符串
+          - `function_name` (str): 函数名称，如果模型没有返回函数ID，则该字段为空字符串
+          - `function_arguments` (str): 函数参数，通常是JSON格式，如果模型没有返回函数ID，则该字段为空字符串
+          - `token_usage`
+            - `prompt_tokens` (int): 输入的token数量
+            - `completion_tokens` (int): 输出的token数量
+            - `total_tokens` (int): 总的token数量
+            - `prompt_cache_hit_tokens` (int): 输入的token中缓存命中的数量
+            - `prompt_cache_miss_tokens` (int): 输入的token中缓存未命中的数量
+          - `finish_reason` (str): 模型结束生成的原因，由API厂商提供
+          - `created` (int): 请求创建时间，时间戳，单位为秒
+          - `model` (str): 模型名称
+          - `system_fingerprint` (str): 系统指纹，由API厂商提供
+          - `logprobs`
+            - `token` (str): token内容
+            - `logprob` (float): token的概率
+            - `top_logprobs`
+              - `token` (str): token内容
+              - `logprob` (float): token的概率
 
 注：该API有**RUL(Request User Lock)**
 在 `user_id` 相同且上一个请求**未完成**时
@@ -65,3 +91,8 @@
 大概持续 `40ms` 左右
 在这段时间内，当前执行的协程会无法让出执行权
 所以还请注意
+
+`logprobs` 参数目前并没有数据内容
+它只是在占位
+不过如果模型在流式输出中添加了 `logprobs` 参数
+那么它将会在这里出现
