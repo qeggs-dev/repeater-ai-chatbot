@@ -37,7 +37,7 @@ async def chat_endpoint(
             role = request.role,
             role_name = request.role_name,
             temporary_prompt = request.temporary_prompt,
-            image_url = request.image_url,
+            additional_data = request.additional_data,
             model_uid = request.model_uid,
             print_chunk = True,
             load_prompt = request.load_prompt,

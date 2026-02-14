@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field
 from .....Context_Manager import ContentRole
-from .....Assist_Struct import Request_User_Info, CrossUserDataRouting
+from .....Assist_Struct import Request_User_Info, CrossUserDataRouting, AdditionalData
 
 class ChatRequest(BaseModel):
     message: str = ""
@@ -12,6 +12,6 @@ class ChatRequest(BaseModel):
     save_context: bool | None = None
     save_new_only: bool | None = None
     temporary_prompt: str | None = None
-    image_url: str | list[str] | None = None
+    additional_data: AdditionalData | None = None
     cross_user_data_routing: CrossUserDataRouting[str | None] | None = None
     stream: bool = False
