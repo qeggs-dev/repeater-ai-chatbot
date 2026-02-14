@@ -1,3 +1,5 @@
+# 该网页由 AI 生成
+
 DEFAULT_WEB_HTML = [
     "<html>",
     "    <head>",

@@ -12,8 +12,7 @@ async def index_web():
         index_web_file = Path(ConfigManager.get_configs().web.index_web_file)
         if index_web_file.exists() and index_web_file.is_file():
             return FileResponse(index_web_file)
-        
-    # 该默认网页由AI生成
+    
     return HTMLResponse("\n".join(DEFAULT_WEB_HTML))
 
 @Resource.app.get("/web/{file_name}")
