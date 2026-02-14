@@ -418,6 +418,10 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
             // 浏览器是否为无头模式
             "headless": true,
 
+            // 路由黑名单文件路径
+            // 默认为空，即没有黑名单
+            "route_blacklist_file": "",
+
             // 输出图片的目录
             "output_dir": "./workspace/temp/render",
 
