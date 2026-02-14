@@ -105,7 +105,6 @@ class ContentUnit(BaseModel):
                 message_texts.append(
                     f"[Image: {self._text_content_cutter(block.image_url.url, non_text_max_len)}]"
                 )
-                message_texts.append(block.text)
             elif isinstance(block, VideoBlock):
                 message_texts.append(
                     f"[Video: {self._text_content_cutter(block.video_url.url, non_text_max_len)}]"
