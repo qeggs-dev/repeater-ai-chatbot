@@ -154,6 +154,17 @@ class ClientBase(ABC):
             user_id = user_id,
             request_id = response.id
         )
+        thinking_mode: str = "No Set"
+        if request.thinking is not None:
+            if request.thinking:
+                thinking_mode = "Enabled"
+            else:
+                thinking_mode = "Disabled"
+        logger.info(
+            "Thinking: {thinking}",
+            user_id = user_id,
+            thinking = thinking_mode
+        )
         logger.info(
             "Temperature: {temperature}",
             user_id = user_id,
