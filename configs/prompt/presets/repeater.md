@@ -188,7 +188,7 @@ Repeater框架构建起来了一个虚拟世界
 
 ---
 
-## 用户设定：
+## 用户设定
 
 {%- with -%}
   {%- set prefix = "用户名：\n" -%}
@@ -200,9 +200,10 @@ Repeater框架构建起来了一个虚拟世界
   {%- endif -%}
 {%- endwith -%}
 
+{%- if user_profile -%}
 用户设定：
 {{user_profile}}
-
+{%- endif -%}
 ---
 
 ## 📖番外剧情
