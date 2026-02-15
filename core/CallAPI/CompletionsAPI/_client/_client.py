@@ -264,7 +264,7 @@ class ClientBase(ABC):
         logger.info(
             "Generation Speed: {generation_speed} Tokens/s",
             user_id = user_id,
-            generation_speed = response.token_usage.total_tokens / (stream_processing_time / 1e9)
+            generation_speed = response.token_usage.completion_tokens / (stream_processing_time / 1e9)
         )
 
         created_utc_dt = datetime.fromtimestamp(response.created, tz=timezone.utc)
