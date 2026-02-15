@@ -291,7 +291,7 @@ class ClientBase(ABC):
                 max_chunk_spawn_time = int(np.max(time_differences))
                 min_chunk_spawn_time = int(np.min(non_zero_time_differences))
                 ave_chunk_spawn_time = int(np.mean(time_differences))
-                chunk_generation_rate = 1e9 / ave_chunk_spawn_time
+                chunk_generation_rate = stream_processing_time / len(timestamps)
                 chunk_stability_cv = self._calculate_stability_cv(time_differences)
                 logger.info(
                     "Chunk Generation Rate: {chunk_generation_rate:.2f} Chunks/s",
