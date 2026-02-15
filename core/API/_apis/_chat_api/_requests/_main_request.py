@@ -8,6 +8,7 @@ class ChatRequest(BaseModel):
     role: ContentRole = ContentRole.USER
     role_name: str | None = None
     model_uid: str | None = None
+    thinking: bool | None = None
     load_prompt: bool | None = None
     save_context: bool | None = None
     save_new_only: bool | None = None
