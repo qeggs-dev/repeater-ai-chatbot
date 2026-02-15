@@ -1,7 +1,9 @@
 # ==== 标准库 ==== #
 import os
+import time
+import shutil
 import asyncio
-from typing import Any
+from typing import Any, Generator
 from pathlib import Path
 
 # ==== 第三方库 ==== #
@@ -11,7 +13,7 @@ import aiofiles
 # ==== 项目库 ==== #
 from PathProcessors import validate_path, sanitize_filename
 from ....Lock_Pool import AsyncLockPool
-from .._user_id_encoder import user_id_encode, user_id_decode
+from .._fname_b64_encoder import fname_b64_encode, fname_b64_decode
 from ....Global_Config_Manager import ConfigManager
 from ._branch_info import BranchInfo
 
@@ -45,10 +47,25 @@ class SubManager:
         # if not self._default_base_file.exists():
         #     self._default_base_file.mkdir(parents=True, exist_ok=True)
         name = sanitize_filename(name)
-        file_name = f"{user_id_encode(name)}.json"
+        file_name = f"{fname_b64_encode(name)}.json"
         if not validate_path(self._default_base_file, file_name):
             raise ValueError(f"Invalid file name: {file_name}")
         return self._default_base_file / file_name
+    
+    def _get_snapshot_directory(self, branch_id: str) -> Path:
+        """获取快照目录"""
+        snapshot_directory_name = ConfigManager.get_configs().user_data.snapshot_directory_name
+        return self.base_path / snapshot_directory_name / branch_id
+    
+    def _get_snapshot_file(self, branch_id: str, snapshot_id: str) -> Path:
+        return self._get_snapshot_directory(branch_id) / fname_b64_encode(snapshot_id)
+    
+    def _get_snapshot_files(self, branch_id: str) -> Generator[Path, None, None]:
+        """获取快照文件列表"""
+        base_path = self._get_snapshot_directory(branch_id)
+        for file in base_path.iterdir():
+            if file.is_file() and file.suffix == ".json":
+                yield file
     
     async def _get_branch_lock(self, branch_id: str) -> asyncio.Lock:
         """获取 branch_id 对应的锁，如果没有则创建"""
@@ -163,7 +180,10 @@ class SubManager:
         async with await self._get_branch_lock(branch_id):
             try:
                 loop = asyncio.get_event_loop()
-                await loop.run_in_executor(None, os.remove, self._get_file_path(branch_id))
+                def remove_data():
+                    os.remove(self._get_file_path(branch_id))
+                    del self._data_cache[branch_id]
+                await loop.run_in_executor(None, remove_data)
             except FileNotFoundError:
                 pass
     
@@ -219,3 +239,45 @@ class SubManager:
                 size = info.st_size,
                 modified_time = info.st_mtime,
             )
+    
+    async def create_snapshot(self, branch_id: str, snapshot_id: str):
+        async with await self._get_branch_lock(branch_id):
+            path = self._get_snapshot_file(branch_id, snapshot_id)
+            if not path.parent.exists():
+                path.parent.mkdir(parents=True)
+            data = await self.load(branch_id)
+            async with aiofiles.open(path, "wb") as f:
+                await f.write(orjson.dumps(data))
+    
+    async def load_snapshot(self, branch_id: str, snapshot_id: str):
+        async with await self._get_branch_lock(branch_id):
+            file = self._get_snapshot_file(branch_id, snapshot_id)
+            if not file.exists():
+                raise FileNotFoundError(f"Snapshot {snapshot_id} not found")
+            async with aiofiles.open(file, "rb") as f:
+                data = orjson.loads(await f.read())
+            await self.save(branch_id, data)
+    
+    def get_snapshot_list(self, branch_id: str) -> list[str]:
+        """
+        Get all snapshot files in a branch
+        """
+        files: list[str] = []
+        for file in self._get_snapshot_files(branch_id):
+            files.append(fname_b64_decode(file.name))
+        return files
+    
+    async def remove_snapshot(self, branch_id: str, snapshot_id: str) -> None:
+        """
+        Remove a snapshot file
+        """
+        file = self._get_snapshot_file(branch_id, snapshot_id)
+        if file.exists():
+            await file.unlink()
+    
+    def get_snapshot_modification_time(self, branch_id: str, snapshot_id: str) -> float:
+        """
+        Get the modification time of a snapshot file
+        """
+        file = self._get_snapshot_file(branch_id, snapshot_id)
+        return file.stat().st_mtime
