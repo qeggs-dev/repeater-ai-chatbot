@@ -426,6 +426,7 @@ class Core:
             temporary_prompt: str | None = None,
             additional_data: AdditionalData | None = None,
             model_uid: str | None = None,
+            thinking: bool | None = None,
             print_chunk: bool = True,
             load_prompt: bool | None = None,
             save_context: bool | None = None,
@@ -444,6 +445,7 @@ class Core:
         :param temporary_prompt: 临时提示词
         :param additional_data: 额外数据
         :param model_uid: 模型UID
+        :param thinking: 使用思考模式
         :param print_chunk: 是否打印片段
         :param load_prompt: 是否加载提示
         :param save_context: 是否保存上下文
@@ -623,13 +625,48 @@ class Core:
 
                 # 设置请求对象的参数信息
                 request.user_name = user_info.nickname
-                request.temperature = config.temperature or ConfigManager.get_configs().model.default_temperature
-                request.top_p = config.top_p or ConfigManager.get_configs().model.default_top_p
-                request.frequency_penalty = config.frequency_penalty or ConfigManager.get_configs().model.default_frequency_penalty
-                request.presence_penalty = config.presence_penalty or ConfigManager.get_configs().model.default_presence_penalty
-                request.max_tokens = config.max_tokens or ConfigManager.get_configs().model.default_max_tokens
-                request.max_completion_tokens = config.max_completion_tokens or ConfigManager.get_configs().model.default_max_completion_tokens
-                request.stop = config.stop or ConfigManager.get_configs().model.default_stop
+                if config.temperature is not None:
+                    request.temperature = config.temperature
+                else:
+                    request.temperature = ConfigManager.get_configs().model.default_temperature
+                
+                if config.top_p is not None:
+                    request.top_p = config.top_p
+                else:
+                    request.top_p = ConfigManager.get_configs().model.default_top_p
+                
+                if config.frequency_penalty is not None:
+                    request.frequency_penalty = config.frequency_penalty
+                else:
+                    request.frequency_penalty = ConfigManager.get_configs().model.default_frequency_penalty
+                
+                if config.presence_penalty is not None:
+                    request.presence_penalty = config.presence_penalty
+                else:
+                    request.presence_penalty = ConfigManager.get_configs().model.default_presence_penalty
+                
+                if config.max_tokens is not None:
+                    request.max_tokens = config.max_tokens
+                else:
+                    request.max_tokens = ConfigManager.get_configs().model.default_max_tokens
+                
+                if config.max_completion_tokens is not None:
+                    request.max_completion_tokens = config.max_completion_tokens
+                else:
+                    request.max_completion_tokens = ConfigManager.get_configs().model.default_max_completion_tokens
+                
+                if config.stop is not None:
+                    request.stop = config.stop
+                else:
+                    request.stop = ConfigManager.get_configs().model.default_stop
+                
+                if thinking is not None:
+                    request.thinking = thinking
+                elif config.thinking is not None:
+                    request.thinking = config.thinking
+                else:
+                    request.thinking = ConfigManager.get_configs().model.default_thinking
+                
                 request.stream = ConfigManager.get_configs().model.stream
                 request.stream_options.include_obfuscation = ConfigManager.get_configs().callapi.include_obfuscation
                 request.stream_options.include_usage = ConfigManager.get_configs().callapi.include_usage
