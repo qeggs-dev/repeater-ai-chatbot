@@ -43,6 +43,17 @@ class StreamAPI(CallStreamAPIBase):
         if not request.context:
             raise ValueError("context is required")
         
+        extra_body = {}
+        if request.thinking is not None:
+            if request.thinking:
+                extra_body["thinking"] = {
+                    "type": "enabled"
+                }
+            else:
+                extra_body["thinking"] = {
+                    "type": "disabled"
+                }
+        
         # 请求流式连接
         logger.info(f"Start Connecting to the API", user_id = user_id)
         response: ChatCompletion = await client.chat.completions.create(
@@ -58,6 +69,7 @@ class StreamAPI(CallStreamAPIBase):
             messages = request.context.to_full_context(remove_resoning_prompt=True),
             tools = request.function_calling.tools if request.function_calling else None,
             stream_options=request.stream_options.model_dump(),
+            extra_body = extra_body
         )
         logger.info("Start Streaming", user_id = user_id)
         async for chunk in response:

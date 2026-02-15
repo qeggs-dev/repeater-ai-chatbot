@@ -25,6 +25,7 @@ class Request(BaseModel):
     max_completion_tokens: int = 0
     timeout: float = 600.0
     stream: bool = False
+    thinking: bool | None = None
     stop: list[str] | None = None
     context: ContextObject | None = None
     logprobs: bool = False
