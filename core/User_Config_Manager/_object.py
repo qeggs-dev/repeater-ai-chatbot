@@ -18,6 +18,7 @@ class UserConfigs(BaseModel):
     max_tokens: int | None = None
     max_completion_tokens: int | None = None
     stop: list[str] | None = None
+    thinking: bool | None = None
     frequency_penalty: float | None = Field(None, ge=-2.0, le=2.0)
     presence_penalty: float | None = Field(None, ge=-2.0, le=2.0)
     context_shrink_limit: int | None = None
