@@ -262,7 +262,7 @@ class ClientBase(ABC):
         )
 
         logger.info(
-            "Generation Speed: {generation_speed} Tokens/s",
+            "Generation Speed: {generation_speed:.2f} Tokens/s",
             user_id = user_id,
             generation_speed = response.token_usage.completion_tokens / (stream_processing_time / 1e9)
         )
@@ -291,12 +291,12 @@ class ClientBase(ABC):
                 max_chunk_spawn_time = int(np.max(time_differences))
                 min_chunk_spawn_time = int(np.min(non_zero_time_differences))
                 ave_chunk_spawn_time = int(np.mean(time_differences))
-                chunk_generation_rate = stream_processing_time / len(timestamps)
+                chunk_generation_rate = len(timestamps) / stream_processing_time
                 chunk_stability_cv = self._calculate_stability_cv(time_differences)
                 logger.info(
                     "Chunk Generation Rate: {chunk_generation_rate:.2f} Chunks/s",
                     user_id = user_id,
-                    chunk_generation_rate = chunk_generation_rate
+                    chunk_generation_rate = chunk_generation_rate / 1e9
                 )
                 logger.info(
                     "Chunk Average Spawn Time: {ave_chunk_spawn_time:.2f}ms({format_time_duration})",
