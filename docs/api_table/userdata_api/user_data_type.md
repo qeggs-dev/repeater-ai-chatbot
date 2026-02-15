@@ -45,7 +45,7 @@ Prompt 分预设和用户自定义两种
 用户存储的 Prompt 格式如下：
 
 ``` json
-"You are a helpful assistant.\nYou are helpful, kind, and polite.\nNow: {time}"
+"You are a helpful assistant.\nYou are helpful, kind, and polite.\nNow: {{time()}}"
 ```
 
 由于共享存储管理器，Prompt 的数据其实并不会存为 PlainText
@@ -57,7 +57,7 @@ Prompt 分预设和用户自定义两种
 ``` markdown
 You are a helpful assistant.
 You are helpful, kind, and polite.
-Now: {time}
+Now: {{time()}}
 ```
 
 提示词通常建议使用 Markdown 格式
