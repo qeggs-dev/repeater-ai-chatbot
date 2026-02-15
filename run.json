@@ -26,7 +26,7 @@
         "fastapi==0.115.13",
         "python-multipart==0.0.20",
         "loguru==0.7.3",
-        "openai==1.90.0",
+        "openai==2.21.0",
         "orjson==3.10.18",
         "uvicorn==0.34.3",
         "markdown==3.8.2",
