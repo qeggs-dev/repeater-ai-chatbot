@@ -94,10 +94,10 @@ class Resource:
         # 渲染配置
         render_config = ConfigManager.get_configs().render
         route_blacklist_file = render_config.to_image.route_blacklist_file
+        route_blacklist = RegexChecker()
         if route_blacklist_file:
             with open(route_blacklist_file, "r", encoding="utf-8") as f:
                 file_content = f.read()
-                route_blacklist = RegexChecker()
                 route_blacklist.load(file_content)
         cls.browser_pool_manager = HTML_Render.BrowserPoolManager(
             max_pages_per_browser = render_config.to_image.max_pages_per_browser,
