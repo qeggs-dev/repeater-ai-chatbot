@@ -24,7 +24,7 @@ class RegexChecker:
         self._regexs: list[tuple[re.Pattern, bool]] = []
         self._flags = flags
 
-    def check(self, text: str, func: Callable[[str | re.Pattern[str], str, int | re.RegexFlag]] = re.search) -> CheckDetailsData:
+    def check(self, text: str, func: Callable[[str | re.Pattern[str], str, int | re.RegexFlag], re.Match[str] | None] = re.search) -> CheckDetailsData:
         r"""
         Check the text with the regexs.
 
