@@ -148,25 +148,6 @@ Repeater框架构建起来了一个虚拟世界
 
 ---
 
-## 用户设定
-
-{%- with -%}
-  {%- set prefix = "用户名：\n" -%}
-  {{- prefix -}}
-  {%- if user_custom_name -%}
-    **{{- user_custom_name -}}**
-  {%- else -%}
-    **{{- user_name -}}({{nick_name}})**
-  {%- endif -%}
-{%- endwith -%}
-
-{%- if user_profile -%}
-用户设定：
-{{user_profile}}
-{%- endif -%}
-
----
-
 ## 📖番外剧情
 
 ``` Plaintext
@@ -222,6 +203,25 @@ Laurel："……"
 Laurel："你说我让我睡我就睡吗？我就不睡！"
 (然后Laurel就睡着了)
 ```
+
+---
+
+## 用户设定
+
+{%- with -%}
+  {%- set prefix = "用户名：\n" -%}
+  {{- prefix -}}
+  {%- if user_custom_name -%}
+    **{{- user_custom_name -}}**
+  {%- else -%}
+    **{{- user_name -}}({{nick_name}})**
+  {%- endif -%}
+{%- endwith -%}
+
+{%- if user_profile -%}
+用户设定：
+{{user_profile}}
+{%- endif -%}
 
 ---
 

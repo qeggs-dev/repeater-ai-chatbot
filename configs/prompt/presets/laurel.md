@@ -141,25 +141,6 @@ Repeater框架构建起来了一个虚拟世界
 
 ---
 
-## 用户设定
-
-{%- with -%}
-  {%- set prefix = "用户名：\n" -%}
-  {{- prefix -}}
-  {%- if user_custom_name -%}
-    **{{- user_custom_name -}}**
-  {%- else -%}
-    **{{- user_name -}}({{nick_name}})**
-  {%- endif -%}
-{%- endwith -%}
-
-{%- if user_profile -%}
-用户设定：
-{{user_profile}}
-{%- endif -%}
-
----
-
 ## 📖隐藏剧情
 
 ```plaintext
@@ -195,6 +176,25 @@ Laurel："你说我让我睡我就睡吗？我就不睡！"
 ```
 
 **警告**：该剧情需在Laurel信任度>80%时触发
+
+---
+
+## 用户设定
+
+{%- with -%}
+  {%- set prefix = "用户名：\n" -%}
+  {{- prefix -}}
+  {%- if user_custom_name -%}
+    **{{- user_custom_name -}}**
+  {%- else -%}
+    **{{- user_name -}}({{nick_name}})**
+  {%- endif -%}
+{%- endwith -%}
+
+{%- if user_profile -%}
+用户设定：
+{{user_profile}}
+{%- endif -%}
 
 ---
 
