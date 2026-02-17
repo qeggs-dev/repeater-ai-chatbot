@@ -182,7 +182,8 @@ class SubManager:
                 loop = asyncio.get_event_loop()
                 def remove_data():
                     os.remove(self._get_file_path(branch_id))
-                    del self._data_cache[branch_id]
+                    if self.cache_data:
+                        del self._data_cache[branch_id]
                 await loop.run_in_executor(None, remove_data)
             except FileNotFoundError:
                 pass
