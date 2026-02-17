@@ -122,18 +122,18 @@ class BrowserPoolManager:
             
             logger.info("Browser pool initialized")
     
-    def _block_intranet_resources(self, route: Route, request: Request):
+    async def _block_intranet_resources(self, route: Route, request: Request):
         url = request.url
         resource_type = request.resource_type
         
         # 检查是否是允许的地址
         if self._route_blacklist.check(url, re.match):
             logger.warning(f"Blocked intranet {resource_type}: {url}")
-            route.abort()  # 中止请求
+            await route.abort()  # 中止请求
             return
         
         # 允许其他请求
-        route.continue_()
+        await route.continue_()
     
     async def render_html(
         self,
