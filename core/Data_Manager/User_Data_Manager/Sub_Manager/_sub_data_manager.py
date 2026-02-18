@@ -236,6 +236,7 @@ class SubManager:
                     branch_id = branch_id,
                     size = 0,
                     modified_time = 0.0,
+                    file_exists = False,
                 )
             
             info = path.stat()
@@ -243,6 +244,7 @@ class SubManager:
                 branch_id = branch_id,
                 size = info.st_size,
                 modified_time = info.st_mtime,
+                file_exists = True,
             )
     
     async def create_snapshot(self, branch_id: str, snapshot_id: str):

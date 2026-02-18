@@ -5,3 +5,4 @@ class BranchInfo(BaseModel):
     branch_id: str = ""
     size: int = 0
     modified_time: float = 0
+    file_exists: bool = False
