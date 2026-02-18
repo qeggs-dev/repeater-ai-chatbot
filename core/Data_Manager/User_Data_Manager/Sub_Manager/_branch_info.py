@@ -20,10 +20,10 @@ class BranchInfo(BaseModel):
     branch_id: str = ""
     size: int = 0
     modified_time: float = 0
-    
-    @property
-    def readable_size(self) -> str:
-        return format_carry_duration(
+    readable_size: str = ""
+
+    def __post_init__(self) -> None:
+        self.readable_size = format_carry_duration(
             self.size,
             SIZE_UNITS,
             final_level = FINAL_SIZE_UNIT,
