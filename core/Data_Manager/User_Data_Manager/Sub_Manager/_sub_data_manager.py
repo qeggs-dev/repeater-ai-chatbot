@@ -232,7 +232,11 @@ class SubManager:
         async with await self._get_branch_lock(branch_id):
             path = self._get_file_path(branch_id)
             if not path.exists():
-                raise FileNotFoundError(f"{path} does not exist.")
+                return BranchInfo(
+                    branch_id = branch_id,
+                    size = 0,
+                    modified_time = 0.0,
+                )
             
             info = path.stat()
             return BranchInfo(
