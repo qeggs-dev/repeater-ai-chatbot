@@ -10,7 +10,6 @@ class UserDataConfig(BaseModel):
     default_branch_id: str = "main"
     b64_encode_path: bool = True
     snapshot_directory_name: str = "snapshots"
-    file_size_use_abbreviation: bool = True
     metadata_file_name: str = "metadata.json"
     cache_medadata: bool | Cache_Data_Config = False
     cache_data: bool | Cache_Data_Config = False
