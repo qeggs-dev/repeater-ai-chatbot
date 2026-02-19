@@ -327,7 +327,8 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
 
         // 默认用户信息
         // 当用户未填写个人设定时，将使用此文本作为值
-        "default_user_profile": "The user has not filled out the field for the time being."
+        // 通常建议为空值，因为这样模板就能检查是否有用户设定并针对性地处理了
+        "default_user_profile": ""
     },
 
     // Prompt 配置
