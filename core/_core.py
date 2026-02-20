@@ -239,7 +239,7 @@ class Core:
         return context
     # endregion
 
-    # region Make User Content
+    # region > make user content
     async def make_user_content(
         self,
         context_loader: ContextLoader,
@@ -405,14 +405,17 @@ class Core:
                 role_name = role_name
             )
     
-    # region > Fill Missing Cross User Data Routing
-    @staticmethod
-    def fill_missing_cross_user_data_routing(user_id: str, cross_user_data_flow: CrossUserDataRouting[str | None] | None = None) -> CrossUserDataRouting[str]:
-        if cross_user_data_flow is None:
-            cross_user_data_flow = CrossUserDataRouting()
-        if not cross_user_data_flow.is_all_defined():
-            cross_user_data_flow.fill_missing(user_id = user_id)
-        return cross_user_data_flow
+    # region > fill missing cross user data routing
+    async def fill_missing_cross_user_data_routing(self, user_id: str, cross_user_data_routing: CrossUserDataRouting[str | None] | None = None) -> CrossUserDataRouting[str]:
+        if cross_user_data_routing is None:
+            cross_user_data_routing = CrossUserDataRouting()
+        if not cross_user_data_routing.is_all_defined():
+            cross_user_data_routing.fill_missing(user_id = user_id)
+        await cross_user_data_routing.removal_not_allowed_user(
+            user_id = user_id,
+            user_config_manager = self.user_config_manager
+        )
+        return cross_user_data_routing
     # endregion
 
     # region > Chat
