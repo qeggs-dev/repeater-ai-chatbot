@@ -1,12 +1,12 @@
 from pydantic import BaseModel, Field, ConfigDict
 from typing import TypeVar, Generic
 from ..User_Config_Manager import (
-    ConfigManager as UserConfigManager,
-    UserConfigs
+    ConfigManager as UserConfigManager
 )
 from ..Global_Config_Manager import (
     ConfigManager as GlobalConfigManager
 )
+from loguru import logger
 
 T = TypeVar('T')
 
@@ -45,21 +45,39 @@ class DataRoutingField(BaseModel, Generic[T]):
         Removes a target user that is not allowed access.
         """
         if self.load_from_user_id != user_id:
-            user_config = await user_config_manager.load(user_id)
+            user_config = await user_config_manager.load(self.load_from_user_id)
             if user_config.cross_user_data_access is None:
                 if not GlobalConfigManager.get_configs().user_data.cross_user_data_access:
                     self.load_from_user_id = user_id
+                    logger.warning(
+                        "User {dst_user_id} is not allowed to access cross user data.",
+                        user_id = user_id,
+                        dst_user_id = self.load_from_user_id
+                    )
             else:
                 if not user_config.cross_user_data_access:
                     self.load_from_user_id = user_id
+                    logger.warning(
+                        "User {dst_user_id} is not allowed to access cross user data.",
+                        user_id = user_id,
+                        dst_user_id = self.load_from_user_id
+                    )
         if self.save_to_user_id != user_id:
-            user_config = await user_config_manager.load(user_id)
+            user_config = await user_config_manager.load(self.save_to_user_id)
             if user_config.cross_user_data_access is None:
                 if not GlobalConfigManager.get_configs().user_data.cross_user_data_access:
                     self.save_to_user_id = user_id
+                    logger.warning(
+                        "Global config does not allow cross user data access.",
+                        user_id = user_id
+                    )
             else:
                 if not user_config.cross_user_data_access:
                     self.save_to_user_id = user_id
+                    logger.warning(
+                        "Global config does not allow cross user data access.",
+                        user_id = user_id
+                    )
 
 
 class CrossUserDataRouting(BaseModel, Generic[T]):
