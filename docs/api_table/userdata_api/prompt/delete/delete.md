@@ -1,4 +1,4 @@
-# Change Prompt Branchs API
+# Delete Prompt Branchs API
 
 删除指定用户的 Prompt 数据
 

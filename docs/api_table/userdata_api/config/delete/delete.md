@@ -1,4 +1,4 @@
-# Change Config Branchs API
+# Delete Config Branchs API
 
 删除指定用户的 Config 数据
 
