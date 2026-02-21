@@ -301,6 +301,7 @@ class UserDataManager(Generic[T]):
             branch_id (str): The branch id.
         """
         manager = self._get_sub_manager(user_id)
+        metadata = await manager.load_metadata()
 
         if isinstance(metadata, dict):
             metadata[ConfigManager.get_configs().user_data.metadata_fields.branch_field] = branch_id
