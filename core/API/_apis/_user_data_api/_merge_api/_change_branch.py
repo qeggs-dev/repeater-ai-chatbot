@@ -21,7 +21,7 @@ async def change_branch(user_data_type: UserDataType, user_id: str, new_branch_i
 
     # 设置用户ID为user_id的提示词为new_prompt_id
     manager = get_manager(user_data_type)
-    manager.set_active_branch_id(user_id, branch_id = new_branch_id)
+    await manager.set_active_branch_id(user_id, branch_id = new_branch_id)
 
     logger.info(
         "Change {user_data_type} branch to {new_branch_id}",
