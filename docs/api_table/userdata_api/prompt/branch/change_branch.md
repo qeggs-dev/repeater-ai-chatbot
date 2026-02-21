@@ -2,7 +2,7 @@
 
 将指定用户的 Prompt 活动分支切换到指定分支
 
-- **`/userdata/prompt/branchs/{user_id:str}`**
+- **`/userdata/prompt/change/{user_id:str}`**
   - **Requset**
     - **method:** `PUT`
     - **type:** `FORM`
