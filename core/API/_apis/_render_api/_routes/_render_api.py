@@ -69,7 +69,6 @@ async def render(
     config = await Resource.core.user_config_manager.load(user_id)
         
     style_name, css = await get_style(
-        user_id = user_id,
         request = render_request,
         user_configs = config
     )
@@ -80,7 +79,12 @@ async def render(
         render_url_expiry_time = render_request.image_expiry_time
     
     # 日志打印文件名和渲染风格
-    logger.info(f"Rendering image {filename} for \"{style_name}\" style", user_id=user_id)
+    logger.info(
+        "Rendering image {file_name} for \"{style_name}\" style",
+        user_id = user_id,
+        file_name = filename,
+        style_name = style_name
+    )
 
     browser_type = global_configs.render.to_image.browser_type
     preprocess_map_before = global_configs.render.markdown.preprocess_map.before
