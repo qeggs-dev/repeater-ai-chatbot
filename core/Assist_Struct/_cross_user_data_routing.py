@@ -28,16 +28,8 @@ class DataRoutingField(BaseModel, Generic[T]):
         Fill undefined fields.
         """
         if self.load_from_user_id is None:
-            logger.warning(
-                "load_from_user_id is not defined, using {user_id}",
-                user_id = user_id
-            )
             self.load_from_user_id = user_id
         if self.save_to_user_id is None:
-            logger.warning(
-                "save_to_user_id is not defined, using {user_id}",
-                user_id = user_id
-            )
             self.save_to_user_id = user_id
     
     def is_all_defined(self) -> bool:
