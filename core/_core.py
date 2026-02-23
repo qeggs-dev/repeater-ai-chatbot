@@ -195,7 +195,7 @@ class Core:
             user_id: str,
             temporary_prompt: str | None = None,
             load_prompt: bool = True,
-            cross_user_data_routing: CrossUserDataRouting[str | None] | None = None,
+            cross_user_data_routing: CrossUserDataRouting[str] | None = None,
             template_parser: TemplateParser | None = None
         ) -> ContextObject:
         """
@@ -214,8 +214,6 @@ class Core:
         :param template_parser: 模板解析器
         :return: 上下文对象
         """
-        cross_user_data_routing: CrossUserDataRouting[str] = await self.fill_missing_cross_user_data_routing(user_id, cross_user_data_routing)
-
         context_load_source = cross_user_data_routing.context.load_from_user_id
         prompt_load_source = cross_user_data_routing.prompt.load_from_user_id
         
