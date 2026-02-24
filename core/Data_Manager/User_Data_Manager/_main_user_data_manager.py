@@ -365,4 +365,4 @@ class UserDataManager(Generic[T]):
         Returns:
             list: A list of branch IDs.
         """
-        return [f.stem for f in (self.base_path / fname_b64_encode(user_id) / self._sub_dir_name).iterdir() if f.is_file()]
+        return [fname_b64_decode(f.stem) for f in (self.base_path / fname_b64_encode(user_id) / self._sub_dir_name).iterdir() if f.is_file()]
