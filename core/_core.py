@@ -50,6 +50,7 @@ from . import Request_Log
 from .Text_Template_Processer import (
     TemplateParser
 )
+from .Status_Map import StatusMap
 
 # ==== 本模块代码 ==== #
 
@@ -103,6 +104,9 @@ class Core:
         except FileNotFoundError:
             logger.error(f"Blacklist file not found: {blacklist_file_path}")
         self.blacklist_match_timeout: int | None = ConfigManager.get_configs().blacklist.match_timeout
+
+        # Task 状态表
+        self.task_status_map: StatusMap[str, str] = StatusMap()
 
         # 添加退出函数
         def _exit():
@@ -459,319 +463,325 @@ class Core:
             # 记录开始时间
             task_start_time = Request_Log.TimeStamp()
 
-            # 获取用户锁对象
-            lock = await self._get_namespace_lock(user_id)
-            
-            # 进入RUL执行
-            async with lock:
-                logger.info("====================================", user_id = user_id)
-                logger.info("Start Task", user_id = user_id)
+            # 进入状态
+            with self.task_status_map.enter(user_id, "Tasking"):
 
-                # 判断用户是否在黑名单中
-                if await self.in_blacklist(user_id):
-                    return Response(
-                        content = "Error: Sorry, you are in blacklist.",
-                        finish_reason_cause = "User in blacklist",
-                        status = 403
-                    )
+                # 获取用户锁对象
+                lock = await self._get_namespace_lock(user_id)
                 
-                if not ConfigManager.get_configs().model.stream and stream:
-                    return Response(
-                        content = "Error: The streaming response feature is turned off in the server configuration.",
-                        finish_reason_cause = "Streaming response feature is turned off",
-                        status = 503
-                    )
+                # 进入RUL执行
+                async with lock:
+                    with self.task_status_map.enter(user_id, "Prepareing"):
+                        prepare_start_time = Request_Log.TimeStamp()
+                        logger.info("====================================", user_id = user_id)
+                        logger.info("Start Task", user_id = user_id)
 
-                # 获取配置
-                config = await self.get_config(user_id)
-                
-                if not cross_user_data_routing:
-                    if config.cross_user_data_access:
-                        logger.warning("Cross user data flow is not allowed.", user_id = user_id)
-                        cross_user_data_routing = None
-                    elif not ConfigManager.get_configs().user_data.cross_user_data_access:
-                        logger.warning("Cross user data flow is not allowed.", user_id = user_id)
-                        cross_user_data_routing = None
-                
-                cross_user_data_routing = await self.fill_missing_cross_user_data_routing(user_id, cross_user_data_routing)
-
-                if user_id != cross_user_data_routing.config.load_from_user_id:
-                    config = await self.get_config(cross_user_data_routing.config.load_from_user_id)
-                
-                # 获取默认模型uid
-                if model_uid is None:
-                    model_uid: str = config.model_uid or ConfigManager.get_configs().model_api.default_model_uid
-                
-                # 获取API信息
-                apilist = self.model_api_manager.find_model(
-                    model_type = ModelType.CHAT,
-                    model_uid = model_uid
-                )
-
-                # 取第一个API
-                if len(apilist) == 0:
-                    logger.error(
-                        "Model API not found: {model_uid}",
-                        user_id = user_id,
-                        model_uid = model_uid
-                    )
-                    output = Response(
-                        content = f"Model API not found: {model_uid}",
-                        status = 404
-                    )
-                    return output
-                elif len(apilist) > 1:
-                    logger.warning(
-                        "Multiple API found: {length}, using the first one",
-                        user_id = user_id,
-                        length = len(apilist)
-                    )
-                model = apilist[0]
-
-                # 进行用户名映射
-                user_info = await self.nickname_mapping(user_id, user_info)
-
-                # 获取变量展开器以展开变量内容
-                template_parser = TemplateParser(
-                    model = model,
-                    user_info = user_info,
-                    global_config = ConfigManager.get_configs(),
-                    user_config = config
-                )
-
-                # 获取上下文加载器
-                context_loader = await self.get_context_loader()
-
-                # 获取上下文
-                if load_prompt is None:
-                    if config.load_prompt is None:
-                        load_prompt = ConfigManager.get_configs().prompt.load_prompt
-                    else:
-                        load_prompt = config.load_prompt
-                
-                loaded_context: ContextObject = await self.get_context(
-                    context_loader = context_loader,
-                    user_id = user_id,
-                    temporary_prompt = temporary_prompt,
-                    load_prompt = load_prompt,
-                    cross_user_data_routing = cross_user_data_routing,
-                    template_parser = template_parser,
-                )
-
-                new_requests_text_only = config.new_requests_text_only
-                if new_requests_text_only is None:
-                    new_requests_text_only = ConfigManager.get_configs().context.new_requests_text_only
-                
-                user_input: ContentUnit = await self.make_user_content(
-                    context_loader = context_loader,
-                    user_id = user_id,
-                    message = message,
-                    role = role,
-                    role_name = role_name,
-                    additional_data = additional_data,
-                    template_parser = template_parser,
-                    new_requests_text_only = new_requests_text_only,
-                )
-
-                submit_context: ContextObject = loaded_context.copy()
-                submit_context.append(user_input)
-
-                # 如果上下文需要收缩，则进行收缩(为零或类型不对则不进行操作)
-                max_context_length = config.context_shrink_limit or ConfigManager.get_configs().context.context_shrink_limit
-                if isinstance(max_context_length, int) and max_context_length > 0:
-                    if submit_context.total_length > max_context_length:
-                        logger.info(f"Context length exceeds {max_context_length}, auto shrink", user_id = user_id)
-                        try:
-                            submit_context.shrink(max_context_length)
-                        except Exception as e:
-                            logger.error(f"Failed to shrink context: {e}", user_id = user_id)
+                        # 判断用户是否在黑名单中
+                        if await self.in_blacklist(user_id):
                             return Response(
-                                content = (
-                                    "Sorry, I failed to shrink the context.\n"
-                                    "This can be caused by an incorrect parameter input.\n"
-                                    "Please check that the context field is working properly in your configuration.\n"
-                                    "Or whether the Context data does not contain the specified header Role.\n"
-                                    "Or maybe you set the contraction value too low.\n"
-                                    f"Error: {e}"
-                                ),
-                                status_code = 400,
-                                finish_reason_cause = "shrink_context_failed",
+                                content = "Error: Sorry, you are in blacklist.",
+                                finish_reason_cause = "User in blacklist",
+                                status = 403
                             )
-                
-                # 创建请求对象
-                request = CompletionsAPI.Request()
-                # 设置上下文
-                request.context = submit_context
-                
-                # 设置请求对象的API信息
-                request.url = model.url
-                request.model = model.id
-                request.timeout = model.timeout
-                api_key = model.get_api_key()
-                if api_key is None:
-                    return Response(
-                        content = "Error: Model API key not found",
-                        status = 503,
-                        finish_reason_cause = "api_key_not_found",
-                    )
-                request.key = api_key
-                
-                self._print_request_info(
-                    user_id = user_id,
-                    api = model,
-                    user_input = user_input,
-                    user_info = user_info,
-                    role_name = role_name,
-                )
-
-                # 设置请求对象的参数信息
-                request.user_name = user_info.nickname
-                if config.temperature is not None:
-                    request.temperature = config.temperature
-                else:
-                    request.temperature = ConfigManager.get_configs().model.default_temperature
-                
-                if config.top_p is not None:
-                    request.top_p = config.top_p
-                else:
-                    request.top_p = ConfigManager.get_configs().model.default_top_p
-                
-                if config.frequency_penalty is not None:
-                    request.frequency_penalty = config.frequency_penalty
-                else:
-                    request.frequency_penalty = ConfigManager.get_configs().model.default_frequency_penalty
-                
-                if config.presence_penalty is not None:
-                    request.presence_penalty = config.presence_penalty
-                else:
-                    request.presence_penalty = ConfigManager.get_configs().model.default_presence_penalty
-                
-                if config.max_tokens is not None:
-                    request.max_tokens = config.max_tokens
-                else:
-                    request.max_tokens = ConfigManager.get_configs().model.default_max_tokens
-                
-                if config.max_completion_tokens is not None:
-                    request.max_completion_tokens = config.max_completion_tokens
-                else:
-                    request.max_completion_tokens = ConfigManager.get_configs().model.default_max_completion_tokens
-                
-                if config.stop is not None:
-                    request.stop = config.stop
-                else:
-                    request.stop = ConfigManager.get_configs().model.default_stop
-                
-                if thinking is not None:
-                    request.thinking = thinking
-                elif config.thinking is not None:
-                    request.thinking = config.thinking
-                else:
-                    request.thinking = ConfigManager.get_configs().model.default_thinking
-                
-                request.stream = ConfigManager.get_configs().model.stream
-                request.stream_options.include_obfuscation = ConfigManager.get_configs().callapi.include_obfuscation
-                request.stream_options.include_usage = ConfigManager.get_configs().callapi.include_usage
-                request.print_chunk = print_chunk
-
-                # 记录预处理结束时间
-                prepare_end_time = Request_Log.TimeStamp()
-
-                # 输出 (为了自动填充输出内容)
-                output = Response()
-                output.model_group = model.parent
-                output.model_name = model.name
-                output.model_type = model.type.value
-                output.model_uid = model.uid
-                output.user_raw_input = message
-                if user_input is not None:
-                    output.user_input = user_input.content
-
-                # 是否保存上下文
-                if save_context is None:
-                    if config.save_context is not None:
-                        save_context = config.save_context
-                    else:
-                        save_context = ConfigManager.get_configs().context.save_context
-                
-                # 是否在保存时删除多模态内容
-                if config.save_text_only is not None:
-                    save_only_text: bool = config.save_text_only
-                else:
-                    save_only_text: bool = ConfigManager.get_configs().context.save_text_only
-                
-                if save_new_only is None:
-                    if config.save_new_only is not None:
-                        save_new_only = config.save_new_only
-                    else:
-                        save_new_only = ConfigManager.get_configs().context.save_new_only
-
-                # region >> 提交请求
-                try:
-                    response: CompletionsAPI.Response = CompletionsAPI.Response()
-                    if stream:
-                        async def generator_wrapper(generator: CompletionsAPI.StreamingResponseGenerationLayer) -> AsyncIterator[CompletionsAPI.Delta]:
-                            async for chunk in generator:
-                                yield chunk
-                        async def post_treatment(response: CompletionsAPI.Response):
-                            """
-                            包装后处理函数，以传递更多数据
-                            """
-                            nonlocal output
-                            output = await self._post_treatment(
-                                user_id = user_id,
-                                output = output,
-                                response = response,
-                                template_parser = template_parser,
-                                user_input = user_input,
-                                save_context = save_context,
-                                save_new_only = save_new_only,
-                                context_loader = context_loader,
-                                task_start_time = task_start_time,
-                                cross_user_data_routing = cross_user_data_routing,
-                                prepare_end_time = prepare_end_time,
-                                save_only_text = save_only_text,
-                            )
-                        response_iterator = await self.stream_api_client.submit_Request(
-                            user_id = user_id,
-                            request = request,
-                            response_callback = post_treatment
-                        )
-
-                        return generator_wrapper(response_iterator)
-                    else:
-                        response = await self.api_client.submit_Request(
-                            user_id = user_id,
-                            request = request
-                        )
                         
-                        output = await self._post_treatment(
-                            user_id = user_id,
-                            output = output,
-                            response = response,
-                            template_parser = template_parser,
-                            user_input = user_input,
-                            save_context = save_context,
-                            save_new_only = save_new_only,
-                            context_loader = context_loader,
-                            task_start_time = task_start_time,
-                            cross_user_data_routing = cross_user_data_routing,
-                            prepare_end_time = prepare_end_time,
-                            save_only_text = save_only_text,
-                        )
-                        return output
-                
-                except CompletionsAPI.Exceptions.CallApiException as e:
-                    traceback_info = traceback.format_exc()
-                    logger.exception(
-                        "CallAPI Error: \n{traceback_info}",
-                        user_id = user_id,
-                        traceback_info = traceback_info,
-                    )
-                    output.content = f"API Error: {e}"
-                    output.status = 500
-                    return output
-                # endregion
+                        if not ConfigManager.get_configs().model.stream and stream:
+                            return Response(
+                                content = "Error: The streaming response feature is turned off in the server configuration.",
+                                finish_reason_cause = "Streaming response feature is turned off",
+                                status = 503
+                            )
 
+                        # 获取配置
+                        config = await self.get_config(user_id)
+                        
+                        if not cross_user_data_routing:
+                            if config.cross_user_data_access:
+                                logger.warning("Cross user data flow is not allowed.", user_id = user_id)
+                                cross_user_data_routing = None
+                            elif not ConfigManager.get_configs().user_data.cross_user_data_access:
+                                logger.warning("Cross user data flow is not allowed.", user_id = user_id)
+                                cross_user_data_routing = None
+                        
+                        cross_user_data_routing = await self.fill_missing_cross_user_data_routing(user_id, cross_user_data_routing)
+
+                        if user_id != cross_user_data_routing.config.load_from_user_id:
+                            config = await self.get_config(cross_user_data_routing.config.load_from_user_id)
+                        
+                        # 获取默认模型uid
+                        if model_uid is None:
+                            model_uid: str = config.model_uid or ConfigManager.get_configs().model_api.default_model_uid
+                        
+                        # 获取API信息
+                        apilist = self.model_api_manager.find_model(
+                            model_type = ModelType.CHAT,
+                            model_uid = model_uid
+                        )
+
+                        # 取第一个API
+                        if len(apilist) == 0:
+                            logger.error(
+                                "Model API not found: {model_uid}",
+                                user_id = user_id,
+                                model_uid = model_uid
+                            )
+                            output = Response(
+                                content = f"Model API not found: {model_uid}",
+                                status = 404
+                            )
+                            return output
+                        elif len(apilist) > 1:
+                            logger.warning(
+                                "Multiple API found: {length}, using the first one",
+                                user_id = user_id,
+                                length = len(apilist)
+                            )
+                        model = apilist[0]
+
+                        # 进行用户名映射
+                        user_info = await self.nickname_mapping(user_id, user_info)
+
+                        # 获取变量展开器以展开变量内容
+                        template_parser = TemplateParser(
+                            model = model,
+                            user_info = user_info,
+                            global_config = ConfigManager.get_configs(),
+                            user_config = config
+                        )
+
+                        # 获取上下文加载器
+                        context_loader = await self.get_context_loader()
+
+                        # 获取上下文
+                        if load_prompt is None:
+                            if config.load_prompt is None:
+                                load_prompt = ConfigManager.get_configs().prompt.load_prompt
+                            else:
+                                load_prompt = config.load_prompt
+                        
+                        loaded_context: ContextObject = await self.get_context(
+                            context_loader = context_loader,
+                            user_id = user_id,
+                            temporary_prompt = temporary_prompt,
+                            load_prompt = load_prompt,
+                            cross_user_data_routing = cross_user_data_routing,
+                            template_parser = template_parser,
+                        )
+
+                        new_requests_text_only = config.new_requests_text_only
+                        if new_requests_text_only is None:
+                            new_requests_text_only = ConfigManager.get_configs().context.new_requests_text_only
+                        
+                        user_input: ContentUnit = await self.make_user_content(
+                            context_loader = context_loader,
+                            user_id = user_id,
+                            message = message,
+                            role = role,
+                            role_name = role_name,
+                            additional_data = additional_data,
+                            template_parser = template_parser,
+                            new_requests_text_only = new_requests_text_only,
+                        )
+
+                        submit_context: ContextObject = loaded_context.copy()
+                        submit_context.append(user_input)
+
+                        # 如果上下文需要收缩，则进行收缩(为零或类型不对则不进行操作)
+                        max_context_length = config.context_shrink_limit or ConfigManager.get_configs().context.context_shrink_limit
+                        if isinstance(max_context_length, int) and max_context_length > 0:
+                            if submit_context.total_length > max_context_length:
+                                logger.info(f"Context length exceeds {max_context_length}, auto shrink", user_id = user_id)
+                                try:
+                                    submit_context.shrink(max_context_length)
+                                except Exception as e:
+                                    logger.error(f"Failed to shrink context: {e}", user_id = user_id)
+                                    return Response(
+                                        content = (
+                                            "Sorry, I failed to shrink the context.\n"
+                                            "This can be caused by an incorrect parameter input.\n"
+                                            "Please check that the context field is working properly in your configuration.\n"
+                                            "Or whether the Context data does not contain the specified header Role.\n"
+                                            "Or maybe you set the contraction value too low.\n"
+                                            f"Error: {e}"
+                                        ),
+                                        status_code = 400,
+                                        finish_reason_cause = "shrink_context_failed",
+                                    )
+                        
+                        # 创建请求对象
+                        request = CompletionsAPI.Request()
+                        # 设置上下文
+                        request.context = submit_context
+                        
+                        # 设置请求对象的API信息
+                        request.url = model.url
+                        request.model = model.id
+                        request.timeout = model.timeout
+                        api_key = model.get_api_key()
+                        if api_key is None:
+                            return Response(
+                                content = "Error: Model API key not found",
+                                status = 503,
+                                finish_reason_cause = "api_key_not_found",
+                            )
+                        request.key = api_key
+                        
+                        self._print_request_info(
+                            user_id = user_id,
+                            api = model,
+                            user_input = user_input,
+                            user_info = user_info,
+                            role_name = role_name,
+                        )
+
+                        # 设置请求对象的参数信息
+                        request.user_name = user_info.nickname
+                        if config.temperature is not None:
+                            request.temperature = config.temperature
+                        else:
+                            request.temperature = ConfigManager.get_configs().model.default_temperature
+                        
+                        if config.top_p is not None:
+                            request.top_p = config.top_p
+                        else:
+                            request.top_p = ConfigManager.get_configs().model.default_top_p
+                        
+                        if config.frequency_penalty is not None:
+                            request.frequency_penalty = config.frequency_penalty
+                        else:
+                            request.frequency_penalty = ConfigManager.get_configs().model.default_frequency_penalty
+                        
+                        if config.presence_penalty is not None:
+                            request.presence_penalty = config.presence_penalty
+                        else:
+                            request.presence_penalty = ConfigManager.get_configs().model.default_presence_penalty
+                        
+                        if config.max_tokens is not None:
+                            request.max_tokens = config.max_tokens
+                        else:
+                            request.max_tokens = ConfigManager.get_configs().model.default_max_tokens
+                        
+                        if config.max_completion_tokens is not None:
+                            request.max_completion_tokens = config.max_completion_tokens
+                        else:
+                            request.max_completion_tokens = ConfigManager.get_configs().model.default_max_completion_tokens
+                        
+                        if config.stop is not None:
+                            request.stop = config.stop
+                        else:
+                            request.stop = ConfigManager.get_configs().model.default_stop
+                        
+                        if thinking is not None:
+                            request.thinking = thinking
+                        elif config.thinking is not None:
+                            request.thinking = config.thinking
+                        else:
+                            request.thinking = ConfigManager.get_configs().model.default_thinking
+                        
+                        request.stream = ConfigManager.get_configs().model.stream
+                        request.stream_options.include_obfuscation = ConfigManager.get_configs().callapi.include_obfuscation
+                        request.stream_options.include_usage = ConfigManager.get_configs().callapi.include_usage
+                        request.print_chunk = print_chunk
+
+                        # 记录预处理结束时间
+                        prepare_end_time = Request_Log.TimeStamp()
+
+                        # 输出 (为了自动填充输出内容)
+                        output = Response()
+                        output.model_group = model.parent
+                        output.model_name = model.name
+                        output.model_type = model.type.value
+                        output.model_uid = model.uid
+                        output.user_raw_input = message
+                        if user_input is not None:
+                            output.user_input = user_input.content
+
+                        # 是否保存上下文
+                        if save_context is None:
+                            if config.save_context is not None:
+                                save_context = config.save_context
+                            else:
+                                save_context = ConfigManager.get_configs().context.save_context
+                        
+                        # 是否在保存时删除多模态内容
+                        if config.save_text_only is not None:
+                            save_only_text: bool = config.save_text_only
+                        else:
+                            save_only_text: bool = ConfigManager.get_configs().context.save_text_only
+                        
+                        if save_new_only is None:
+                            if config.save_new_only is not None:
+                                save_new_only = config.save_new_only
+                            else:
+                                save_new_only = ConfigManager.get_configs().context.save_new_only
+
+                    with self.task_status_map.enter(user_id, "Requesting"):
+                        # 提交请求
+                        try:
+                            response: CompletionsAPI.Response = CompletionsAPI.Response()
+                            if stream:
+                                async def generator_wrapper(generator: CompletionsAPI.StreamingResponseGenerationLayer) -> AsyncIterator[CompletionsAPI.Delta]:
+                                    async for chunk in generator:
+                                        yield chunk
+                                async def post_treatment(response: CompletionsAPI.Response):
+                                    """
+                                    包装后处理函数，以传递更多数据
+                                    """
+                                    nonlocal output
+                                    output = await self._post_treatment(
+                                        user_id = user_id,
+                                        output = output,
+                                        response = response,
+                                        template_parser = template_parser,
+                                        user_input = user_input,
+                                        save_context = save_context,
+                                        save_new_only = save_new_only,
+                                        context_loader = context_loader,
+                                        task_start_time = task_start_time,
+                                        cross_user_data_routing = cross_user_data_routing,
+                                        prepare_end_time = prepare_end_time,
+                                        prepare_start_time = prepare_start_time,
+                                        save_only_text = save_only_text,
+                                    )
+                                response_iterator = await self.stream_api_client.submit_Request(
+                                    user_id = user_id,
+                                    request = request,
+                                    response_callback = post_treatment
+                                )
+
+                                return generator_wrapper(response_iterator)
+                            else:
+                                response = await self.api_client.submit_Request(
+                                    user_id = user_id,
+                                    request = request
+                                )
+                                
+                                output = await self._post_treatment(
+                                    user_id = user_id,
+                                    output = output,
+                                    response = response,
+                                    template_parser = template_parser,
+                                    user_input = user_input,
+                                    save_context = save_context,
+                                    save_new_only = save_new_only,
+                                    context_loader = context_loader,
+                                    task_start_time = task_start_time,
+                                    cross_user_data_routing = cross_user_data_routing,
+                                    prepare_end_time = prepare_end_time,
+                                    prepare_start_time = prepare_start_time,
+                                    save_only_text = save_only_text,
+                                )
+                                return output
+                        
+                        except CompletionsAPI.Exceptions.CallApiException as e:
+                            traceback_info = traceback.format_exc()
+                            logger.exception(
+                                "CallAPI Error: \n{traceback_info}",
+                                user_id = user_id,
+                                traceback_info = traceback_info,
+                            )
+                            output.content = f"API Error: {e}"
+                            output.status = 500
+                            return output
         except Exception as e:
             traceback_info = traceback.format_exc()
             logger.error("API call failed: \n{traceback}", user_id = user_id, traceback = traceback_info)
@@ -787,6 +797,7 @@ class Core:
         task_start_time: Request_Log.TimeStamp,
         context_loader: ContextLoader,
         prepare_end_time: Request_Log.TimeStamp,
+        prepare_start_time: Request_Log.TimeStamp,
         cross_user_data_routing: CrossUserDataRouting[str],
         user_input: ContentUnit | None = None,
         output: Response = Response(),
@@ -794,95 +805,96 @@ class Core:
         save_only_text: bool = False,
         save_new_only: bool = False,
     ) -> Response:
-        # 补充调用日志的时间信息
-        response.calling_log.task_start_time = task_start_time
-        response.calling_log.prepare_start_time = task_start_time
-        response.calling_log.prepare_end_time = prepare_end_time
-        response.calling_log.created_time = response.created
-        saved_user_id = cross_user_data_routing.context.save_to_user_id
+        with self.task_status_map.enter(user_id, "PostProcessing"):
+            # 补充调用日志的时间信息
+            response.calling_log.task_start_time = task_start_time
+            response.calling_log.prepare_start_time = prepare_start_time
+            response.calling_log.prepare_end_time = prepare_end_time
+            response.calling_log.created_time = response.created
+            saved_user_id = cross_user_data_routing.context.save_to_user_id
 
-        # 展开模型输出内容中的变量
-        def expand_variables():
-            for index in range(len(response.new_context.context_list)):
-                content_unit = response.new_context.context_list[index]
-                content = content_unit.content
-                if isinstance(content, str):
-                    content = template_parser.render_ex(
-                        content,
+            # 展开模型输出内容中的变量
+            def expand_variables():
+                for index in range(len(response.new_context.context_list)):
+                    content_unit = response.new_context.context_list[index]
+                    content = content_unit.content
+                    if isinstance(content, str):
+                        content = template_parser.render_ex(
+                            content,
+                            user_id,
+                        )
+                        content_unit.content = content
+                    else:
+                        content = content_unit.to_plaintext_content()
+                        content = template_parser.render_ex(
+                            content,
+                            user_id
+                        )
+                        content_unit.remove_context_block(TextBlock)
+                        content_unit.content.append(
+                            TextBlock(content)
+                        )
+                    content_unit.reasoning_content = template_parser.render_ex(
+                        content_unit.reasoning_content,
                         user_id,
                     )
-                    content_unit.content = content
-                else:
-                    content = content_unit.to_plaintext_content()
-                    content = template_parser.render_ex(
-                        content,
-                        user_id
-                    )
-                    content_unit.remove_context_block(TextBlock)
-                    content_unit.content.append(
-                        TextBlock(content)
-                    )
-                content_unit.reasoning_content = template_parser.render_ex(
-                    content_unit.reasoning_content,
-                    user_id,
-                )
-        
-        # 通过合并频繁的同步操作，减少创建 Thread 带来的开销
-        await asyncio.to_thread(expand_variables)
-        
-        if cross_user_data_routing.context.save_to_user_id == user_id:
-            historical_context = response.historical_context
-        else:
-            historical_context = await context_loader.load_context(saved_user_id)
-            historical_context.append(user_input)
+            
+            # 通过合并频繁的同步操作，减少创建 Thread 带来的开销
+            await asyncio.to_thread(expand_variables)
+            
+            if cross_user_data_routing.context.save_to_user_id == user_id:
+                historical_context = response.historical_context
+            else:
+                historical_context = await context_loader.load_context(saved_user_id)
+                historical_context.append(user_input)
 
-        # 保存上下文
-        if save_context:
-            if save_new_only:
-                saved_context: ContextObject = ContextObject()
-                if user_input is not None:
-                    saved_context.append(user_input)
-                if response.new_context:
-                    saved_context.extend(response.new_context)
-                logger.info(
-                    "Saving new context...",
+            # 保存上下文
+            if save_context:
+                if save_new_only:
+                    saved_context: ContextObject = ContextObject()
+                    if user_input is not None:
+                        saved_context.append(user_input)
+                    if response.new_context:
+                        saved_context.extend(response.new_context)
+                    logger.info(
+                        "Saving new context...",
+                        user_id = saved_user_id,
+                    )
+                else:
+                    saved_context = historical_context
+                    if response.new_context:
+                        saved_context.extend(response.new_context)
+                    logger.info(
+                        "Saving context...",
+                        user_id = saved_user_id,
+                    )
+                await context_loader.save(
                     user_id = saved_user_id,
+                    context = saved_context,
+                    reduce_to_text = save_only_text,
                 )
             else:
-                saved_context = historical_context
-                if response.new_context:
-                    saved_context.extend(response.new_context)
-                logger.info(
-                    "Saving context...",
-                    user_id = saved_user_id,
-                )
-            await context_loader.save(
-                user_id = saved_user_id,
-                context = saved_context,
-                reduce_to_text = save_only_text,
-            )
-        else:
-            logger.warning("Context not saved", user_id = saved_user_id)
+                logger.warning("Context not saved", user_id = saved_user_id)
 
-        # 记录任务结束时间
-        response.calling_log.task_end_time = Request_Log.TimeStamp()
+            # 记录任务结束时间
+            response.calling_log.task_end_time = Request_Log.TimeStamp()
 
-        # 记录调用日志
-        await self.request_log.add_request_log(response.calling_log)
+            # 记录调用日志
+            await self.request_log.add_request_log(response.calling_log)
 
-        # 记录API调用成功
-        logger.success(f"Task Finished!", user_id = saved_user_id)
+            # 记录API调用成功
+            logger.success(f"Task Finished!", user_id = saved_user_id)
 
-        # 返回模型输出内容
-        output.reasoning_content = response.new_context.last_content.reasoning_content
-        output.content = response.new_context.last_content.content
-        output.create_time = response.created
-        output.id = response.id
+            # 返回模型输出内容
+            output.reasoning_content = response.new_context.last_content.reasoning_content
+            output.content = response.new_context.last_content.content
+            output.create_time = response.created
+            output.id = response.id
 
-        output.finish_reason_cause = response.finish_reason_cause
-        output.finish_reason_code = response.finish_reason.value
+            output.finish_reason_cause = response.finish_reason_cause
+            output.finish_reason_code = response.finish_reason.value
 
-        return output
+            return output
     # endregion
     # region > 重新加载API信息
     async def reload_apiinfo(self):
