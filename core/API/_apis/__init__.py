@@ -10,6 +10,7 @@ from ._admin_api import *
 from ._model_api import *
 from ._index_web import *
 from ._static_api import *
+from ._status_api import *
 from ._version import (
     version,
     module_version
