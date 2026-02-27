@@ -76,14 +76,6 @@
     },
     "prompt_template": {
         "version": null,
-        "bot_info": {
-            "name": "Repeater",
-            "birthday": {
-                "day": 28,
-                "month": 6,
-                "year": 2024
-            }
-        },
         "time": {
             "timezone": "Asia/Shanghai"
         }
@@ -150,7 +142,7 @@
         "metadata_file_name": "metadata.json",
         "default_branch_id": "main",
         "file_size_use_abbreviation": true,
-        "allow_cross_user_data_flow": false,
+        "cross_user_data_access": false,
         "cache_medadata": false,
         "cache_data": false
     },

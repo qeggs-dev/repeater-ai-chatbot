@@ -1,7 +1,9 @@
 import re
 from pathlib import Path
-from typing import Literal, Iterator
-from typing import TextIO
+from typing import (
+    Iterator,
+    Callable,
+)
 from ._obj import (
     CheckDetailsData,
     LoaderDetailsData,
@@ -22,7 +24,7 @@ class RegexChecker:
         self._regexs: list[tuple[re.Pattern, bool]] = []
         self._flags = flags
 
-    def check(self, text: str) -> CheckDetailsData:
+    def check(self, text: str, func: Callable[[str | re.Pattern[str], str, int | re.RegexFlag], re.Match[str] | None] = re.search) -> CheckDetailsData:
         r"""
         Check the text with the regexs.
 
@@ -40,6 +42,7 @@ class RegexChecker:
 
 
         :param text: The text to check.
+        :param func: The function to use to check the text.
         :return: True if the text matches all the regexs, False otherwise.
         """
         if not self._regexs:
@@ -47,12 +50,12 @@ class RegexChecker:
         
         if self._mode == CheckerMode.SERIES:
             for regex, enable in self._regexs:
-                if enable and not regex.search(text):
+                if enable and not func(regex, text, self._flags):
                     return CheckDetailsData(regex=regex, matched=False)
             return CheckDetailsData(regex=None, matched=True)
         elif self._mode == CheckerMode.PARALLEL:
             for regex, enable in self._regexs:
-                if enable and regex.search(text):
+                if enable and func(regex, text, self._flags):
                     return CheckDetailsData(regex=regex, matched=True)
             return CheckDetailsData(regex=None, matched=False)
     

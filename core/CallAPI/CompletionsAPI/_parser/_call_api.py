@@ -56,6 +56,17 @@ class CallAPI(CallNstreamAPIBase):
         if not request.context:
             raise ValueError("context is required")
         
+        extra_body = {}
+        if request.thinking is not None:
+            if request.thinking:
+                extra_body["thinking"] = {
+                    "type": "enabled"
+                }
+            else:
+                extra_body["thinking"] = {
+                    "type": "disabled"
+                }
+        
         # 发送请求
         logger.info(f"Send Request", user_id = user_id)
         request_start_time = TimeStamp()
@@ -72,6 +83,7 @@ class CallAPI(CallNstreamAPIBase):
             messages = request.context.to_full_context(remove_resoning_prompt = True),
             tools = request.function_calling.tools if request.function_calling else None,
             stream_options = request.stream_options.model_dump(),
+            extra_body = extra_body
         )
         request_end_time = TimeStamp()
 

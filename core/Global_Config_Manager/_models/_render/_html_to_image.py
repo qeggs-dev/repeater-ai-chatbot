@@ -9,6 +9,7 @@ class HTML_To_Image_Config(BaseModel):
     max_browsers: int = 2
     browser_type: HTML_Render.BrowserType = HTML_Render.BrowserType.AUTO
     headless: bool = True
+    route_blacklist_file: str | None = None
     output_suffix: str = ".png"
     executable_path: str | None = None
     width: int = 1200

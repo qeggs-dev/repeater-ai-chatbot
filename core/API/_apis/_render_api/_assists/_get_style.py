@@ -4,12 +4,12 @@ from .....Markdown_Render import Styles
 from .....User_Config_Manager import UserConfigs
 from fastapi import HTTPException
 
-async def get_style(user_id:str, request: RenderRequest, user_configs: UserConfigs):
+async def get_style(request: RenderRequest, user_configs: UserConfigs):
     """
     获取用户配置的样式文件
 
-    :param user_id: 用户id
     :param request: 请求参数
+    :param user_configs: 用户配置
     :return: 样式文件内容(样式名称，样式文件内容)
     """
     style_path = ConfigManager.get_configs().render.markdown.styles_dir
@@ -35,10 +35,14 @@ async def get_style(user_id:str, request: RenderRequest, user_configs: UserConfi
             encoding = style_file_encoding
         )
     else:
-        # 获取全局配置中的默认图片渲染风格
-        style_name = ConfigManager.get_configs().render.markdown.default_style
+        # 获取配置中的默认图片渲染风格
+        if user_configs.render_style:
+            style_name = user_configs.render_style
+        else:
+            style_name = ConfigManager.get_configs().render.markdown.default_style
+        
         css = await styles.get_style(
-            user_configs.render_style or style_name,
+            style_name,
             encoding = style_file_encoding
         )
     

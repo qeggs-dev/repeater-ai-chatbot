@@ -11,4 +11,5 @@ class ModelConfig(BaseModel):
     default_frequency_penalty: float = Field(0.0, ge = -2.0, le = 2.0)
     default_presence_penalty: float = Field(0.0, ge = -2.0, le = 2.0)
     default_stop: list[str] = Field(default_factory = list)
+    default_thinking: bool | None = None
     stream: bool = True

@@ -39,6 +39,7 @@ async def chat_endpoint(
             temporary_prompt = request.temporary_prompt,
             additional_data = request.additional_data,
             model_uid = request.model_uid,
+            thinking = request.thinking,
             print_chunk = True,
             load_prompt = request.load_prompt,
             save_context = request.save_context,

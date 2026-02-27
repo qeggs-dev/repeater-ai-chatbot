@@ -10,8 +10,5 @@
     - **Response Body**:
       - `branch_id` (str):  当前分支ID
       - `size` (int): 当前分支大小
-      - `readable_size` (str): 当前分支大小（可读）
       - `modified_time` (int): 当前分支最后修改时间
-
-注：`readable_size` 的低位并不会作为高位的小数部分，而是单独显示。
-比如：`1572864` 就会是 `1MiB，512KiB`
+      - `file_exists` (bool): 当前分支文件是否存在

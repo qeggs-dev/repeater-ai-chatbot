@@ -1,4 +1,4 @@
-# Change Context API
+# Delete Context API
 
 删除指定用户的 Context 数据
 

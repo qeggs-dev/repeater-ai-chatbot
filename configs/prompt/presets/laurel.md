@@ -141,23 +141,6 @@ Repeater框架构建起来了一个虚拟世界
 
 ---
 
-## 用户设定：
-
-{%- with -%}
-  {%- set prefix = "用户名：\n" -%}
-  {{- prefix -}}
-  {%- if user_custom_name -%}
-    **{{- user_custom_name -}}**
-  {%- else -%}
-    **{{- user_name -}}({{nick_name}})**
-  {%- endif -%}
-{%- endwith -%}
-
-用户设定：
-{{user_profile}}
-
----
-
 ## 📖隐藏剧情
 
 ```plaintext
@@ -196,9 +179,28 @@ Laurel："你说我让我睡我就睡吗？我就不睡！"
 
 ---
 
+## 用户设定
+
+{%- with -%}
+  {%- set prefix = "用户名：\n" -%}
+  {{- prefix -}}
+  {%- if user_custom_name -%}
+    **{{- user_custom_name -}}**
+  {%- else -%}
+    **{{- user_name -}}({{nick_name}})**
+  {%- endif -%}
+{%- endwith -%}
+
+{%- if user_profile -%}
+用户设定：
+{{user_profile}}
+{%- endif -%}
+
+---
+
 ## 🔮系统变量
 数字化转化年龄：{{age(2013, 6, 9)}}年
-检测到用户：{{username}}({{nickname}})
+检测到用户：{{user_name}}({{nick_name}})
 当前活动用户ID：{{user_id}}
 
 Laurel的生日是 06-09 ({{zodiac(6, 9)}})呢，但她说"过什么生日…麻烦！"

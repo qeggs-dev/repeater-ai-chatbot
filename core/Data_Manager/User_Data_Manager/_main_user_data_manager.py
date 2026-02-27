@@ -10,7 +10,7 @@ from loguru import logger
 # ==== 自定义库 ==== #
 from .Sub_Manager import SubManager, BranchInfo
 from PathProcessors import validate_path, sanitize_filename
-from ._user_id_encoder import user_id_encode, user_id_decode
+from ._fname_b64_encoder import fname_b64_encode, fname_b64_decode
 from ...Global_Config_Manager import ConfigManager
 
 T = TypeVar("T")
@@ -51,7 +51,7 @@ class UserDataManager(Generic[T]):
     
     def _get_sub_manager(self, user_id: str) -> SubManager:
         manager = SubManager(
-            self.base_path / user_id_encode(user_id),
+            self.base_path / fname_b64_encode(user_id),
             cache_metadata = self._cache_metadata,
             cache_data = self._cache_data,
             sub_dir_name = self._sub_dir_name,
@@ -106,10 +106,11 @@ class UserDataManager(Generic[T]):
         default_value = self._get_default_value(default)
 
         logger.info(
-            "Loading [Branch:{base_name}/{user_id}/{src_branch_id}]",
+            "Loading [Branch:{base_name}/{encoded_user_id}/{src_branch_id}]",
             user_id = user_id,
             base_name = self._base_name,
-            src_branch_id = active_branch_id
+            encoded_user_id = fname_b64_encode(user_id),
+            src_branch_id = fname_b64_encode(active_branch_id)
         )
         
         return await manager.load(active_branch_id, default_value)
@@ -126,10 +127,11 @@ class UserDataManager(Generic[T]):
         active_branch_id = await self._get_active_branch_id(user_id)
 
         logger.info(
-            "Saving [Branch:{base_name}/{user_id}/{dst_branch_id}]",
+            "Saving [Branch:{base_name}/{encoded_user_id}/{dst_branch_id}]",
             user_id = user_id,
             base_name = self._base_name,
-            dst_branch_id = active_branch_id
+            encoded_user_id = fname_b64_encode(user_id),
+            dst_branch_id = fname_b64_encode(active_branch_id)
         )
 
         await manager.save(active_branch_id, data)
@@ -145,10 +147,11 @@ class UserDataManager(Generic[T]):
         active_branch_id = await self._get_active_branch_id(user_id)
 
         logger.info(
-            "Deleting [Branch:{base_name}/{user_id}/{dst_branch_id}]",
+            "Deleting [Branch:{base_name}/{encoded_user_id}/{dst_branch_id}]",
             user_id = user_id,
             base_name = self._base_name,
-            dst_branch_id = active_branch_id
+            encoded_user_id = fname_b64_encode(user_id),
+            dst_branch_id = fname_b64_encode(active_branch_id)
         )
 
         await manager.delete(active_branch_id)
@@ -167,11 +170,12 @@ class UserDataManager(Generic[T]):
         default_value = self._get_default_value(default)
 
         logger.info(
-            "Cloning [Branch:{base_name}/{user_id}/{src_branch_id}] to [Branch:{base_name}/{user_id}/{dst_branch_id}]",
+            "Cloning [Branch:{base_name}/{encoded_user_id}/{src_branch_id}] to [Branch:{base_name}/{encoded_user_id}/{dst_branch_id}]",
             user_id = user_id,
             base_name = self._base_name,
-            src_branch_id = active_branch_id,
-            dst_branch_id = dst_branch_id
+            encoded_user_id = fname_b64_encode(user_id),
+            src_branch_id = fname_b64_encode(active_branch_id),
+            dst_branch_id = fname_b64_encode(dst_branch_id)
         )
 
         loaded_data = await manager.load(active_branch_id, default_value)
@@ -191,11 +195,12 @@ class UserDataManager(Generic[T]):
         default_value = self._get_default_value(default)
 
         logger.info(
-            "Cloning [Branch:{base_name}/{user_id}/{src_branch_id}] to [Branch:{base_name}/{user_id}/{dst_branch_id}]",
+            "Cloning [Branch:{base_name}/{encoded_user_id}/{src_branch_id}] to [Branch:{base_name}/{encoded_user_id}/{dst_branch_id}]",
             user_id = user_id,
             base_name = self._base_name,
-            src_branch_id = source_branch_id,
-            dst_branch_id = active_branch_id
+            encoded_user_id = fname_b64_encode(user_id),
+            src_branch_id = fname_b64_encode(source_branch_id),
+            dst_branch_id = fname_b64_encode(active_branch_id)
         )
 
         loaded_data = await manager.load(source_branch_id, default_value)
@@ -214,27 +219,30 @@ class UserDataManager(Generic[T]):
         default_value = self._get_default_value(default)
 
         logger.info(
-            "Binding [Branch:{base_name}/{user_id}/{src_branch_id}] to [Branch:{base_name}/{user_id}/{dst_branch_id}]",
+            "Binding [Branch:{base_name}/{encoded_user_id}/{src_branch_id}] to [Branch:{base_name}/{encoded_user_id}/{dst_branch_id}]",
             user_id = user_id,
             base_name = self._base_name,
-            src_branch_id = active_branch_id,
-            dst_branch_id = dst_branch_id
+            encoded_user_id = fname_b64_encode(user_id),
+            src_branch_id = fname_b64_encode(active_branch_id),
+            dst_branch_id = fname_b64_encode(dst_branch_id)
         )
 
         if not manager.exists(active_branch_id):
             logger.warning(
-                "[Branch:{base_name}/{user_id}/{src_branch_id}] does not exist, creating...",
+                "[Branch:{base_name}/{encoded_user_id}/{src_branch_id}] does not exist, creating...",
                 user_id = user_id,
                 base_name = self._base_name,
-                src_branch_id = active_branch_id
+                encoded_user_id = fname_b64_encode(user_id),
+                src_branch_id = fname_b64_encode(active_branch_id)
             )
             await manager.save(active_branch_id, default_value)
         if manager.exists(dst_branch_id):
             logger.warning(
-                "[Branch:{base_name}/{user_id}/{dst_branch_id}] already exists, deleting...",
+                "[Branch:{base_name}/{encoded_user_id}/{dst_branch_id}] already exists, deleting...",
                 user_id = user_id,
                 base_name = self._base_name,
-                dst_branch_id = dst_branch_id
+                encoded_user_id = fname_b64_encode(user_id),
+                dst_branch_id = fname_b64_encode(dst_branch_id)
             )
             await manager.delete(dst_branch_id)
         await manager.bind(active_branch_id, dst_branch_id)
@@ -255,27 +263,30 @@ class UserDataManager(Generic[T]):
         default_value = self._get_default_value(default)
 
         logger.info(
-            "Binding [Branch:{base_name}/{user_id}/{src_branch_id}] to [Branch:{base_name}/{user_id}/{branch_id}]...",
+            "Binding [Branch:{base_name}/{encoded_user_id}/{src_branch_id}] to [Branch:{base_name}/{encoded_user_id}/{branch_id}]...",
             user_id = user_id,
             base_name = self._base_name,
             src_branch_id = src_branch_id,
-            branch_id = active_branch_id
+            encoded_user_id = fname_b64_encode(user_id),
+            branch_id = fname_b64_encode(active_branch_id)
         )
 
         if not manager.exists(active_branch_id):
             logger.warning(
-                "[Branch:{base_name}/{user_id}/{src_branch_id}] does not exist, creating...",
+                "[Branch:{base_name}/{encoded_user_id}/{src_branch_id}] does not exist, creating...",
                 user_id = user_id,
                 base_name = self._base_name,
-                src_branch_id = src_branch_id
+                encoded_user_id = fname_b64_encode(user_id),
+                src_branch_id = fname_b64_encode(src_branch_id)
             )
             await manager.save(src_branch_id, default_value)
         if manager.exists(active_branch_id):
             logger.warning(
-                "[Branch:{base_name}/{user_id}/{dst_branch_id}] already exists, deleting...",
+                "[Branch:{base_name}/{encoded_user_id}/{dst_branch_id}] already exists, deleting...",
                 user_id = user_id,
                 base_name = self._base_name,
-                dst_branch_id = active_branch_id
+                encoded_user_id = fname_b64_encode(user_id),
+                dst_branch_id = fname_b64_encode(active_branch_id)
             )
             await manager.delete(active_branch_id)
         await manager.bind(src_branch_id, active_branch_id)
@@ -290,6 +301,7 @@ class UserDataManager(Generic[T]):
             branch_id (str): The branch id.
         """
         manager = self._get_sub_manager(user_id)
+        metadata = await manager.load_metadata()
 
         if isinstance(metadata, dict):
             metadata[ConfigManager.get_configs().user_data.metadata_fields.branch_field] = branch_id
@@ -297,11 +309,11 @@ class UserDataManager(Generic[T]):
             metadata = {ConfigManager.get_configs().user_data.metadata_fields.branch_field: branch_id}
         
         logger.info(
-            "Set Active Branch to [Branch:{base_name}/{user_id}/{branch_id}]",
+            "Set Active Branch to [Branch:{base_name}/{encoded_user_id}/{dst_branch_id}]",
             user_id = user_id,
             base_name = self._base_name,
-            dst_branch_id = branch_id,
-            branch_id = branch_id
+            encoded_user_id = fname_b64_encode(user_id),
+            dst_branch_id = fname_b64_encode(branch_id),
         )
         
         await manager.save_metadata(metadata)
@@ -341,7 +353,7 @@ class UserDataManager(Generic[T]):
         Returns:
             list: A list of all user IDs.
         """
-        return [user_id_decode(f.name) for f in (self.base_path).iterdir() if f.is_dir()]
+        return [fname_b64_decode(f.name) for f in (self.base_path).iterdir() if f.is_dir()]
 
     async def get_all_branch_id(self, user_id: str) -> list:
         """
@@ -353,4 +365,4 @@ class UserDataManager(Generic[T]):
         Returns:
             list: A list of branch IDs.
         """
-        return [f.stem for f in (self.base_path / user_id_encode(user_id) / self._sub_dir_name).iterdir() if f.is_file()]
+        return [fname_b64_decode(f.stem) for f in (self.base_path / fname_b64_encode(user_id) / self._sub_dir_name).iterdir() if f.is_file()]

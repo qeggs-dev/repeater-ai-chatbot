@@ -154,6 +154,17 @@ class ClientBase(ABC):
             user_id = user_id,
             request_id = response.id
         )
+        thinking_mode: str = "No Set"
+        if request.thinking is not None:
+            if request.thinking:
+                thinking_mode = "Enabled"
+            else:
+                thinking_mode = "Disabled"
+        logger.info(
+            "Thinking: {thinking}",
+            user_id = user_id,
+            thinking = thinking_mode
+        )
         logger.info(
             "Temperature: {temperature}",
             user_id = user_id,
@@ -262,9 +273,9 @@ class ClientBase(ABC):
         )
 
         logger.info(
-            "Generation Speed: {generation_speed} Tokens/s",
+            "Generation Speed: {generation_speed:.2f} Tokens/s",
             user_id = user_id,
-            generation_speed = response.token_usage.total_tokens / (stream_processing_time / 1e9)
+            generation_speed = response.token_usage.completion_tokens / (stream_processing_time / 1e9)
         )
 
         created_utc_dt = datetime.fromtimestamp(response.created, tz=timezone.utc)
@@ -288,39 +299,40 @@ class ClientBase(ABC):
                 timestamps = np.array([time.monotonic for time in response.calling_log.chunk_times], dtype=np.int64)
                 time_differences = np.diff(timestamps)
                 non_zero_time_differences = time_differences[time_differences != 0]
-                max_chunk_spawn_time = int(np.max(time_differences))
-                min_chunk_spawn_time = int(np.min(non_zero_time_differences))
-                ave_chunk_spawn_time = int(np.mean(time_differences))
-                chunk_generation_rate = 1e9 / ave_chunk_spawn_time
-                chunk_stability_cv = self._calculate_stability_cv(time_differences)
-                logger.info(
-                    "Chunk Generation Rate: {chunk_generation_rate:.2f} Chunks/s",
-                    user_id = user_id,
-                    chunk_generation_rate = chunk_generation_rate
-                )
-                logger.info(
-                    "Chunk Average Spawn Time: {ave_chunk_spawn_time:.2f}ms({format_time_duration})",
-                    user_id = user_id,
-                    ave_chunk_spawn_time = ave_chunk_spawn_time / 1e6,
-                    format_time_duration = format_time_duration_ns(ave_chunk_spawn_time, use_abbreviation=True)
-                )
-                logger.info(
-                    "Chunk Max Spawn Time: {max_chunk_spawn_time:.2f}ms({format_time_duration})",
-                    user_id = user_id,
-                    max_chunk_spawn_time = max_chunk_spawn_time / 1e6,
-                    format_time_duration = format_time_duration_ns(max_chunk_spawn_time, use_abbreviation=True)
-                )
-                logger.info(
-                    "Chunk Min Spawn Time: {min_chunk_spawn_time:.2f}ms({format_time_duration})",
-                    user_id = user_id,
-                    min_chunk_spawn_time = min_chunk_spawn_time / 1e6,
-                    format_time_duration = format_time_duration_ns(min_chunk_spawn_time, use_abbreviation=True)
-                )
-                logger.info(
-                    "Chunk time stability (Coefficient of Variation): {chunk_stability_cv}",
-                    user_id = user_id,
-                    chunk_stability_cv = chunk_stability_cv
-                )
+                if time_differences.size > 0 and non_zero_time_differences.size > 0:
+                    max_chunk_spawn_time = int(np.max(time_differences))
+                    min_chunk_spawn_time = int(np.min(non_zero_time_differences))
+                    ave_chunk_spawn_time = int(np.mean(time_differences))
+                    chunk_generation_rate = response.calling_log.total_chunk / (stream_processing_time / 1e9)
+                    chunk_stability_cv = self._calculate_stability_cv(time_differences)
+                    logger.info(
+                        "Chunk Generation Rate: {chunk_generation_rate:.2f} Chunks/s",
+                        user_id = user_id,
+                        chunk_generation_rate = chunk_generation_rate
+                    )
+                    logger.info(
+                        "Chunk Average Spawn Time: {ave_chunk_spawn_time:.2f}ms({format_time_duration})",
+                        user_id = user_id,
+                        ave_chunk_spawn_time = ave_chunk_spawn_time / 1e6,
+                        format_time_duration = format_time_duration_ns(ave_chunk_spawn_time, use_abbreviation=True)
+                    )
+                    logger.info(
+                        "Chunk Max Spawn Time: {max_chunk_spawn_time:.2f}ms({format_time_duration})",
+                        user_id = user_id,
+                        max_chunk_spawn_time = max_chunk_spawn_time / 1e6,
+                        format_time_duration = format_time_duration_ns(max_chunk_spawn_time, use_abbreviation=True)
+                    )
+                    logger.info(
+                        "Chunk Min Spawn Time: {min_chunk_spawn_time:.2f}ms({format_time_duration})",
+                        user_id = user_id,
+                        min_chunk_spawn_time = min_chunk_spawn_time / 1e6,
+                        format_time_duration = format_time_duration_ns(min_chunk_spawn_time, use_abbreviation=True)
+                    )
+                    logger.info(
+                        "Chunk time stability (Coefficient of Variation): {chunk_stability_cv}",
+                        user_id = user_id,
+                        chunk_stability_cv = chunk_stability_cv
+                    )
 
         logger.info("=========== Token Count ============", user_id = user_id)
         logger.info(

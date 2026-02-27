@@ -2,7 +2,7 @@
 
 将指定用户的 Context 活动分支切换到指定分支
 
-- **`/userdata/context/branchs/{user_id:str}`**
+- **`/userdata/context/change/{user_id:str}`**
   - **Requset**
     - **method:** `PUT`
     - **type:** `FORM`

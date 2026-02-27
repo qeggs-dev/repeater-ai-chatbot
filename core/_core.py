@@ -195,7 +195,7 @@ class Core:
             user_id: str,
             temporary_prompt: str | None = None,
             load_prompt: bool = True,
-            cross_user_data_routing: CrossUserDataRouting[str | None] | None = None,
+            cross_user_data_routing: CrossUserDataRouting[str] | None = None,
             template_parser: TemplateParser | None = None
         ) -> ContextObject:
         """
@@ -214,8 +214,6 @@ class Core:
         :param template_parser: 模板解析器
         :return: 上下文对象
         """
-        cross_user_data_routing: CrossUserDataRouting[str] = self.fill_missing_cross_user_data_routing(user_id, cross_user_data_routing)
-
         context_load_source = cross_user_data_routing.context.load_from_user_id
         prompt_load_source = cross_user_data_routing.prompt.load_from_user_id
         
@@ -239,7 +237,7 @@ class Core:
         return context
     # endregion
 
-    # region Make User Content
+    # region > make user content
     async def make_user_content(
         self,
         context_loader: ContextLoader,
@@ -405,14 +403,17 @@ class Core:
                 role_name = role_name
             )
     
-    # region > Fill Missing Cross User Data Routing
-    @staticmethod
-    def fill_missing_cross_user_data_routing(user_id: str, cross_user_data_flow: CrossUserDataRouting[str | None] | None = None) -> CrossUserDataRouting[str]:
-        if cross_user_data_flow is None:
-            cross_user_data_flow = CrossUserDataRouting()
-        if not cross_user_data_flow.is_all_defined():
-            cross_user_data_flow.fill_missing(user_id = user_id)
-        return cross_user_data_flow
+    # region > fill missing cross user data routing
+    async def fill_missing_cross_user_data_routing(self, user_id: str, cross_user_data_routing: CrossUserDataRouting[str | None] | None = None) -> CrossUserDataRouting[str]:
+        if cross_user_data_routing is None:
+            cross_user_data_routing = CrossUserDataRouting()
+        if not cross_user_data_routing.is_all_defined():
+            cross_user_data_routing.fill_missing(user_id = user_id)
+        await cross_user_data_routing.removal_not_allowed_user(
+            user_id = user_id,
+            user_config_manager = self.user_config_manager
+        )
+        return cross_user_data_routing
     # endregion
 
     # region > Chat
@@ -426,6 +427,7 @@ class Core:
             temporary_prompt: str | None = None,
             additional_data: AdditionalData | None = None,
             model_uid: str | None = None,
+            thinking: bool | None = None,
             print_chunk: bool = True,
             load_prompt: bool | None = None,
             save_context: bool | None = None,
@@ -444,6 +446,7 @@ class Core:
         :param temporary_prompt: 临时提示词
         :param additional_data: 额外数据
         :param model_uid: 模型UID
+        :param thinking: 使用思考模式
         :param print_chunk: 是否打印片段
         :param load_prompt: 是否加载提示
         :param save_context: 是否保存上下文
@@ -490,7 +493,7 @@ class Core:
                         logger.warning("Cross user data flow is not allowed.", user_id = user_id)
                         cross_user_data_routing = None
                 
-                cross_user_data_routing = self.fill_missing_cross_user_data_routing(user_id, cross_user_data_routing)
+                cross_user_data_routing = await self.fill_missing_cross_user_data_routing(user_id, cross_user_data_routing)
 
                 if user_id != cross_user_data_routing.config.load_from_user_id:
                     config = await self.get_config(cross_user_data_routing.config.load_from_user_id)
@@ -623,13 +626,48 @@ class Core:
 
                 # 设置请求对象的参数信息
                 request.user_name = user_info.nickname
-                request.temperature = config.temperature or ConfigManager.get_configs().model.default_temperature
-                request.top_p = config.top_p or ConfigManager.get_configs().model.default_top_p
-                request.frequency_penalty = config.frequency_penalty or ConfigManager.get_configs().model.default_frequency_penalty
-                request.presence_penalty = config.presence_penalty or ConfigManager.get_configs().model.default_presence_penalty
-                request.max_tokens = config.max_tokens or ConfigManager.get_configs().model.default_max_tokens
-                request.max_completion_tokens = config.max_completion_tokens or ConfigManager.get_configs().model.default_max_completion_tokens
-                request.stop = config.stop or ConfigManager.get_configs().model.default_stop
+                if config.temperature is not None:
+                    request.temperature = config.temperature
+                else:
+                    request.temperature = ConfigManager.get_configs().model.default_temperature
+                
+                if config.top_p is not None:
+                    request.top_p = config.top_p
+                else:
+                    request.top_p = ConfigManager.get_configs().model.default_top_p
+                
+                if config.frequency_penalty is not None:
+                    request.frequency_penalty = config.frequency_penalty
+                else:
+                    request.frequency_penalty = ConfigManager.get_configs().model.default_frequency_penalty
+                
+                if config.presence_penalty is not None:
+                    request.presence_penalty = config.presence_penalty
+                else:
+                    request.presence_penalty = ConfigManager.get_configs().model.default_presence_penalty
+                
+                if config.max_tokens is not None:
+                    request.max_tokens = config.max_tokens
+                else:
+                    request.max_tokens = ConfigManager.get_configs().model.default_max_tokens
+                
+                if config.max_completion_tokens is not None:
+                    request.max_completion_tokens = config.max_completion_tokens
+                else:
+                    request.max_completion_tokens = ConfigManager.get_configs().model.default_max_completion_tokens
+                
+                if config.stop is not None:
+                    request.stop = config.stop
+                else:
+                    request.stop = ConfigManager.get_configs().model.default_stop
+                
+                if thinking is not None:
+                    request.thinking = thinking
+                elif config.thinking is not None:
+                    request.thinking = config.thinking
+                else:
+                    request.thinking = ConfigManager.get_configs().model.default_thinking
+                
                 request.stream = ConfigManager.get_configs().model.stream
                 request.stream_options.include_obfuscation = ConfigManager.get_configs().callapi.include_obfuscation
                 request.stream_options.include_usage = ConfigManager.get_configs().callapi.include_usage

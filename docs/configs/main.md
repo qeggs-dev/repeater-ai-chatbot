@@ -32,7 +32,10 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
     "render": {
         "to_image": {
             // 也建议填写，除非你对 playwright 安装了独立的浏览器
-            "executable_path" : "" // 这里填写你安装的任意浏览器可执行文件的路径
+            "executable_path" : "", // 这里填写你安装的任意浏览器可执行文件的路径
+            
+            // 非常建议填写，用于过滤掉一些路由，比如某些内网资源，防止恶意请求获取到敏感信息
+            "route_blacklist_file": "./config/route_blacklist.regex"
         }
     }
 }
@@ -44,14 +47,11 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
 ## 详细字段信息：
 ```json
 {
+    // 黑名单配置
     "blacklist": {
-        // 黑名单配置
-
         // 黑名单文件路径
-        // 嗯这个文件只需要在开头写一个`[REGEX PARALLEL FILE]`
-        // 然后下面每一行一个正则表达式就行了
-        // 如果没有你也可以不写
-        // 但是文件头必须有
+        // 格式为 RegexChecker 格式
+        // 详情参考本目录下的 regex_checker.md
         "file_path": "./config/blacklist.regex",
 
         // 黑名单匹配超时时间，单位为秒
@@ -185,6 +185,7 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
         }
     },
 
+    // 许可证信息
     "licenses": {
         // 依赖项的许可证文件所在目录
         // 注意：这个目录需要保持正确的结构才能被程序正确解析
@@ -223,8 +224,9 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
         "compression": "zip"
     },
 
-    // 你可以微调默认的用户model参数
-    // 如果用户没有定义模型参数，则你这里定义的参数取请求API
+    // 模型参数配置
+    // 你可以微调默认的请求的默认参数
+    // 如果用户没有定义模型参数，则使用这里定义的参数取请求API
     "model": {
         // 默认模型超时时间，单位为秒
         "default_timeout": 600.0,
@@ -276,9 +278,9 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
         // 这里需要填写你在api_info.json中配置的模型uid
         // 如果用户没有指定模型，则使用这个模型进行响应
         // uid匹配默认是不分大小写的
-        // 不建议使用默认UID，因为chat指定的太过宽泛
+        // 不建议使用默认 UID，因为 chat 指定的太过宽泛
         // 建议在部署时，自己定一个或是根据厂商和模型的名字来定一个
-        // 比如deepseek-chat之类的
+        // 比如 deepseek-chat 之类的
         "default_model_uid": "chat",
 
         // 在匹配UID时是否启用大小写敏感
@@ -325,7 +327,8 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
 
         // 默认用户信息
         // 当用户未填写个人设定时，将使用此文本作为值
-        "default_user_profile": "The user has not filled out the field for the time being."
+        // 通常建议为空值，因为这样模板就能检查是否有用户设定并针对性地处理了
+        "default_user_profile": ""
     },
 
     // Prompt 配置
@@ -418,6 +421,12 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
             // 浏览器是否为无头模式
             "headless": true,
 
+            // 路由黑名单文件路径
+            // 格式为 RegexChecker 格式
+            // 详情参考本目录下的 regex_checker.md
+            // 默认没有黑名单
+            "route_blacklist_file": null,
+
             // 输出图片的目录
             "output_dir": "./workspace/temp/render",
 
@@ -471,6 +480,7 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
         // 而不是启动服务器
         "run_server": true
     },
+
     // 静态文件配置
     "static": {
         // README.md 文件的路径
@@ -506,9 +516,6 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
         // 以安全的包含用户传入的字符串
         // 而不是触发异常文件名或路径穿越
         "b64_encode_path": true,
-
-        // 是否在获取文件大小时 readable 里使用缩写
-        "file_size_use_abbreviation": true,
 
         // 是否阻止跨用户数据访问
         // 如果为 true，则请求时按照请求的 `cross_user_data_routing` 来加载数据

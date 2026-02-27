@@ -2,7 +2,7 @@
 
 将指定用户的 Config 活动分支切换到指定分支
 
-- **`/userdata/config/branchs/{user_id:str}`**
+- **`/userdata/config/change/{user_id:str}`**
   - **Requset**
     - **method:** `PUT`
     - **type:** `FORM`
