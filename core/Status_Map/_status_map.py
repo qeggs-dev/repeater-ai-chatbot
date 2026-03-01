@@ -14,7 +14,7 @@ class StatusMap(Generic[T_Key, T_Value]):
             self.status_map[key] = []
         self.status_map[key].append(status)
         logger.debug(
-            "enter status: {key} -> {status}",
+            "enter status: {key} <- {status}",
             key = key,
             status = status
         )
