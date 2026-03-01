@@ -22,7 +22,7 @@ from TimeParser import (
     format_deltatime_ns,
     format_time_duration_ns
 )
-from .._parser import (
+from .._caller import (
     CallAPI,
     StreamAPI
 )

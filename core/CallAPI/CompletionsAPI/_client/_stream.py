@@ -16,12 +16,12 @@ from .._objects import (
     Response,
     Delta
 )
-from .._parser import (
+from .._caller import (
     CallAPI,
     StreamAPI
 )
 from .._exceptions import *
-from .._parser import StreamingResponseGenerationLayer
+from .._caller import StreamingResponseGenerationLayer
 from ._client import ClientBase
 
 class ClientStream(ClientBase):

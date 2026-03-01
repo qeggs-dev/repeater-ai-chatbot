@@ -3,7 +3,7 @@ from ._client import (
     ClientNoStream,
     ClientStream
 )
-from ._parser import StreamingResponseGenerationLayer
+from ._caller import StreamingResponseGenerationLayer
 from ._objects import (
     Request,
     TokensCount,
