@@ -250,12 +250,12 @@ class ContextObject(BaseModel):
         return self
     
     @property
-    def last_content(self) -> ContentUnit:
+    def last_content(self) -> ContentUnit | None:
         """
         获取最后一个上下文单元
         """
         if not self.context_list:
-            self.context_list.append(ContentUnit())
+            return None
         return self.context_list[-1]
     
     def append(self, content: ContentUnit) -> None:
@@ -425,11 +425,13 @@ class ContextObject(BaseModel):
         """
         if not isinstance(context, list):
             raise TypeError("context must be list")
-        contextObj = cls()
-        contextObj.context_list = []
+        context_obj = cls()
+        context_obj.context_list = []
+        if not context:
+            return context_obj
         for content in context:
             if not isinstance(content, dict):
                 raise TypeError("context must be list of dict")
-            contextObj.context_list.append(ContentUnit(**content))
-        return contextObj
+            context_obj.context_list.append(ContentUnit(**content))
+        return context_obj
         
