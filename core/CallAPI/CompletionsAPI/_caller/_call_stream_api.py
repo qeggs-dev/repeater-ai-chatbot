@@ -6,8 +6,8 @@ from typing import (
 
 # ==== 第三方库 ==== #
 import openai
-from openai.types.chat import ChatCompletion
-from openai import NOT_GIVEN
+from openai.types.chat import ChatCompletionChunk
+from openai import NOT_GIVEN, AsyncStream
 from loguru import logger
 
 # ==== 自定义库 ==== #
@@ -63,7 +63,7 @@ class StreamAPI(CallStreamAPIBase):
         # 请求流式连接
         with status_map.enter(user_id, "Send Request"):
             logger.info(f"Start Connecting to the API", user_id = user_id)
-            response: ChatCompletion = await client.chat.completions.create(
+            response: AsyncStream[ChatCompletionChunk] = await client.chat.completions.create(
                 model = request.model,
                 temperature = request.temperature,
                 top_p = request.top_p,
@@ -79,9 +79,29 @@ class StreamAPI(CallStreamAPIBase):
                 extra_body = extra_body
             )
         
+        class Generator_Warp:
+            def __init__(self, generator: AsyncStream[ChatCompletionChunk]):
+                self.generator = generator
+                self._is_done = False
+
+            def __aiter__(self):
+                return self
+
+            async def __anext__(self):
+                if self._is_done:
+                    raise StopAsyncIteration
+                try:
+                    with status_map.enter(user_id, "Waiting chunk"):
+                        chunk = await self.generator.__anext__()
+                    return chunk
+                except StopAsyncIteration:
+                    self._is_done = True
+                    raise
+                
+
         with status_map.enter(user_id, "Streaming"):
             logger.info("Start Streaming", user_id = user_id)
-            async for chunk in response:
+            async for chunk in Generator_Warp(response):
                 # 翻译chunk
                 with status_map.enter(user_id, "Translation Chunk"):
                     delta_data = await translation_chunk(chunk)
