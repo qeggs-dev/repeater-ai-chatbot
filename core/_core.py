@@ -608,31 +608,31 @@ class Core:
                                     )
                                     submit_context.append(user_input)
                                 else:
-                                    logger.warning("No user message", user_id = user_id)
                                     user_input = None
                             
                             with self.task_status_map.enter(user_id, "Shrinking context"):
                                 # 如果上下文需要收缩，则进行收缩(为零或类型不对则不进行操作)
-                                max_context_length = config.context_shrink_limit or ConfigManager.get_configs().context.context_shrink_limit
-                                if isinstance(max_context_length, int) and max_context_length > 0:
-                                    if submit_context.total_length > max_context_length:
-                                        logger.info(f"Context length exceeds {max_context_length}, auto shrink", user_id = user_id)
-                                        try:
-                                            submit_context.shrink(max_context_length)
-                                        except Exception as e:
-                                            logger.error(f"Failed to shrink context: {e}", user_id = user_id)
-                                            return Response(
-                                                content = (
-                                                    "Sorry, I failed to shrink the context.\n"
-                                                    "This can be caused by an incorrect parameter input.\n"
-                                                    "Please check that the context field is working properly in your configuration.\n"
-                                                    "Or whether the Context data does not contain the specified header Role.\n"
-                                                    "Or maybe you set the contraction value too low.\n"
-                                                    f"Error: {e}"
-                                                ),
-                                                status_code = 400,
-                                                finish_reason_cause = "shrink_context_failed",
-                                            )
+                                if len(submit_context.context_list) > 0:
+                                    max_context_length = config.context_shrink_limit or ConfigManager.get_configs().context.context_shrink_limit
+                                    if isinstance(max_context_length, int) and max_context_length > 0:
+                                        if submit_context.total_length > max_context_length:
+                                            logger.info(f"Context length exceeds {max_context_length}, auto shrink", user_id = user_id)
+                                            try:
+                                                submit_context.shrink(max_context_length)
+                                            except Exception as e:
+                                                logger.error(f"Failed to shrink context: {e}", user_id = user_id)
+                                                return Response(
+                                                    content = (
+                                                        "Sorry, I failed to shrink the context.\n"
+                                                        "This can be caused by an incorrect parameter input.\n"
+                                                        "Please check that the context field is working properly in your configuration.\n"
+                                                        "Or whether the Context data does not contain the specified header Role.\n"
+                                                        "Or maybe you set the contraction value too low.\n"
+                                                        f"Error: {e}"
+                                                    ),
+                                                    status_code = 400,
+                                                    finish_reason_cause = "shrink_context_failed",
+                                                )
                         # endregion
                         
                         # region [Make Request Object]
@@ -781,14 +781,16 @@ class Core:
                                 response_iterator = await self.stream_api_client.submit_request(
                                     user_id = user_id,
                                     request = request,
-                                    response_callback = post_treatment
+                                    response_callback = post_treatment,
+                                    status_map = self.task_status_map
                                 )
 
                                 return generator_wrapper(response_iterator)
                             else:
                                 response = await self.api_client.submit_request(
                                     user_id = user_id,
-                                    request = request
+                                    request = request,
+                                    status_map = self.task_status_map
                                 )
                                 
                                 output = await self._post_treatment(
