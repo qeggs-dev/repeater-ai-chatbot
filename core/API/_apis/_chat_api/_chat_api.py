@@ -35,6 +35,7 @@ async def chat_endpoint(
             message = request.message,
             user_info = request.user_info,
             role = request.role,
+            assistant_role = request.assistant_role,
             role_name = request.role_name,
             temporary_prompt = request.temporary_prompt,
             additional_data = request.additional_data,
