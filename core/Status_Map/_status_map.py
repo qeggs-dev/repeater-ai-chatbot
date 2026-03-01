@@ -13,7 +13,7 @@ class StatusMap(Generic[T_Key, T_Value]):
         if key not in self.status_map:
             self.status_map[key] = []
         self.status_map[key].append(status)
-        logger.debug(
+        logger.trace(
             "enter status: {key} <- {status}",
             key = key,
             status = status
@@ -23,7 +23,7 @@ class StatusMap(Generic[T_Key, T_Value]):
         if key in self.status_map:
             stack = self.status_map[key]
             last_status = stack.pop()
-            logger.debug(
+            logger.trace(
                 "exit status: {key} -> {last_status}",
                 key = key,
                 last_status = last_status
