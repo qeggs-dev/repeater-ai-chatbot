@@ -20,6 +20,7 @@ from .._caller import (
     CallAPI,
     StreamAPI
 )
+from ....Status_Map import StatusMap
 from .._exceptions import *
 from .._caller import StreamingResponseGenerationLayer
 from ._client import ClientBase
@@ -27,10 +28,10 @@ from ._client import ClientBase
 class ClientNoStream(ClientBase):
     """Client without stream"""
     
-    async def submit_Request(self, user_id:str, request: Request) -> Response:
+    async def submit_request(self, user_id:str, request: Request, status_map: StatusMap[str, str]) -> Response:
         """提交请求，并等待API返回结果"""
         try:
-            response = await self._submit_task(user_id, request)
+            response = await self._submit_task(user_id, request, status_map)
             if not isinstance(response, Response):
                 generator = StreamingResponseGenerationLayer(user_id, request, response)
                 async for chunk in generator:
@@ -39,7 +40,7 @@ class ClientNoStream(ClientBase):
             else:
                 output = response
 
-            await self._preprocess_response(user_id, request, output)
+            await self._preprocess_response(user_id, request, output, status_map)
 
         except openai.NotFoundError:
             raise ModelNotFoundError(request.model)
@@ -48,19 +49,21 @@ class ClientNoStream(ClientBase):
         
         return output
     
-    async def _submit_task(self, user_id: str, request: Request) -> AsyncIterator[Delta] | Response:
+    async def _submit_task(self, user_id: str, request: Request, status_map: StatusMap[str, str]) -> AsyncIterator[Delta] | Response:
         try:
             if request.stream:
                 client = StreamAPI()
                 call = client.call(
                     user_id = user_id,
-                    request = request
+                    request = request,
+                    status_map = status_map
                 )
             else:
                 client = CallAPI()
                 call = await client.call(
                     user_id = user_id,
-                    request = request
+                    request = request,
+                    status_map = status_map
                 )
             return call
         except openai.BadRequestError as e:

@@ -3,6 +3,7 @@ from typing import overload, Literal, AsyncIterator, TextIO, TypeVar
 from abc import ABC, abstractmethod
 from .._objects import Request, Response, Delta
 from .._exceptions import *
+from ....Status_Map import StatusMap
 import openai
 
 T = TypeVar("T")
@@ -14,7 +15,7 @@ class BaseCallAPI(ABC):
     def __init__(self, print_file: TextIO = sys.stdout):
         self._print_file = print_file
 
-    def call(self, user_id: str, request: Request) -> T:
+    def call(self, user_id: str, request: Request, status_map: StatusMap[str, str]) -> T:
         """
         调用API
 
@@ -28,7 +29,7 @@ class BaseCallAPI(ABC):
             raise TypeError("request must be Request")
         
         try:
-            return self._call(user_id, request)
+            return self._call(user_id, request, status_map)
         except openai.APITimeoutError as e:
             raise APITimeoutError(str(e)) from e
         except openai.BadRequestError as e:
@@ -41,7 +42,7 @@ class BaseCallAPI(ABC):
             raise CallApiException(str(e)) from e
     
     @abstractmethod
-    def _call(self, user_id: str, request: Request) -> T:
+    def _call(self, user_id: str, request: Request, statsus_map: StatusMap[str, str]) -> T:
         pass
 
     @property

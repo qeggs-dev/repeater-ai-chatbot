@@ -18,9 +18,10 @@ from .._objects import (
 from ._translation_chunk import translation_chunk
 from ._call_api_base import CallStreamAPIBase
 from .._exceptions import *
+from ....Status_Map import StatusMap
 
 class StreamAPI(CallStreamAPIBase):
-    async def _call(self, user_id: str, request: Request) -> AsyncIterator[Delta]:
+    async def _call(self, user_id: str, request: Request, status_map: StatusMap[str, str]) -> AsyncIterator[Delta]:
         """
         调用流式API
 
@@ -31,48 +32,57 @@ class StreamAPI(CallStreamAPIBase):
         assert isinstance(user_id, str), "user_id must be a string"
         assert isinstance(request, Request), "request must be a Request object"
 
-        # 创建OpenAI Client
-        logger.info(f"Created OpenAI Client", user_id = user_id)
-        client = openai.AsyncOpenAI(
-            base_url = request.url,
-            api_key = request.key,
-            timeout = request.timeout,
-        )
+        with status_map.enter(user_id, "Create OpenAI Client"):
+            # 创建OpenAI Client
+            logger.info(f"Created OpenAI Client", user_id = user_id)
+            client = openai.AsyncOpenAI(
+                base_url = request.url,
+                api_key = request.key,
+                timeout = request.timeout,
+            )
 
-        # 如果context为空，则抛出异常
-        if not request.context:
-            raise ValueError("context is required")
+        with status_map.enter(user_id, "Check context"):
+            # 如果context为空，则抛出异常
+            if not request.context:
+                raise ValueError("context is required")
         
-        extra_body = {}
-        if request.thinking is not None:
-            if request.thinking:
-                extra_body["thinking"] = {
-                    "type": "enabled"
-                }
-            else:
-                extra_body["thinking"] = {
-                    "type": "disabled"
-                }
+        with status_map.enter(user_id, "Make extra body"):
+            extra_body = {}
+
+            with status_map.enter(user_id, "thinking"):
+                if request.thinking is not None:
+                    if request.thinking:
+                        extra_body["thinking"] = {
+                            "type": "enabled"
+                        }
+                    else:
+                        extra_body["thinking"] = {
+                            "type": "disabled"
+                        }
         
         # 请求流式连接
-        logger.info(f"Start Connecting to the API", user_id = user_id)
-        response: ChatCompletion = await client.chat.completions.create(
-            model = request.model,
-            temperature = request.temperature,
-            top_p = request.top_p,
-            frequency_penalty = request.frequency_penalty,
-            presence_penalty = request.presence_penalty,
-            max_tokens = request.max_tokens,
-            max_completion_tokens=request.max_completion_tokens,
-            stop = request.stop,
-            stream = True,
-            messages = request.context.to_full_context(remove_resoning_prompt=True),
-            tools = request.function_calling.tools if request.function_calling else None,
-            stream_options=request.stream_options.model_dump(),
-            extra_body = extra_body
-        )
-        logger.info("Start Streaming", user_id = user_id)
-        async for chunk in response:
-            # 翻译chunk
-            delta_data = await translation_chunk(chunk)
-            yield delta_data
+        with status_map.enter(user_id, "Send Request"):
+            logger.info(f"Start Connecting to the API", user_id = user_id)
+            response: ChatCompletion = await client.chat.completions.create(
+                model = request.model,
+                temperature = request.temperature,
+                top_p = request.top_p,
+                frequency_penalty = request.frequency_penalty,
+                presence_penalty = request.presence_penalty,
+                max_tokens = request.max_tokens,
+                max_completion_tokens=request.max_completion_tokens,
+                stop = request.stop,
+                stream = True,
+                messages = request.context.to_full_context(remove_resoning_prompt=True),
+                tools = request.function_calling.tools if request.function_calling else None,
+                stream_options=request.stream_options.model_dump(),
+                extra_body = extra_body
+            )
+        
+        with status_map.enter(user_id, "Streaming"):
+            logger.info("Start Streaming", user_id = user_id)
+            async for chunk in response:
+                # 翻译chunk
+                with status_map.enter(user_id, "Translation Chunk"):
+                    delta_data = await translation_chunk(chunk)
+                yield delta_data
