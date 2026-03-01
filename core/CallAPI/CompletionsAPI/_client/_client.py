@@ -53,17 +53,17 @@ class ClientBase(ABC):
         assert isinstance(response, Response)
 
         with status_map.enter(user_id, "Logging Response Content"):
-            if response.historical_context.last_content.reasoning_content:
+            if response.new_context.last_content.reasoning_content:
                 logger.info(
-                    "Reasoning_Content: \n{reasoning_content}",
-                    reasoning_content = request.context.last_content.reasoning_content,
+                    "Reasoning_Content: \n\n{reasoning_content}\n",
+                    reasoning_content = response.new_context.last_content.reasoning_content,
                     user_id = user_id,
                     donot_send_console = True
                 )
-            if response.historical_context.last_content.content:
+            if response.new_context.last_content.content:
                 logger.info(
-                    "Content: \n{content}",
-                    content = request.context.last_content.content,
+                    "Content: \n\n{content}\n",
+                    content = response.new_context.last_content.content,
                     user_id = user_id,
                     donot_send_console = True
                 )
