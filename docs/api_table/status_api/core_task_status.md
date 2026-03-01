@@ -10,7 +10,7 @@
     - **Response Body**
       - *\*当前执行阶段的任务栈列表*
 
-目前结构树如下:
+目前任务结构树如下:
 
 **非流式：**
 - `Tasking`
@@ -68,8 +68,6 @@
     - `Make extra body`
       - `thinking`
     - `Streaming`
-      - `Translation Chunk`
-      - `Waiting chunk`
     - `Logging Response Content`
     - `Fast Statistics`
   - `PostProcessing`
