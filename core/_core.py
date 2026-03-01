@@ -646,6 +646,7 @@ class Core:
                             request.url = model.url
                             request.model = model.id
                             request.timeout = model.timeout
+                            request.output_role = assistant_role
                             api_key = model.get_api_key()
                             if api_key is None:
                                 return Response(
