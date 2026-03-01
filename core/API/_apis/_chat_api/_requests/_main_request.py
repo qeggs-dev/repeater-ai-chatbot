@@ -3,7 +3,7 @@ from .....Context_Manager import ContentRole
 from .....Assist_Struct import Request_User_Info, CrossUserDataRouting, AdditionalData
 
 class ChatRequest(BaseModel):
-    message: str = ""
+    message: str | None = ""
     user_info: Request_User_Info = Field(default_factory=Request_User_Info)
     role: ContentRole = ContentRole.USER
     assistant_role: ContentRole = ContentRole.ASSISTANT
