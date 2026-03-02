@@ -33,13 +33,13 @@ class NexusClient:
         except ValueError as e:
             raise InvalidUUIDError(f"{uuid} is not a valid UUID") from e
     
-    async def submit(self, pool: str, content: Any, timeout: int | None = None) -> NexusResponse[SubmitResponse]:
+    async def submit(self, pool: str, content: dict[str, Any], timeout: int | None = None) -> NexusResponse[SubmitResponse]:
         logger.info(
             "Submitting content to {pool}",
             pool = pool
         )
         response = await self._client.post(
-            f"/api/{pool}/submit/json",
+            f"/api/{pool}/submit",
             json = {
                 "content": content,
                 "timeout": timeout
@@ -50,14 +50,14 @@ class NexusClient:
             model = SubmitResponse
         )
     
-    async def download(self, pool: str, file_uuid: str) -> NexusResponse[DownloadResponse]:
+    async def download(self, pool: str, resources_uuid: str, data_id: str) -> NexusResponse[DownloadResponse]:
         logger.info(
-            "Downloading file {file_uuid} from {pool}",
-            file_uuid = file_uuid,
+            "Downloading file {resources_uuid} from {pool}",
+            resources_uuid = resources_uuid,
             pool = pool
         )
         response = await self._client.get(
-            f"/api/{pool}/files/{self._check_uuid(file_uuid)}/download/json"
+            f"/api/{pool}/resources/{self._check_uuid(resources_uuid)}/download/{data_id}"
         )
 
         return NexusResponse(
@@ -65,14 +65,14 @@ class NexusClient:
             model = DownloadResponse
         )
     
-    async def update(self, pool: str, file_uuid: str, content: Any, timeout: int | None = None) -> NexusResponse[UpdateResponse]:
+    async def update(self, pool: str, resources_uuid: str, content: dict[str, Any], timeout: int | None = None) -> NexusResponse[UpdateResponse]:
         logger.info(
-            "Updating file {file_uuid} in {pool}",
-            file_uuid = file_uuid,
+            "Updating file {resources_uuid} in {pool}",
+            resources_uuid = resources_uuid,
             pool = pool
         )
         response = await self._client.put(
-            f"/api/{pool}/files/{self._check_uuid(file_uuid)}/update",
+            f"/api/{pool}/resources/{self._check_uuid(resources_uuid)}/update",
             json = {
                 "content": content,
                 "timeout": timeout
@@ -83,13 +83,13 @@ class NexusClient:
             model = UpdateResponse
         )
     
-    async def list(self, pool: str) -> list[str]:
+    async def resources_list(self, pool: str) -> list[str]:
         logger.info(
-            "Listing files in {pool}",
+            "Getting resources list in {pool}",
             pool = pool
         )
         response = await self._client.get(
-            f"/api/{pool}/list"
+            f"/api/{pool}/resources_list"
         )
         data = response.json()
         if not isinstance(data, list):
@@ -98,13 +98,13 @@ class NexusClient:
             )
         return data
     
-    async def list_stream(self, pool: str) -> AsyncGenerator[str, None]:
+    async def resources_list_stream(self, pool: str) -> AsyncGenerator[str, None]:
         logger.info(
-            "Listing files in {pool}",
+            "Getting resources list in {pool}",
             pool = pool
         )
         response = await self._client.get(
-            f"/api/{pool}/list/stream"
+            f"/api/{pool}/resources_list/stream"
         )
         async for line in response.aiter_lines():
             try:
@@ -125,6 +125,40 @@ class NexusClient:
                     type = type(data).__name__
                 )
     
+    async def data_list(self, pool: str, resource: str) -> list[str]:
+        logger.info(
+            "Getting data list in {pool}/{resource}",
+            pool = pool,
+            resource = resource
+        )
+        response = await self._client.get(
+            f"/api/{pool}/data_list/{resource}"
+        )
+        data = await response.json()
+        if not isinstance(data, list):
+            raise TypeError(
+                "Invalid response from server"
+            )
+        return data
+    
+    async def data_list_stream(self, pool: str, resource: str) -> AsyncGenerator[str, None]:
+        logger.info(
+            "Getting data list in {pool}/{resource}",
+            pool = pool,
+            resource = resource
+        )
+        response = await self._client.get(
+            f"/api/{pool}/data_list/{resource}"
+        )
+        async for line in response.aiter_lines():
+            data = orjson.loads(line)
+            if not isinstance(data, str):
+                logger.warning(
+                    "Invalid response from server"
+                )
+                continue
+            yield data
+    
     async def remove(self, pool: str, file_uuid: str) -> NexusResponse[RemoveResponse]:
         logger.info(
             "Removing file {file_uuid} from {pool}",
@@ -132,7 +166,21 @@ class NexusClient:
             pool = pool
         )
         response = await self._client.delete(
-            f"/api/{pool}/files/{self._check_uuid(file_uuid)}/remove"
+            f"/api/{pool}/resources/{self._check_uuid(file_uuid)}/remove/resource"
+        )
+        return NexusResponse(
+            response = response,
+            model = RemoveResponse
+        )
+    
+    async def remove_data(self, pool: str, file_uuid: str, data_id: str) -> NexusResponse[RemoveResponse]:
+        logger.info(
+            "Removing file {file_uuid} from {pool}",
+            file_uuid = file_uuid,
+            pool = pool
+        )
+        response = await self._client.delete(
+            f"/api/{pool}/resources/{self._check_uuid(file_uuid)}/remove/data/{data_id}"
         )
         return NexusResponse(
             response = response,
