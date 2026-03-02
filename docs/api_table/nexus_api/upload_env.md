@@ -1,8 +1,8 @@
-# Nexus Upload API
+# Nexus Upload Environment API
 
-上传用户数据到 Nexus
+上传一个用户环境到 Nexus
 
-- **`/nexus/upload/{user_id:str}/single/{user_data_type:str}`**
+- **`/nexus/upload/{user_id:str}/environment`**
   - **method**: `POST`
   - **Request**
     - **type:** `JSON`
@@ -14,4 +14,5 @@
       - `message` (str): 响应信息
       - `nexus_message` (str): Nexus 响应信息
 
-用户数据类型请查看 [User Data Type](./../userdata_api/user_data_type.md)
+上传用户环境就是
+同时上传当前用户的三个数据类型

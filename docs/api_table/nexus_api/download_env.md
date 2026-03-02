@@ -1,8 +1,8 @@
-# Nexus Download API
+# Nexus Download Environment API
 
-从 Nexus 下载用户数据
+从 Nexus 下载一个用户环境
 
-- **`/nexus/download/{user_id:str}/single/{user_data_type:str}`**
+- **`/nexus/download/{user_id:str}/environment`**
   - **method**: `POST`
   - **Request**
     - **type:** `JSON`
@@ -14,4 +14,5 @@
       - `message` (str): 响应信息
       - `nexus_message` (str): Nexus 响应信息
 
-用户数据类型请查看 [User Data Type](./../userdata_api/user_data_type.md)
+下载用户环境就是
+同时下载当前用户的三个数据类型
