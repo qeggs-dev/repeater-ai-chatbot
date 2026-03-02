@@ -464,14 +464,15 @@ class Core:
             # 记录开始时间
             task_start_time = Request_Log.TimeStamp()
 
-            # 进入状态
-            with self.task_status_map.enter(user_id, "Tasking"):
+            # 获取用户锁对象
+            lock = await self._get_namespace_lock(user_id)
 
-                # 获取用户锁对象
-                lock = await self._get_namespace_lock(user_id)
+            # 进入RUL执行
+            async with lock:
+
+                # 进入状态
+                with self.task_status_map.enter(user_id, "Tasking"):
                 
-                # 进入RUL执行
-                async with lock:
                     with self.task_status_map.enter(user_id, "Prepareing"):
                         prepare_start_time = Request_Log.TimeStamp()
                         logger.info("====================================", user_id = user_id)
