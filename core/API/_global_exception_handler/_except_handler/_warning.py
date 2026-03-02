@@ -16,7 +16,7 @@ class WarningHandler:
     def inject(self) -> None:
         warnings.showwarning = self.warning_handler
     
-    def remove(self) -> None:
+    def recovery(self) -> None:
         warnings.showwarning = self.raw_showwarning
     
     def warning_handler(
