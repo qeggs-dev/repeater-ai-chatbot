@@ -4,12 +4,16 @@ from ...._resource import Resource
 from .._user_data_type import UserDataType, get_manager
 from .....Nexus_Client import InvalidUUIDError
 from ._download_model import DownloadRequest, DownloadResponse
+from ._environment_model import EnvironmentModel
 
-@Resource.app.post("/nexus/download/{user_id}/single/{user_data_type}")
-async def download_nexus(user_id: str, user_data_type: UserDataType, request: DownloadRequest):
-    manager = get_manager(user_data_type)
+@Resource.app.post("/nexus/download/{user_id}/environment/")
+async def download_nexus(user_id: str, request: DownloadRequest):
+    context_manager = get_manager(UserDataType.CONTEXT)
+    prompt_manager = get_manager(UserDataType.PROMPT)
+    config_manager = get_manager(UserDataType.CONFIG)
+    
     try:
-        response = await Resource.nexus_client.download(user_data_type.value, request.id, "content")
+        response = await Resource.nexus_client.download("environment", user_id, "content")
     except InvalidUUIDError as e:
         return ORJSONResponse(
             content = DownloadResponse(
@@ -38,7 +42,10 @@ async def download_nexus(user_id: str, user_data_type: UserDataType, request: Do
             ).model_dump(),
         )
     
-    await manager.save(user_id, data.data)
+    env_data = EnvironmentModel(**data.data)
+    await context_manager.save(user_id, env_data.context)
+    await prompt_manager.save(user_id, env_data.prompt)
+    await config_manager.save(user_id, env_data.config)
 
     return ORJSONResponse(
         content = DownloadResponse(

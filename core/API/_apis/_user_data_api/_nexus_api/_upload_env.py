@@ -3,15 +3,23 @@ from fastapi.responses import ORJSONResponse
 from ...._resource import Resource
 from .._user_data_type import UserDataType, get_manager
 from .....Nexus_Client import InvalidUUIDError
+from ._environment_model import EnvironmentModel
 from ._upload_model import UploadRequest, UploadResponse
 
-@Resource.app.post("/nexus/upload/{user_id}/single/{user_data_type}")
-async def upload_nexus(user_id: str, user_data_type: UserDataType, request: UploadRequest):
-    manager = get_manager(user_data_type)
-    data = await manager.load(user_id)
+@Resource.app.post("/nexus/upload/{user_id}/environment")
+async def upload_nexus(user_id: str, request: UploadRequest):
+    context_manager = get_manager(UserDataType.CONTEXT)
+    prompt_manager = get_manager(UserDataType.PROMPT)
+    config_manager = get_manager(UserDataType.CONFIG)
+
+    data = EnvironmentModel(
+        context = await context_manager.load(user_id),
+        prompt = await prompt_manager.load(user_id),
+        config = await config_manager.load(user_id)
+    )
     try:
         response = await Resource.nexus_client.submit(
-            user_data_type.value,
+            "environment",
             content = {
                 "metadata": {
                     "user_id": user_id
