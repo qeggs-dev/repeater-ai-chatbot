@@ -1,7 +1,7 @@
 from pydantic import BaseModel
-from typing import Any
+from .....User_Config_Manager import UserConfigs
 
 class EnvironmentModel(BaseModel):
-    context: Any
-    prompt: Any
-    config: dict
+    context: list
+    prompt: str
+    config: UserConfigs

@@ -6,19 +6,21 @@ from .....Nexus_Client import InvalidUUIDError
 from ._download_model import DownloadRequest, DownloadResponse
 from ._environment_model import EnvironmentModel
 
-@Resource.app.post("/nexus/download/{user_id}/environment/")
-async def download_nexus(user_id: str, request: DownloadRequest):
+@Resource.app.post("/nexus/download/{user_id}/environment")
+async def download_env_from_nexus(user_id: str, request: DownloadRequest):
     context_manager = get_manager(UserDataType.CONTEXT)
     prompt_manager = get_manager(UserDataType.PROMPT)
     config_manager = get_manager(UserDataType.CONFIG)
     
     try:
-        response = await Resource.nexus_client.download("environment", user_id, "content")
+        response = await Resource.nexus_client.download("repeater.environment", user_id, "content")
     except InvalidUUIDError as e:
         return ORJSONResponse(
             content = DownloadResponse(
                 message = "Invalid UUID",
-                nexus_message = str(e)
+                nexus_message = {
+                    "error": str(e)
+                }
             ).model_dump(),
             status_code = 400
             
@@ -27,7 +29,7 @@ async def download_nexus(user_id: str, request: DownloadRequest):
         return ORJSONResponse(
             content = DownloadResponse(
                 message = "Nexus server error",
-                nexus_message = response.content
+                nexus_message = response.json_or_str()
             ).model_dump(),
             status_code = 500
         )
@@ -38,7 +40,7 @@ async def download_nexus(user_id: str, request: DownloadRequest):
         return ORJSONResponse(
             content = DownloadResponse(
                 message = "Nexus response error",
-                nexus_message = response.content
+                nexus_message = response.json_or_str()
             ).model_dump(),
         )
     
@@ -50,6 +52,6 @@ async def download_nexus(user_id: str, request: DownloadRequest):
     return ORJSONResponse(
         content = DownloadResponse(
             message = "Success",
-            nexus_message = response.content
+            nexus_message = response.json_or_str()
         ).model_dump(),
     )

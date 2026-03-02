@@ -7,7 +7,7 @@ from ._environment_model import EnvironmentModel
 from ._upload_model import UploadRequest, UploadResponse
 
 @Resource.app.post("/nexus/upload/{user_id}/environment")
-async def upload_nexus(user_id: str, request: UploadRequest):
+async def upload_env_to_nexus(user_id: str, request: UploadRequest):
     context_manager = get_manager(UserDataType.CONTEXT)
     prompt_manager = get_manager(UserDataType.PROMPT)
     config_manager = get_manager(UserDataType.CONFIG)
@@ -19,12 +19,12 @@ async def upload_nexus(user_id: str, request: UploadRequest):
     )
     try:
         response = await Resource.nexus_client.submit(
-            "environment",
+            "repeater.environment",
             content = {
                 "metadata": {
                     "user_id": user_id
                 },
-                "content": data
+                "content": data.model_dump(exclude_none=True)
             },
             timeout = request.timeout
         )
@@ -32,7 +32,9 @@ async def upload_nexus(user_id: str, request: UploadRequest):
         return ORJSONResponse(
             content=UploadResponse(
                 message = "Invalid uuid",
-                nexus_message = str(e)
+                nexus_message = {
+                    "error": str(e)
+                }
             ).model_dump(exclude_none=True),
             status_code = 400
         )
@@ -43,7 +45,7 @@ async def upload_nexus(user_id: str, request: UploadRequest):
             return ORJSONResponse(
                 content=UploadResponse(
                     message = "Nexus response error",
-                    nexus_message = response.content
+                    nexus_message = response.json_or_str(),
                 ).model_dump(exclude_none=True),
                 status_code = 502
             )
@@ -52,7 +54,7 @@ async def upload_nexus(user_id: str, request: UploadRequest):
                 content = UploadResponse(
                     file_uuid = data.file_uuid,
                     message = "File uploaded",
-                    nexus_message = response.content
+                    nexus_message = response.json_or_str(),
                 ).model_dump(exclude_none=True),
                 status_code = 200
             )
@@ -60,7 +62,7 @@ async def upload_nexus(user_id: str, request: UploadRequest):
         return ORJSONResponse(
             content=UploadResponse(
                 message = "Nexus server error",
-                nexus_message = response.content
+                nexus_message = response.json_or_str(),
             ).model_dump(exclude_none=True),
             status_code = 500
         )
