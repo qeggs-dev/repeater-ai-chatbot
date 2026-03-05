@@ -71,6 +71,7 @@ class ContextLoader:
         :return: 提示词
         """
         user_prompt:str = await self._prompt_manager.load(user_id=user_id, default="")
+        logger.info("Load Prompt", user_id=prompt_load_source)
 
         if temporary_prompt is not None:
             prompt = temporary_prompt
@@ -132,6 +133,10 @@ class ContextLoader:
         :param user_id: 用户ID
         :return: 上下文对象
         """
+        logger.info(
+            "Load Context",
+            user_id = user_id,
+        )
         try:
             context_data = await self._context_manager.load(user_id=user_id, default=[])
         except orjson.JSONDecodeError:
