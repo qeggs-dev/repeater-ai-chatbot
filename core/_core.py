@@ -196,7 +196,7 @@ class Core:
     async def get_context(
             self,
             context_loader: ContextLoader,
-            user_id: str,
+            history_messages: list[ContentUnit] | None = None,
             temporary_prompt: str | None = None,
             load_prompt: bool = True,
             cross_user_data_routing: CrossUserDataRouting[str] | None = None,
@@ -221,16 +221,16 @@ class Core:
         context_load_source = cross_user_data_routing.context.load_from_user_id
         prompt_load_source = cross_user_data_routing.prompt.load_from_user_id
         
-        logger.info(
-            "Load Context",
-            user_id=context_load_source,
-        )
-        context: ContextObject = await context_loader.load_context(
-            user_id = context_load_source
-        )
+        if history_messages is None:
+            context: ContextObject = await context_loader.load_context(
+                user_id = context_load_source
+            )
+        else:
+            context: ContextObject = ContextObject(
+                context_list = history_messages,
+            )
 
         if load_prompt:
-            logger.info("Load Prompt", user_id=prompt_load_source)
             prompt: ContentUnit = await context_loader.load_prompt(
                 user_id = prompt_load_source,
                 temporary_prompt = temporary_prompt,
@@ -423,8 +423,9 @@ class Core:
     # region > Chat
     async def chat(
             self,
-            message: str,
+            message: str | None,
             user_id: str,
+            history_messages: list[ContentUnit] | None = None,
             user_info: Request_User_Info = Request_User_Info(),
             role: ContentRole = ContentRole.USER,
             assistant_role: ContentRole = ContentRole.ASSISTANT,
@@ -572,21 +573,20 @@ class Core:
                             context_loader = await self.get_context_loader()
 
                             with self.task_status_map.enter(user_id, "Getting history context"):
-                                # 获取上下文
                                 if load_prompt is None:
                                     if config.load_prompt is None:
                                         load_prompt = ConfigManager.get_configs().prompt.load_prompt
                                     else:
                                         load_prompt = config.load_prompt
                                 
-                                loaded_context: ContextObject = await self.get_context(
-                                    context_loader = context_loader,
-                                    user_id = user_id,
-                                    temporary_prompt = temporary_prompt,
-                                    load_prompt = load_prompt,
-                                    cross_user_data_routing = cross_user_data_routing,
-                                    template_parser = template_parser,
-                                )
+                                    submit_context: ContextObject = await self.get_context(
+                                        context_loader = context_loader,
+                                        history_messages = history_messages,
+                                        temporary_prompt = temporary_prompt,
+                                        load_prompt = load_prompt,
+                                        cross_user_data_routing = cross_user_data_routing,
+                                        template_parser = template_parser,
+                                    )
 
                             with self.task_status_map.enter(user_id, "Checking request contains only text"):
                                 new_requests_text_only = config.new_requests_text_only
@@ -594,8 +594,6 @@ class Core:
                                     new_requests_text_only = ConfigManager.get_configs().context.new_requests_text_only
                             
                             with self.task_status_map.enter(user_id, "Splicing user input"):
-                                submit_context: ContextObject = loaded_context
-                                
                                 if message is not None:
                                     user_input: ContentUnit = await self.make_user_content(
                                         context_loader = context_loader,
