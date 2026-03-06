@@ -8,7 +8,8 @@
     - **method:** `POST`
     - **type:** `JSON`
     - **Request Body**:
-      - `message` (str): 用户发送的消息，允许为空，但这时模型的行为可能是未定义的
+      - `message` (str | null): 用户发送的消息，允许为空，但这时模型的行为可能是未定义的
+      - `history_messages` (list[dict]): 历史消息，如果填写则使用此处提供的上下文，否则使用用户保存的，格式为 `[{"role": "user", "content": "..."}, {"role": "assistant", "content": "..."}]`
       - `user_info` 用户信息，全部可选
         - `username` (str): 用户名
         - `nickname` (str): 昵称
@@ -109,3 +110,7 @@
 同时模型返回的数据也会被模板展开器处理并保存下来
 (仅限非流式输出，流式输出时客户端无法收到展开的数据
 但是它们仍然会在保存时展开一次，以确保数据正确)
+
+当你在提供 `history_messages` 数据时
+建议设置 `save_context` 为 `false`
+否则临时上下文可能会覆盖你的数据
