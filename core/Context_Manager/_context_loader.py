@@ -71,7 +71,7 @@ class ContextLoader:
         :return: 提示词
         """
         user_prompt:str = await self._prompt_manager.load(user_id=user_id, default="")
-        logger.info("Load Prompt", user_id=prompt_load_source)
+        logger.info("Load Prompt", user_id = user_id)
 
         if temporary_prompt is not None:
             prompt = temporary_prompt
