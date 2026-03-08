@@ -117,6 +117,10 @@ class TemplateParser:
             time_offset = timedelta(hours=timezone)
         
         default_time_format = self._global_config.text_template.time.time_format
+
+        daily_random = random.Random(
+            now.year ^ now.month ^ now.day
+        )
         
         return self.render(
             text,
@@ -155,6 +159,9 @@ class TemplateParser:
             random = lambda min, max: random.randint(int(min), int(max)),
             randfloat = lambda min, max: random.uniform(float(min), float(max)),
             randchoice = lambda *args: random.choice(args),
+            daily_random = lambda min, max: daily_random.randint(int(min), int(max)),
+            daily_randfloat = lambda min, max: daily_random.uniform(float(min), float(max)),
+            daily_randchoice = lambda *args: daily_random.choice(args),
             secrets_random = secrets.randbelow,
             secrets_randbits = secrets.randbits,
             secrets_token_hex = secrets.token_hex,
