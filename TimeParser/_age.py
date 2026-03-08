@@ -4,8 +4,7 @@ def calculate_age(
         birth_year: int,
         birth_month: int,
         birth_day: int,
-        current_timestamp: datetime = None,
-        offset_timezone: timedelta = timedelta()
+        current_timestamp: datetime | None = None
     ):
     """
     计算一个人的年龄（整型）
@@ -15,7 +14,6 @@ def calculate_age(
         birth_month: 出生月份
         birth_day: 出生日
         current_timestamp: 时间（可选，默认为当前系统时间）
-        offset_timezone: 时区偏移量（小时，可选，默认为0）
     
     Returns:
         年龄（整型）
@@ -24,8 +22,6 @@ def calculate_age(
         base_time = datetime.now()
     else:
         base_time = current_timestamp
-    
-    base_time = base_time + offset_timezone
 
     age = base_time.year - birth_year
     
@@ -41,8 +37,7 @@ def calculate_precise_age(
         birth_hour: int | None = None,
         birth_minute: int | None = None,
         birth_second: int | None = None,
-        current_timestamp: datetime = None,
-        offset_timezone: timedelta = timedelta()
+        current_timestamp: datetime | None = None,
     ) -> float:
     """
     计算一个人的年龄（浮点型）
@@ -52,7 +47,6 @@ def calculate_precise_age(
         birth_month (int): 出生日期的月份
         birth_day (int): 出生日期的日期
         current_timestamp (datetime, optional): 当前时间戳. Defaults to None.
-        offset_timezone (timedelta, optional): 时区偏移量. Defaults to timedelta().
 
     Returns:
         float: 年龄（浮点型）

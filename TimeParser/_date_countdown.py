@@ -7,11 +7,17 @@ def calculation_date_countdown(
         target_hour:int | None = None,
         target_minute:int | None = None,
         target_second:int | None = None,
+        current_timestamp: datetime | None = None,
     ) -> timedelta:
     """
     获取距离目标日期还有多少天
     """
-    now = datetime.now()
+    if current_timestamp is None:
+        now = datetime.now()
+    elif isinstance(current_timestamp, datetime):
+        now = current_timestamp
+    else:
+        raise TypeError("current_timestamp must be datetime object or None")
     current_year = now.year
     
     try:
