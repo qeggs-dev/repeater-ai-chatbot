@@ -18,6 +18,9 @@
 - **Functions:**
   - [`age`](./functions/age.md): 获取用户年龄
   - [`copy_text`](./functions/copy_text.md): 复制文本
+  - [`daily_randchoice`](./functions/daily_randchoice.md): 获取每天固定的随机选择
+  - [`daily_randfloat`](./functions/daily_randfloat.md): 获取每天固定的随机浮点数
+  - [`daily_random`](./functions/daily_random.md): 获取每天固定的随机数
   - [`date_countdown`](./functions/date_countdown.md): 获取日期倒计时
   - [`generate_uuid`](./functions/generate_uuid.md): 生成UUID
   - [`*json`](./functions/json.md): JSON处理函数
