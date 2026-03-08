@@ -1,6 +1,7 @@
 # 模板变量表
 
 - **Variables:**
+  - `now`(datetime): 当前时间
   - `version`(str): 当前版本号
   - `user_id`(str): 用户ID
   - `user_name`(str): 用户名
