@@ -147,6 +147,7 @@ class TemplateParser:
             user_info = self._user_info.model_dump(exclude_none=True),
             zodiac = date_to_zodiac,
             time = lambda time_format = default_time_format: tz_now.strftime(time_format),
+            now = tz_now,
             age = lambda birthday_year, birthday_month, birthday_day: calculate_age(
                 int(birthday_year),
                 int(birthday_month),
