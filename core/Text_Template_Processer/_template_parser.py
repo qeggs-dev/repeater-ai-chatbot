@@ -13,7 +13,7 @@ from TextProcessors import (
     escape_string
 )
 from loguru import logger
-from datetime import datetime, timedelta
+from datetime import datetime, timedelta, timezone
 from TimeParser import (
     get_timezone_offset,
     calculation_date_countdown,
@@ -77,25 +77,24 @@ class TemplateParser:
         :param config: 用户配置
         :return: PromptVP实例
         """
-        timezone = self._user_config.timezone
-        if timezone is None:
-            timezone = self._global_config.text_template.time.timezone
+        tz_config = self._user_config.timezone
+        if tz_config is None:
+            tz_config = self._global_config.text_template.time.timezone
         
         now = datetime.now()
 
-        if isinstance(timezone, str):
-            time_offset = get_timezone_offset(
-                timezone = timezone,
+        if isinstance(tz_config, str):
+            tz_offset = get_timezone_offset(
+                timezone = tz_config,
                 dt = now
             )
         else:
-            time_offset = timedelta(hours=timezone)
+            tz_offset = timedelta(hours=tz_config)
         
         tz_now = tz_timestamp(
             timestamp = now,
-            offset_timezone = time_offset
+            offset_timezone = tz_offset
         )
-
         
         def date_countdown(
                 target_month:int,
@@ -112,7 +111,8 @@ class TemplateParser:
                 target_hour = target_hour,
                 target_minute = target_minute,
                 target_second = target_second,
-                current_timestamp = tz_now
+                current_timestamp = tz_now,
+                tz_offset = timezone(tz_offset),
             )
             
             if int_output:
