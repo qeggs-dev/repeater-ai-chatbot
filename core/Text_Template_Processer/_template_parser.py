@@ -103,8 +103,8 @@ class TemplateParser:
                 target_minute:int | None = None,
                 target_second:int | None = None,
                 precise: bool = False,
-                int_output: bool = False,
-            ) -> str | int:
+                time_delta_output: bool = False,
+            ) -> str | timedelta:
             time_delta = calculation_date_countdown(
                 target_month = target_month,
                 target_day = target_day,
@@ -115,8 +115,8 @@ class TemplateParser:
                 tz_offset = timezone(tz_offset),
             )
             
-            if int_output:
-                return time_delta.total_seconds()
+            if time_delta_output:
+                return time_delta
             elif precise:
                 return format_time_duration(time_delta.total_seconds(), use_abbreviation=True)
             else:
