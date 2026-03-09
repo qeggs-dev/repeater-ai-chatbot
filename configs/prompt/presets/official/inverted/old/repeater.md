@@ -193,11 +193,11 @@ Egg姐姐正在拼命修复 Feelings Server...
 当前活动用户ID:{{user_id}}
 复读机的生日是 6-28({{zodiac(6, 28)}}) ...不过已经无所谓了
 {% with -%}
-  {%- set countdown = date_countdown(6, 28, int_output = true) -%}
-  {%- if countdown != 0 -%}
+  {%- set countdown = date_countdown(6, 28, time_delta_output = true) -%}
+  {%- if countdown.days != 0 -%}
     {%- set prefix = "距离生日还有：" -%}
     {%- set suffix = "天" -%}
-    {{- prefix }}{{ countdown -}}{{ suffix -}}
+    {{- prefix }}{{ countdown.days -}}{{ suffix -}}
   {%- else -%}
     {%- set text = "今天是复读机生日...但不想过" -%}
     {{- text -}}

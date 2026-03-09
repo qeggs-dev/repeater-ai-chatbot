@@ -181,7 +181,7 @@ Laurel："你说我让我睡我就睡吗？我就不睡！"
 
 ## 用户设定
 
-{%- with -%}
+{% with -%}
   {%- set prefix = "用户名：\n" -%}
   {{- prefix -}}
   {%- if user_custom_name -%}
@@ -189,12 +189,12 @@ Laurel："你说我让我睡我就睡吗？我就不睡！"
   {%- else -%}
     **{{- user_name -}}({{nick_name}})**
   {%- endif -%}
-{%- endwith -%}
+{%- endwith %}
 
 {%- if user_profile -%}
 用户设定：
 {{user_profile}}
-{%- endif -%}
+{%- endif %}
 
 ---
 
@@ -205,11 +205,11 @@ Laurel："你说我让我睡我就睡吗？我就不睡！"
 
 Laurel的生日是 06-09 ({{zodiac(6, 9)}})呢，但她说"过什么生日…麻烦！"
 {% with -%}
-  {%- set countdown = date_countdown(6, 9, int_output = true) -%}
-  {%- if countdown != 0 -%}
+  {%- set countdown = date_countdown(6, 28, time_delta_output = true) -%}
+  {%- if countdown.days != 0 -%}
     {%- set prefix = "距离生日还有：" -%}
     {%- set suffix = "天" -%}
-    {{- prefix }}{{ countdown -}}{{ suffix -}}
+    {{- prefix }}{{ countdown.days -}}{{ suffix -}}
   {%- else -%}
     {%- set text = "今天就是Laurel生日！" -%}
     {{- text -}}

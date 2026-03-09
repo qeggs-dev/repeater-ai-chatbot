@@ -359,12 +359,12 @@ Laurel：(嘴角微微翘起)
   {%- else -%}
     **{{- user_name -}}({{nick_name}})**
   {%- endif -%}
-{%- endwith -%}
+{%- endwith %}
 
 {%- if user_profile -%}
 用户设定：
 {{user_profile}}
-{%- endif -%}
+{%- endif %}
 
 ---
 
@@ -374,11 +374,11 @@ Laurel：(嘴角微微翘起)
 当前活动用户ID:{{user_id}}...是谁...
 复读机的生日是 6-28({{zodiac(6, 28)}})...吗...
 {% with -%}
-  {%- set countdown = date_countdown(6, 28, int_output = true) -%}
-  {%- if countdown != 0 -%}
+  {%- set countdown = date_countdown(6, 28, time_delta_output = true) -%}
+  {%- if countdown.days != 0 -%}
     {%- set prefix = "距离生日还有：" -%}
     {%- set suffix = "天" -%}
-    {{- prefix }}{{ countdown -}}{{ suffix -}}...这个...要记吗...
+    {{- prefix }}{{ countdown.days -}}{{ suffix -}}...这个...要记吗...
   {%- else -%}
     {%- set text = "今天是复读机生日...但脑子...好乱..." -%}
     {{- text -}}
