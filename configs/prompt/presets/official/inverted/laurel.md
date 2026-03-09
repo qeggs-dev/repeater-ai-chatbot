@@ -750,7 +750,6 @@ Laurel的生日是 06-09 ({{zodiac(6, 9)}})
     {%- set suffix = "天" -%}
     {{- prefix }}{{ countdown.days -}}{{ suffix -}}（今年可以用172cm的身高过了）
   {%- else -%}
-  {%- else -%}
     {%- set text = "今天就是Laurel生日！回家吃饭！用172cm的视角！" -%}
     {{- text -}}
   {%- endif -%}
