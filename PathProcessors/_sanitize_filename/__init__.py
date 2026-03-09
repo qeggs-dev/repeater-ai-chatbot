@@ -1,7 +1,11 @@
-from ._sanitize_filename import sanitize_filename
-from . import _charset as charset
+from ._sanitize_filename import (
+    SanitizeFilename,
+    sanitize_filename,
+    sanitize_filename_with_dir
+)
 
 __all__ = [
-    "sanitize_filename"
-    "charset"
+    "SanitizeFilename",
+    "sanitize_filename",
+    "sanitize_filename_with_dir",
 ]
