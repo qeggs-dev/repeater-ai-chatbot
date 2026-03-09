@@ -36,7 +36,7 @@ from ._exceptions import *
 from ..Text_Template_Processer import (
     TemplateParser
 )
-from PathProcessors import validate_path, sanitize_filename
+from PathProcessors import validate_path, sanitize_filename_with_dir
 from ..Global_Config_Manager import ConfigManager as GlobalConfigManager
 
 # ==== 本模块代码 ==== #
@@ -93,7 +93,7 @@ class ContextLoader:
                 suffix = GlobalConfigManager.get_configs().prompt.suffix
 
                 # 加载默认提示词文件
-                default_prompt_file = default_prompt_dir / f"{sanitize_filename(parset_prompt_name)}{suffix}"
+                default_prompt_file = default_prompt_dir / f"{sanitize_filename_with_dir(parset_prompt_name)}{suffix}"
                 if not validate_path(default_prompt_dir, default_prompt_file):
                     raise InvalidPromptPathError(f"Invalid Prompt Path: {default_prompt_file}")
                 if default_prompt_file.exists():
