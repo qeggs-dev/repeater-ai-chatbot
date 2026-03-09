@@ -9,8 +9,8 @@
     - `target_hour` (int): 生日小时
     - `target_minute` (int): 生日分钟
     - `target_second` (int): 生日秒数
-    - `precise` (bool): 是否使用精确输出 (需要关闭 `int_output`)
-    - `int_output` (bool): 是否输出浮点数
+    - `precise` (bool): 是否使用精确输出 (需要关闭 `time_delta_output`)
+    - `time_delta_output` (bool): 是否输出 `datetime.timedelta` 对象
   - Returns:
     - (str | int): 
       - `str`: 倒计时字符串
