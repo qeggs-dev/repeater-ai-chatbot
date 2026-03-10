@@ -9,7 +9,7 @@ class Markdown_To_HTML_Config(BaseModel):
     style_file_encoding: str = "utf-8"
     html_template_dir: str = "./configs/html_templates"
     html_template_file_encoding: str = "utf-8"
-    default_html_template: str = "default"
+    default_html_template: str = "standard"
     html_template_suffix: str = ".html"
     allow_custom_styles: bool = False
     allow_custom_html_templates: bool = False
