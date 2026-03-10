@@ -84,7 +84,7 @@
         "dir": "./configs/prompt/presets",
         "suffix": ".md",
         "encoding": "utf-8",
-        "preset_name": "repeater",
+        "preset_name": "official/normal/repeater",
         "load_prompt": true
     },
     "render": {
@@ -95,7 +95,7 @@
             "style_file_encoding": "utf-8",
             "html_template_dir": "./configs/html_templates",
             "html_template_file_encoding": "utf-8",
-            "default_html_template": "default",
+            "default_html_template": "standard", 
             "html_template_suffix": ".html",
             "preprocess_map": {
                 "before": {},
