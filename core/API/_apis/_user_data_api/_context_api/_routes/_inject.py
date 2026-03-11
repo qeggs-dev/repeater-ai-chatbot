@@ -23,18 +23,7 @@ async def inject_context(user_id: str, request: ContentUnit):
     context_loader = await Resource.core.get_context_loader()
     context = await context_loader.load_context(user_id)
 
-    context.append(
-        ContentUnit(
-            role = ContentRole.USER,
-            content = request.user_content,
-        )
-    )
-    context.append(
-        ContentUnit(
-            role = ContentRole.ASSISTANT,
-            content = request.assistant_content,
-        )
-    )
+    context.append(content = request)
     await context_loader.save(user_id, context)
     logger.info(f"User {user_id} injected context")
     return ORJSONResponse(
