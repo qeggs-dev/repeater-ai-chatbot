@@ -34,6 +34,7 @@ async def chat_endpoint(
             user_id = user_id,
             message = request.message,
             history_messages = request.history_messages,
+            hisorole_msg_role_map = request.hisorole_msg_role_map,
             user_info = request.user_info,
             role = request.role,
             assistant_role = request.assistant_role,
