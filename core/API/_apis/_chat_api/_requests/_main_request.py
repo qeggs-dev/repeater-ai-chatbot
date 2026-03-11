@@ -8,7 +8,7 @@ class ChatRequest(BaseModel):
     user_info: Request_User_Info = Field(default_factory=Request_User_Info)
     role: ContentRole = ContentRole.USER
     assistant_role: ContentRole = ContentRole.ASSISTANT
-    hisorole_msg_role_map: dict[ContentRole, ContentRole | None] | None = None
+    history_msg_role_map: dict[ContentRole, ContentRole | None] | None = None
     role_name: str | None = None
     model_uid: str | None = None
     thinking: bool | None = None
