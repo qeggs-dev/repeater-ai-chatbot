@@ -249,6 +249,24 @@ class ContextObject(BaseModel):
             self.context_list.insert(index, content_unit)
         return self
     
+    def role_map(self, role_map: dict[ContentRole, ContentRole | None]):
+        """
+        将内容单元的 role 映射到新的 role
+
+        :param role_map: 角色映射表
+        :return: 当前对象
+        """
+        context_list: list[ContentUnit]
+        for content_unit in self.context_list:
+            if content_unit.role in role_map:
+                role = role_map[content_unit.role]
+                if role is None:
+                    continue
+                else:
+                    content_unit.role = role
+            context_list.append(content_unit)
+        self.context_list = context_list
+    
     @property
     def last_content(self) -> ContentUnit | None:
         """
