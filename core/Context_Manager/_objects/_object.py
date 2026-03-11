@@ -256,7 +256,7 @@ class ContextObject(BaseModel):
         :param role_map: 角色映射表
         :return: 当前对象
         """
-        context_list: list[ContentUnit]
+        context_list: list[ContentUnit] = []
         for content_unit in self.context_list:
             if content_unit.role in role_map:
                 role = role_map[content_unit.role]
