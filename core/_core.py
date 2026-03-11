@@ -593,6 +593,10 @@ class Core:
                             
                             if history_msg_role_map is not None:
                                 with self.task_status_map.enter(user_id, "Role mapping"):
+                                    logger.info(
+                                        "Role mapping:\n{role_map}",
+                                        role_map = "\n".join(f"{raw_role} -> {new_role}" for raw_role, new_role in history_msg_role_map.items()),
+                                    )
                                     submit_context.role_map(history_msg_role_map)
 
                             with self.task_status_map.enter(user_id, "Checking request contains only text"):
