@@ -4,6 +4,7 @@ from ._check_role_structure import check_role_structure
 from ._withdraw import withdraw_context
 from ._inject import inject_context
 from ._rewrite import rewrite_context
+from ._role_mapping import role_mapping
 from ._get_userlist import get_context_userlist
 
 __all__ = [
@@ -13,5 +14,6 @@ __all__ = [
     "withdraw_context",
     "inject_context",
     "rewrite_context",
+    "role_mapping",
     "get_context_userlist",
 ]
