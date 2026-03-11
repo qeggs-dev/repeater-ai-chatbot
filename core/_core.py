@@ -426,7 +426,7 @@ class Core:
             message: str | None,
             user_id: str,
             history_messages: list[ContentUnit] | None = None,
-            hisorole_msg_role_map: dict[ContentRole, ContentRole | None] | None = None,
+            history_msg_role_map: dict[ContentRole, ContentRole | None] | None = None,
             user_info: Request_User_Info = Request_User_Info(),
             role: ContentRole = ContentRole.USER,
             assistant_role: ContentRole = ContentRole.ASSISTANT,
@@ -582,18 +582,18 @@ class Core:
                                     else:
                                         load_prompt = config.load_prompt
                                 
-                                    submit_context: ContextObject = await self.get_context(
-                                        context_loader = context_loader,
-                                        history_messages = history_messages,
-                                        temporary_prompt = temporary_prompt,
-                                        load_prompt = load_prompt,
-                                        cross_user_data_routing = cross_user_data_routing,
-                                        template_parser = template_parser,
-                                    )
+                                submit_context: ContextObject = await self.get_context(
+                                    context_loader = context_loader,
+                                    history_messages = history_messages,
+                                    temporary_prompt = temporary_prompt,
+                                    load_prompt = load_prompt,
+                                    cross_user_data_routing = cross_user_data_routing,
+                                    template_parser = template_parser,
+                                )
                             
-                            if hisorole_msg_role_map is not None:
+                            if history_msg_role_map is not None:
                                 with self.task_status_map.enter(user_id, "Role mapping"):
-                                    submit_context.role_map(hisorole_msg_role_map)
+                                    submit_context.role_map(history_msg_role_map)
 
                             with self.task_status_map.enter(user_id, "Checking request contains only text"):
                                 new_requests_text_only = config.new_requests_text_only
