@@ -426,6 +426,7 @@ class Core:
             message: str | None,
             user_id: str,
             history_messages: list[ContentUnit] | None = None,
+            hisorole_msg_role_map: dict[ContentRole, ContentRole | None] | None = None,
             user_info: Request_User_Info = Request_User_Info(),
             role: ContentRole = ContentRole.USER,
             assistant_role: ContentRole = ContentRole.ASSISTANT,
@@ -446,6 +447,8 @@ class Core:
 
         :param message: 用户输入的消息
         :param user_id: 用户ID
+        :param history_messages: 历史消息
+        :param hisorole_msg_role_map: 历史消息角色映射
         :param user_info: 用户信息
         :param role: 角色
         :param role_name: 角色名
@@ -587,6 +590,10 @@ class Core:
                                         cross_user_data_routing = cross_user_data_routing,
                                         template_parser = template_parser,
                                     )
+                            
+                            if hisorole_msg_role_map is not None:
+                                with self.task_status_map.enter(user_id, "Role mapping"):
+                                    submit_context.role_map(hisorole_msg_role_map)
 
                             with self.task_status_map.enter(user_id, "Checking request contains only text"):
                                 new_requests_text_only = config.new_requests_text_only
