@@ -47,7 +47,7 @@ async def upload_to_nexus(user_id: str, user_data_type: UserDataType, request: U
         else:
             return ORJSONResponse(
                 content = UploadResponse(
-                    resources_uuid = data.resource_uuid,
+                    resource_uuid = data.resource_uuid,
                     message = "File uploaded",
                     nexus_message = response.json_or_str(),
                 ).model_dump(exclude_none=True),
