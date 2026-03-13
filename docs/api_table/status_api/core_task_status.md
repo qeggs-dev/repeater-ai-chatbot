@@ -23,6 +23,7 @@
     - `Getting template parser`
     - `Processing context`
       - `Getting history context`
+      - `Role mapping`
       - `Checking request contains only text`
       - `Splicing user input`
       - `Shrinking context`
@@ -56,6 +57,7 @@
     - `Getting template parser`
     - `Processing context`
       - `Getting history context`
+      - `Role mapping`
       - `Checking request contains only text`
       - `Splicing user input`
       - `Shrinking context`
