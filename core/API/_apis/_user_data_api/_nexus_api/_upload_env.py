@@ -52,7 +52,7 @@ async def upload_env_to_nexus(user_id: str, request: UploadRequest):
         else:
             return ORJSONResponse(
                 content = UploadResponse(
-                    file_uuid = data.file_uuid,
+                    resources_uuid = data.resource_uuid,
                     message = "File uploaded",
                     nexus_message = response.json_or_str(),
                 ).model_dump(exclude_none=True),

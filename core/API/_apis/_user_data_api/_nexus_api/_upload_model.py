@@ -7,4 +7,4 @@ class UploadRequest(BaseModel):
 class UploadResponse(BaseModel):
     message: str = ""
     nexus_message: str | Any = ""
-    file_uuid: str | None = None
+    resources_uuid: str | None = None
