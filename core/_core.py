@@ -655,7 +655,10 @@ class Core:
                             # 设置请求对象的API信息
                             request.url = model.url
                             request.model = model.id
-                            request.timeout = model.timeout
+                            if config.model_timeout is None:
+                                request.timeout = model.timeout
+                            else:
+                                request.timeout = config.model_timeout
                             request.output_role = assistant_role
                             api_key = model.get_api_key()
                             if api_key is None:
