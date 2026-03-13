@@ -13,6 +13,7 @@
     - **Response Body**
       - `message` (str): 响应信息
       - `nexus_message` (str): Nexus 响应信息
+      - `resource_uuid` (str): 资源UUID
 
 上传用户环境就是
 同时上传当前用户的三个数据类型
