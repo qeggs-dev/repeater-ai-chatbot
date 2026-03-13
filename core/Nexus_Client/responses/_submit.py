@@ -7,4 +7,4 @@ class SubmitResponse(BaseModel):
     """
     status: str = ""
     message: str = ""
-    file_uuid: str = ""
+    resource_uuid: str = ""

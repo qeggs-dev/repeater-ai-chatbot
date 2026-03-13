@@ -52,7 +52,7 @@ class NexusClient:
     
     async def download(self, pool: str, resources_uuid: str, data_id: str) -> NexusResponse[DownloadResponse]:
         logger.info(
-            "Downloading file {resources_uuid} from {pool}",
+            "Downloading resources {resources_uuid} from {pool}",
             resources_uuid = resources_uuid,
             pool = pool
         )
@@ -67,7 +67,7 @@ class NexusClient:
     
     async def update(self, pool: str, resources_uuid: str, content: dict[str, Any], timeout: int | None = None) -> NexusResponse[UpdateResponse]:
         logger.info(
-            "Updating file {resources_uuid} in {pool}",
+            "Updating resources {resources_uuid} in {pool}",
             resources_uuid = resources_uuid,
             pool = pool
         )
@@ -159,28 +159,28 @@ class NexusClient:
                 continue
             yield data
     
-    async def remove(self, pool: str, file_uuid: str) -> NexusResponse[RemoveResponse]:
+    async def remove(self, pool: str, resources_uuid: str) -> NexusResponse[RemoveResponse]:
         logger.info(
-            "Removing file {file_uuid} from {pool}",
-            file_uuid = file_uuid,
+            "Removing resources {resources_uuid} from {pool}",
+            resources_uuid = resources_uuid,
             pool = pool
         )
         response = await self._client.delete(
-            f"/api/{pool}/resources/{self._check_uuid(file_uuid)}/remove/resource"
+            f"/api/{pool}/resources/{self._check_uuid(resources_uuid)}/remove/resource"
         )
         return NexusResponse(
             response = response,
             model = RemoveResponse
         )
     
-    async def remove_data(self, pool: str, file_uuid: str, data_id: str) -> NexusResponse[RemoveResponse]:
+    async def remove_data(self, pool: str, resources_uuid: str, data_id: str) -> NexusResponse[RemoveResponse]:
         logger.info(
-            "Removing file {file_uuid} from {pool}",
-            file_uuid = file_uuid,
+            "Removing resources {resources_uuid} from {pool}",
+            resources_uuid = resources_uuid,
             pool = pool
         )
         response = await self._client.delete(
-            f"/api/{pool}/resources/{self._check_uuid(file_uuid)}/remove/data/{data_id}"
+            f"/api/{pool}/resources/{self._check_uuid(resources_uuid)}/remove/data/{data_id}"
         )
         return NexusResponse(
             response = response,
