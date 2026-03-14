@@ -103,6 +103,11 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
         // 是否忽略新请求中的非文本数据
         "new_requests_text_only": false,
 
+        // 是否移除上下文中的推理内容
+        // 通常建议设置为 true
+        // 通常推理模型不愿意重新读入推理内容
+        "remove_reasoning_prompt": true,
+
         // 非文本数据在日志中的最大显示长度
         // 默认为 null，表示不限制
         "max_log_length_for_non_text_content": 25
