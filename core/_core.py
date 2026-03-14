@@ -679,10 +679,10 @@ class Core:
 
                             # 设置请求对象的参数信息
                             request.user_name = user_info.nickname
-                            if config.remove_resoning_prompt is not None:
-                                request.remove_resoning_prompt = config.remove_resoning_prompt
+                            if config.remove_reasoning_prompt is not None:
+                                request.remove_reasoning_prompt = config.remove_reasoning_prompt
                             else:
-                                request.remove_resoning_prompt = ConfigManager.get_configs().context.remove_resoning_prompt
+                                request.remove_reasoning_prompt = ConfigManager.get_configs().context.remove_reasoning_prompt
                             
                             if config.temperature is not None:
                                 request.temperature = config.temperature
