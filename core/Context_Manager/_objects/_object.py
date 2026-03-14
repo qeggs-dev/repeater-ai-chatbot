@@ -141,7 +141,7 @@ class ContextObject(BaseModel):
             return 0
         return self.total_length / len(self)
 
-    def to_context(self, remove_resoning_prompt: bool = False, reduce_to_text: bool = False) -> list[dict]:
+    def to_context(self, remove_reasoning_prompt: bool = False, reduce_to_text: bool = False) -> list[dict]:
         """
         获取上下文
 
@@ -153,7 +153,7 @@ class ContextObject(BaseModel):
             for content in self.context_list:
                 if reduce_to_text:
                     content.reduce_to_text()
-                context_list.append(content.to_content(remove_resoning_prompt))
+                context_list.append(content.to_content(remove_reasoning_prompt))
         return context_list
     
     @property
@@ -163,7 +163,7 @@ class ContextObject(BaseModel):
         """
         return self.to_context(False, False)
     
-    def to_full_context(self, remove_resoning_prompt: bool = False, reduce_to_text: bool = False) -> list[dict]:
+    def to_full_context(self, remove_reasoning_prompt: bool = False, reduce_to_text: bool = False) -> list[dict]:
         """
         获取上下文，如果有提示词，则添加到最前面
 
@@ -174,8 +174,8 @@ class ContextObject(BaseModel):
         if self.prompt:
             if reduce_to_text:
                 self.prompt.reduce_to_text()
-            context_list.append(self.prompt.to_content(remove_resoning_prompt))
-        context_list.extend(self.to_context(remove_resoning_prompt, reduce_to_text))
+            context_list.append(self.prompt.to_content(remove_reasoning_prompt))
+        context_list.extend(self.to_context(remove_reasoning_prompt, reduce_to_text))
         return context_list
     
     @property
@@ -305,7 +305,7 @@ class ContextObject(BaseModel):
         """
         添加上下文内容
 
-        :param reasoning_content: Resoning 内容
+        :param reasoning_content: Reasoning 内容
         :param content: 内容
         :param role: 角色
         :param role_name: 角色名称
