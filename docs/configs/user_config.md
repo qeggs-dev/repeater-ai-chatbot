@@ -67,6 +67,9 @@
     // Repeater会以一对消息为单位去删除过多的部分。
     "context_shrink_limit": null,
 
+    // (bool) 删除上下文里的推理内容
+    "remove_reasoning_prompt": null,
+
     // (str) 渲染风格
     // 用于指定文本转图片时的CSS样式文件
     "render_style": null,
