@@ -73,7 +73,7 @@ class StreamAPI(CallStreamAPIBase):
                 max_completion_tokens=request.max_completion_tokens,
                 stop = request.stop,
                 stream = True,
-                messages = request.context.to_full_context(remove_resoning_prompt=True),
+                messages = request.context.to_full_context(remove_resoning_prompt = request.remove_resoning_prompt),
                 tools = request.function_calling.tools if request.function_calling else None,
                 stream_options=request.stream_options.model_dump(),
                 extra_body = extra_body
