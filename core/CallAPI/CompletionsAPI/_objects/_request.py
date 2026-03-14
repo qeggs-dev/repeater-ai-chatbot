@@ -31,7 +31,7 @@ class Request(BaseModel):
     thinking: bool | None = None
     stop: list[str] | None = None
     context: ContextObject | None = None
-    remove_resoning_prompt: bool = True
+    remove_reasoning_prompt: bool = True
     logprobs: bool = False
     top_logprobs: int | None = None
     print_chunk: bool = True
