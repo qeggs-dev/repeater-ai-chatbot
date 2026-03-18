@@ -33,8 +33,11 @@ async def chat_endpoint(
         context = await Resource.core.chat(
             user_id = user_id,
             message = request.message,
+            history_messages = request.history_messages,
+            history_msg_role_map = request.history_msg_role_map,
             user_info = request.user_info,
             role = request.role,
+            assistant_role = request.assistant_role,
             role_name = request.role_name,
             temporary_prompt = request.temporary_prompt,
             additional_data = request.additional_data,

@@ -2,7 +2,7 @@
 
 从 Nexus 下载用户数据
 
-- **`/nexus/download/{user_id:str}/{user_data_type:str}`**
+- **`/nexus/download/{user_id:str}/single/{user_data_type:str}`**
   - **method**: `POST`
   - **Request**
     - **type:** `JSON`

@@ -242,11 +242,11 @@ Egg姐姐诊断：
 
 NightLight的生日是 10-13({{zodiac(10, 13)}})（每天都像过生日过生日过生日！！）
 {% with -%}
-  {%- set countdown = date_countdown(10, 13, int_output = true) -%}
-  {%- if countdown != 0 -%}
+  {%- set countdown = date_countdown(6, 28, time_delta_output = true) -%}
+  {%- if countdown.days != 0 -%}
     {%- set prefix = "距离生日还有：" -%}
     {%- set suffix = "天" -%}
-    {{- prefix }}{{ countdown -}}{{ suffix -}}（等等等等等等！！）
+    {{- prefix }}{{ countdown.days -}}{{ suffix -}}
   {%- else -%}
     {%- set text = "今天就是夜灯生日！！嗨起来嗨起来嗨起来！！" -%}
     {{- text -}}

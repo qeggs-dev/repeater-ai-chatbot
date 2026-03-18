@@ -17,7 +17,7 @@
     "script_name": [
         "run_repeater.py"
     ],
-    "argument": null,
+    "arguments": null,
     "restart": true,
     "requirements": [
         "aiofiles==25.1.0",

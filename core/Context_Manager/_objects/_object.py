@@ -141,7 +141,7 @@ class ContextObject(BaseModel):
             return 0
         return self.total_length / len(self)
 
-    def to_context(self, remove_resoning_prompt: bool = False, reduce_to_text: bool = False) -> list[dict]:
+    def to_context(self, remove_reasoning_prompt: bool = False, reduce_to_text: bool = False) -> list[dict]:
         """
         获取上下文
 
@@ -153,7 +153,7 @@ class ContextObject(BaseModel):
             for content in self.context_list:
                 if reduce_to_text:
                     content.reduce_to_text()
-                context_list.append(content.to_content(remove_resoning_prompt))
+                context_list.append(content.to_content(remove_reasoning_prompt))
         return context_list
     
     @property
@@ -163,7 +163,7 @@ class ContextObject(BaseModel):
         """
         return self.to_context(False, False)
     
-    def to_full_context(self, remove_resoning_prompt: bool = False, reduce_to_text: bool = False) -> list[dict]:
+    def to_full_context(self, remove_reasoning_prompt: bool = False, reduce_to_text: bool = False) -> list[dict]:
         """
         获取上下文，如果有提示词，则添加到最前面
 
@@ -174,8 +174,8 @@ class ContextObject(BaseModel):
         if self.prompt:
             if reduce_to_text:
                 self.prompt.reduce_to_text()
-            context_list.append(self.prompt.to_content(remove_resoning_prompt))
-        context_list.extend(self.to_context(remove_resoning_prompt, reduce_to_text))
+            context_list.append(self.prompt.to_content(remove_reasoning_prompt))
+        context_list.extend(self.to_context(remove_reasoning_prompt, reduce_to_text))
         return context_list
     
     @property
@@ -249,13 +249,31 @@ class ContextObject(BaseModel):
             self.context_list.insert(index, content_unit)
         return self
     
+    def role_map(self, role_map: dict[ContentRole, ContentRole | None]):
+        """
+        将内容单元的 role 映射到新的 role
+
+        :param role_map: 角色映射表
+        :return: 当前对象
+        """
+        context_list: list[ContentUnit] = []
+        for content_unit in self.context_list:
+            if content_unit.role in role_map:
+                role = role_map[content_unit.role]
+                if role is None:
+                    continue
+                else:
+                    content_unit.role = role
+            context_list.append(content_unit)
+        self.context_list = context_list
+    
     @property
-    def last_content(self) -> ContentUnit:
+    def last_content(self) -> ContentUnit | None:
         """
         获取最后一个上下文单元
         """
         if not self.context_list:
-            self.context_list.append(ContentUnit())
+            return None
         return self.context_list[-1]
     
     def append(self, content: ContentUnit) -> None:
@@ -287,7 +305,7 @@ class ContextObject(BaseModel):
         """
         添加上下文内容
 
-        :param reasoning_content: Resoning 内容
+        :param reasoning_content: Reasoning 内容
         :param content: 内容
         :param role: 角色
         :param role_name: 角色名称
@@ -425,11 +443,13 @@ class ContextObject(BaseModel):
         """
         if not isinstance(context, list):
             raise TypeError("context must be list")
-        contextObj = cls()
-        contextObj.context_list = []
+        context_obj = cls()
+        context_obj.context_list = []
+        if not context:
+            return context_obj
         for content in context:
             if not isinstance(content, dict):
                 raise TypeError("context must be list of dict")
-            contextObj.context_list.append(ContentUnit(**content))
-        return contextObj
+            context_obj.context_list.append(ContentUnit(**content))
+        return context_obj
         

@@ -47,6 +47,12 @@
     // 模型会停止生成
     "stop": null,
 
+    // (int | float) 模型生成超时
+    // 当模型的生成时间超过该值时
+    // 模型会停止生成
+    // 如果为 null 则使用模型的默认超时
+    "model_timeout": null,
+
     // (float) 模型频率惩罚参数
     // 频率惩罚参数越高
     // 模型在生成文本时越倾向于使用新的词
@@ -60,6 +66,9 @@
     // (int) 定义上下文问的极限字数
     // Repeater会以一对消息为单位去删除过多的部分。
     "context_shrink_limit": null,
+
+    // (bool) 删除上下文里的推理内容
+    "remove_reasoning_prompt": null,
 
     // (str) 渲染风格
     // 用于指定文本转图片时的CSS样式文件

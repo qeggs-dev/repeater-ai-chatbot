@@ -103,6 +103,11 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
         // 是否忽略新请求中的非文本数据
         "new_requests_text_only": false,
 
+        // 是否移除上下文中的推理内容
+        // 通常建议设置为 true
+        // 通常推理模型不愿意重新读入推理内容
+        "remove_reasoning_prompt": true,
+
         // 非文本数据在日志中的最大显示长度
         // 默认为 null，表示不限制
         "max_log_length_for_non_text_content": 25
@@ -344,7 +349,7 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
 
         // 如果用户没有指定用一个预设提示词时
         // 应该使用哪一个提示词
-        "preset_name": "default",
+        "preset_name": "official/normal/repeater",
 
         // 是否在用户未指定的情况下
         // 加载提示词
@@ -374,7 +379,7 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
             "html_template_file_encoding": "utf-8",
 
             // 默认使用的 HTML 模板文件
-            "default_html_template": "default.html",
+            "default_html_template": "standard.html",
 
             // 是否允许请求自定义 CSS
             "allow_custom_styles": false,

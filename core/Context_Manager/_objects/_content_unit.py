@@ -64,8 +64,8 @@ class ContentUnit(BaseModel):
                     text_buffer.append(block.text)
             return "".join(text_buffer)
  
-    def to_content(self, remove_resoning_prompt: bool = False) -> dict[str, Any]:
-        if remove_resoning_prompt:
+    def to_content(self, remove_reasoning_prompt: bool = False) -> dict[str, Any]:
+        if remove_reasoning_prompt:
             return self.model_dump(exclude = {"reasoning_content"})
         return self.model_dump()
     

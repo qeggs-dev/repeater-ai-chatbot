@@ -2,6 +2,9 @@ from pydantic import BaseModel, Field, ConfigDict
 from typing import Callable
 from ._delta import Delta
 from ._stream_options import StreamOptions
+from ....Context_Manager import (
+    ContentRole
+)
 
 from ....Context_Manager import ContextObject, CallingFunctionRequest
 
@@ -28,9 +31,11 @@ class Request(BaseModel):
     thinking: bool | None = None
     stop: list[str] | None = None
     context: ContextObject | None = None
+    remove_reasoning_prompt: bool = True
     logprobs: bool = False
     top_logprobs: int | None = None
     print_chunk: bool = True
+    output_role: ContentRole = ContentRole.ASSISTANT
     function_calling: CallingFunctionRequest | None = None
     continue_processing_callback_function: Callable[[str, Delta], bool] | None = None
     stream_options: StreamOptions = Field(default_factory=StreamOptions)

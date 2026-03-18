@@ -4,7 +4,7 @@
 import os
 import aiofiles
 from pathlib import Path
-from PathProcessors import validate_path, sanitize_filename
+from PathProcessors import validate_path, sanitize_filename_with_dir
 from loguru import logger
 
 class Styles:
@@ -24,7 +24,7 @@ class Styles:
             return await f.read()
 
     async def get_style(self, style_name: str, use_base: bool = True, encoding: str = "utf-8") -> str:
-        style_name = sanitize_filename(style_name)
+        style_name = sanitize_filename_with_dir(style_name)
         style_file_path: Path = self._style_dir / f"{style_name}.css"
 
         if not validate_path(base_path = style_file_path, new_path = style_file_path):

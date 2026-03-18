@@ -14,7 +14,7 @@ class LockPool(Generic[T_KEY]):
     async def get_lock(self, key: T_KEY) -> asyncio.Lock:
         async with self._lock:
             if key in self.locks:
-                logger.debug(f"LockPool: Get lock for {repr(key)}")
+                logger.trace(f"LockPool: Get lock for {repr(key)}")
                 return self.locks[key]
             
             class Packaged_Lock(asyncio.Lock):
@@ -40,7 +40,7 @@ class LockPool(Generic[T_KEY]):
                 
                 async def acquire(inner_self):
                     inner_self._increase_reference_counting()
-                    logger.debug(f"LockPool: Acquiring lock for {repr(key)}({inner_self.reference_count})")
+                    logger.trace(f"LockPool: Acquiring lock for {repr(key)}({inner_self.reference_count})")
                     try:
                         await super().acquire()
                     except Exception as e:
@@ -52,13 +52,13 @@ class LockPool(Generic[T_KEY]):
                     try:
                         super().release()
                         inner_self._reduce_reference_counting()
-                        logger.debug(f"LockPool: Released lock for {repr(key)}({inner_self.reference_count})")
+                        logger.trace(f"LockPool: Released lock for {repr(key)}({inner_self.reference_count})")
                     except Exception as e:
                         logger.warning(f"LockPool: Failed to release lock for {repr(key)}: {e}")
                         raise
             
             lock = Packaged_Lock()
-            logger.debug(f"LockPool: Created lock for {repr(key)}")
+            logger.trace(f"LockPool: Created lock for {repr(key)}")
             self.locks[key] = lock
             return lock
     

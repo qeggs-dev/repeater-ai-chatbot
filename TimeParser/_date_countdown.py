@@ -1,5 +1,4 @@
-from datetime import datetime, timedelta
-from typing import Callable
+from datetime import datetime, timedelta, timezone
 
 def calculation_date_countdown(
         target_month:int,
@@ -7,12 +6,25 @@ def calculation_date_countdown(
         target_hour:int | None = None,
         target_minute:int | None = None,
         target_second:int | None = None,
+        current_timestamp: datetime | None = None,
+        tz_offset: timezone | None = None,
     ) -> timedelta:
     """
     获取距离目标日期还有多少天
     """
-    now = datetime.now()
+    if current_timestamp is None:
+        now = datetime.now()
+    elif isinstance(current_timestamp, datetime):
+        now = current_timestamp
+    else:
+        raise TypeError("current_timestamp must be datetime object or None")
     current_year = now.year
+    tz_info = now.tzinfo
+    if tz_info is not None:
+        if tz_offset is None:
+            tz_offset = tz_info
+    else:
+        tz_offset = None
     
     try:
         # 尝试创建今年的日期（判断闰年兼容性）
@@ -23,6 +35,7 @@ def calculation_date_countdown(
             target_hour or 0,
             target_minute or 0,
             target_second or 0,
+            tzinfo=tz_offset,
         )
     except ValueError:
         # 处理闰年日期（如2月29日，非闰年时调整为3月1日）
@@ -40,7 +53,7 @@ def calculation_date_countdown(
     
     # 创建下一次的时间对象（精确到零点）
     try:
-        next_birthday = datetime(next_year, target_month, target_day)
+        next_birthday = datetime(next_year, target_month, target_day, tzinfo=tz_offset)
     except ValueError:
         next_birthday = datetime(next_year, 3, 1)
     

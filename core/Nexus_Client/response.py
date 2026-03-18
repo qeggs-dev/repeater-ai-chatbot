@@ -28,9 +28,14 @@ class NexusResponse(Generic[T]):
     def content(self) -> str:
         return self._response.text
     
-    @property
     def json(self) -> Any:
         return self._response.json()
+    
+    def json_or_str(self) -> Any | str:
+        try:
+            return self._response.json()
+        except:
+            return self._response.text
     
     def data(self) -> T | None:
         if self._model is None:

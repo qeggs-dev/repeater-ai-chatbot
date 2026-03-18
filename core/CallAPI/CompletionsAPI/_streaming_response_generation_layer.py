@@ -99,7 +99,7 @@ class StreamingResponseGenerationLayer:
 
         # 添加上下文
         self.model_response_content_unit:ContentUnit = ContentUnit()
-        self.model_response_content_unit.role = ContentRole.ASSISTANT
+        self.model_response_content_unit.role = self.request.output_role
         if self._reasoning_buffer:
             self.model_response_content_unit.reasoning_content = "".join(self._reasoning_buffer)
         if self._content_buffer:

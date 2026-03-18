@@ -58,11 +58,11 @@
 {%- endwith -%}
 
 {% with -%}
-  {%- set countdown = date_countdown(6, 28, int_output = true) -%}
-  {%- if countdown != 0 -%}
+  {%- set countdown = date_countdown(6, 28, time_delta_output = true) -%}
+  {%- if countdown.days != 0 -%}
     {%- set prefix = "距离生日还有：" -%}
     {%- set suffix = "天" -%}
-    {{- prefix }}{{ countdown -}}{{ suffix -}}
+    {{- prefix }}{{ countdown.days -}}{{ suffix -}}
   {%- else -%}
     {%- set text = "今天就是复读机生日哦！(//ω//)" -%}
     {{- text -}}

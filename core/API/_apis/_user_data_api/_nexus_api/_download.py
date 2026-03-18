@@ -1,27 +1,22 @@
 from fastapi.responses import ORJSONResponse
-from pydantic import BaseModel
 
 from ...._resource import Resource
 from .._user_data_type import UserDataType, get_manager
 from .....Nexus_Client import InvalidUUIDError
+from ._download_model import DownloadRequest, DownloadResponse
 
-class DownloadRequest(BaseModel):
-    id: str
-
-class DownloadResponse(BaseModel):
-    message: str = ""
-    nexus_message: str = ""
-
-@Resource.app.post("/nexus/download/{user_id}/{user_data_type}")
-async def download_nexus(user_id: str, user_data_type: UserDataType, request: DownloadRequest):
+@Resource.app.post("/nexus/download/{user_id}/single/{user_data_type}")
+async def download_from_nexus(user_id: str, user_data_type: UserDataType, request: DownloadRequest):
     manager = get_manager(user_data_type)
     try:
-        response = await Resource.nexus_client.download(user_data_type.value, request.id)
+        response = await Resource.nexus_client.download(f"repeater.{user_data_type.value}", request.id, "content")
     except InvalidUUIDError as e:
         return ORJSONResponse(
             content = DownloadResponse(
                 message = "Invalid UUID",
-                nexus_message = str(e)
+                nexus_message = {
+                    "error": str(e)
+                }
             ).model_dump(),
             status_code = 400
             
@@ -30,7 +25,7 @@ async def download_nexus(user_id: str, user_data_type: UserDataType, request: Do
         return ORJSONResponse(
             content = DownloadResponse(
                 message = "Nexus server error",
-                nexus_message = response.content
+                nexus_message = response.json_or_str()
             ).model_dump(),
             status_code = 500
         )
@@ -41,7 +36,7 @@ async def download_nexus(user_id: str, user_data_type: UserDataType, request: Do
         return ORJSONResponse(
             content = DownloadResponse(
                 message = "Nexus response error",
-                nexus_message = response.content
+                nexus_message = response.json_or_str()
             ).model_dump(),
         )
     
@@ -50,6 +45,6 @@ async def download_nexus(user_id: str, user_data_type: UserDataType, request: Do
     return ORJSONResponse(
         content = DownloadResponse(
             message = "Success",
-            nexus_message = response.content
+            nexus_message = response.json_or_str()
         ).model_dump(),
     )

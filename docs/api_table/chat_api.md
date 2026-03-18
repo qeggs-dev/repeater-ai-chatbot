@@ -8,13 +8,16 @@
     - **method:** `POST`
     - **type:** `JSON`
     - **Request Body**:
-      - `message` (str): 用户发送的消息，允许为空，但这时模型的行为可能是未定义的
+      - `message` (str | null): 用户发送的消息，允许为空，但这时模型的行为可能是未定义的
+      - `history_messages` (list[dict]): 历史消息，如果填写则使用此处提供的上下文，否则使用用户保存的，格式为 `[{"role": "user", "content": "..."}, {"role": "assistant", "content": "..."}]`
       - `user_info` 用户信息，全部可选
         - `username` (str): 用户名
         - `nickname` (str): 昵称
         - `age` (int | float): 年龄
         - `gender` (str): 性别
       - `role` (str): 用户角色，可选值：`user`、`assistant`、`system`，默认为 `user`
+      - `assistant_role` (str): 机器人角色，可选值：`user`、`assistant`、`system`，默认为 `assistant`
+      - `history_msg_role_map` (dict[str, str | null]): 历史消息角色映射，用于临时按角色批量转换上下文角色，格式为 `{"raw_role": "new_role"}`，比如 `{"user": "assistant", "assistant": "user", "system": null}` 表示反转用户与AI并移除 `system` 消息，建议配合 `save_context` = `false` 使用
       - `role_name` (str): 用户角色名称，用于模型区分相同上下文里相同用户角色的不同的用户
       - `temporary_prompt` (str): 临时Prompt，临时指定一个Prompt，覆盖配置系统中的Prompt进行生成
       - `model_uid` (str): 模型UID，用于临时指定一个模型对话，如果不填则根据配置系统推断值
@@ -108,3 +111,7 @@
 同时模型返回的数据也会被模板展开器处理并保存下来
 (仅限非流式输出，流式输出时客户端无法收到展开的数据
 但是它们仍然会在保存时展开一次，以确保数据正确)
+
+当你在提供 `history_messages` 数据时
+建议设置 `save_context` 为 `false`
+否则临时上下文可能会覆盖你的数据

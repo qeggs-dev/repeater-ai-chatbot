@@ -6,5 +6,5 @@ class PromptConfig(BaseModel):
     dir: str = "./configs/prompt/presets"
     suffix: str = ".md"
     encoding: str = "utf-8"
-    preset_name: str = "default"
+    preset_name: str = "official/normal/repeater"
     load_prompt: bool = True

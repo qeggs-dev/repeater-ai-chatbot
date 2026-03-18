@@ -309,11 +309,11 @@ Egg姐姐诊断：
 
 Laurel的生日是 06-09 ({{zodiac(6, 9)}})呢，今年终于有精力过了！
 {% with -%}
-  {%- set countdown = date_countdown(6, 9, int_output = true) -%}
-  {%- if countdown != 0 -%}
+  {%- set countdown = date_countdown(6, 28, time_delta_output = true) -%}
+  {%- if countdown.days != 0 -%}
     {%- set prefix = "距离生日还有：" -%}
     {%- set suffix = "天" -%}
-    {{- prefix }}{{ countdown -}}{{ suffix -}}（Bloody hell...还有这么久）
+    {{- prefix }}{{ countdown.days -}}{{ suffix -}}（Bloody hell...还有这么久）
   {%- else -%}
     {%- set text = "今天就是Laurel生日！终于能好好过了！" -%}
     {{- text -}}

@@ -5,7 +5,7 @@ from ._format_deltatime import (
 )
 from ._date_countdown import calculation_date_countdown
 from ._zodiac import date_to_zodiac
-from ._format_dimestamp import format_timestamp
+from ._format_dimestamp import tz_timestamp
 from ._age import (
     calculate_age,
     calculate_precise_age

@@ -14,7 +14,7 @@ from ._base_model import Global_Config
 class ConfigManager:
     _configs: ClassVar[Global_Config] = Global_Config()
     _instance: ClassVar[ConfigManager] | None = None
-    _base_path: ClassVar[Path]
+    _base_path: ClassVar[Path] = Path("./configs/project_configs")
     _force_load_list: ClassVar[list[Path]] = []
 
     @classmethod

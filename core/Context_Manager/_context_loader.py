@@ -36,7 +36,7 @@ from ._exceptions import *
 from ..Text_Template_Processer import (
     TemplateParser
 )
-from PathProcessors import validate_path, sanitize_filename
+from PathProcessors import validate_path, sanitize_filename_with_dir
 from ..Global_Config_Manager import ConfigManager as GlobalConfigManager
 
 # ==== 本模块代码 ==== #
@@ -71,6 +71,7 @@ class ContextLoader:
         :return: 提示词
         """
         user_prompt:str = await self._prompt_manager.load(user_id=user_id, default="")
+        logger.info("Load Prompt", user_id = user_id)
 
         if temporary_prompt is not None:
             prompt = temporary_prompt
@@ -92,7 +93,7 @@ class ContextLoader:
                 suffix = GlobalConfigManager.get_configs().prompt.suffix
 
                 # 加载默认提示词文件
-                default_prompt_file = default_prompt_dir / f"{sanitize_filename(parset_prompt_name)}{suffix}"
+                default_prompt_file = default_prompt_dir / f"{sanitize_filename_with_dir(parset_prompt_name)}{suffix}"
                 if not validate_path(default_prompt_dir, default_prompt_file):
                     raise InvalidPromptPathError(f"Invalid Prompt Path: {default_prompt_file}")
                 if default_prompt_file.exists():
@@ -132,6 +133,10 @@ class ContextLoader:
         :param user_id: 用户ID
         :return: 上下文对象
         """
+        logger.info(
+            "Load Context",
+            user_id = user_id,
+        )
         try:
             context_data = await self._context_manager.load(user_id=user_id, default=[])
         except orjson.JSONDecodeError:
