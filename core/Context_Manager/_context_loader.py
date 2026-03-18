@@ -110,7 +110,7 @@ class ContextLoader:
                 prompt = ""
         
         # 展开变量
-        if template_parser is not None:
+        if template_parser is not None and prompt:
             prompt = await self._expand_variables(
                 user_id = user_id,
                 prompt = prompt,
