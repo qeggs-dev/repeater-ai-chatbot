@@ -18,6 +18,7 @@ async def markdown_to_html(
     direct_output: bool = False,
     no_escape: bool = False,
     no_pre_labels: bool = False,
+    add_ai_generation_tips: bool = False,
     preprocess_map_before: dict[str, str] | None = None,
     preprocess_map_after: dict[str, str] | None = None,
 ) -> str:
@@ -78,6 +79,7 @@ async def markdown_to_html(
         markdown = input_text,
         html_content = html_content,
         css = css,
+        add_ai_generation_tips = add_ai_generation_tips,
         title = html.escape(title)
     )
     
