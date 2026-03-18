@@ -18,7 +18,7 @@ class StaticResourcesClient:
         if timeout is None:
             timeout = ConfigManager.get_configs().static_resources_server.timeout
         
-        self.client = httpx.Client(
+        self.client = httpx.AsyncClient(
             base_url = self.base_url,
             timeout = timeout,
         )
@@ -31,17 +31,17 @@ class StaticResourcesClient:
         else:
             raise TypeError("path must be a string or URL")
     
-    def get_file(self, path: str | URL) -> bytes:
+    async def get_file(self, path: str | URL) -> bytes:
         """Get a file from the server."""
-        response = self.client.get(
+        response = await self.client.get(
             self.str_or_url(path)
         )
         response.raise_for_status()
         return response.content
     
-    def get_text(self, path: str | URL, text_encoding: str = "utf-8") -> str:
+    async def get_text(self, path: str | URL, text_encoding: str = "utf-8") -> str:
         """Get a text file from the server."""
-        response = self.client.get(
+        response = await self.client.get(
             self.str_or_url(path),
             params = {
                 "text_encoding": text_encoding,
@@ -49,3 +49,6 @@ class StaticResourcesClient:
         )
         response.raise_for_status()
         return response.text
+    
+    async def close(self):
+        await self.client.aclose()
