@@ -356,13 +356,13 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
             "default_style": "light",
 
             // 样式文件目录
-            "styles_dir": "./configs/styles",
+            "styles_base_path": "/configs/styles",
 
             // 样式文件应该用什么编码打开
             "style_file_encoding": "utf-8",
 
             // HTML 模板文件目录
-            "html_template_dir": "./configs/html_templates",
+            "html_template_base_path": "/configs/html_templates",
 
             // HTML 模板文件应该用什么编码打开
             "html_template_file_encoding": "utf-8",
