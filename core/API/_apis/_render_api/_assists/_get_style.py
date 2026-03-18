@@ -12,7 +12,7 @@ async def get_style(request: RenderRequest, user_configs: UserConfigs):
     :param user_configs: 用户配置
     :return: 样式文件内容(样式名称，样式文件内容)
     """
-    style_path = ConfigManager.get_configs().render.markdown.styles_dir
+    style_path = ConfigManager.get_configs().render.markdown.styles_base_path
     styles = Styles(
         style_path
     )
@@ -22,14 +22,6 @@ async def get_style(request: RenderRequest, user_configs: UserConfigs):
         style_name = "custom"
         css = request.css
     elif request.style:
-        if request.style in styles.get_style_names():
-            style_name = request.style
-        else:
-            raise HTTPException(
-                status_code=404,
-                detail="Style not found"
-            )
-        
         css = await styles.get_style(
             style_name,
             encoding = style_file_encoding
