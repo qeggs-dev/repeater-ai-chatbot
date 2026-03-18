@@ -276,22 +276,11 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
 
     // MODEL API 配置
     "model_api": {
-        // MODEL API 文件路径
-        "api_file_path": "./config/api_info.json",
+        // MODEL API Server URL
+        "base_url": "",
 
-        // 默认使用的模型uid
-        // 这里需要填写你在api_info.json中配置的模型uid
-        // 如果用户没有指定模型，则使用这个模型进行响应
-        // uid匹配默认是不分大小写的
-        // 不建议使用默认 UID，因为 chat 指定的太过宽泛
-        // 建议在部署时，自己定一个或是根据厂商和模型的名字来定一个
-        // 比如 deepseek-chat 之类的
-        "default_model_uid": "chat",
-
-        // 在匹配UID时是否启用大小写敏感
-        // 此选项需要更改后需要重新录入API INFO
-        // 因为 API INFO 中实现这个的方法是全部转换为小写
-        "case_sensitive": false
+        // MODEL API 请求超时时间
+        "timeout": 10.0
     },
 
     // Nexus Client 配置
@@ -494,6 +483,18 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
         // 静态文件目录
         "static_dir": "./static"
     },
+
+    // 静态资源配置
+    // 在多实例的情况下，可以集中管理共享资源
+    "static_resources_server": {
+
+        // 静态资源服务器的地址
+        "base_url": "",
+
+        // 静态资源服务器的超时时间
+        "timeout": 10.0
+    },
+
     // 用户配置缓存配置
     "user_config_cache": {
         // 读取配置后等待多少秒后从缓存删除
