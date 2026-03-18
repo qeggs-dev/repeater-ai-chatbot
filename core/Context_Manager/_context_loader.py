@@ -99,7 +99,7 @@ class ContextLoader:
             try:
                 prompt = await static_resources_client.get_text(
                     default_prompt_file,
-                    encoding = parset_prompt_encoding
+                    text_encoding = parset_prompt_encoding
                 )
             except HTTPStatusError as e:
                 logger.error(
