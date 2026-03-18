@@ -72,7 +72,8 @@ async def render(
         
     style_name, css = await get_style(
         request = render_request,
-        user_configs = config
+        user_configs = config,
+        static_resources_client = Resource.core.static_resources_client,
     )
     
     if not render_request.image_expiry_time:
@@ -118,7 +119,7 @@ async def render(
         html_template = render_request.html_template
     else:
         html_template_file = html_template_dir / f"{html_template_name}{html_template_suffix}"
-        await Resource.core.static_resources_client.get_text(
+        html_template = await Resource.core.static_resources_client.get_text(
             html_template_file,
             text_encoding = html_template_encoding
         )
