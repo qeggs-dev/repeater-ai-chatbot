@@ -98,6 +98,10 @@ async def render(
     width = render_request.width if render_request.width is not None else global_configs.render.to_image.width
     height = render_request.height if render_request.height is not None else global_configs.render.to_image.height
     quality = render_request.quality if render_request.quality is not None else global_configs.render.to_image.quality
+    if render_request.document_end_comments:
+        document_end_comments = render_request.document_end_comments
+    else:
+        document_end_comments = config.render_document_end_comments if config.render_document_end_comments is not None else global_configs.render.markdown.document_end_comments
     environment = global_configs.text_template.sandbox.get_jinja_env()
 
     no_pre_labels = global_configs.render.markdown.no_pre_labels
@@ -139,6 +143,7 @@ async def render(
         direct_output = render_request.direct_output,
         no_escape = no_escape,
         no_pre_labels = no_pre_labels,
+        document_end_comments = document_end_comments,
         preprocess_map_before = preprocess_map_before,
         preprocess_map_after = preprocess_map_after,
     )
