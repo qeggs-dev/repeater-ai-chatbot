@@ -5,9 +5,9 @@ class Markdown_To_HTML_Config(BaseModel):
     model_config = ConfigDict(case_sensitive=False)
 
     default_style: str = "light"
-    styles_dir: str = "./configs/styles"
+    styles_base_path: str = "/styles"
     style_file_encoding: str = "utf-8"
-    html_template_dir: str = "./configs/html_templates"
+    html_template_base_path: str = "/html_templates"
     html_template_file_encoding: str = "utf-8"
     default_html_template: str = "standard"
     html_template_suffix: str = ".html"
