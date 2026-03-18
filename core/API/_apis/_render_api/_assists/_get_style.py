@@ -2,9 +2,9 @@ from .._requests import RenderRequest
 from .....Global_Config_Manager import ConfigManager
 from .....Markdown_Render import Styles
 from .....User_Config_Manager import UserConfigs
-from fastapi import HTTPException
+from .....Static_Resources_Client import StaticResourcesClient
 
-async def get_style(request: RenderRequest, user_configs: UserConfigs):
+async def get_style(request: RenderRequest, user_configs: UserConfigs, static_resources_client: StaticResourcesClient):
     """
     获取用户配置的样式文件
 
@@ -14,7 +14,8 @@ async def get_style(request: RenderRequest, user_configs: UserConfigs):
     """
     style_path = ConfigManager.get_configs().render.markdown.styles_base_path
     styles = Styles(
-        style_path
+        static_resources_client = static_resources_client,
+        style_base_path = style_path
     )
     style_file_encoding = ConfigManager.get_configs().render.markdown.style_file_encoding
 
