@@ -1,3 +1,6 @@
+import time
+import aiofiles
+
 from ...._resource import Resource
 from .....Markdown_Render import (
     markdown_to_html,
@@ -9,11 +12,10 @@ from fastapi import (
     Request
 )
 from fastapi.responses import ORJSONResponse
-import aiofiles
-import time
 from loguru import logger
 from uuid import uuid4
 from pathlib import Path
+from yarl import URL
 from .....Global_Config_Manager import ConfigManager
 from .....Lifespan import (
     ExitHandler
@@ -89,7 +91,7 @@ async def render(
     browser_type = global_configs.render.to_image.browser_type
     preprocess_map_before = global_configs.render.markdown.preprocess_map.before
     preprocess_map_after = global_configs.render.markdown.preprocess_map.after
-    html_template_dir = Path(global_configs.render.markdown.html_template_dir)
+    html_template_dir = URL(global_configs.render.markdown.html_template_base_path)
     html_template_encoding = global_configs.render.markdown.html_template_file_encoding
     html_template_name = config.render_html_template if config.render_html_template is not None else global_configs.render.markdown.default_html_template
     html_template_suffix = global_configs.render.markdown.html_template_suffix
@@ -115,20 +117,11 @@ async def render(
     if render_request.html_template is not None:
         html_template = render_request.html_template
     else:
-        htmp_temllate_file = html_template_dir / f"{html_template_name}{html_template_suffix}"
-        if not htmp_temllate_file.exists():
-            raise ORJSONResponse(
-                content = Render_Response(
-                    error = f"HTML template file not found"
-                ).model_dump(exclude_none=True),
-                status_code= 404
-            )
-        async with aiofiles.open(
-            htmp_temllate_file,
-            "r",
-            encoding = html_template_encoding
-        ) as f:
-            html_template = await f.read()
+        html_template_file = html_template_dir / f"{html_template_name}{html_template_suffix}"
+        await Resource.core.static_resources_client.get_text(
+            html_template_file,
+            text_encoding = html_template_encoding
+        )
     
     end_of_preprocessing = time.monotonic_ns()
 
