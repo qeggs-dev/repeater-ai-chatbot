@@ -18,3 +18,4 @@ class Markdown_To_HTML_Config(BaseModel):
     no_pre_labels: bool | None = False
     preprocess_map: Preprocess_Map_Config = Field(default_factory=Preprocess_Map_Config)
     title: str = "Repeater Image Generator"
+    document_end_comments: str = ""
