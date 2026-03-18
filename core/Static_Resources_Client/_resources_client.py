@@ -1,0 +1,51 @@
+import httpx
+
+from yarl import URL
+from ..Global_Config_Manager import ConfigManager
+
+class StaticResourcesClient:
+    def __init__(self, base_url: str | None = None, timeout: int | float | None = None):
+        if base_url is None:
+            base_url = ConfigManager.get_configs().static_resources_server.base_url
+        elif isinstance(base_url, str):
+            if base_url:
+                self.base_url = base_url
+            else:
+                raise ValueError("base_url cannot be empty")
+        else:
+            raise TypeError("base_url must be a string")
+        
+        if timeout is None:
+            timeout = ConfigManager.get_configs().static_resources_server.timeout
+        
+        self.client = httpx.Client(
+            base_url = self.base_url,
+            timeout = timeout,
+        )
+    
+    def str_or_url(self, path: str | URL) -> str:
+        if isinstance(path, str):
+            return path
+        elif isinstance(path, URL):
+            return str(path)
+        else:
+            raise TypeError("path must be a string or URL")
+    
+    def get_file(self, path: str | URL) -> bytes:
+        """Get a file from the server."""
+        response = self.client.get(
+            self.str_or_url(path)
+        )
+        response.raise_for_status()
+        return response.content
+    
+    def get_text(self, path: str | URL, text_encoding: str = "utf-8") -> str:
+        """Get a text file from the server."""
+        response = self.client.get(
+            self.str_or_url(path),
+            params = {
+                "text_encoding": text_encoding,
+            }
+        )
+        response.raise_for_status()
+        return response.text
