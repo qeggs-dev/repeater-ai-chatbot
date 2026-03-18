@@ -42,10 +42,14 @@ from .Assist_Struct import (
     AdditionalData
 )
 from .Model_API import (
-    ModelAPIManager,
+    ModelsClient,
+    ModelsResponse,
+    ExceptionResponse as ModelAPIExceptionResponse,
     ModelType,
     ModelAPI,
+    StaticModelAPI,
 )
+from .Static_Resources_Client import StaticResourcesClient
 from . import Request_Log
 from .Text_Template_Processer import (
     TemplateParser
@@ -76,12 +80,15 @@ class Core:
         )
 
         # 初始化 Model 管理器
-        self.model_api_manager = ModelAPIManager(
-            ConfigManager.get_configs().model_api.case_sensitive
+        self.model_api_manager = ModelsClient(
+            ConfigManager.get_configs().model_api.base_url,
+            ConfigManager.get_configs().model_api.timeout
         )
-        # 从指定文件加载API数据
-        self.model_api_manager.load(
-            ConfigManager.get_configs().model_api.api_file_path
+
+        # 初始化静态资源客户端
+        self.static_resources_client = StaticResourcesClient(
+            ConfigManager.get_configs().static_resources_server.base_url,
+            ConfigManager.get_configs().static_resources_server.timeout
         )
 
         # 初始化锁池
@@ -233,6 +240,7 @@ class Core:
         if load_prompt:
             prompt: ContentUnit = await context_loader.load_prompt(
                 user_id = prompt_load_source,
+                static_resources_client = self.static_resources_client,
                 temporary_prompt = temporary_prompt,
                 template_parser = template_parser
             )
@@ -527,13 +535,25 @@ class Core:
                                 model_uid: str = config.model_uid or ConfigManager.get_configs().model_api.default_model_uid
                             
                             # 获取API信息
-                            apilist = self.model_api_manager.find_model(
+                            model_info = await self.model_api_manager.get_model(
                                 model_type = ModelType.CHAT,
-                                model_uid = model_uid
+                                model_uid = model_uid,
+                                with_api_key = True
                             )
+                            if isinstance(model_info, ModelAPIExceptionResponse):
+                                logger.error(
+                                    "Model API Server Error: {message}",
+                                    user_id = user_id,
+                                    message = model_info.message
+                                )
+                                output = Response(
+                                    content = f"Model API Server Error: {model_info.message}",
+                                    status = 500
+                                )
+                                return output
 
                             # 取第一个API
-                            if len(apilist) == 0:
+                            if len(model_info.models) == 0:
                                 logger.error(
                                     "Model API not found: {model_uid}",
                                     user_id = user_id,
@@ -544,13 +564,13 @@ class Core:
                                     status = 404
                                 )
                                 return output
-                            elif len(apilist) > 1:
+                            elif len(model_info.models) > 1:
                                 logger.warning(
                                     "Multiple API found: {length}, using the first one",
                                     user_id = user_id,
-                                    length = len(apilist)
+                                    length = len(model_info.models)
                                 )
-                            model = apilist[0]
+                            model = model_info.models[0]
                         # endregion
 
                         # region [Getting model info]
@@ -660,8 +680,9 @@ class Core:
                             else:
                                 request.timeout = config.model_timeout
                             request.output_role = assistant_role
-                            api_key = model.get_api_key()
-                            if api_key is None:
+                            if isinstance(model, StaticModelAPI):
+                                api_key = model.api_key
+                            else:
                                 return Response(
                                     content = "Error: Model API key not found",
                                     status = 503,
