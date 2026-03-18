@@ -13,7 +13,6 @@
 ## 配置文件
 
 - [Main Config](./configs/main.md)
-- [Model API](./configs/model_api.md)
 - [Blacklist](./configs/blacklist.md)
 - [User_Nickname_Mapping](./configs/uer_nickname_mapping.md)
 
@@ -47,11 +46,9 @@
 
 ## Prompt
 
-该项目在 `configs/prompt/presets` 目录中
+该项目在 [`repeater-static-data/prompt/presets/official`](https://github.com/qeggs-dev/repeater-static-data/tree/main/prompt/presets/official) 中
 提供了多个预设的Prompt
-这些预设的 Prompt 与该项目一同使用 MIT 许可证发布
-这里面的预设可能会在不同版本里有所变动
-非常建议用户在拿到后，先创建一份自己的 Prompt
+通常你可以用这些文件作为模板
 
 ---
 
