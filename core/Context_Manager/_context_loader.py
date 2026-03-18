@@ -1,11 +1,11 @@
 # ==== 标准库 ==== #
 import asyncio
-import aiofiles
-from pathlib import Path
 import orjson
 
 # ==== 第三方库 ==== #
 from loguru import logger
+from yarl import URL
+from httpx import HTTPStatusError
 
 # ==== 自定义库 ==== #
 from ..Assist_Struct import (
@@ -38,6 +38,7 @@ from ..Text_Template_Processer import (
 )
 from PathProcessors import validate_path, sanitize_filename_with_dir
 from ..Global_Config_Manager import ConfigManager as GlobalConfigManager
+from ..Static_Resources_Client import StaticResourcesClient
 
 # ==== 本模块代码 ==== #
 class ContextLoader:
@@ -59,8 +60,9 @@ class ContextLoader:
     async def load_prompt(
             self,
             user_id: str,
+            static_resources_client: StaticResourcesClient,
             temporary_prompt: str | None = None,
-            template_parser: TemplateParser | None = None
+            template_parser: TemplateParser | None = None,
         ) -> ContentUnit:
         """
         加载提示词
@@ -82,29 +84,29 @@ class ContextLoader:
             logger.info(f"Load User Prompt", user_id = user_id)
         else:
             # 加载默认提示词
-            default_prompt_dir = Path(GlobalConfigManager.get_configs().prompt.dir)
-            if default_prompt_dir.exists():
-                # 如果存在默认提示词文件，则加载默认提示词文件
-                config = await self._config_manager.load(user_id)
-                
-                # 获取默认提示词文件名
-                parset_prompt_name = config.parset_prompt_name or GlobalConfigManager.get_configs().prompt.preset_name
-                parset_prompt_encoding = GlobalConfigManager.get_configs().prompt.encoding
-                suffix = GlobalConfigManager.get_configs().prompt.suffix
+            default_prompt_base_path = URL(GlobalConfigManager.get_configs().prompt.base_path)
+            # 如果存在默认提示词文件，则加载默认提示词文件
+            config = await self._config_manager.load(user_id)
+            
+            # 获取默认提示词文件名
+            parset_prompt_name = config.parset_prompt_name or GlobalConfigManager.get_configs().prompt.preset_name
+            parset_prompt_encoding = GlobalConfigManager.get_configs().prompt.encoding
+            suffix = GlobalConfigManager.get_configs().prompt.suffix
 
-                # 加载默认提示词文件
-                default_prompt_file = default_prompt_dir / f"{sanitize_filename_with_dir(parset_prompt_name)}{suffix}"
-                if not validate_path(default_prompt_dir, default_prompt_file):
-                    raise InvalidPromptPathError(f"Invalid Prompt Path: {default_prompt_file}")
-                if default_prompt_file.exists():
-                    logger.info(f"Load Default Prompt File: {default_prompt_file}", user_id = user_id)
-                    async with aiofiles.open(default_prompt_file, mode="r", encoding=parset_prompt_encoding) as f:
-                        prompt = await f.read()
-                else:
-                    logger.warning(f"Default Prompt File Not Found: {default_prompt_file}", user_id = user_id)
-                    prompt = ""
-            else:
-                logger.warning(f"Default Prompt Directory Not Found: {default_prompt_dir}", user_id = user_id)
+            # 加载默认提示词文件
+            default_prompt_file = default_prompt_base_path / f"{sanitize_filename_with_dir(parset_prompt_name)}{suffix}"
+            logger.info(f"Load Default Prompt File: {default_prompt_file}", user_id = user_id)
+            try:
+                prompt = await static_resources_client.get_text(
+                    default_prompt_file,
+                    encoding = parset_prompt_encoding
+                )
+            except HTTPStatusError as e:
+                logger.error(
+                    "Load Default Prompt File Error: {error}",
+                    user_id = user_id,
+                    error = e.response.text
+                )
                 prompt = ""
         
         # 展开变量
@@ -150,6 +152,7 @@ class ContextLoader:
     async def load(
             self,
             user_id: str,
+            static_resources_client: StaticResourcesClient,
             temporary_prompt: str | None = None,
             load_prompt: bool = True,
             template_parser: TemplateParser | None = None,
@@ -166,7 +169,8 @@ class ContextLoader:
         # 如果允许添加提示词，就加载提示词，否则使用空上下文对象
         if load_prompt:
             prompt = await self.load_prompt(
-                user_id=user_id,
+                user_id = user_id,
+                static_resources_client = static_resources_client,
                 template_parser = template_parser,
                 temporary_prompt = temporary_prompt
             )
