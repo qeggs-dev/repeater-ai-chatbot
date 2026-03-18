@@ -1,22 +1,16 @@
 import httpx
 
 from yarl import URL
-from ..Global_Config_Manager import ConfigManager
 
 class StaticResourcesClient:
-    def __init__(self, base_url: str | None = None, timeout: int | float | None = None):
-        if base_url is None:
-            base_url = ConfigManager.get_configs().static_resources_server.base_url
-        elif isinstance(base_url, str):
+    def __init__(self, base_url: str, timeout: int | float | None = None):
+        if isinstance(base_url, str):
             if base_url:
                 self.base_url = base_url
             else:
                 raise ValueError("base_url cannot be empty")
         else:
             raise TypeError("base_url must be a string")
-        
-        if timeout is None:
-            timeout = ConfigManager.get_configs().static_resources_server.timeout
         
         self.client = httpx.AsyncClient(
             base_url = self.base_url,
