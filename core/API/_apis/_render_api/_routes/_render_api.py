@@ -5,7 +5,10 @@ from ...._resource import Resource
 from .....Markdown_Render import (
     markdown_to_html,
     Styles,
-    HTML_Render
+)
+from .....Markdown_Render.html_render import (
+    RenderConfig,
+    NewBrowserContext,
 )
 from fastapi import (
     HTTPException,
@@ -107,12 +110,15 @@ async def render(
         document_end_comments = config.render_document_end_comments if config.render_document_end_comments is not None else global_configs.render.markdown.document_end_comments
     environment = global_configs.text_template.sandbox.get_jinja_env()
 
+    base_url = global_configs.render.to_image.base_url
+
     no_pre_labels = global_configs.render.markdown.no_pre_labels
     if no_pre_labels is None:
         no_pre_labels = render_request.no_pre_labels
-    no_escape = global_configs.render.markdown.no_escape
-    if no_escape is None:
-        no_escape = render_request.no_escape
+
+    allowed_tags = global_configs.render.markdown.allowed_tags
+    allowed_attrs = global_configs.render.markdown.allowed_attrs
+    allowed_protocols = global_configs.render.markdown.allowed_protocols
 
     # 读取HTML模板
     if render_request.html_template is not None:
@@ -134,8 +140,11 @@ async def render(
         width = width,
         title = title,
         css = css,
+        style_name = style_name,
         direct_output = render_request.direct_output,
-        no_escape = no_escape,
+        allowed_tags = allowed_tags,
+        allowed_attrs = allowed_attrs,
+        allowed_protocols = allowed_protocols,
         no_pre_labels = no_pre_labels,
         document_end_comments = document_end_comments,
         preprocess_map_before = preprocess_map_before,
@@ -149,10 +158,13 @@ async def render(
         html_content = html,
         output_path = str(render_output_image_dir / filename),
         browser_type = browser_type,
-        config = HTML_Render.RenderConfig(
+        config = RenderConfig(
             width = width,
             height = height,
             quality = quality
+        ),
+        new_context = NewBrowserContext(
+            base_url = base_url
         )
     )
 
