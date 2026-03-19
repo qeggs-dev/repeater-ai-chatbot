@@ -14,7 +14,21 @@ class Markdown_To_HTML_Config(BaseModel):
     allow_custom_styles: bool = False
     allow_custom_html_templates: bool = False
     allow_direct_output: bool = False
-    no_escape: bool | None = False
+    allowed_tags: list[str] = [
+        "p", "br", "strong", "em", "u", "del", "ins",
+        "h1", "h2", "h3", "h4", "h5", "h6",
+        "ul", "ol", "li",
+        "a", "img",
+        "code", "pre", "blockquote",
+        "table", "thead", "tbody", "tr", "th", "td",
+    ]
+    allowed_attrs: dict[str, list[str]] = {
+        "a": ["href", "title", "rel"],
+        "img": ["src", "alt", "title"],
+        "code": ["class"],
+        "pre": ["class"],
+    }
+    allowed_protocols: list[str] = ["http", "https", "mailto"]
     no_pre_labels: bool | None = False
     preprocess_map: Preprocess_Map_Config = Field(default_factory=Preprocess_Map_Config)
     title: str = "Repeater Image Generator"
