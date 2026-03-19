@@ -1,12 +1,7 @@
 from pathlib import Path
 from typing import Any, Sequence
 from pydantic import BaseModel, ConfigDict
-
-class ProxySettings(BaseModel):
-    server: str
-    bypass: str | None = None
-    username: str | None = None
-    password: str | None = None
+from ._proxy_settings import ProxySettings
 
 class BrowserArgs(BaseModel):
     model_config = ConfigDict(

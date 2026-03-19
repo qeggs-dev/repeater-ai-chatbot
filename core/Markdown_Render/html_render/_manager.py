@@ -29,6 +29,7 @@ from ...Lifespan import (
     StartHandler,
     ExitHandler
 )
+from ._new_browser_context import NewBrowserContext
 
 class BrowserPoolManager:
     """
@@ -141,6 +142,7 @@ class BrowserPoolManager:
         output_path: str,
         browser_type: BrowserType | None = None,
         image_format: ImageFormat = ImageFormat.AUTO,
+        new_context: NewBrowserContext | None = None,
         config: RenderConfig | None = None,
         **kwargs
     ) -> RenderResult:
@@ -152,6 +154,7 @@ class BrowserPoolManager:
             output_path: 输出路径
             browser_type: 浏览器类型（None使用默认）
             image_format: 图片格式（AUTO自动检测）
+            new_context: 新的浏览器上下文配置（None使用默认）
             config: 渲染配置（None使用默认）
             **kwargs: 覆盖config的参数
         
@@ -178,7 +181,7 @@ class BrowserPoolManager:
         
         # 执行渲染
         try:
-            browser, page, browser_name = await self._acquire_page_for_render(browser_type)
+            browser, page, browser_name = await self._acquire_page_for_render(browser_type, new_context)
 
             # 创建路由拦截
             await page.route("**/*", self._block_intranet_resources)
@@ -230,7 +233,7 @@ class BrowserPoolManager:
             if "browser" in locals() and "page" in locals():
                 await self._release_page(browser, page)
   
-    async def _acquire_page_for_render(self, browser_type: BrowserType) -> tuple[Browser, Page, str]:
+    async def _acquire_page_for_render(self, browser_type: BrowserType, new_context: NewBrowserContext | None = None) -> tuple[Browser, Page, str]:
         """为渲染获取页面"""
         if browser_type == BrowserType.AUTO:
             # 尝试所有浏览器
@@ -244,7 +247,7 @@ class BrowserPoolManager:
             
             for bt in browser_types:
                 try:
-                    browser, page = await self._try_acquire_page(bt)
+                    browser, page = await self._try_acquire_page(bt, new_context)
                     return browser, page, bt.value
                 except Exception as e:
                     logger.debug(f"Browser {bt} failed: {e}")
@@ -253,10 +256,10 @@ class BrowserPoolManager:
             raise RuntimeError("No browser available")
         else:
             # 使用指定浏览器
-            browser, page = await self._try_acquire_page(browser_type)
+            browser, page = await self._try_acquire_page(browser_type, new_context)
             return browser, page, browser_type.value
     
-    async def _try_acquire_page(self, browser_type: BrowserType) -> tuple[Browser, Page]:
+    async def _try_acquire_page(self, browser_type: BrowserType, new_context: NewBrowserContext | None = None) -> tuple[Browser, Page]:
         """尝试获取页面"""
         browser = await self._acquire_browser(browser_type)
         
@@ -268,7 +271,10 @@ class BrowserPoolManager:
             
             # 创建新页面
             if len(self._page_pool.get(browser, [])) < self.max_pages_per_browser:
-                context = await browser.new_context()
+                if new_context is None:
+                    new_context = await browser.new_context()
+                else:
+                    context = await browser.new_context(**new_context.model_dump())
                 page = await context.new_page()
                 self._page_pool.setdefault(browser, []).append(page)
                 return browser, page
