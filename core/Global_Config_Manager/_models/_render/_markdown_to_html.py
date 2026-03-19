@@ -14,6 +14,13 @@ class Markdown_To_HTML_Config(BaseModel):
     allow_custom_styles: bool = False
     allow_custom_html_templates: bool = False
     allow_direct_output: bool = False
+    extensions: list[str] = [
+        "extra",
+        "sane_lists",
+        "admonition",
+        "codehilite",
+        "headerid"
+    ]
     allowed_tags: list[str] = [
         "p", "br", "strong", "em", "u", "del", "ins",
         "h1", "h2", "h3", "h4", "h5", "h6",
