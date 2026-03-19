@@ -18,6 +18,7 @@ async def markdown_to_html(
     style_name: str,
     title: str = "Markdown Render",
     width: int = 800,
+    markdown_extensions: list[str | markdown.Extension] | None = None,
     direct_output: bool = False,
     allowed_tags: bool = False,
     allowed_attrs: bool = False,
@@ -53,11 +54,7 @@ async def markdown_to_html(
     if not direct_output:
         html_content = markdown.markdown(
             input_text,
-            extensions=[
-                "extra",
-                "markdown_katex",
-                "sane_lists"
-            ]
+            extensions = markdown_extensions
         )
     else:
         if no_pre_labels:
