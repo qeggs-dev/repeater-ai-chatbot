@@ -379,11 +379,27 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
             // 是否允许文本跳过 Mardown 解析
             "allow_direct_output": false,
 
-            // 不进行 HTML 转义
-            // 为 null 时使用请求中的值
-            // 如果开启，则默认你完全信任 API 传递给你的数据
-            "no_escape": false,
+            // 允许使用的 HTML 标签白名单
+            "allowed_tags": [
+                "p", "br", "strong", "em", "u", "del", "ins",
+                "h1", "h2", "h3", "h4", "h5", "h6",
+                "ul", "ol", "li",
+                "a", "img",
+                "code", "pre", "blockquote",
+                "table", "thead", "tbody", "tr", "th", "td",
+            ],
+            
+            // 允许使用的 HTML 属性白名单
+            "allowed_attrs": {
+                "a": ["href", "title", "rel"],
+                "img": ["src", "alt", "title"],
+                "code": ["class"],
+                "pre": ["class"],
+            },
 
+            // 允许使用的协议白名单
+            "allowed_protocols": ["http", "https", "mailto"],
+            
             // 在使用 direct_output 时，是否不添加 pre 标签
             // 为 null 时使用请求中的值
             "no_pre_labels": false,
