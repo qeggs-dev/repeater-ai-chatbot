@@ -259,7 +259,7 @@ class Core:
         role_name: str | None = None,
         additional_data: AdditionalData | None = None,
         template_parser: str | None = None,
-        expand_template_fields: dict[str, Any] | None = None,
+        extra_template_fields: dict[str, Any] | None = None,
         new_requests_text_only: bool = False,
     ):
         if new_requests_text_only:
@@ -272,7 +272,7 @@ class Core:
             role = role,
             role_name = role_name,
             additional_data = additional_data,
-            expand_template_fields = expand_template_fields,
+            extra_template_fields = extra_template_fields,
             template_parser = template_parser
         )
         return user_input
@@ -441,7 +441,7 @@ class Core:
             role: ContentRole = ContentRole.USER,
             assistant_role: ContentRole = ContentRole.ASSISTANT,
             role_name:  str = "",
-            expand_template_fields: dict[str, Any] | None = None,
+            extra_template_fields: dict[str, Any] | None = None,
             temporary_prompt: str | None = None,
             additional_data: AdditionalData | None = None,
             model_uid: str | None = None,
@@ -463,7 +463,7 @@ class Core:
         :param user_info: 用户信息
         :param role: 角色
         :param role_name: 角色名
-        :param expand_template_fields: 模板字段扩展
+        :param extra_template_fields: 模板字段扩展
         :param temporary_prompt: 临时提示词
         :param additional_data: 额外数据
         :param model_uid: 模型UID
@@ -638,7 +638,7 @@ class Core:
                                         role_name = role_name,
                                         additional_data = additional_data,
                                         template_parser = template_parser,
-                                        expand_template_fields = expand_template_fields,
+                                        extra_template_fields = extra_template_fields,
                                         new_requests_text_only = new_requests_text_only,
                                     )
                                     submit_context.append(user_input)
@@ -882,7 +882,7 @@ class Core:
         prepare_end_time: Request_Log.TimeStamp,
         prepare_start_time: Request_Log.TimeStamp,
         cross_user_data_routing: CrossUserDataRouting[str],
-        expand_template_fields: dict[str, Any] | None = None,
+        extra_template_fields: dict[str, Any] | None = None,
         user_input: ContentUnit | None = None,
         output: Response = Response(),
         save_context: bool | None = None,
@@ -906,7 +906,7 @@ class Core:
                         content = template_parser.render_ex(
                             content,
                             user_id,
-                            **expand_template_fields
+                            **extra_template_fields
                         )
                         content_unit.content = content
                     else:
@@ -914,7 +914,7 @@ class Core:
                         content = template_parser.render_ex(
                             content,
                             user_id,
-                            **expand_template_fields
+                            **extra_template_fields
                         )
                         content_unit.remove_context_block(TextBlock)
                         content_unit.content.append(
@@ -923,7 +923,7 @@ class Core:
                     content_unit.reasoning_content = template_parser.render_ex(
                         content_unit.reasoning_content,
                         user_id,
-                        **expand_template_fields
+                        **extra_template_fields
                     )
             
             # 通过合并频繁的同步操作，减少创建 Thread 带来的开销
