@@ -18,8 +18,7 @@ class Markdown_To_HTML_Config(BaseModel):
         "extra",
         "sane_lists",
         "admonition",
-        "codehilite",
-        "headerid"
+        "codehilite"
     ]
     allowed_tags: list[str] = [
         "p", "br", "strong", "em", "u", "del", "ins",
