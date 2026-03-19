@@ -120,6 +120,8 @@ async def render(
     allowed_attrs = global_configs.render.markdown.allowed_attrs
     allowed_protocols = global_configs.render.markdown.allowed_protocols
 
+    markdown_extensions = global_configs.render.markdown.extensions
+
     # 读取HTML模板
     if render_request.html_template is not None:
         html_template = render_request.html_template
@@ -142,6 +144,7 @@ async def render(
         css = css,
         style_name = style_name,
         direct_output = render_request.direct_output,
+        markdown_extensions = markdown_extensions,
         allowed_tags = allowed_tags,
         allowed_attrs = allowed_attrs,
         allowed_protocols = allowed_protocols,
