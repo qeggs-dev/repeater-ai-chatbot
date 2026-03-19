@@ -337,6 +337,8 @@ class ContextLoader:
         :param template_parser: 模板解析器
         :param extra_template_fields: 拓展模板字段
         """
+        if extra_template_fields is None:
+            extra_template_fields = {}
         return await asyncio.to_thread(
             template_parser.render_ex,
             text = prompt,
