@@ -192,7 +192,7 @@ class ContextLoader:
             role: ContentRole = ContentRole.USER,
             role_name: str | None = None,
             additional_data: AdditionalData | None = None,
-            expand_template_fields: dict[str, Any] | None = None,
+            extra_template_fields: dict[str, Any] | None = None,
             template_parser: TemplateParser | None = None
         ) -> ContentUnit:
         """
@@ -203,7 +203,7 @@ class ContextLoader:
         :param role: Content Role
         :param role_name: An optional name for the participant. Provides the model information to differentiate between participants of the same role.
         :param additional_data: Additional Data
-        :param expand_template_fields: Fields to expand in the template
+        :param extra_template_fields: Fields to expand in the template
         :param template_parser: Template Parser
         """
         content = ContentUnit()
@@ -212,7 +212,7 @@ class ContextLoader:
                 user_id = user_id,
                 prompt = new_message,
                 template_parser = template_parser,
-                expand_template_fields = expand_template_fields
+                extra_template_fields = extra_template_fields
             )
         if additional_data is not None:
             if not isinstance(content.content, list):
@@ -327,7 +327,7 @@ class ContextLoader:
             user_id: str,
             prompt: str,
             template_parser: TemplateParser,
-            expand_template_fields: dict[str, Any] | None = None,
+            extra_template_fields: dict[str, Any] | None = None,
         ) -> str:
         """
         展开变量
@@ -335,13 +335,13 @@ class ContextLoader:
         :param prompt: 提示词
         :param user_id: 用户ID
         :param template_parser: 模板解析器
-        :param expand_template_fields: 拓展模板字段
+        :param extra_template_fields: 拓展模板字段
         """
         return await asyncio.to_thread(
             template_parser.render_ex,
             text = prompt,
             user_id = user_id,
-            **expand_template_fields
+            **extra_template_fields
         )
 
     async def save(
