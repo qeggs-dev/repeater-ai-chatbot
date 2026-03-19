@@ -12,7 +12,11 @@ from AdminApikeyManager import AdminKeyManager
 from RegexChecker import RegexChecker
 from .._core import Core
 from ..Global_Config_Manager import ConfigManager
-from ..Markdown_Render import HTML_Render
+from ..Markdown_Render.html_render import (
+    BrowserPoolManager,
+    BrowserArgs,
+    NewBrowserContext,
+)
 from ..Logger_Init import logger_init
 from ._lifespan import lifespan
 from ._info import __version__
@@ -32,7 +36,7 @@ class Resource:
     )
     core: ClassVar[Core | None] = None
     admin_key_manager: ClassVar[AdminKeyManager | None] = None
-    browser_pool_manager: ClassVar[HTML_Render.BrowserPoolManager | None] = None
+    browser_pool_manager: ClassVar[BrowserPoolManager | None] = None
     nexus_client: ClassVar[NexusClient | None] = None
     licenses: ClassVar[LicenseLoader | None] = None
     _instance: ClassVar[Resource | None] = None
@@ -99,13 +103,13 @@ class Resource:
             with open(route_blacklist_file, "r", encoding="utf-8") as f:
                 file_content = f.read()
                 route_blacklist.load(file_content)
-        cls.browser_pool_manager = HTML_Render.BrowserPoolManager(
+        cls.browser_pool_manager = BrowserPoolManager(
             max_pages_per_browser = render_config.to_image.max_pages_per_browser,
             max_browsers = render_config.to_image.max_browsers,
             default_browser = render_config.to_image.browser_type,
             headless = render_config.to_image.headless,
             route_blacklist = route_blacklist,
-            browser_args = HTML_Render.BrowserArgs(
+            browser_args = BrowserArgs(
                 executable_path = render_config.to_image.executable_path
             )
         )

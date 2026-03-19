@@ -31,6 +31,7 @@ async def expand_variables(user_id: str, request: ExpandVariableRequest):
             template_parser.render_ex,
             request.text,
             user_id = user_id,
+            **request.extra_fields
         )
         # 返回结果
         return PlainTextResponse(output)

@@ -13,6 +13,9 @@
 | `html_content` | `string` | Markdown 渲染后的 HTML 内容 |
 | `css` | `string` | 用户选择或传入的 CSS 内容 |
 | `title` | `string` | 一个自定义的标题<br/>由 用户配置`render_title` 和<br/>全局配置`render.markdown.title` 定义<br/>通常被放在页面顶部 |
+| `markdown` | `string` | 传入的 Markdown 内容(经过 HTML 转义) |
+| `raw_text` | `string` | 传入的原始内容 |
+| `document_end_comments` | `string` | 用户配置或传入的文档末尾注释 |
 
 这些内容使用了 [模板展开器](../template_expansion_engine/main.md) 来进行展开
 模板变量的展开规则和 [模板展开器](../template_expansion_engine/main.md) 一致

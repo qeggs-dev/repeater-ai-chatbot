@@ -11,7 +11,6 @@ from ._debug.raise_warning import (
 )
 from ._regenerate import regenerate_admin_key_api
 from ._reload import (
-    reload_apiinfo_api,
     reload_blacklist_api,
     reload_configs_api,
 )
@@ -25,7 +24,6 @@ __all__ = [
     "WARNINGS",
     "RaiseWarningRequest",
     "regenerate_admin_key_api",
-    "reload_apiinfo_api",
     "reload_blacklist_api",
     "reload_configs_api",
 ]

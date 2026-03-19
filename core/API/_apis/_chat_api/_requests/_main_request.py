@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field
 from .....Context_Manager import ContentRole, ContentUnit
 from .....Assist_Struct import Request_User_Info, CrossUserDataRouting, AdditionalData
+from typing import Any
 
 class ChatRequest(BaseModel):
     message: str | None = ""
@@ -16,6 +17,7 @@ class ChatRequest(BaseModel):
     save_context: bool | None = None
     save_new_only: bool | None = None
     temporary_prompt: str | None = None
+    extra_template_fields: dict[str, Any] | None = None
     additional_data: AdditionalData | None = None
     cross_user_data_routing: CrossUserDataRouting[str | None] | None = None
     stream: bool = False

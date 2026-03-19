@@ -13,6 +13,7 @@ from ._render import *
 from ._request_log import *
 from ._server import *
 from ._static import *
+from ._static_resources_server import *
 from ._user_config_cache import *
 from ._user_data import *
 from ._user_nickname_mapping import *

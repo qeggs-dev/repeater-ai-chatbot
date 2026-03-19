@@ -1,6 +1,8 @@
 import html
+import bleach
 import asyncio
 import markdown
+
 from ._extensions import (
     BrExtension,
     CodeBlockExtension,
@@ -13,11 +15,16 @@ async def markdown_to_html(
     html_template: str,
     environment: Environment,
     css: str,
+    style_name: str,
     title: str = "Markdown Render",
     width: int = 800,
+    markdown_extensions: list[str | markdown.Extension] | None = None,
     direct_output: bool = False,
-    no_escape: bool = False,
+    allowed_tags: bool = False,
+    allowed_attrs: bool = False,
+    allowed_protocols: bool = False,
     no_pre_labels: bool = False,
+    document_end_comments: bool = False,
     preprocess_map_before: dict[str, str] | None = None,
     preprocess_map_after: dict[str, str] | None = None,
 ) -> str:
@@ -43,30 +50,32 @@ async def markdown_to_html(
         for key, value in preprocess_map_before.items():
             input_text = input_text.replace(key, value)
     
-    # 2. 转义以安全包含内容
-    if not no_escape:
-        input_text = html.escape(input_text)
-    
-    # 3. 渲染 Markdown 为 HTML
+    # 2. 渲染 Markdown 为 HTML
     if not direct_output:
         html_content = markdown.markdown(
             input_text,
-            extensions=[
-                CodeBlockExtension(),
-                BrExtension(),
-                DividingLineExtension(),
-            ]
+            extensions = markdown_extensions
         )
     else:
         if no_pre_labels:
             html_content = input_text
         else:
             html_content = f"<pre>\n{input_text}\n</pre>"
+    
+    # 3. 清理不允许的 HTML 文本
+    clean_html = bleach.clean(
+        html_content,
+        tags = allowed_tags,
+        attributes = allowed_attrs,
+        protocols = allowed_protocols,
+        strip = True,  # 移除不允许的标签
+        strip_comments = True  # 移除注释
+    )
 
     # 4. 预处理 HTML 文本
     if preprocess_map_after:
         for key, value in preprocess_map_after.items():
-            html_content = html_content.replace(key, value)
+            clean_html = clean_html.replace(key, value)
     
     # 5. 添加自适应宽度
     css += f"\nbody {{ width: {max(width, 60) - 60}px; }}"
@@ -75,9 +84,12 @@ async def markdown_to_html(
 
     full_html = await asyncio.to_thread(
         template.render,
-        markdown = input_text,
-        html_content = html_content,
+        markdown = html.escape(input_text),
+        raw_text = input_text,
+        html_content = clean_html,
         css = css,
+        style_name = html.escape(style_name),
+        document_end_comments = document_end_comments,
         title = html.escape(title)
     )
     

@@ -13,7 +13,6 @@
 ## 配置文件
 
 - [Main Config](./configs/main.md)
-- [Model API](./configs/model_api.md)
 - [Blacklist](./configs/blacklist.md)
 - [User_Nickname_Mapping](./configs/uer_nickname_mapping.md)
 
@@ -47,11 +46,9 @@
 
 ## Prompt
 
-该项目在 `configs/prompt/presets` 目录中
+该项目在 [`repeater-static-data/prompt/presets/official`](https://github.com/qeggs-dev/repeater-static-data/tree/main/prompt/presets/official) 中
 提供了多个预设的Prompt
-这些预设的 Prompt 与该项目一同使用 MIT 许可证发布
-这里面的预设可能会在不同版本里有所变动
-非常建议用户在拿到后，先创建一份自己的 Prompt
+通常你可以用这些文件作为模板
 
 ---
 
@@ -79,3 +76,12 @@
 请参阅：[版本号系统](./version.md)
 你需要确保 Client 支持当前 Repeater 的版本
 否则可能会出现接口不兼容的问题
+
+## 静态资源
+
+在 Repeater 中，静态资源分为 `主机数据` 和 `资源服务器数据`
+`主机数据` 默认存放在 Repeater 的 `./static` 文件夹中
+`资源服务器数据` 则需要部署[资源服务器](https://github.com/qeggs-dev/static-resources-server)
+并让 Repeater 访问资源服务器的数据
+**注意：静态资源本身并不与服务器属于一个仓库**
+**需要从[静态资源存储库](https://github.com/qeggs-dev/repeater-static-data)中下载静态资源**

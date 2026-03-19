@@ -23,3 +23,5 @@ This project includes the following third-party software components, licensed un
 - [Numpy](./numpy/index.md)
 - [Python-Box](./python-box/index.md)
 - [Tzdata](./tzdata/index.md)
+- [Yarl](./yarl/index.md)
+- [Bleach](./bleach/index.md)

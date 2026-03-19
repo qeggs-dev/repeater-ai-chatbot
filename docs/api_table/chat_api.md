@@ -19,6 +19,7 @@
       - `assistant_role` (str): 机器人角色，可选值：`user`、`assistant`、`system`，默认为 `assistant`
       - `history_msg_role_map` (dict[str, str | null]): 历史消息角色映射，用于临时按角色批量转换上下文角色，格式为 `{"raw_role": "new_role"}`，比如 `{"user": "assistant", "assistant": "user", "system": null}` 表示反转用户与AI并移除 `system` 消息，建议配合 `save_context` = `false` 使用
       - `role_name` (str): 用户角色名称，用于模型区分相同上下文里相同用户角色的不同的用户
+      - `extra_template_fields` (dict[str, Any]): 额外模板字段，用于在模板中填充额外字段，格式为 `{"key": "value"}`
       - `temporary_prompt` (str): 临时Prompt，临时指定一个Prompt，覆盖配置系统中的Prompt进行生成
       - `model_uid` (str): 模型UID，用于临时指定一个模型对话，如果不填则根据配置系统推断值
       - `thinking` (str): 思考模式，部分模型可以用于开启或关闭思考模式

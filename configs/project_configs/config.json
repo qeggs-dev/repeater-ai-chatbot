@@ -66,9 +66,9 @@
         "stream": true
     },
     "model_api": {
-        "api_file_path": "./configs/api_info.json",
-        "default_model_uid": "chat",
-        "case_sensitive": false
+        "base_url": "",
+        "timeout": 60.0,
+        "default_model_uid": "chat"
     },
     "nexus": {
         "base_url": "",
@@ -131,6 +131,10 @@
     "static": {
         "readme_file_path": "./README.md",
         "static_dir": "./static"
+    },
+    "static_resources_server": {
+        "base_url": "",
+        "timeout": 10.0
     },
     "user_config_cache": {
         "downgrade_wait_time": 600.0,

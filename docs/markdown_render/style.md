@@ -7,52 +7,6 @@
 用户配置总会优先使用
 而在用户配置未定义的情况下
 会使用全局配置进行兜底
-
-| 风格 | 译名 |
-| --- | :---: |
-| **`light`** | 亮色 |
-| `dark` | 暗色 |
-| `red` | 红色 |
-| `pink` | 粉色 |
-| `blue` | 蓝色 |
-| `green` | 绿色 |
-| `purple` | 紫色 |
-| `yellow` | 黄色 |
-| `orange` | 橙色 |
-| `dark-red` | 暗红色 |
-| `dark-pink` | 暗粉色 |
-| `dark-blue` | 暗蓝色 |
-| `dark-green` | 暗绿色 |
-| `dark-purple` | 暗紫色 |
-| `dark-yellow` | 暗黄色 |
-| `dark-orange` | 暗橙色 |
-| `anime` | 动漫 |
-| `geometry` | 几何 |
-| `impact` | 冲击 |
-| `ruins` | 废墟 |
-| `sacred` | 神圣 |
-| `soft` | 柔和 |
-| `vitality` | 活力 |
-| `warning` | 警告 |
-| `legacy` | 旧版亮色 |
-| `legacy-dark` | 旧版暗色 |
-| `legacy-red` | 旧版红色 |
-| `legacy-pink` | 旧版粉色 |
-| `legacy-blue` | 旧版蓝色 |
-| `legacy-green` | 旧版绿色 |
-| `legacy-purple` | 旧版紫色 |
-| `legacy-yellow` | 旧版黄色 |
-| `legacy-orange` | 旧版橙色 |
-| `legacy-dark-red` | 旧版暗红色 |
-| `legacy-dark-pink` | 旧版暗粉色 |
-| `legacy-dark-blue` | 旧版暗蓝色 |
-| `legacy-dark-green` | 旧版暗绿色 |
-| `legacy-dark-purple` | 旧版暗紫色 |
-| `legacy-dark-yellow` | 旧版暗黄色 |
-| `legacy-dark-orange` | 旧版暗橙色 |
-
-颜色风格默认在 `./configs/style` 文件夹下
-可以通过 `render.markdown.styles_dir` 这个全局配置来修改路径
-你也可以去编写你自己的 CSS 样式
-
-啊因为我不会写前端，所以此处的所有 CSS 全是由AI生成的
+实际文件请查看：[https://github.com/qeggs-dev/repeater-static-data/tree/main/styles](https://github.com/qeggs-dev/repeater-static-data/tree/main/styles)
+啊因为我不会写前端，所以此处的所有 CSS 其实全是由AI生成的
+如果你不喜欢，可以不将其放在资源服务器中，而是自己手动编写

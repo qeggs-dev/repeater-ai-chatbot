@@ -1,19 +1,24 @@
+import time
+import aiofiles
+
 from ...._resource import Resource
 from .....Markdown_Render import (
     markdown_to_html,
     Styles,
-    HTML_Render
+)
+from .....Markdown_Render.html_render import (
+    RenderConfig,
+    NewBrowserContext,
 )
 from fastapi import (
     HTTPException,
     Request
 )
 from fastapi.responses import ORJSONResponse
-import aiofiles
-import time
 from loguru import logger
 from uuid import uuid4
 from pathlib import Path
+from yarl import URL
 from .....Global_Config_Manager import ConfigManager
 from .....Lifespan import (
     ExitHandler
@@ -70,7 +75,8 @@ async def render(
         
     style_name, css = await get_style(
         request = render_request,
-        user_configs = config
+        user_configs = config,
+        static_resources_client = Resource.core.static_resources_client,
     )
     
     if not render_request.image_expiry_time:
@@ -89,7 +95,7 @@ async def render(
     browser_type = global_configs.render.to_image.browser_type
     preprocess_map_before = global_configs.render.markdown.preprocess_map.before
     preprocess_map_after = global_configs.render.markdown.preprocess_map.after
-    html_template_dir = Path(global_configs.render.markdown.html_template_dir)
+    html_template_dir = URL(global_configs.render.markdown.html_template_base_path)
     html_template_encoding = global_configs.render.markdown.html_template_file_encoding
     html_template_name = config.render_html_template if config.render_html_template is not None else global_configs.render.markdown.default_html_template
     html_template_suffix = global_configs.render.markdown.html_template_suffix
@@ -98,33 +104,33 @@ async def render(
     width = render_request.width if render_request.width is not None else global_configs.render.to_image.width
     height = render_request.height if render_request.height is not None else global_configs.render.to_image.height
     quality = render_request.quality if render_request.quality is not None else global_configs.render.to_image.quality
+    if render_request.document_end_comments:
+        document_end_comments = render_request.document_end_comments
+    else:
+        document_end_comments = config.render_document_end_comments if config.render_document_end_comments is not None else global_configs.render.markdown.document_end_comments
     environment = global_configs.text_template.sandbox.get_jinja_env()
+
+    base_url = global_configs.render.to_image.base_url
 
     no_pre_labels = global_configs.render.markdown.no_pre_labels
     if no_pre_labels is None:
         no_pre_labels = render_request.no_pre_labels
-    no_escape = global_configs.render.markdown.no_escape
-    if no_escape is None:
-        no_escape = render_request.no_escape
+
+    allowed_tags = global_configs.render.markdown.allowed_tags
+    allowed_attrs = global_configs.render.markdown.allowed_attrs
+    allowed_protocols = global_configs.render.markdown.allowed_protocols
+
+    markdown_extensions = global_configs.render.markdown.extensions
 
     # 读取HTML模板
     if render_request.html_template is not None:
         html_template = render_request.html_template
     else:
-        htmp_temllate_file = html_template_dir / f"{html_template_name}{html_template_suffix}"
-        if not htmp_temllate_file.exists():
-            raise ORJSONResponse(
-                content = Render_Response(
-                    error = f"HTML template file not found"
-                ).model_dump(exclude_none=True),
-                status_code= 404
-            )
-        async with aiofiles.open(
-            htmp_temllate_file,
-            "r",
-            encoding = html_template_encoding
-        ) as f:
-            html_template = await f.read()
+        html_template_file = html_template_dir / f"{html_template_name}{html_template_suffix}"
+        html_template = await Resource.core.static_resources_client.get_text(
+            html_template_file,
+            text_encoding = html_template_encoding
+        )
     
     end_of_preprocessing = time.monotonic_ns()
 
@@ -136,9 +142,14 @@ async def render(
         width = width,
         title = title,
         css = css,
+        style_name = style_name,
         direct_output = render_request.direct_output,
-        no_escape = no_escape,
+        markdown_extensions = markdown_extensions,
+        allowed_tags = allowed_tags,
+        allowed_attrs = allowed_attrs,
+        allowed_protocols = allowed_protocols,
         no_pre_labels = no_pre_labels,
+        document_end_comments = document_end_comments,
         preprocess_map_before = preprocess_map_before,
         preprocess_map_after = preprocess_map_after,
     )
@@ -150,10 +161,13 @@ async def render(
         html_content = html,
         output_path = str(render_output_image_dir / filename),
         browser_type = browser_type,
-        config = HTML_Render.RenderConfig(
+        config = RenderConfig(
             width = width,
             height = height,
             quality = quality
+        ),
+        new_context = NewBrowserContext(
+            base_url = base_url
         )
     )
 

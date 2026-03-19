@@ -19,6 +19,7 @@ class Global_Config(BaseModel):
     request_log: RequestLogConfig = Field(default_factory=RequestLogConfig)
     server: ServerConfig = Field(default_factory=ServerConfig)
     static: StaticConfig = Field(default_factory=StaticConfig)
+    static_resources_server: StaticResourcesServerConfig = Field(default_factory=StaticResourcesServerConfig)
     user_config_cache: UserConfigCacheConfig = Field(default_factory=UserConfigCacheConfig)
     user_data: UserDataConfig = Field(default_factory=UserDataConfig)
     user_nickname_mapping: UserNicknameMappingConfig = Field(default_factory=UserNicknameMappingConfig)

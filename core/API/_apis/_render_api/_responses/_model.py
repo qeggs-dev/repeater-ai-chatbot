@@ -1,5 +1,5 @@
 from pydantic import BaseModel, ConfigDict, Field
-from .....Markdown_Render import HTML_Render
+from .....Markdown_Render.html_render import RenderStatus
 
 class RenderTime(BaseModel):
     model_config = ConfigDict(
@@ -19,7 +19,7 @@ class Render_Response(BaseModel):
     image_url: str | None = None
     file_uuid: str | None = None
     style: str | None = None
-    status: HTML_Render.RenderStatus | None = None
+    status: RenderStatus | None = None
     browser_used: str | None = None
     url_expiry_time: float | None = None
     error: str | None = None

@@ -51,6 +51,7 @@ Jinja2 的语法与 Python 的语法非常相似
 {{text_matrix("a", 5, 5, " ", "")}}
 ```
 更多内容可以去网上搜索
+比如 [jinja.palletsprojects.com](https://jinja.palletsprojects.com)
 或者直接询问网络上的 LLM
 但不要询问 Repeater
 因为它的输出也会经过模板

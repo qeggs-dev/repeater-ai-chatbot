@@ -276,22 +276,11 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
 
     // MODEL API 配置
     "model_api": {
-        // MODEL API 文件路径
-        "api_file_path": "./config/api_info.json",
+        // MODEL API Server URL
+        "base_url": "",
 
-        // 默认使用的模型uid
-        // 这里需要填写你在api_info.json中配置的模型uid
-        // 如果用户没有指定模型，则使用这个模型进行响应
-        // uid匹配默认是不分大小写的
-        // 不建议使用默认 UID，因为 chat 指定的太过宽泛
-        // 建议在部署时，自己定一个或是根据厂商和模型的名字来定一个
-        // 比如 deepseek-chat 之类的
-        "default_model_uid": "chat",
-
-        // 在匹配UID时是否启用大小写敏感
-        // 此选项需要更改后需要重新录入API INFO
-        // 因为 API INFO 中实现这个的方法是全部转换为小写
-        "case_sensitive": false
+        // MODEL API 请求超时时间
+        "timeout": 10.0
     },
 
     // Nexus Client 配置
@@ -367,13 +356,13 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
             "default_style": "light",
 
             // 样式文件目录
-            "styles_dir": "./configs/styles",
+            "styles_base_path": "/configs/styles",
 
             // 样式文件应该用什么编码打开
             "style_file_encoding": "utf-8",
 
             // HTML 模板文件目录
-            "html_template_dir": "./configs/html_templates",
+            "html_template_base_path": "/configs/html_templates",
 
             // HTML 模板文件应该用什么编码打开
             "html_template_file_encoding": "utf-8",
@@ -390,11 +379,27 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
             // 是否允许文本跳过 Mardown 解析
             "allow_direct_output": false,
 
-            // 不进行 HTML 转义
-            // 为 null 时使用请求中的值
-            // 如果开启，则默认你完全信任 API 传递给你的数据
-            "no_escape": false,
+            // 允许使用的 HTML 标签白名单
+            "allowed_tags": [
+                "p", "br", "strong", "em", "u", "del", "ins",
+                "h1", "h2", "h3", "h4", "h5", "h6",
+                "ul", "ol", "li",
+                "a", "img",
+                "code", "pre", "blockquote",
+                "table", "thead", "tbody", "tr", "th", "td",
+            ],
+            
+            // 允许使用的 HTML 属性白名单
+            "allowed_attrs": {
+                "a": ["href", "title", "rel"],
+                "img": ["src", "alt", "title"],
+                "code": ["class"],
+                "pre": ["class"],
+            },
 
+            // 允许使用的协议白名单
+            "allowed_protocols": ["http", "https", "mailto"],
+            
             // 在使用 direct_output 时，是否不添加 pre 标签
             // 为 null 时使用请求中的值
             "no_pre_labels": false,
@@ -494,6 +499,18 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
         // 静态文件目录
         "static_dir": "./static"
     },
+
+    // 静态资源配置
+    // 在多实例的情况下，可以集中管理共享资源
+    "static_resources_server": {
+
+        // 静态资源服务器的地址
+        "base_url": "",
+
+        // 静态资源服务器的超时时间
+        "timeout": 10.0
+    },
+
     // 用户配置缓存配置
     "user_config_cache": {
         // 读取配置后等待多少秒后从缓存删除

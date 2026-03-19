@@ -15,6 +15,7 @@
         - `age` (int | float): 年龄
         - `gender` (str): 性别
       - `text` (str): 要处理的文本
+      - `extra_fields` (dict[str, Any]): 自定义扩展字段
   - **Response**
     - **type:** `Text`
     - **Response Body**:

@@ -45,6 +45,8 @@ class TemplateParser:
             /,
             **kwargs: Any
         ) -> str:
+        if not text:
+            return ""
         try:
             environment = self._global_config.text_template.sandbox.get_jinja_env()
             template: Template = environment.from_string(

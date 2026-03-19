@@ -42,10 +42,14 @@ from .Assist_Struct import (
     AdditionalData
 )
 from .Model_API import (
-    ModelAPIManager,
+    ModelsClient,
+    ModelsResponse,
+    ExceptionResponse as ModelAPIExceptionResponse,
     ModelType,
     ModelAPI,
+    StaticModelAPI,
 )
+from .Static_Resources_Client import StaticResourcesClient
 from . import Request_Log
 from .Text_Template_Processer import (
     TemplateParser
@@ -76,12 +80,15 @@ class Core:
         )
 
         # 初始化 Model 管理器
-        self.model_api_manager = ModelAPIManager(
-            ConfigManager.get_configs().model_api.case_sensitive
+        self.model_api_manager = ModelsClient(
+            ConfigManager.get_configs().model_api.base_url,
+            ConfigManager.get_configs().model_api.timeout
         )
-        # 从指定文件加载API数据
-        self.model_api_manager.load(
-            ConfigManager.get_configs().model_api.api_file_path
+
+        # 初始化静态资源客户端
+        self.static_resources_client = StaticResourcesClient(
+            ConfigManager.get_configs().static_resources_server.base_url,
+            ConfigManager.get_configs().static_resources_server.timeout
         )
 
         # 初始化锁池
@@ -233,6 +240,7 @@ class Core:
         if load_prompt:
             prompt: ContentUnit = await context_loader.load_prompt(
                 user_id = prompt_load_source,
+                static_resources_client = self.static_resources_client,
                 temporary_prompt = temporary_prompt,
                 template_parser = template_parser
             )
@@ -251,6 +259,7 @@ class Core:
         role_name: str | None = None,
         additional_data: AdditionalData | None = None,
         template_parser: str | None = None,
+        extra_template_fields: dict[str, Any] | None = None,
         new_requests_text_only: bool = False,
     ):
         if new_requests_text_only:
@@ -263,6 +272,7 @@ class Core:
             role = role,
             role_name = role_name,
             additional_data = additional_data,
+            extra_template_fields = extra_template_fields,
             template_parser = template_parser
         )
         return user_input
@@ -431,6 +441,7 @@ class Core:
             role: ContentRole = ContentRole.USER,
             assistant_role: ContentRole = ContentRole.ASSISTANT,
             role_name:  str = "",
+            extra_template_fields: dict[str, Any] | None = None,
             temporary_prompt: str | None = None,
             additional_data: AdditionalData | None = None,
             model_uid: str | None = None,
@@ -452,6 +463,7 @@ class Core:
         :param user_info: 用户信息
         :param role: 角色
         :param role_name: 角色名
+        :param extra_template_fields: 模板字段扩展
         :param temporary_prompt: 临时提示词
         :param additional_data: 额外数据
         :param model_uid: 模型UID
@@ -527,13 +539,25 @@ class Core:
                                 model_uid: str = config.model_uid or ConfigManager.get_configs().model_api.default_model_uid
                             
                             # 获取API信息
-                            apilist = self.model_api_manager.find_model(
+                            model_info = await self.model_api_manager.get_model(
                                 model_type = ModelType.CHAT,
-                                model_uid = model_uid
+                                model_uid = model_uid,
+                                with_api_key = True
                             )
+                            if isinstance(model_info, ModelAPIExceptionResponse):
+                                logger.error(
+                                    "Model API Server Error: {message}",
+                                    user_id = user_id,
+                                    message = model_info.message
+                                )
+                                output = Response(
+                                    content = f"Model API Server Error: {model_info.message}",
+                                    status = 500
+                                )
+                                return output
 
                             # 取第一个API
-                            if len(apilist) == 0:
+                            if len(model_info.models) == 0:
                                 logger.error(
                                     "Model API not found: {model_uid}",
                                     user_id = user_id,
@@ -544,13 +568,13 @@ class Core:
                                     status = 404
                                 )
                                 return output
-                            elif len(apilist) > 1:
+                            elif len(model_info.models) > 1:
                                 logger.warning(
                                     "Multiple API found: {length}, using the first one",
                                     user_id = user_id,
-                                    length = len(apilist)
+                                    length = len(model_info.models)
                                 )
-                            model = apilist[0]
+                            model = model_info.models[0]
                         # endregion
 
                         # region [Getting model info]
@@ -614,6 +638,7 @@ class Core:
                                         role_name = role_name,
                                         additional_data = additional_data,
                                         template_parser = template_parser,
+                                        extra_template_fields = extra_template_fields,
                                         new_requests_text_only = new_requests_text_only,
                                     )
                                     submit_context.append(user_input)
@@ -660,8 +685,9 @@ class Core:
                             else:
                                 request.timeout = config.model_timeout
                             request.output_role = assistant_role
-                            api_key = model.get_api_key()
-                            if api_key is None:
+                            if isinstance(model, StaticModelAPI):
+                                api_key = model.api_key
+                            else:
                                 return Response(
                                     content = "Error: Model API key not found",
                                     status = 503,
@@ -856,6 +882,7 @@ class Core:
         prepare_end_time: Request_Log.TimeStamp,
         prepare_start_time: Request_Log.TimeStamp,
         cross_user_data_routing: CrossUserDataRouting[str],
+        extra_template_fields: dict[str, Any] | None = None,
         user_input: ContentUnit | None = None,
         output: Response = Response(),
         save_context: bool | None = None,
@@ -869,6 +896,8 @@ class Core:
             response.calling_log.prepare_end_time = prepare_end_time
             response.calling_log.created_time = response.created
             saved_user_id = cross_user_data_routing.context.save_to_user_id
+            if extra_template_fields is None:
+                extra_template_fields = {}
 
             # 展开模型输出内容中的变量
             def expand_variables():
@@ -879,13 +908,15 @@ class Core:
                         content = template_parser.render_ex(
                             content,
                             user_id,
+                            **extra_template_fields
                         )
                         content_unit.content = content
                     else:
                         content = content_unit.to_plaintext_content()
                         content = template_parser.render_ex(
                             content,
-                            user_id
+                            user_id,
+                            **extra_template_fields
                         )
                         content_unit.remove_context_block(TextBlock)
                         content_unit.content.append(
@@ -894,6 +925,7 @@ class Core:
                     content_unit.reasoning_content = template_parser.render_ex(
                         content_unit.reasoning_content,
                         user_id,
+                        **extra_template_fields
                     )
             
             # 通过合并频繁的同步操作，减少创建 Thread 带来的开销
@@ -956,16 +988,4 @@ class Core:
                 output.finish_reason_code = response.finish_reason.value
 
                 return output
-    # endregion
-    # region > 重新加载API信息
-    async def reload_apiinfo(self):
-        await self.model_api_manager.load_async(Path(ConfigManager.get_configs().model_api.api_file_path))
-    # endregion
-
-    # region > 加载指定API INFO文件
-    async def load_apiinfo(self, api_info_file_path: Path):
-        if not api_info_file_path.exists():
-            logger.error(f"API INFO File not found: {api_info_file_path}")
-            raise FileNotFoundError(f"File not found: {api_info_file_path}")
-        await self.model_api_manager.load_async(api_info_file_path)
     # endregion
