@@ -3,7 +3,6 @@ import asyncio
 import time
 import re
 from RegexChecker import RegexChecker
-from pathlib import Path
 from typing import Any
 from ._enums import (
     BrowserType,
