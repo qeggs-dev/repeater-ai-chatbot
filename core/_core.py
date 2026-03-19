@@ -896,6 +896,8 @@ class Core:
             response.calling_log.prepare_end_time = prepare_end_time
             response.calling_log.created_time = response.created
             saved_user_id = cross_user_data_routing.context.save_to_user_id
+            if extra_template_fields is None:
+                extra_template_fields = {}
 
             # 展开模型输出内容中的变量
             def expand_variables():
