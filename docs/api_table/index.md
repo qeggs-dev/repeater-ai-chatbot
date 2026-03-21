@@ -33,3 +33,6 @@ Repeater 提供了许多接口，
 ## Server Info API
   - [License API](./license_api.md)
   - [Version API](./version_api.md)
+
+## Status API
+  - [Status API](./status_api.md)
