@@ -1,5 +1,7 @@
-from typing import AsyncIterator
 import orjson
+import asyncio
+
+from typing import AsyncIterator
 from environs import Env
 env = Env()
 env.read_env()
@@ -14,8 +16,6 @@ from ..._resource import Resource
 from ....Assist_Struct import Response
 from ....CallAPI import CompletionsAPI
 
-import orjson
-
 from ._requests import (
     ChatRequest
 )
@@ -28,7 +28,7 @@ async def chat_endpoint(
     """
     Endpoint for chat
     """
-    context = await Resource.core.chat(
+    chat_coroutine = Resource.core.chat(
         user_id = user_id,
         message = request.message,
         history_messages = request.history_messages,
@@ -49,16 +49,30 @@ async def chat_endpoint(
         cross_user_data_routing = request.cross_user_data_routing,
         stream = request.stream
     )
-    if isinstance(context, Response):
+    try:
+        response = await Resource.chat_task_pool.run_task(user_id, chat_coroutine)
+    except asyncio.CancelledError:
+        response = Response(
+            content = "Cancelled",
+            status = 499
+        )
         return ORJSONResponse(
-            context.model_dump(
+            response.model_dump(
                 exclude_defaults = True
             ),
-            status_code=200
+            status_code=response.status
+        )
+        
+    if isinstance(response, Response):
+        return ORJSONResponse(
+            response.model_dump(
+                exclude_defaults = True
+            ),
+            status_code=response.status
         )
     else:
         async def generator_wrapper(context: AsyncIterator[CompletionsAPI.Delta]) -> AsyncIterator[bytes]:
             async for chunk in context:
                 yield orjson.dumps(chunk.model_dump(exclude_none=True)) + b"\n"
 
-        return StreamingResponse(generator_wrapper(context), media_type="application/x-ndjson")
+        return StreamingResponse(generator_wrapper(response), media_type="application/x-ndjson")
