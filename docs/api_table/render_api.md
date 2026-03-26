@@ -34,9 +34,9 @@
       - `created` (int): 图片渲染输出文件的创建时间戳
       - `created_ms` (int): 图片渲染输出文件的创建时间戳（毫秒）
       - `details_time`
-          - `preprocess` (int): 预处理时间（纳秒）
-          - `markdown_to_html` (int): Markdown 到 HTML 的转译耗时（纳秒）
-          - `render` (int): HTML 渲染耗时（纳秒）
+        - `preprocess` (int): 预处理时间（纳秒）
+        - `markdown_to_html` (int): Markdown 到 HTML 的转译耗时（纳秒）
+        - `render` (int): HTML 渲染耗时（纳秒）
 
 注：该API中的`html_template`含有一些嵌入变量
 使用了[变量展开引擎](../template_expansion_engine/main.md)进行处理
