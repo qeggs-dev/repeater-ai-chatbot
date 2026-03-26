@@ -53,8 +53,8 @@ async def chat_endpoint(
         response = await Resource.chat_task_pool.run_task(user_id, chat_coroutine)
     except asyncio.CancelledError:
         response = Response(
-            content = "Cancelled",
-            status = 499
+            content = "Chat Completion Task Cancelled or System Abnormal Shutdown.",
+            status = 409 # Conflict
         )
         return ORJSONResponse(
             response.model_dump(
