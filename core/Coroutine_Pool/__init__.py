@@ -1,1 +1,0 @@
-from ._coroutine_pool import CoroutinePool
