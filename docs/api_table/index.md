@@ -3,9 +3,14 @@
 Repeater 提供了许多接口，
 用于与 Repeater 进行交互。
 
-## Normal API
+## Chat API
   - [Chat API](./chat_api.md)
+  - [Chat Break API](./chat_api/chat_break.md)
+
+## Render API
   - [Render API](./render_api.md)
+
+## Variable Expand API
   - [Variable Expand API](./variable_expand.md)
 
 ## Statistics API
