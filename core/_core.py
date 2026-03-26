@@ -514,12 +514,12 @@ class Core:
 
                         # region [Getting Config]
                         with self.task_status_map.enter(user_id, "Getting Config"):
-                            config = await self.get_config(user_id)
+                            configs = await self.get_config(user_id)
                         # endregion
                         
                         # region [Processing Cross User Data Access]
                         with self.task_status_map.enter(user_id, "Processing Cross User Data Access"):
-                            if not config.cross_user_data_access:
+                            if not configs.cross_user_data_access:
                                 logger.warning("Cross user data routing is not allowed.", user_id = user_id)
                                 cross_user_data_routing = None
                             elif not ConfigManager.get_configs().user_data.cross_user_data_access:
@@ -529,14 +529,14 @@ class Core:
                             cross_user_data_routing = await self.fill_missing_cross_user_data_routing(user_id, cross_user_data_routing)
 
                             if user_id != cross_user_data_routing.config.load_from_user_id:
-                                config = await self.get_config(cross_user_data_routing.config.load_from_user_id)
+                                configs = await self.get_config(cross_user_data_routing.config.load_from_user_id)
                         # endregion
                         
                         # region [Getting model]
                         with self.task_status_map.enter(user_id, "Getting model") as model_uid:
                             # 获取默认模型uid
                             if model_uid is None:
-                                model_uid: str = config.model_uid or ConfigManager.get_configs().model_api.default_model_uid
+                                model_uid: str = configs.model_uid or ConfigManager.get_configs().model_api.default_model_uid
                             
                             # 获取API信息
                             model_info = await self.model_api_manager.get_model(
@@ -590,7 +590,7 @@ class Core:
                                 model = model,
                                 user_info = user_info,
                                 global_config = ConfigManager.get_configs(),
-                                user_config = config
+                                user_config = configs
                             )
                         # endregion
 
@@ -601,10 +601,10 @@ class Core:
 
                             with self.task_status_map.enter(user_id, "Getting history context"):
                                 if load_prompt is None:
-                                    if config.load_prompt is None:
+                                    if configs.load_prompt is None:
                                         load_prompt = ConfigManager.get_configs().prompt.load_prompt
                                     else:
-                                        load_prompt = config.load_prompt
+                                        load_prompt = configs.load_prompt
                                 
                                 submit_context: ContextObject = await self.get_context(
                                     context_loader = context_loader,
@@ -624,7 +624,7 @@ class Core:
                                     submit_context.role_map(history_msg_role_map)
 
                             with self.task_status_map.enter(user_id, "Checking request contains only text"):
-                                new_requests_text_only = config.new_requests_text_only
+                                new_requests_text_only = configs.new_requests_text_only
                                 if new_requests_text_only is None:
                                     new_requests_text_only = ConfigManager.get_configs().context.new_requests_text_only
                             
@@ -648,7 +648,7 @@ class Core:
                             with self.task_status_map.enter(user_id, "Shrinking context"):
                                 # 如果上下文需要收缩，则进行收缩(为零或类型不对则不进行操作)
                                 if len(submit_context.context_list) > 0:
-                                    max_context_length = config.context_shrink_limit or ConfigManager.get_configs().context.context_shrink_limit
+                                    max_context_length = configs.context_shrink_limit or ConfigManager.get_configs().context.context_shrink_limit
                                     if isinstance(max_context_length, int) and max_context_length > 0:
                                         if submit_context.total_length > max_context_length:
                                             logger.info(f"Context length exceeds {max_context_length}, auto shrink", user_id = user_id)
@@ -680,10 +680,10 @@ class Core:
                             # 设置请求对象的API信息
                             request.url = model.url
                             request.model = model.id
-                            if config.model_timeout is None:
+                            if configs.model_timeout is None:
                                 request.timeout = model.timeout
                             else:
-                                request.timeout = config.model_timeout
+                                request.timeout = configs.model_timeout
                             request.output_role = assistant_role
                             if isinstance(model, StaticModelAPI):
                                 api_key = model.api_key
@@ -705,50 +705,50 @@ class Core:
 
                             # 设置请求对象的参数信息
                             request.user_name = user_info.nickname
-                            if config.remove_reasoning_prompt is not None:
-                                request.remove_reasoning_prompt = config.remove_reasoning_prompt
+                            if configs.remove_reasoning_prompt is not None:
+                                request.remove_reasoning_prompt = configs.remove_reasoning_prompt
                             else:
                                 request.remove_reasoning_prompt = ConfigManager.get_configs().context.remove_reasoning_prompt
                             
-                            if config.temperature is not None:
-                                request.temperature = config.temperature
+                            if configs.temperature is not None:
+                                request.temperature = configs.temperature
                             else:
                                 request.temperature = ConfigManager.get_configs().model.default_temperature
                             
-                            if config.top_p is not None:
-                                request.top_p = config.top_p
+                            if configs.top_p is not None:
+                                request.top_p = configs.top_p
                             else:
                                 request.top_p = ConfigManager.get_configs().model.default_top_p
                             
-                            if config.frequency_penalty is not None:
-                                request.frequency_penalty = config.frequency_penalty
+                            if configs.frequency_penalty is not None:
+                                request.frequency_penalty = configs.frequency_penalty
                             else:
                                 request.frequency_penalty = ConfigManager.get_configs().model.default_frequency_penalty
                             
-                            if config.presence_penalty is not None:
-                                request.presence_penalty = config.presence_penalty
+                            if configs.presence_penalty is not None:
+                                request.presence_penalty = configs.presence_penalty
                             else:
                                 request.presence_penalty = ConfigManager.get_configs().model.default_presence_penalty
                             
-                            if config.max_tokens is not None:
-                                request.max_tokens = config.max_tokens
+                            if configs.max_tokens is not None:
+                                request.max_tokens = configs.max_tokens
                             else:
                                 request.max_tokens = ConfigManager.get_configs().model.default_max_tokens
                             
-                            if config.max_completion_tokens is not None:
-                                request.max_completion_tokens = config.max_completion_tokens
+                            if configs.max_completion_tokens is not None:
+                                request.max_completion_tokens = configs.max_completion_tokens
                             else:
                                 request.max_completion_tokens = ConfigManager.get_configs().model.default_max_completion_tokens
                             
-                            if config.stop is not None:
-                                request.stop = config.stop
+                            if configs.stop is not None:
+                                request.stop = configs.stop
                             else:
                                 request.stop = ConfigManager.get_configs().model.default_stop
                             
                             if thinking is not None:
                                 request.thinking = thinking
-                            elif config.thinking is not None:
-                                request.thinking = config.thinking
+                            elif configs.thinking is not None:
+                                request.thinking = configs.thinking
                             else:
                                 request.thinking = ConfigManager.get_configs().model.default_thinking
                             
@@ -767,27 +767,30 @@ class Core:
                             output.model_type = model.type.value
                             output.model_uid = model.uid
                             output.user_raw_input = message
+
                             if user_input is not None:
                                 output.user_input = user_input.content
 
                             # 是否保存上下文
                             if save_context is None:
-                                if config.save_context is not None:
-                                    save_context = config.save_context
+                                if configs.save_context is not None:
+                                    save_context = configs.save_context
                                 else:
                                     save_context = ConfigManager.get_configs().context.save_context
                             
                             # 是否在保存时删除多模态内容
-                            if config.save_text_only is not None:
-                                save_only_text: bool = config.save_text_only
+                            if configs.save_text_only is not None:
+                                save_only_text: bool = configs.save_text_only
                             else:
                                 save_only_text: bool = ConfigManager.get_configs().context.save_text_only
                             
                             if save_new_only is None:
-                                if config.save_new_only is not None:
-                                    save_new_only = config.save_new_only
+                                if configs.save_new_only is not None:
+                                    save_new_only = configs.save_new_only
                                 else:
                                     save_new_only = ConfigManager.get_configs().context.save_new_only
+                            
+                            enable_assistant_template = ConfigManager.get_configs().text_template.enable_assistant_template
                         # endregion
                     
                     # 记录预处理结束时间
@@ -880,6 +883,7 @@ class Core:
         task_start_time: Request_Log.TimeStamp,
         context_loader: ContextLoader,
         prepare_end_time: Request_Log.TimeStamp,
+        enable_assistant_template: bool,
         prepare_start_time: Request_Log.TimeStamp,
         cross_user_data_routing: CrossUserDataRouting[str],
         extra_template_fields: dict[str, Any] | None = None,
@@ -929,8 +933,9 @@ class Core:
                     )
             
             # 通过合并频繁的同步操作，减少创建 Thread 带来的开销
-            with self.task_status_map.enter(user_id, "Template Expanding"):
-                await asyncio.to_thread(expand_variables)
+            if enable_assistant_template:
+                with self.task_status_map.enter(user_id, "Template Expanding"):
+                    await asyncio.to_thread(expand_variables)
             
             with self.task_status_map.enter(user_id, "Saving Context"):
                 if cross_user_data_routing.context.save_to_user_id == user_id:
