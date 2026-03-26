@@ -40,10 +40,10 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
         "time": {
             // 建议填写，默认是UTC时间，你可能更需要的是本地时间
             "timezone": "Asia/Shanghai"
-        }
+        },
+        // 部分组件依赖于此配置，建议填写
+        "enable_user_input_template": true,
     },
-    // 部分组件依赖于此配置，建议填写
-    "enable_user_input_template": true,
     "render": {
         "to_image": {
             // 也建议填写，除非你对 playwright 安装了独立的浏览器
