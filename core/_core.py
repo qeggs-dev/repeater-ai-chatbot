@@ -259,6 +259,7 @@ class Core:
         role_name: str | None = None,
         additional_data: AdditionalData | None = None,
         template_parser: str | None = None,
+        enable_user_input_template: bool = False,
         extra_template_fields: dict[str, Any] | None = None,
         new_requests_text_only: bool = False,
     ):
@@ -273,6 +274,7 @@ class Core:
             role_name = role_name,
             additional_data = additional_data,
             extra_template_fields = extra_template_fields,
+            enable_user_input_template = enable_user_input_template,
             template_parser = template_parser
         )
         return user_input
@@ -638,6 +640,7 @@ class Core:
                                         role_name = role_name,
                                         additional_data = additional_data,
                                         template_parser = template_parser,
+                                        enable_user_input_template = ConfigManager.get_configs().text_template.enable_user_input_template,
                                         extra_template_fields = extra_template_fields,
                                         new_requests_text_only = new_requests_text_only,
                                     )
@@ -821,6 +824,7 @@ class Core:
                                         context_loader = context_loader,
                                         task_start_time = task_start_time,
                                         cross_user_data_routing = cross_user_data_routing,
+                                        enable_assistant_template = enable_assistant_template,
                                         prepare_end_time = prepare_end_time,
                                         prepare_start_time = prepare_start_time,
                                         save_only_text = save_only_text,
@@ -851,6 +855,7 @@ class Core:
                                     context_loader = context_loader,
                                     task_start_time = task_start_time,
                                     cross_user_data_routing = cross_user_data_routing,
+                                    enable_assistant_template = enable_assistant_template,
                                     prepare_end_time = prepare_end_time,
                                     prepare_start_time = prepare_start_time,
                                     save_only_text = save_only_text,
