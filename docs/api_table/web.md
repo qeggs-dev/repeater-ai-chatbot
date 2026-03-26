@@ -12,7 +12,7 @@
     - **type:** `Web页面`
 - **`/web/{web_file}`**
   - **Request**
-   - ***method:** `GET`
+    - ***method:** `GET`
   - **Response**
     - **type:** `Web页面` | `JSON`
       - `error` (str): 错误信息
