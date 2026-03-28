@@ -91,6 +91,10 @@
     // 在生成图片的最下方添加一小段独立文本
     "render_document_bottom_comment": null,
 
+    // (str) Request Statistics Message 模板
+    // 用于生成一段自定义的统计文本
+    "request_statistics_template": null,
+
     // (bool) 是否加载提示词
     // 此选项会被API接口中传入的 load_prompt 参数覆盖
     "load_prompt": null,
