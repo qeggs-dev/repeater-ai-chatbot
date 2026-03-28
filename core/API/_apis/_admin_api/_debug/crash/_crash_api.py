@@ -1,4 +1,4 @@
-from ......CriticalException import CriticalException
+from ......SpecialException import CriticalException
 import asyncio
 from ....._resource import Resource
 from fastapi import (
