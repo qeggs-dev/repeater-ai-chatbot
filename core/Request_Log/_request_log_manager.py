@@ -9,7 +9,7 @@ from pathlib import Path
 from loguru import logger
 from ..Global_Config_Manager import ConfigManager
 from typing import List, AsyncIterator, Generator, Iterable
-from ._RequestLogObject import RequestLogObject, CallAPILogObject
+from ._request_log_object import RequestLogObject, CallAPILogObject
 from pydantic import ValidationError
 
 class RequestLogManager:
