@@ -636,7 +636,7 @@ class Core:
                                         role_name = role_name,
                                         additional_data = additional_data,
                                         template_parser = template_parser,
-                                        enable_user_input_template = ConfigManager.get_configs().text_template.enable_user_input_template,
+                                        enable_user_input_template = ConfigManager.get_configs().text_template.enable.user_input_template,
                                         extra_template_fields = extra_template_fields,
                                         new_requests_text_only = new_requests_text_only,
                                     )
@@ -787,7 +787,7 @@ class Core:
                                 else:
                                     save_new_only = ConfigManager.get_configs().context.save_new_only
                             
-                            enable_assistant_template = ConfigManager.get_configs().text_template.enable_assistant_template
+                            enable_assistant_template = ConfigManager.get_configs().text_template.enable.assistant_template
                         # endregion
                     
                     # 记录预处理结束时间
