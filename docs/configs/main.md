@@ -347,11 +347,24 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
         // 通常建议为空值，因为这样模板就能检查是否有用户设定并针对性地处理了
         "default_user_profile": "",
 
-        // 是否在用户输入中激活模板展开器
-        "enable_user_input_template": false,
+        // 请求日志模板
+        // 用于在请求返回时自定义统计内容信息的格式
+        "request_statistics_template": "Total Tokens: {{request_log.total_tokens}} | Input: {{request_log.prompt_tokens}} | Output: {{request_log.completion_tokens}}",
+        
+        // 模板展开器启用控制
+        "enable": {
+            // 是否在用户输入中激活模板展开器
+            "enable_user_input_template": false,
 
-        // 是否在 ASSISTANT 输出中激活模板展开器
-        "enable_assistant_template": false
+            // 是否在 ASSISTANT 输出中激活模板展开器
+            "enable_assistant_template": false,
+
+            // 是否启用 API
+            "api_template": false,
+
+            // 是否启用 request_statistics_template
+            "request_statistics_template": false
+        }
     },
 
     // Prompt 配置
