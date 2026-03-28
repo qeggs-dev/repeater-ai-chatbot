@@ -43,12 +43,12 @@ from .Assist_Struct import (
 )
 from .Model_API import (
     ModelsClient,
-    ModelsResponse,
     ExceptionResponse as ModelAPIExceptionResponse,
     ModelType,
     ModelAPI,
     StaticModelAPI,
 )
+from .SpecialException import HTTPException
 from .Static_Resources_Client import StaticResourcesClient
 from . import Request_Log
 from .Text_Template_Processer import (
@@ -500,17 +500,15 @@ class Core:
                         with self.task_status_map.enter(user_id, "Checking Blacklist"):
                             # 判断用户是否在黑名单中
                             if await self.in_blacklist(user_id):
-                                return Response(
-                                    content = "Error: Sorry, you are in blacklist.",
-                                    finish_reason_cause = "User in blacklist",
-                                    status = 403
+                                raise HTTPException(
+                                    status_code = 403,
+                                    message = "Error: Sorry, you are in blacklist.",
                                 )
                             
                             if not ConfigManager.get_configs().model.stream and stream:
-                                return Response(
-                                    content = "Error: The streaming response feature is turned off in the server configuration.",
-                                    finish_reason_cause = "Streaming response feature is turned off",
-                                    status = 503
+                                raise HTTPException(
+                                    status_code = 403,
+                                    message = "Error: The streaming response feature is turned off in the server configuration.",
                                 )
                         # endregion
 
@@ -552,11 +550,10 @@ class Core:
                                     user_id = user_id,
                                     message = model_info.message
                                 )
-                                output = Response(
-                                    content = f"Model API Server Error: {model_info.message}",
-                                    status = 500
+                                raise HTTPException(
+                                    status_code = 500,
+                                    message = f"Model API Server Error: {model_info.message}",
                                 )
-                                return output
 
                             # 取第一个API
                             if len(model_info.models) == 0:
@@ -565,11 +562,10 @@ class Core:
                                     user_id = user_id,
                                     model_uid = model_uid
                                 )
-                                output = Response(
-                                    content = f"Model API not found: {model_uid}",
-                                    status = 404
+                                raise HTTPException(
+                                    status_code = 404,
+                                    message = f"Model API not found: {model_uid}",
                                 )
-                                return output
                             elif len(model_info.models) > 1:
                                 logger.warning(
                                     "Multiple API found: {length}, using the first one",
@@ -659,8 +655,9 @@ class Core:
                                                 submit_context.shrink(max_context_length)
                                             except Exception as e:
                                                 logger.error(f"Failed to shrink context: {e}", user_id = user_id)
-                                                return Response(
-                                                    content = (
+                                                raise HTTPException(
+                                                    status_code = 400,
+                                                    message = (
                                                         "Sorry, I failed to shrink the context.\n"
                                                         "This can be caused by an incorrect parameter input.\n"
                                                         "Please check that the context field is working properly in your configuration.\n"
@@ -668,8 +665,6 @@ class Core:
                                                         "Or maybe you set the contraction value too low.\n"
                                                         f"Error: {e}"
                                                     ),
-                                                    status_code = 400,
-                                                    finish_reason_cause = "shrink_context_failed",
                                                 )
                         # endregion
                         
@@ -691,10 +686,9 @@ class Core:
                             if isinstance(model, StaticModelAPI):
                                 api_key = model.api_key
                             else:
-                                return Response(
-                                    content = "Error: Model API key not found",
-                                    status = 503,
-                                    finish_reason_cause = "api_key_not_found",
+                                raise HTTPException(
+                                    status_code = 503,
+                                    message = "Error: Model API key not found",
                                 )
                             request.key = api_key
                             
