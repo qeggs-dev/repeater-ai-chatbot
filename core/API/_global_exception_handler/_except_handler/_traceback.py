@@ -124,7 +124,7 @@ async def format_traceback(
         "    - Raised from:\n"
         f"        {raiser.as_posix()}:{line_start}:{column_start}\n"
         "    - Line Range:\n"
-        f"        {line_start} ~ {line_end}"
+        f"        {line_start} ~ {line_end}\n"
         "    - Column Range:\n"
         f"        {column_start} ~ {column_end}\n"
         "    - Message: \n"
