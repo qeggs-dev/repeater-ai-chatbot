@@ -23,11 +23,26 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
         // 必须要定义模型，否则Repeater可能会不知道你要给谁发请求
         "api_file_path": "./config/api_info.json",
         // 这里非常建议你填写，因为默认的`chat`真的很容易冲突
+        // 一定要保证这个 UID 在 Model Server 中存在
         "default_model_uid": "deepseek-chat"
     },
     "logger": {
         // 建议填写，默认的是DEBUG，它的输出有点多
         "level": "INFO"
+    },
+    // 如果不填写此项，那么 Repeater 将无法获取模型 API 数据
+    "model_api": {
+        // MODEL API Server URL
+        // 填写你实际部署的那个 API Server 地址
+        "base_url": "..."
+    },
+    "text_template": {
+        "time": {
+            // 建议填写，默认是UTC时间，你可能更需要的是本地时间
+            "timezone": "Asia/Shanghai"
+        },
+        // 部分组件依赖于此配置，建议填写
+        "enable_user_input_template": true,
     },
     "render": {
         "to_image": {
@@ -37,6 +52,14 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
             // 非常建议填写，用于过滤掉一些路由，比如某些内网资源，防止恶意请求获取到敏感信息
             "route_blacklist_file": "./config/route_blacklist.regex"
         }
+    },
+    // 建议填写
+    // 如果不配置此项，那么 Repeater 将无法找到提示词和渲染所需的 HTML/CSS
+    "static_resources_server": {
+
+        // Static Resources Server URL
+        // 填写你实际部署的那个 Static Resources Server 地址
+        "base_url": "..."
     }
 }
 ```
@@ -69,8 +92,8 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
         // 提高攻击者根据长度去推断模型输出内容的难度
         "include_obfuscation":false,
 
-        // 用于在某些API下告诉服务方
-        // 自己是否需要返回Usage信息
+        // 用于在某些 API 下告诉服务方
+        // 自己是否需要返回 Usage 信息
         // 默认值：true，因为 Fast Statistics 需要这部分数据
         "include_usage": true
     },
@@ -79,9 +102,9 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
     "context": {
         // 自动上下文长度裁剪
         // 当你聊天过长时，可能会超过模型上下文窗口限制
-        // 这个设置可以让Repeater为你自动裁剪最久的消息
+        // 这个设置可以让 Repeater 为你自动裁剪最久的消息
         // 让你可以继续聊天
-        // 默认值：null，表示不启用
+        // 默认值： null ，表示不启用
         // 你可以在这里填写一个整数，表示自动裁剪的长度，单位为字符数量
         "context_shrink_limit": null,
         
@@ -91,12 +114,12 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
 
         // 是否丢弃非文本数据
         // 只保存文本，不保存图片，音频等其他数据
-        // 默认为false
-        // 设为true可能会让你获得更快的解析速度
+        // 默认为 false
+        // 设为 true 可能会让你获得更快的解析速度
         "save_text_only": false,
 
         // 是否只保存新数据
-        // 默认为false
+        // 默认为 false
         // 设为 true 则只保存新消息，而不是追加到历史消息中
         "save_new_only": false,
 
@@ -231,7 +254,7 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
 
     // 模型参数配置
     // 你可以微调默认的请求的默认参数
-    // 如果用户没有定义模型参数，则使用这里定义的参数取请求API
+    // 如果用户没有定义模型参数，则使用这里定义的参数取请求 API
     "model": {
         // 默认模型超时时间，单位为秒
         "default_timeout": 600.0,
@@ -239,7 +262,7 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
         // 默认模型温度，更高的温度意味着下一个词更高的不确定性
         "default_temperature": 1.0,
 
-        // 默认模型Top_P，指越大在采样时考虑的词汇越多
+        // 默认模型 Top_P ，值越大在采样时考虑的词汇越多
         "default_top_p": 1.0,
 
         // 默认模型最大生成长度(兼容)
@@ -261,16 +284,16 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
         "default_stop": [],
 
         // 默认模型是否流式输出
-        // 注意：这里只是在告诉Repeater应该使用什么方式调用模型接口
+        // 注意：这里只是在告诉 Repeater 应该使用什么方式调用模型接口
         // 如果模型不支持流式生成，调用可能会报错
-        // 且该参数不能决定/chat/completion接口是否流式输出
-        // 如果这里为false
-        // 那么/chat/completion接口调用时stream参数能且只能为false
+        // 且该参数不能决定 /chat/completion 接口是否流式输出
+        // 如果这里为 false
+        // 那么 /chat/completion 接口调用时 stream 参数能且只能为 false
         // 此时如果客户端请求流式响应，会返回503错误
         // 请求控制台和日志不会显示生成过程，也不会有chunk统计数据
-        // 如果这里为true
-        // 那么/chat/completion接口调用时stream参数可以为true或false
-        // 且控制台和日志会打印当前chunk，并生成chunk统计数据
+        // 如果这里为 true
+        // 那么 /chat/completion 接口调用时 stream 参数可以为 true 或 false
+        // 且控制台和日志会打印当前 chunk ，并生成 chunk 统计数据
         "stream": true
     },
 
@@ -322,12 +345,18 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
         // 默认用户信息
         // 当用户未填写个人设定时，将使用此文本作为值
         // 通常建议为空值，因为这样模板就能检查是否有用户设定并针对性地处理了
-        "default_user_profile": ""
+        "default_user_profile": "",
+
+        // 是否在用户输入中激活模板展开器
+        "enable_user_input_template": false,
+
+        // 是否在 ASSISTANT 输出中激活模板展开器
+        "enable_assistant_template": false
     },
 
     // Prompt 配置
     "prompt": {
-        // 告诉Prompt加载器预设提示词目录的路径
+        // 告诉 Prompt 加载器预设提示词目录的路径
         "dir": "./config/prompt/presets",
 
         // 预设提示词文件的后缀名
@@ -468,7 +497,7 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
     },
 
     // 服务器配置
-    // 这里的几个字段为null或不填则会使用环境变量中定义的配置
+    // 这里的几个字段为 null 或不填则会使用环境变量中定义的配置
     // 如果这里填写了内容，那么这里的内容会覆盖环境变量中的值
     "server": {
         // 监听的IP
@@ -545,9 +574,9 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
         "cross_user_data_access": false,
 
         // 是否缓存
-        // 这里的两个字段同时支持bool和cache_data结构
-        // 如果为bool，则该值对所有数据类型生效
-        // 如果为cache_data结构，则该值对指定的数据类型生效
+        // 这里的两个字段同时支持 bool 和 cache_data 结构
+        // 如果为 bool ，则该值对所有数据类型生效
+        // 如果为 cache_data 结构，则该值对指定的数据类型生效
         // 警告：缓存系统仍未进行可行性与稳定性验证，请谨慎使用
 
         // 是否缓存元数据
@@ -578,7 +607,7 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
         // 更多的 Web 页面
         // 虽然这里其实可以用 static 来代替
         // 但一个 Web 页面要是 static 出现在 URL 上
-        // 不美观不是吗？
+        // 至少我觉得怪怪的
         "web_directory": "./configs/web"
     }
 }

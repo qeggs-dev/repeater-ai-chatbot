@@ -10,3 +10,5 @@ class TextTemplateConfig(BaseModel):
     sandbox: SandboxConfig = Field(default_factory=SandboxConfig)
     time: Time_Config = Field(default_factory=Time_Config)
     default_user_profile: str = ""
+    enable_user_input_template: bool = False
+    enable_assistant_template: bool = False

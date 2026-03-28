@@ -1,5 +1,6 @@
 # ==== 标准库 ==== #
 from __future__ import annotations
+
 from typing import ClassVar, Sequence, Callable, Any
 
 # ==== 第三方库 ==== #
@@ -12,6 +13,7 @@ from AdminApikeyManager import AdminKeyManager
 from RegexChecker import RegexChecker
 from .._core import Core
 from ..Global_Config_Manager import ConfigManager
+from ..Awaitable_Pool import TaskPool
 from ..Markdown_Render.html_render import (
     BrowserPoolManager,
     BrowserArgs,
@@ -35,6 +37,7 @@ class Resource:
         version = __version__
     )
     core: ClassVar[Core | None] = None
+    chat_task_pool: ClassVar[TaskPool] = TaskPool()
     admin_key_manager: ClassVar[AdminKeyManager | None] = None
     browser_pool_manager: ClassVar[BrowserPoolManager | None] = None
     nexus_client: ClassVar[NexusClient | None] = None

@@ -23,6 +23,7 @@ async def get_style(request: RenderRequest, user_configs: UserConfigs, static_re
         style_name = "custom"
         css = request.css
     elif request.style:
+        style_name = request.style
         css = await styles.get_style(
             style_name,
             encoding = style_file_encoding

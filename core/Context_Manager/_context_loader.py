@@ -191,6 +191,7 @@ class ContextLoader:
             new_message: str,
             role: ContentRole = ContentRole.USER,
             role_name: str | None = None,
+            enable_user_input_template: bool = False,
             additional_data: AdditionalData | None = None,
             extra_template_fields: dict[str, Any] | None = None,
             template_parser: TemplateParser | None = None
@@ -202,18 +203,20 @@ class ContextLoader:
         :param new_message: User Input Message
         :param role: Content Role
         :param role_name: An optional name for the participant. Provides the model information to differentiate between participants of the same role.
+        :param enable_user_input_template: Enable User Input Template Expansion
         :param additional_data: Additional Data
         :param extra_template_fields: Fields to expand in the template
         :param template_parser: Template Parser
         """
         content = ContentUnit()
         if template_parser is not None:
-            new_message = await self._expand_variables(
-                user_id = user_id,
-                prompt = new_message,
-                template_parser = template_parser,
-                extra_template_fields = extra_template_fields
-            )
+            if enable_user_input_template:
+                new_message = await self._expand_variables(
+                    user_id = user_id,
+                    prompt = new_message,
+                    template_parser = template_parser,
+                    extra_template_fields = extra_template_fields
+                )
         if additional_data is not None:
             if not isinstance(content.content, list):
                 content.content = []

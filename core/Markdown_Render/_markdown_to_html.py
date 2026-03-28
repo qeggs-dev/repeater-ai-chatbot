@@ -52,9 +52,15 @@ async def markdown_to_html(
     
     # 2. 渲染 Markdown 为 HTML
     if not direct_output:
+        extensions = [
+            CodeBlockExtension(),
+            DividingLineExtension(),
+        ]
+        if markdown_extensions:
+            extensions.extend(markdown_extensions)
         html_content = markdown.markdown(
             input_text,
-            extensions = markdown_extensions
+            extensions = extensions,
         )
     else:
         if no_pre_labels:
