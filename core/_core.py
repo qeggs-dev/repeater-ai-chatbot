@@ -788,6 +788,10 @@ class Core:
                                     save_new_only = ConfigManager.get_configs().context.save_new_only
                             
                             enable_assistant_template = ConfigManager.get_configs().text_template.enable.assistant_template
+
+                            request_statistics_template = configs.request_statistics_template
+                            if request_statistics_template is None:
+                                request_statistics_template = ConfigManager.get_configs().text_template.request_statistics_template
                         # endregion
                     
                     # 记录预处理结束时间
@@ -991,6 +995,15 @@ class Core:
                 output.finish_reason_cause = response.finish_reason_cause
                 output.finish_reason_code = response.finish_reason.value
                 output.request_log = response.calling_log
+
+                if ConfigManager.get_configs().text_template.enable.request_statistics_template:
+                    output.request_statistics = await asyncio.to_thread(
+                        template_parser.render_ex,
+                        ConfigManager.get_configs().text_template.request_statistics_template,
+                        user_id,
+                        request_log = response.calling_log,
+                        **extra_template_fields
+                    )
 
                 return output
     # endregion
