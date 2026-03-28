@@ -996,6 +996,7 @@ class Core:
 
                 output.finish_reason_cause = response.finish_reason_cause
                 output.finish_reason_code = response.finish_reason.value
+                output.request_log = response.calling_log
 
                 return output
     # endregion
