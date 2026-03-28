@@ -13,9 +13,6 @@
 
 ```json
 {
-    // (str) 时区设置
-    // 用于控制模板展开器中的{time}变量
-    "timezone": null,
     
     // (str) 预设提示词
     // 用于快速路由定义好的提示词文件
@@ -47,6 +44,11 @@
     // 模型会停止生成
     "stop": null,
 
+    // (bool) 是否让混合推理模型开启思考模式
+    // 开启后模型会输出 CoT 思考内容
+    // 仅对支持的模型生效
+    "thinking": null,
+
     // (int | float) 模型生成超时
     // 当模型的生成时间超过该值时
     // 模型会停止生成
@@ -68,19 +70,26 @@
     "context_shrink_limit": null,
 
     // (bool) 删除上下文里的推理内容
+    // 大部分 API 会拒绝我们回传推理内容
+    // 你可以设置为 false 来关闭此功能
+    // 但某些 API 可能会因此调用失败
     "remove_reasoning_prompt": null,
 
     // (str) 渲染风格
     // 用于指定文本转图片时的CSS样式文件
     "render_style": null,
 
-    // (str) 渲染HTML模板
+    // (str) 渲染 HTML 模板
     // 用于指定文本转图片时的HTML模板文件
     "render_html_template": null,
 
-    // (str) 渲染HTML标题
+    // (str) 渲染 HTML 标题
     // 用于指定文本转图片时的图片标题
     "render_title": null,
+
+    // (str) 渲染尾部注释
+    // 在生成图片的最下方添加一小段独立文本
+    "render_document_bottom_comment": null,
 
     // (bool) 是否加载提示词
     // 此选项会被API接口中传入的 load_prompt 参数覆盖
@@ -90,6 +99,13 @@
     // 此选项会被API接口中传入的 save_context 参数覆盖
     "save_context": null,
 
+    // (bool) 是否只保存新消息
+    // 如果启用，则只保存新消息，而不是追加到历史消息中
+    "save_new_only": null,
+
+    // (bool) 是否在保存时丢弃非文本数据
+    "save_text_only": null,
+
     // (str) 用户名
     // 这个值在模板中为 `user_custom_name`
     "user_name": null,
@@ -98,13 +114,10 @@
     // 如果提示词中含有{user_profile}变量
     // 将会展开为该值
     "user_profile": null,
-
-    // (bool) 是否在保存时丢弃非文本数据
-    "save_text_only": null,
-
-    // (bool) 是否只保存新消息
-    // 如果启用，则只保存新消息，而不是追加到历史消息中
-    "save_new_only": null,
+    
+    // (str) 时区设置
+    // 用于控制模板展开器中的{time}变量
+    "timezone": null,
 
     // (bool) 是否允许跨用户数据访问
     // 如果为true, 则使用请求里指定的的用户进行加载和保存
