@@ -443,7 +443,10 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
                 "after": {}
             },
             // 在 HTML 中添加的标题
-            "title": "Repeater Image Generator"
+            "title": "Repeater Image Generator",
+
+            // 在 HTML 中添加的底部注释
+            "document_bottom_comment": ""
         },
 
         // HTML 到图片的渲染器配置
