@@ -31,10 +31,10 @@ class UserConfigs(BaseModel):
     load_prompt: bool | None = None
     save_context: bool | None = None
     save_new_only: bool | None = None
+    save_text_only: bool | None = None
     user_name: str | None = None
     user_profile: str | None = None
     timezone: float | str | None = None
-    save_text_only: bool | None = None
     cross_user_data_access: bool | None = None
     new_requests_text_only: bool | None = None
     additional_user_data: dict[str, Any] = Field(default_factory=dict)
