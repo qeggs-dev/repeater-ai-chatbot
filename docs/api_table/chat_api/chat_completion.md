@@ -57,6 +57,7 @@
         - `id` (str): 请求ID，通常是一个随机的字符串，由API厂商生成，通常可以被作为唯一标识使用
         - `finish_reason_code` (str): 模型结束生成的原因，由API厂商提供
         - `finish_reason_cause` (str): 模型结束生成的原因，该字段为可读版本，由程序自动生成
+        - `request_log` (RequestLogObject): [Request Log Object](./../request_log/request_log_object.md)
         - `status` (int): 状态码，这里和http状态码一致，只是为了报告而写，通常你应该优先选择检查http报告的状态码而不是这个字段
       - `JSON STREAM`:
         - *\*每一行*
