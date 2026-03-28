@@ -1,10 +1,10 @@
 from pydantic import BaseModel, ConfigDict
 from ..Context_Manager import ContentBlock
+from ..Request_Log import RequestLog
 
 class Response(BaseModel):
     model_config = ConfigDict(
-        validate_assignment=True,
-        exclude_none=True,
+        validate_assignment=True
     )
 
     reasoning_content: str | None = None
@@ -19,4 +19,5 @@ class Response(BaseModel):
     id: str | None = None
     finish_reason_cause: str | None = None
     finish_reason_code: str | None = None
+    request_log: RequestLog | None = None
     status: int = 200
