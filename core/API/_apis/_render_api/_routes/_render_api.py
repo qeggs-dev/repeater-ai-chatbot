@@ -104,8 +104,8 @@ async def render(
     width = render_request.width if render_request.width is not None else global_configs.render.to_image.width
     height = render_request.height if render_request.height is not None else global_configs.render.to_image.height
     quality = render_request.quality if render_request.quality is not None else global_configs.render.to_image.quality
-    if render_request.document_end_comments:
-        document_end_comments = render_request.document_end_comments
+    if render_request.document_bottom_comment:
+        document_end_comments = render_request.document_bottom_comment
     else:
         document_end_comments = config.render_document_bottom_comment if config.render_document_bottom_comment is not None else global_configs.render.markdown.document_end_comments
     environment = global_configs.text_template.sandbox.get_jinja_env()
