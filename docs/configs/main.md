@@ -354,10 +354,10 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
         // 模板展开器启用控制
         "enable": {
             // 是否在用户输入中激活模板展开器
-            "enable_user_input_template": false,
+            "user_input_template": false,
 
             // 是否在 ASSISTANT 输出中激活模板展开器
-            "enable_assistant_template": false,
+            "assistant_template": false,
 
             // 是否启用 API
             "api_template": false,
