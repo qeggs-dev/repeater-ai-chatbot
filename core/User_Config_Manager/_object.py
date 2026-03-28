@@ -28,6 +28,7 @@ class UserConfigs(BaseModel):
     render_html_template: str | None = None
     render_title: str | None = None
     render_document_bottom_comment: str | None = None
+    request_statistics_template: str | None = None
     load_prompt: bool | None = None
     save_context: bool | None = None
     save_new_only: bool | None = None
