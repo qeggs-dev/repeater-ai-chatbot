@@ -60,7 +60,7 @@ async def chat_endpoint(
     if isinstance(response, Response):
         return ORJSONResponse(
             response.model_dump(
-                exclude_defaults = True
+                exclude_none = True
             ),
             status_code=response.status
         )
