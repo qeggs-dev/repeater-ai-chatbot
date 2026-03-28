@@ -20,4 +20,5 @@ class Response(BaseModel):
     finish_reason_cause: str | None = None
     finish_reason_code: str | None = None
     request_log: RequestLog | None = None
+    request_statistics: str | None = None
     status: int = 200
