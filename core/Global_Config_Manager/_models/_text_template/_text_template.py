@@ -17,4 +17,5 @@ class TextTemplateConfig(BaseModel):
     sandbox: SandboxConfig = Field(default_factory=SandboxConfig)
     time: Time_Config = Field(default_factory=Time_Config)
     default_user_profile: str = ""
+    request_statistics_template: str = "Total Tokens: {{request_log.total_tokens}} | Input: {{request_log.prompt_tokens}} | Output: {{request_log.completion_tokens}}"
     enable: Enable_Template_Config = Field(default_factory=Enable_Template_Config)
