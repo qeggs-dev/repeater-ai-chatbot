@@ -1,4 +1,5 @@
 # ==== 标准库 ==== #
+import random
 import atexit
 import asyncio
 import traceback
@@ -533,15 +534,35 @@ class Core:
                         # endregion
                         
                         # region [Getting model]
-                        with self.task_status_map.enter(user_id, "Getting model") as model_uid:
+                        with self.task_status_map.enter(user_id, "Getting model"):
                             # 获取默认模型uid
-                            if model_uid is None:
-                                model_uid: str = configs.model_uid or ConfigManager.get_configs().model_api.default_model_uid
+                            model_uid = configs.model_uid
+                            if not model_uid:
+                                model_uid = ConfigManager.get_configs().model_api.default_model_uid
+                            
+                            # 如果有多个，则随机选择一个
+                            if isinstance(model_uid, list):
+                                if len(model_uid) == 1:
+                                    model_uid_str = model_uid[0]
+                                elif len(model_uid) > 1:
+                                    model_uid_str = random.choice(model_uid)
+                                else:
+                                    raise HTTPException(
+                                        status_code = 500,
+                                        message = "Error: No model uid is specified.",
+                                    )
+                            elif isinstance(model_uid, str):
+                                model_uid_str = model_uid
+                            else:
+                                raise HTTPException(
+                                    status_code = 500,
+                                    message = "Error: Model uid must be a string or a list of strings.",
+                                )
                             
                             # 获取API信息
                             model_info = await self.model_api_manager.get_model(
                                 model_type = ModelType.CHAT,
-                                model_uid = model_uid,
+                                model_uid = model_uid_str,
                                 with_api_key = True
                             )
                             if isinstance(model_info, ModelAPIExceptionResponse):
@@ -560,11 +581,11 @@ class Core:
                                 logger.error(
                                     "Model API not found: {model_uid}",
                                     user_id = user_id,
-                                    model_uid = model_uid
+                                    model_uid = model_uid_str
                                 )
                                 raise HTTPException(
                                     status_code = 404,
-                                    message = f"Model API not found: {model_uid}",
+                                    message = f"Model API not found: {model_uid_str}",
                                 )
                             elif len(model_info.models) > 1:
                                 logger.warning(
