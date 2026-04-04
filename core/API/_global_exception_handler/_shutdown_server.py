@@ -1,5 +1,6 @@
 from loguru import logger
 import asyncio
+import inspect
 import signal
 import os
 
@@ -19,7 +20,7 @@ async def shutdown_server(exception: CriticalException | None = None) -> None:
                     "Exceptions include waiting callbacks, and programs may exit delayed..."
                 )
             
-            if asyncio.iscoroutinefunction(exception.wait):
+            if inspect.iscoroutinefunction(exception.wait):
                 wait_time = await exception.wait(exception)
             elif callable(exception.wait):
                 wait_time: float = await asyncio.to_thread(exception.wait, exception)
