@@ -77,6 +77,10 @@
 你需要确保 Client 支持当前 Repeater 的版本
 否则可能会出现接口不兼容的问题
 
+## 微服务生态组件适配
+
+请参阅：[微服务生态组件适配](./microservices_adapters_version.md)
+
 ## 静态资源
 
 在 Repeater 中，静态资源分为 `主机数据` 和 `资源服务器数据`
