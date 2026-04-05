@@ -588,12 +588,15 @@ class Core:
                                     message = f"Model API not found: {model_uid_str}",
                                 )
                             elif len(model_info.models) > 1:
+                                model = random.choice(model_info.models)
                                 logger.warning(
-                                    "Multiple API found: {length}, using the first one",
+                                    "Multiple API found: {length}, choice randomly: {model_uid}",
                                     user_id = user_id,
-                                    length = len(model_info.models)
+                                    length = len(model_info.models),
+                                    model_uid = model.uid
                                 )
-                            model = model_info.models[0]
+                            else:
+                                model = model_info.models[0]
                         # endregion
 
                         # region [Getting model info]
