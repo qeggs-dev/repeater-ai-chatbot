@@ -14,11 +14,7 @@ from RegexChecker import RegexChecker
 from .._core import Core
 from ..Global_Config_Manager import ConfigManager
 from ..Awaitable_Pool import TaskPool
-from ..Markdown_Render.html_render import (
-    BrowserPoolManager,
-    BrowserArgs,
-    NewBrowserContext,
-)
+from ..Markdown_Render import HTMLRenderClient
 from ..Logger_Init import logger_init
 from ._lifespan import lifespan
 from ._info import __version__
@@ -39,7 +35,7 @@ class Resource:
     core: ClassVar[Core | None] = None
     chat_task_pool: ClassVar[TaskPool] = TaskPool()
     admin_key_manager: ClassVar[AdminKeyManager | None] = None
-    browser_pool_manager: ClassVar[BrowserPoolManager | None] = None
+    html_render_client: ClassVar[HTMLRenderClient | None] = None
     nexus_client: ClassVar[NexusClient | None] = None
     licenses: ClassVar[LicenseLoader | None] = None
     _instance: ClassVar[Resource | None] = None
@@ -51,12 +47,16 @@ class Resource:
 
     @classmethod
     def inited(cls):
-        if cls.core is None:
-            return False
-        if cls.admin_key_manager is None:
-            return False
-        if cls.browser_pool_manager is None:
-            return False
+        check_list: list[Any | None] = [
+            cls.core,
+            cls.admin_key_manager,
+            cls.html_render_client,
+            cls.nexus_client,
+            cls.licenses,
+        ]
+        for item in check_list:
+            if item is None:
+                return False
         return True
 
     @classmethod
@@ -100,21 +100,9 @@ class Resource:
     def init_browser_pool_manager(cls):
         # 渲染配置
         render_config = ConfigManager.get_configs().render
-        route_blacklist_file = render_config.to_image.route_blacklist_file
-        route_blacklist = RegexChecker()
-        if route_blacklist_file:
-            with open(route_blacklist_file, "r", encoding="utf-8") as f:
-                file_content = f.read()
-                route_blacklist.load(file_content)
-        cls.browser_pool_manager = BrowserPoolManager(
-            max_pages_per_browser = render_config.to_image.max_pages_per_browser,
-            max_browsers = render_config.to_image.max_browsers,
-            default_browser = render_config.to_image.browser_type,
-            headless = render_config.to_image.headless,
-            route_blacklist = route_blacklist,
-            browser_args = BrowserArgs(
-                executable_path = render_config.to_image.executable_path
-            )
+        cls.html_render_client = HTMLRenderClient(
+            base_url = render_config.to_image.base_url,
+            timeout = render_config.to_image.timeout
         )
 
     @classmethod
