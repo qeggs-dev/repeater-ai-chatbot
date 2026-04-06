@@ -9,7 +9,7 @@ from uuid import UUID
 from httpx import AsyncClient
 from loguru import logger
 
-from .response import NexusResponse
+from ..Response import Response
 from .responses import *
 from .exceptions import *
 
@@ -33,7 +33,7 @@ class NexusClient:
         except ValueError as e:
             raise InvalidUUIDError(f"{uuid} is not a valid UUID") from e
     
-    async def submit(self, pool: str, content: dict[str, Any], timeout: int | None = None) -> NexusResponse[SubmitResponse]:
+    async def submit(self, pool: str, content: dict[str, Any], timeout: int | None = None) -> Response[SubmitResponse]:
         logger.info(
             "Submitting content to {pool}",
             pool = pool
@@ -45,12 +45,12 @@ class NexusClient:
                 "timeout": timeout
             }
         )
-        return NexusResponse(
+        return Response(
             response = response,
             model = SubmitResponse
         )
     
-    async def download(self, pool: str, resources_uuid: str, data_id: str) -> NexusResponse[DownloadResponse]:
+    async def download(self, pool: str, resources_uuid: str, data_id: str) -> Response[DownloadResponse]:
         logger.info(
             "Downloading resources {resources_uuid} from {pool}",
             resources_uuid = resources_uuid,
@@ -60,12 +60,12 @@ class NexusClient:
             f"/api/{pool}/resources/{self._check_uuid(resources_uuid)}/download/{data_id}"
         )
 
-        return NexusResponse(
+        return Response(
             response = response,
             model = DownloadResponse
         )
     
-    async def update(self, pool: str, resources_uuid: str, content: dict[str, Any], timeout: int | None = None) -> NexusResponse[UpdateResponse]:
+    async def update(self, pool: str, resources_uuid: str, content: dict[str, Any], timeout: int | None = None) -> Response[UpdateResponse]:
         logger.info(
             "Updating resources {resources_uuid} in {pool}",
             resources_uuid = resources_uuid,
@@ -78,7 +78,7 @@ class NexusClient:
                 "timeout": timeout
             }
         )
-        return NexusResponse(
+        return Response(
             response = response,
             model = UpdateResponse
         )
@@ -159,7 +159,7 @@ class NexusClient:
                 continue
             yield data
     
-    async def remove(self, pool: str, resources_uuid: str) -> NexusResponse[RemoveResponse]:
+    async def remove(self, pool: str, resources_uuid: str) -> Response[RemoveResponse]:
         logger.info(
             "Removing resources {resources_uuid} from {pool}",
             resources_uuid = resources_uuid,
@@ -168,12 +168,12 @@ class NexusClient:
         response = await self._client.delete(
             f"/api/{pool}/resources/{self._check_uuid(resources_uuid)}/remove/resource"
         )
-        return NexusResponse(
+        return Response(
             response = response,
             model = RemoveResponse
         )
     
-    async def remove_data(self, pool: str, resources_uuid: str, data_id: str) -> NexusResponse[RemoveResponse]:
+    async def remove_data(self, pool: str, resources_uuid: str, data_id: str) -> Response[RemoveResponse]:
         logger.info(
             "Removing resources {resources_uuid} from {pool}",
             resources_uuid = resources_uuid,
@@ -182,7 +182,7 @@ class NexusClient:
         response = await self._client.delete(
             f"/api/{pool}/resources/{self._check_uuid(resources_uuid)}/remove/data/{data_id}"
         )
-        return NexusResponse(
+        return Response(
             response = response,
             model = RemoveResponse
         )
