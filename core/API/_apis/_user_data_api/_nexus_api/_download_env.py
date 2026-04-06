@@ -34,7 +34,7 @@ async def download_env_from_nexus(user_id: str, request: DownloadRequest):
             status_code = 500
         )
     
-    data = response.data()
+    data = response.get_data()
     
     if data is None:
         return ORJSONResponse(

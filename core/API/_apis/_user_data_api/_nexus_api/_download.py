@@ -30,7 +30,7 @@ async def download_from_nexus(user_id: str, user_data_type: UserDataType, reques
             status_code = 500
         )
     
-    data = response.data()
+    data = response.get_data()
     
     if data is None:
         return ORJSONResponse(
