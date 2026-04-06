@@ -8,6 +8,7 @@
     - **type:** `FORM`
     - **Request Body**:
       - `context_pair_num` (int): 删除的组数
+      - `paired` (bool): 是否以成对模式删除上下文单元 (默认为 `true`)
   - **Response**
     - **type:** `JSON`
     - **Response Body**:
@@ -54,7 +55,7 @@
 ]
 ```
 
-提交 `context_pair_num = 1` 的请求后，Context 数据将会变成：
+提交 `context_pair_num = 1` 且 `paired = true` 的请求后，Context 数据将会变成：
 ```json
 [
   {
