@@ -43,11 +43,11 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
     },
     "render": {
         "to_image": {
-            // 也建议填写，除非你对 playwright 安装了独立的浏览器
-            "executable_path" : "", // 这里填写你安装的任意浏览器可执行文件的路径
-            
-            // 非常建议填写，用于过滤掉一些路由，比如某些内网资源，防止恶意请求获取到敏感信息
-            "route_blacklist_file": "./config/route_blacklist.regex"
+            // 建议填写，除非你完全用不到 Markdown 图片渲染功能
+            "base_url": "",
+
+            // 建议填高一点，渲染时间可能会比较长
+            "timeout": 600.0,
         }
     },
     // 建议填写
