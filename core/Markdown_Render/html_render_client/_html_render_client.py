@@ -1,4 +1,6 @@
 import httpx
+from ._model import Render_Response
+from ...Response import Response
 
 class HTMLRenderClient:
     def __init__(self, base_url: str, timeout: int):
@@ -9,7 +11,7 @@ class HTMLRenderClient:
             timeout = timeout
         )
     
-    async def render(self, text: str) -> str:
+    async def render(self, text: str) -> Response[Render_Response]:
         """Render markdown text to HTML."""
         response = await self._client.post(
             "/render",
@@ -17,4 +19,7 @@ class HTMLRenderClient:
                 "content": text
             }
         )
-        return response.text
+        return Response(
+            response = response,
+            model = Render_Response
+        )
