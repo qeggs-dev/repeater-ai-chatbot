@@ -13,6 +13,13 @@ async def expand_variables(user_id: str, request: ExpandVariableRequest):
     """
     Endpoint for expanding variables
     """
+    enable = Global_Config_Manager.get_configs().text_template.enable.api_template
+    if not enable:
+        return PlainTextResponse(
+            "Text template is not enabled",
+            status_code = 403
+        )
+
     # 初始化加载器
     config_loader = ConfigManager()
 

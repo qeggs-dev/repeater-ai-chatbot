@@ -5,4 +5,4 @@ class ModelAPIConfig(BaseModel):
     
     base_url: str = ""
     timeout: int | float | None = 10.0
-    default_model_uid: str = "chat"
+    default_model_uid: str | list[str] = "chat"

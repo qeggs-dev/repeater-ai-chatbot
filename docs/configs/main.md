@@ -19,22 +19,19 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
 比如：
 ``` json
 {
-    "api_info": {
-        // 必须要定义模型，否则Repeater可能会不知道你要给谁发请求
-        "api_file_path": "./config/api_info.json",
-        // 这里非常建议你填写，因为默认的`chat`真的很容易冲突
-        // 一定要保证这个 UID 在 Model Server 中存在
-        "default_model_uid": "deepseek-chat"
-    },
     "logger": {
-        // 建议填写，默认的是DEBUG，它的输出有点多
+        // 建议填写，默认的是DEBUG，可能会有很多你不需要关注的内容
         "level": "INFO"
     },
     // 如果不填写此项，那么 Repeater 将无法获取模型 API 数据
     "model_api": {
         // MODEL API Server URL
         // 填写你实际部署的那个 API Server 地址
-        "base_url": "..."
+        "base_url": "...",
+
+        // 这里非常建议你填写，因为默认的`chat`真的很容易冲突
+        // 一定要保证这个 UID 在 Model Server 中存在
+        "default_model_uid": "deepseek-chat"
     },
     "text_template": {
         "time": {
@@ -56,7 +53,6 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
     // 建议填写
     // 如果不配置此项，那么 Repeater 将无法找到提示词和渲染所需的 HTML/CSS
     "static_resources_server": {
-
         // Static Resources Server URL
         // 填写你实际部署的那个 Static Resources Server 地址
         "base_url": "..."
@@ -303,7 +299,11 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
         "base_url": "",
 
         // MODEL API 请求超时时间
-        "timeout": 10.0
+        "timeout": 10.0,
+
+        // 默认模型 ID
+        // 如果填写为列表，则每次请求从列表中随机选择一个
+        "default_model_uid": "chat"
     },
 
     // Nexus Client 配置
@@ -347,11 +347,24 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
         // 通常建议为空值，因为这样模板就能检查是否有用户设定并针对性地处理了
         "default_user_profile": "",
 
-        // 是否在用户输入中激活模板展开器
-        "enable_user_input_template": false,
+        // 请求日志模板
+        // 用于在请求返回时自定义统计内容信息的格式
+        "request_statistics_template": "Total Tokens: {{request_log.total_tokens}} | Input: {{request_log.prompt_tokens}} | Output: {{request_log.completion_tokens}}",
+        
+        // 模板展开器启用控制
+        "enable": {
+            // 是否在用户输入中激活模板展开器
+            "user_input_template": false,
 
-        // 是否在 ASSISTANT 输出中激活模板展开器
-        "enable_assistant_template": false
+            // 是否在 ASSISTANT 输出中激活模板展开器
+            "assistant_template": false,
+
+            // 是否启用 API
+            "api_template": false,
+
+            // 是否启用 request_statistics_template
+            "request_statistics_template": false
+        }
     },
 
     // Prompt 配置
@@ -443,7 +456,10 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
                 "after": {}
             },
             // 在 HTML 中添加的标题
-            "title": "Repeater Image Generator"
+            "title": "Repeater Image Generator",
+
+            // 在 HTML 中添加的底部注释
+            "document_bottom_comment": ""
         },
 
         // HTML 到图片的渲染器配置

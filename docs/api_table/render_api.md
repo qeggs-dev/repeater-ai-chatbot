@@ -12,7 +12,7 @@
       - `image_expiry_time` (float): 图片链接有效时长
       - `css` (str): 自定义CSS
       - `html_template`(str): HTML模板
-      - `document_end_comments`(str): 文档末尾注释，你可以在这里写一些信息，比如 AI 生成内容提醒
+      - `document_bottom_comment`(str): 文档末尾注释，你可以在这里写一些信息，比如 AI 生成内容提醒
       - `width` (int): 图片宽度
       - `height` (int): 图片高度
       - `direct_output` (bool): 是否直接开始渲染而不经过Markdown解析

@@ -24,7 +24,7 @@ async def markdown_to_html(
     allowed_attrs: bool = False,
     allowed_protocols: bool = False,
     no_pre_labels: bool = False,
-    document_end_comments: bool = False,
+    document_bottom_comment: bool = False,
     preprocess_map_before: dict[str, str] | None = None,
     preprocess_map_after: dict[str, str] | None = None,
 ) -> str:
@@ -95,7 +95,7 @@ async def markdown_to_html(
         html_content = clean_html,
         css = css,
         style_name = html.escape(style_name),
-        document_end_comments = document_end_comments,
+        document_bottom_comment = document_bottom_comment,
         title = html.escape(title)
     )
     

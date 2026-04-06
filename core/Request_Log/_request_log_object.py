@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field, ConfigDict
 from typing import Any
-from ._TimeStamp_Obj import TimeStamp
+from ._timestamp_object import TimeStamp
 
 class RequestLogObject(BaseModel):
     """

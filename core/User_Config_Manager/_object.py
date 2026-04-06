@@ -12,7 +12,7 @@ class UserConfigs(BaseModel):
     )
 
     parset_prompt_name: str | None = None
-    model_uid: str | None = None
+    model_uid: str | list[str] | None = None
     temperature: float | None = Field(None, ge=0.0, le=2.0)
     top_p: float | None = Field(None, ge=0.0, le=1.0)
     max_tokens: int | None = None
@@ -28,6 +28,7 @@ class UserConfigs(BaseModel):
     render_html_template: str | None = None
     render_title: str | None = None
     render_document_bottom_comment: str | None = None
+    request_statistics_template: str | None = None
     load_prompt: bool | None = None
     save_context: bool | None = None
     save_new_only: bool | None = None

@@ -1,4 +1,5 @@
 # ==== 标准库 ==== #
+import random
 import atexit
 import asyncio
 import traceback
@@ -43,12 +44,12 @@ from .Assist_Struct import (
 )
 from .Model_API import (
     ModelsClient,
-    ModelsResponse,
     ExceptionResponse as ModelAPIExceptionResponse,
     ModelType,
     ModelAPI,
     StaticModelAPI,
 )
+from .SpecialException import HTTPException
 from .Static_Resources_Client import StaticResourcesClient
 from . import Request_Log
 from .Text_Template_Processer import (
@@ -500,17 +501,15 @@ class Core:
                         with self.task_status_map.enter(user_id, "Checking Blacklist"):
                             # 判断用户是否在黑名单中
                             if await self.in_blacklist(user_id):
-                                return Response(
-                                    content = "Error: Sorry, you are in blacklist.",
-                                    finish_reason_cause = "User in blacklist",
-                                    status = 403
+                                raise HTTPException(
+                                    status_code = 403,
+                                    message = "Error: Sorry, you are in blacklist.",
                                 )
                             
                             if not ConfigManager.get_configs().model.stream and stream:
-                                return Response(
-                                    content = "Error: The streaming response feature is turned off in the server configuration.",
-                                    finish_reason_cause = "Streaming response feature is turned off",
-                                    status = 503
+                                raise HTTPException(
+                                    status_code = 403,
+                                    message = "Error: The streaming response feature is turned off in the server configuration.",
                                 )
                         # endregion
 
@@ -535,15 +534,35 @@ class Core:
                         # endregion
                         
                         # region [Getting model]
-                        with self.task_status_map.enter(user_id, "Getting model") as model_uid:
+                        with self.task_status_map.enter(user_id, "Getting model"):
                             # 获取默认模型uid
-                            if model_uid is None:
-                                model_uid: str = configs.model_uid or ConfigManager.get_configs().model_api.default_model_uid
+                            model_uid = configs.model_uid
+                            if not model_uid:
+                                model_uid = ConfigManager.get_configs().model_api.default_model_uid
+                            
+                            # 如果有多个，则随机选择一个
+                            if isinstance(model_uid, list):
+                                if len(model_uid) == 1:
+                                    model_uid_str = model_uid[0]
+                                elif len(model_uid) > 1:
+                                    model_uid_str = random.choice(model_uid)
+                                else:
+                                    raise HTTPException(
+                                        status_code = 500,
+                                        message = "Error: No model uid is specified.",
+                                    )
+                            elif isinstance(model_uid, str):
+                                model_uid_str = model_uid
+                            else:
+                                raise HTTPException(
+                                    status_code = 500,
+                                    message = "Error: Model uid must be a string or a list of strings.",
+                                )
                             
                             # 获取API信息
                             model_info = await self.model_api_manager.get_model(
                                 model_type = ModelType.CHAT,
-                                model_uid = model_uid,
+                                model_uid = model_uid_str,
                                 with_api_key = True
                             )
                             if isinstance(model_info, ModelAPIExceptionResponse):
@@ -552,31 +571,32 @@ class Core:
                                     user_id = user_id,
                                     message = model_info.message
                                 )
-                                output = Response(
-                                    content = f"Model API Server Error: {model_info.message}",
-                                    status = 500
+                                raise HTTPException(
+                                    status_code = 500,
+                                    message = f"Model API Server Error: {model_info.message}",
                                 )
-                                return output
 
                             # 取第一个API
                             if len(model_info.models) == 0:
                                 logger.error(
                                     "Model API not found: {model_uid}",
                                     user_id = user_id,
-                                    model_uid = model_uid
+                                    model_uid = model_uid_str
                                 )
-                                output = Response(
-                                    content = f"Model API not found: {model_uid}",
-                                    status = 404
+                                raise HTTPException(
+                                    status_code = 404,
+                                    message = f"Model API not found: {model_uid_str}",
                                 )
-                                return output
                             elif len(model_info.models) > 1:
+                                model = random.choice(model_info.models)
                                 logger.warning(
-                                    "Multiple API found: {length}, using the first one",
+                                    "Multiple API found: {length}, choice randomly: {model_uid}",
                                     user_id = user_id,
-                                    length = len(model_info.models)
+                                    length = len(model_info.models),
+                                    model_uid = model.uid
                                 )
-                            model = model_info.models[0]
+                            else:
+                                model = model_info.models[0]
                         # endregion
 
                         # region [Getting model info]
@@ -640,7 +660,7 @@ class Core:
                                         role_name = role_name,
                                         additional_data = additional_data,
                                         template_parser = template_parser,
-                                        enable_user_input_template = ConfigManager.get_configs().text_template.enable_user_input_template,
+                                        enable_user_input_template = ConfigManager.get_configs().text_template.enable.user_input_template,
                                         extra_template_fields = extra_template_fields,
                                         new_requests_text_only = new_requests_text_only,
                                     )
@@ -659,8 +679,9 @@ class Core:
                                                 submit_context.shrink(max_context_length)
                                             except Exception as e:
                                                 logger.error(f"Failed to shrink context: {e}", user_id = user_id)
-                                                return Response(
-                                                    content = (
+                                                raise HTTPException(
+                                                    status_code = 400,
+                                                    message = (
                                                         "Sorry, I failed to shrink the context.\n"
                                                         "This can be caused by an incorrect parameter input.\n"
                                                         "Please check that the context field is working properly in your configuration.\n"
@@ -668,8 +689,6 @@ class Core:
                                                         "Or maybe you set the contraction value too low.\n"
                                                         f"Error: {e}"
                                                     ),
-                                                    status_code = 400,
-                                                    finish_reason_cause = "shrink_context_failed",
                                                 )
                         # endregion
                         
@@ -691,10 +710,9 @@ class Core:
                             if isinstance(model, StaticModelAPI):
                                 api_key = model.api_key
                             else:
-                                return Response(
-                                    content = "Error: Model API key not found",
-                                    status = 503,
-                                    finish_reason_cause = "api_key_not_found",
+                                raise HTTPException(
+                                    status_code = 503,
+                                    message = "Error: Model API key not found",
                                 )
                             request.key = api_key
                             
@@ -793,7 +811,11 @@ class Core:
                                 else:
                                     save_new_only = ConfigManager.get_configs().context.save_new_only
                             
-                            enable_assistant_template = ConfigManager.get_configs().text_template.enable_assistant_template
+                            enable_assistant_template = ConfigManager.get_configs().text_template.enable.assistant_template
+
+                            request_statistics_template = configs.request_statistics_template
+                            if request_statistics_template is None:
+                                request_statistics_template = ConfigManager.get_configs().text_template.request_statistics_template
                         # endregion
                     
                     # 记录预处理结束时间
@@ -996,6 +1018,16 @@ class Core:
 
                 output.finish_reason_cause = response.finish_reason_cause
                 output.finish_reason_code = response.finish_reason.value
+                output.request_log = response.calling_log
+
+                if ConfigManager.get_configs().text_template.enable.request_statistics_template:
+                    output.request_statistics = await asyncio.to_thread(
+                        template_parser.render_ex,
+                        ConfigManager.get_configs().text_template.request_statistics_template,
+                        user_id,
+                        request_log = response.calling_log,
+                        **extra_template_fields
+                    )
 
                 return output
     # endregion

@@ -8,21 +8,32 @@ from loguru import logger
 from datetime import datetime
 from fastapi.responses import ORJSONResponse
 
-from ....CriticalException import CriticalException
+from ....SpecialException import CriticalException, HTTPException
 from ....Global_Config_Manager import ConfigManager
 from .._shutdown_server import shutdown_server
 from .._save_error_traceback import save_error_traceback
 from .._error_output_model import ErrorResponse
 from ._traceback import format_traceback
 
-async def exception_handler(error: BaseException) -> None:
+async def exception_handler(error: BaseException) -> ORJSONResponse:
     error_time = time.time_ns()
 
-    # 判断是否为CriticalException
+    error_code = 500
+    exception_message = str(error)
+    extra_data = None
+
+    # 判断是否为特殊Exception
     if isinstance(error, CriticalException):
         is_critical_exception: bool = True
     else:
         is_critical_exception: bool = False
+    
+    if isinstance(error, HTTPException):
+        error_code = error.status_code
+        extra_data = error.detail
+        is_http_exception: bool = True
+    else:
+        is_http_exception: bool = False
 
     if ConfigManager.get_configs().global_exception_handler.repeater_traceback.enable:
         traceback_str = await format_traceback(
@@ -77,14 +88,17 @@ async def exception_handler(error: BaseException) -> None:
             )
     
     error_response = ErrorResponse(
-        error_code = 500,
+        error_code = error_code,
         timestamp_ns = error_time,
         unix_timestamp = error_time // 1_000_000_000,
         source_exception = type(error).__name__,
-        exception_message = str(error)
+        exception_message = exception_message,
+        extra_body = extra_data
     )
     if is_critical_exception:
         error_response.error_message = ConfigManager.get_configs().global_exception_handler.critical_error_message
+    elif is_http_exception:
+        error_response.error_message = error.message
     else:
         error_response.error_message = ConfigManager.get_configs().global_exception_handler.error_message
     

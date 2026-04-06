@@ -9,7 +9,7 @@ from fastapi.responses import (
     ORJSONResponse,
     StreamingResponse
 )
-from fastapi.exceptions import (
+from ....SpecialException import (
     HTTPException
 )
 from ..._resource import Resource
@@ -52,21 +52,15 @@ async def chat_endpoint(
     try:
         response = await Resource.chat_task_pool.run_task(user_id, chat_coroutine)
     except asyncio.CancelledError:
-        response = Response(
-            content = "Chat Completion Task Cancelled or System Abnormal Shutdown.",
-            status = 409 # Conflict
-        )
-        return ORJSONResponse(
-            response.model_dump(
-                exclude_defaults = True
-            ),
-            status_code=response.status
+        raise HTTPException(
+            message = "Chat Completion Task Cancelled or System Abnormal Shutdown.",
+            status_code = 409 # Conflict
         )
         
     if isinstance(response, Response):
         return ORJSONResponse(
             response.model_dump(
-                exclude_defaults = True
+                exclude_none = True
             ),
             status_code=response.status
         )

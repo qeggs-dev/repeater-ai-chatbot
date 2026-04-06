@@ -28,6 +28,14 @@ class ModelsResponse(BaseModel):
     message: str = ""
     models: list[ModelAPI | StaticModelAPI] = Field(default_factory=list)
 
+class ModelAPIResponse(ModelsResponse):
+    message: str = ""
+    models: list[ModelAPI] = Field(default_factory=list)
+
+class StaticModelAPIResponse(ModelsResponse):
+    message: str = ""
+    models: list[StaticModelAPI] = Field(default_factory=list)
+
 class APIKeyResponse(BaseModel):
     message: str = ""
     api_keys: list[str] = Field(default_factory=list)
