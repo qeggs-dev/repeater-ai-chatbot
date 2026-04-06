@@ -10,7 +10,7 @@ from fastapi import HTTPException
 from loguru import logger
 
 @Resource.app.post("/userdata/context/withdraw/{user_id}")
-async def withdraw_context(user_id: str, context_pair_num: int = Form(1, gt=0)):
+async def withdraw_context(user_id: str, context_pair_num: int = Form(1, gt=0), paired: bool = Form(True)):
     """
     Endpoint for withdrawing context
 
@@ -25,20 +25,26 @@ async def withdraw_context(user_id: str, context_pair_num: int = Form(1, gt=0)):
     context_loader = await Resource.core.get_context_loader()
     context = await context_loader.load_context(user_id)
     pop_items: list[ContextObject] = []
-    
-    try:
-        for _ in range(context_pair_num):
-            pop_items.append(
-                context.withdraw()
+
+    if paired:
+        try:
+            for _ in range(context_pair_num):
+                pop_items.append(
+                    context.withdraw()
+                )
+        except (ValueError, IndexError) as e:
+            raise HTTPException(400, str(e)) from e
+        
+        pop_context = ContextObject()
+        for item in pop_items[::-1]:
+            pop_context.context_list.extend(
+                item.context_list
             )
-    except (ValueError, IndexError) as e:
-        raise HTTPException(400, str(e)) from e
-    
-    pop_context = ContextObject()
-    for item in pop_items[::-1]:
-        pop_context.context_list.extend(
-            item.context_list
-        )
+    else:
+        try:
+            pop_context = context.pop_last_n(context_pair_num)
+        except (ValueError, IndexError) as e:
+            raise HTTPException(400, str(e)) from e
     
     # 返回ORJSONResponse，新的上下文内容
     await context_loader.save(user_id, context)
