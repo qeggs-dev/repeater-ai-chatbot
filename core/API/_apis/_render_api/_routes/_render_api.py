@@ -4,15 +4,6 @@ import aiofiles
 from ...._resource import Resource
 from .....Markdown_Render import (
     markdown_to_html,
-    Styles,
-)
-from .....Markdown_Render.html_render import (
-    RenderConfig,
-    NewBrowserContext,
-)
-from fastapi import (
-    HTTPException,
-    Request
 )
 from fastapi.responses import ORJSONResponse
 from loguru import logger
@@ -25,7 +16,6 @@ from .....Lifespan import (
 )
 from .....Delayed_Tasks_Pool import DelayedTasksPool
 from .._assists import (
-    delete_image,
     get_style
 )
 from .._requests import (
@@ -35,15 +25,15 @@ from .._responses import (
     Render_Response,
     RenderTime
 )
+from .....SpecialException import HTTPException
 
 delayed_tasks_pool = DelayedTasksPool()
 ExitHandler.add_function(delayed_tasks_pool.cancel_all())
 
 @Resource.app.post("/render/{user_id}")
 async def render(
-    request: Request,
     user_id: str,
-    render_request:RenderRequest
+    request:RenderRequest
 ):
     """
     Endpoint for rendering markdown text to image
@@ -53,46 +43,39 @@ async def render(
     global_configs = ConfigManager.get_configs()
 
     # 检查请求是否合法
-    if not render_request.text:
-        raise HTTPException(status_code=400, detail="text is required")
+    if not request.text:
+        raise HTTPException(status_code=400, message="text is required")
     
-    if render_request.direct_output and not global_configs.render.markdown.allow_direct_output:
-        raise HTTPException(status_code=400, detail="direct_output is not allowed")
+    if request.direct_output and not global_configs.render.markdown.allow_direct_output:
+        raise HTTPException(status_code=400, message="direct_output is not allowed")
     
-    if render_request.style and not global_configs.render.markdown.allow_custom_styles:
-        raise HTTPException(status_code=400, detail="custom style is not allowed")
+    if request.style and not global_configs.render.markdown.allow_custom_styles:
+        raise HTTPException(status_code=400, message="custom style is not allowed")
     
-    if render_request.html_template and not global_configs.render.markdown.allow_custom_html_templates: 
-        raise HTTPException(status_code=400, detail="custom html_template is not allowed")
-    
-    # 生成图片ID
-    fuuid = uuid4()
-    filename = f"{fuuid}{global_configs.render.to_image.output_suffix}"
-    render_output_image_dir = Path(global_configs.render.to_image.output_dir)
+    if request.html_template and not global_configs.render.markdown.allow_custom_html_templates: 
+        raise HTTPException(status_code=400, message="custom html_template is not allowed")
     
     # 获取用户配置
     config = await Resource.core.user_config_manager.load(user_id)
         
     style_name, css = await get_style(
-        request = render_request,
+        request = request,
         user_configs = config,
         static_resources_client = Resource.core.static_resources_client,
     )
     
-    if not render_request.image_expiry_time:
+    if not request.image_expiry_time:
         render_url_expiry_time = global_configs.render.default_image_timeout
     else:
-        render_url_expiry_time = render_request.image_expiry_time
+        render_url_expiry_time = request.image_expiry_time
     
     # 日志打印文件名和渲染风格
     logger.info(
-        "Rendering image {file_name} for \"{style_name}\" style",
+        "Rendering image for \"{style_name}\" style",
         user_id = user_id,
-        file_name = filename,
         style_name = style_name
     )
 
-    browser_type = global_configs.render.to_image.browser_type
     preprocess_map_before = global_configs.render.markdown.preprocess_map.before
     preprocess_map_after = global_configs.render.markdown.preprocess_map.after
     html_template_dir = URL(global_configs.render.markdown.html_template_base_path)
@@ -101,11 +84,9 @@ async def render(
     html_template_suffix = global_configs.render.markdown.html_template_suffix
     title = config.render_title if config.render_title is not None else global_configs.render.markdown.title
 
-    width = render_request.width if render_request.width is not None else global_configs.render.to_image.width
-    height = render_request.height if render_request.height is not None else global_configs.render.to_image.height
-    quality = render_request.quality if render_request.quality is not None else global_configs.render.to_image.quality
-    if render_request.document_bottom_comment:
-        document_bottom_comment = render_request.document_bottom_comment
+    width = request.width if request.width is not None else global_configs.render.markdown.width
+    if request.document_bottom_comment:
+        document_bottom_comment = request.document_bottom_comment
     else:
         document_bottom_comment = config.render_document_bottom_comment if config.render_document_bottom_comment is not None else global_configs.render.markdown.document_bottom_comment
     environment = global_configs.text_template.sandbox.get_jinja_env()
@@ -114,7 +95,7 @@ async def render(
 
     no_pre_labels = global_configs.render.markdown.no_pre_labels
     if no_pre_labels is None:
-        no_pre_labels = render_request.no_pre_labels
+        no_pre_labels = request.no_pre_labels
 
     allowed_tags = global_configs.render.markdown.allowed_tags
     allowed_attrs = global_configs.render.markdown.allowed_attrs
@@ -123,8 +104,8 @@ async def render(
     markdown_extensions = global_configs.render.markdown.extensions
 
     # 读取HTML模板
-    if render_request.html_template is not None:
-        html_template = render_request.html_template
+    if request.html_template is not None:
+        html_template = request.html_template
     else:
         html_template_file = html_template_dir / f"{html_template_name}{html_template_suffix}"
         html_template = await Resource.core.static_resources_client.get_text(
@@ -136,14 +117,14 @@ async def render(
 
     # 调用生成HTML
     html = await markdown_to_html(
-        input_text = render_request.text,
+        input_text = request.text,
         html_template = html_template,
         environment = environment,
         width = width,
         title = title,
         css = css,
         style_name = style_name,
-        direct_output = render_request.direct_output,
+        direct_output = request.direct_output,
         markdown_extensions = markdown_extensions,
         allowed_tags = allowed_tags,
         allowed_attrs = allowed_attrs,
@@ -157,52 +138,26 @@ async def render(
     end_of_md_to_html = time.monotonic_ns()
 
     # 生成图片
-    result = await Resource.browser_pool_manager.render_html(
-        html_content = html,
-        output_path = str(render_output_image_dir / filename),
-        browser_type = browser_type,
-        config = RenderConfig(
-            width = width,
-            height = height,
-            quality = quality
-        ),
-        new_context = NewBrowserContext(
-            base_url = base_url
-        )
-    )
+    response = await Resource.html_render_client.render(html)
+    result = response.get_data()
+    if result is None:
+        raise HTTPException(status_code=500, message="The response data could not be obtained correctly.")
+    
+    fileurl = result.image_url
+
+    create_ms = result.created_ms
+    created = result.created
 
     end_of_render = time.monotonic_ns()
 
-    create_ms = time.time_ns() // 10**6
-    create = create_ms // 1000
-    logger.info(f"Created image {filename}", user_id = user_id)
-
-    # 添加一个后台任务，时间到后删除图片
-    await delayed_tasks_pool.add_task(
-        render_url_expiry_time,
-        delete_image(
-            user_id = user_id,
-            render_output_image_dir = render_output_image_dir,
-            filename = filename
-        ),
-        id = "Markdown Render Image Timing Deleter"
-    )
-
-    # 生成图片的URL
-    fileurl = request.url_for("render_file", file_uuid=fuuid)
-
     return ORJSONResponse(
         Render_Response(
-            image_url = str(fileurl),
-            file_uuid = str(fuuid),
+            image_url = fileurl,
+            file_uuid = result.file_uuid,
             style = style_name,
-            status = result.status,
-            browser_used = result.browser_used,
             url_expiry_time = render_url_expiry_time,
-            error = result.error,
-            text = render_request.text,
-            image_render_time_ms = result.render_time_ms,
-            created = create,
+            text = request.text,
+            created = created,
             created_ms = create_ms,
             details_time = RenderTime(
                 preprocess = end_of_preprocessing - start_time,

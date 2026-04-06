@@ -40,7 +40,7 @@ async def upload_env_to_nexus(user_id: str, request: UploadRequest):
         )
 
     if response.code == 200:
-        data = response.data()
+        data = response.get_data()
         if data is None:
             return ORJSONResponse(
                 content=UploadResponse(

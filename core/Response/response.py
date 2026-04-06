@@ -1,4 +1,4 @@
-from httpx import Response
+from httpx import Response as HttpxResponse
 from typing import (
     TypeVar,
     Generic,
@@ -10,11 +10,11 @@ from loguru import logger
 
 T = TypeVar("T", bound = BaseModel)
 
-class NexusResponse(Generic[T]):
-    """Nexus Response Model"""
+class Response(Generic[T]):
+    """Response Model"""
     def __init__(
             self,
-            response: Response,
+            response: HttpxResponse,
             model: Type[T] | None = None
         ) -> None:
         self._response = response
@@ -37,7 +37,7 @@ class NexusResponse(Generic[T]):
         except:
             return self._response.text
     
-    def data(self) -> T | None:
+    def get_data(self) -> T | None:
         if self._model is None:
             raise ValueError("Model is not set")
         try:

@@ -35,7 +35,7 @@ async def upload_to_nexus(user_id: str, user_data_type: UserDataType, request: U
         )
 
     if response.code == 200:
-        data = response.data()
+        data = response.get_data()
         if data is None:
             return ORJSONResponse(
                 content=UploadResponse(

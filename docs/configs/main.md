@@ -43,11 +43,11 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
     },
     "render": {
         "to_image": {
-            // 也建议填写，除非你对 playwright 安装了独立的浏览器
-            "executable_path" : "", // 这里填写你安装的任意浏览器可执行文件的路径
-            
-            // 非常建议填写，用于过滤掉一些路由，比如某些内网资源，防止恶意请求获取到敏感信息
-            "route_blacklist_file": "./config/route_blacklist.regex"
+            // 建议填写，除非你完全用不到 Markdown 图片渲染功能
+            "base_url": "",
+
+            // 建议填高一点，渲染时间可能会比较长
+            "timeout": 600.0,
         }
     },
     // 建议填写
@@ -464,36 +464,11 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
 
         // HTML 到图片的渲染器配置
         "to_image": {
-            // 最多允许在一个浏览器中打开多少个页面
-            "max_pages_per_browser": 5,
+            // 渲染服务的 Base URL
+            "base_url": "",
 
-            // 最多允许同时打开的浏览器数量
-            "max_browsers": 2,
-
-            // 浏览器类型
-            "browser_type": "msedge",
-
-            // 浏览器是否为无头模式
-            "headless": true,
-
-            // 路由黑名单文件路径
-            // 格式为 RegexChecker 格式
-            // 详情参考本目录下的 regex_checker.md
-            // 默认没有黑名单
-            "route_blacklist_file": null,
-
-            // 输出图片的目录
-            "output_dir": "./workspace/temp/render",
-
-            // 输出图片的格式
-            "output_suffix": ".png",
-
-            // 浏览器的可执行文件路径
-            "executable_path": "",
-
-            // 浏览器窗口大小
-            "width": 1200,
-            "height": 600
+            // 渲染服务请求超时时间
+            "timeout": 600.0,
         }
     },
 
