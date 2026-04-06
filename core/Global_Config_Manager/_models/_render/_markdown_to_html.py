@@ -1,7 +1,7 @@
 from pydantic import BaseModel, Field, ConfigDict
-from ._preprocess_map import Preprocess_Map_Config
+from ._preprocess_map import PreprocessMapConfig
 
-class Markdown_To_HTML_Config(BaseModel):
+class MarkdownToHTMLConfig(BaseModel):
     model_config = ConfigDict(case_sensitive=False)
 
     default_style: str = "light"
@@ -37,6 +37,6 @@ class Markdown_To_HTML_Config(BaseModel):
     }
     allowed_protocols: list[str] = ["http", "https", "mailto"]
     no_pre_labels: bool | None = False
-    preprocess_map: Preprocess_Map_Config = Field(default_factory=Preprocess_Map_Config)
+    preprocess_map: PreprocessMapConfig = Field(default_factory=PreprocessMapConfig)
     title: str = "Repeater Image Generator"
     document_bottom_comment: str = ""

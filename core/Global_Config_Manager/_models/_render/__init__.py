@@ -1,11 +1,11 @@
 from ._render import RenderConfig
-from ._preprocess_map import Preprocess_Map_Config
-from ._markdown_to_html import Markdown_To_HTML_Config
-from ._html_to_image import HTML_To_Image_Config
+from ._preprocess_map import PreprocessMapConfig
+from ._markdown_to_html import MarkdownToHTMLConfig
+from ._html_to_image import HTMLToImageConfig
 
 __all__ = [
     "RenderConfig",
-    "Preprocess_Map_Config",
-    "Markdown_To_HTML_Config",
-    "HTML_To_Image_Config",
+    "PreprocessMapConfig",
+    "MarkdownToHTMLConfig",
+    "HTMLToImageConfig",
 ]
