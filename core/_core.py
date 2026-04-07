@@ -34,6 +34,8 @@ from .User_Config_Manager import (
     UserConfigs
 )
 from .Pools.lock_pool import AsyncLockPool
+from .Pools.resource_pool import ResourcePool
+from .TextBuffer import ContentBuffer
 from RegexChecker import RegexChecker
 from .Global_Config_Manager import ConfigManager
 from .Assist_Struct import (
@@ -71,11 +73,11 @@ class Core:
         self.user_config_manager: UserConfigManager = UserConfigManager()
 
         # 初始化Client并设置并发大小
-        self.api_client = CompletionsAPI.ClientNoStream(
+        self.api_client = CompletionsAPI.NoStreamClient(
             ConfigManager.get_configs().callapi.max_concurrency
             if max_concurrency is None else max_concurrency
         )
-        self.stream_api_client = CompletionsAPI.ClientStream(
+        self.stream_api_client = CompletionsAPI.StreamClient(
             ConfigManager.get_configs().callapi.max_concurrency
             if max_concurrency is None else max_concurrency
         )
@@ -94,6 +96,8 @@ class Core:
 
         # 初始化锁池
         self.namespace_locks: AsyncLockPool = AsyncLockPool()
+
+        self.content_buffers_pool: ResourcePool[ContentBuffer] = ResourcePool()
 
         # 初始化调用日志管理器
         self.request_log = Request_Log.RequestLogManager(
@@ -723,6 +727,10 @@ class Core:
                                 user_info = user_info,
                                 role_name = role_name,
                             )
+                            
+                            # 创建内容缓冲区
+                            content_buffer = ContentBuffer()
+                            self.content_buffers_pool.add_resource(user_id, content_buffer)
 
                             # 设置请求对象的参数信息
                             request.user_name = user_info.nickname
@@ -830,11 +838,13 @@ class Core:
                                 async def generator_wrapper(generator: CompletionsAPI.StreamingResponseGenerationLayer) -> AsyncIterator[CompletionsAPI.Delta]:
                                     async for chunk in generator:
                                         yield chunk
+                                
                                 async def post_treatment(response: CompletionsAPI.Response):
                                     """
                                     包装后处理函数，以传递更多数据
                                     """
                                     nonlocal output
+                                    await self.content_buffers_pool.remove_resource(user_id)
                                     output = await self._post_treatment(
                                         user_id = user_id,
                                         output = output,
@@ -851,9 +861,11 @@ class Core:
                                         prepare_start_time = prepare_start_time,
                                         save_only_text = save_only_text,
                                     )
+                                
                                 response_iterator = await self.stream_api_client.submit_request(
                                     user_id = user_id,
                                     request = request,
+                                    content_buffer = content_buffer.content_buffer,
                                     response_callback = post_treatment,
                                     status_map = self.task_status_map
                                 )
