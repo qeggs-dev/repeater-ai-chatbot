@@ -59,17 +59,30 @@ async def exception_handler(error: BaseException) -> ORJSONResponse:
             user_id = "[Global Exception Recorder]",
             traceback = traceback_str,
         )
-    else:
-        logger.exception(
+    elif is_http_exception and not (500 <= error.status_code < 600):
+        logger.error(
             (
-                "Exception: \n"
+                "HTTPException: \n"
                 "{traceback}"
             ),
             user_id = "[Global Exception Recorder]",
             traceback = traceback_str
         )
+    else:
+        if is_http_exception:
+            prompt = "HTTPException"
+        else:
+            prompt = "Exception"
+        logger.exception(
+            (
+                "{prompt}: \n"
+                "{traceback}"
+            ),
+            prompt = prompt,
+            user_id = "[Global Exception Recorder]",
+            traceback = traceback_str
+        )
 
-    
     # 记录Traceback
     if ConfigManager.get_configs().global_exception_handler.traceback_save_to:
         await save_error_traceback(
