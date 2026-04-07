@@ -13,7 +13,7 @@ from AdminApikeyManager import AdminKeyManager
 from RegexChecker import RegexChecker
 from .._core import Core
 from ..Global_Config_Manager import ConfigManager
-from ..Awaitable_Pool import TaskPool
+from ..Pools.awaitable_pool import TaskPool
 from ..Markdown_Render import HTMLRenderClient
 from ..Logger_Init import logger_init
 from ._lifespan import lifespan

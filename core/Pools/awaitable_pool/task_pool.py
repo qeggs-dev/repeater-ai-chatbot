@@ -6,7 +6,7 @@ from typing import (
     TypeVar,
 )
 from loguru import logger
-from ..Lock_Pool import AsyncLockPool
+from ..lock_pool import AsyncLockPool
 
 T = TypeVar("T")
 

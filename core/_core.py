@@ -33,7 +33,7 @@ from .User_Config_Manager import (
     ConfigManager as UserConfigManager,
     UserConfigs
 )
-from .Lock_Pool import AsyncLockPool
+from .Pools.lock_pool import AsyncLockPool
 from RegexChecker import RegexChecker
 from .Global_Config_Manager import ConfigManager
 from .Assist_Struct import (
