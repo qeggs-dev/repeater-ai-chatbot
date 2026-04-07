@@ -730,7 +730,7 @@ class Core:
                             
                             # 创建内容缓冲区
                             content_buffer = ContentBuffer()
-                            self.content_buffers_pool.add_resource(user_id, content_buffer)
+                            await self.content_buffers_pool.add_resource(user_id, content_buffer)
 
                             # 设置请求对象的参数信息
                             request.user_name = user_info.nickname
@@ -865,7 +865,7 @@ class Core:
                                 response_iterator = await self.stream_api_client.submit_request(
                                     user_id = user_id,
                                     request = request,
-                                    content_buffer = content_buffer.content_buffer,
+                                    content_buffer = content_buffer,
                                     response_callback = post_treatment,
                                     status_map = self.task_status_map
                                 )
@@ -875,6 +875,7 @@ class Core:
                                 response = await self.api_client.submit_request(
                                     user_id = user_id,
                                     request = request,
+                                    content_buffer = content_buffer,
                                     status_map = self.task_status_map
                                 )
                                 
