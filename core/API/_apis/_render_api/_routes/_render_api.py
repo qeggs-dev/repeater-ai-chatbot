@@ -14,7 +14,7 @@ from .....Global_Config_Manager import ConfigManager
 from .....Lifespan import (
     ExitHandler
 )
-from .....Delayed_Tasks_Pool import DelayedTasksPool
+from .....Pools.delayed_tasks_pool import DelayedTasksPool
 from .._assists import (
     get_style
 )

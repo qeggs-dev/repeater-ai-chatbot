@@ -1,3 +1,3 @@
 from ._client import ClientBase
-from ._no_stream import ClientNoStream
-from ._stream import ClientStream
+from ._no_stream import NoStreamClient
+from ._stream import StreamClient

@@ -20,20 +20,31 @@ from .._caller import (
     CallAPI,
     StreamAPI
 )
+from ....TextBuffer import ContentBuffer
 from ....Status_Map import StatusMap
 from .._exceptions import *
 from .._caller import StreamingResponseGenerationLayer
 from ._client import ClientBase
 
-class ClientNoStream(ClientBase):
+class NoStreamClient(ClientBase):
     """Client without stream"""
     
-    async def submit_request(self, user_id:str, request: Request, status_map: StatusMap[str, str]) -> Response:
+    async def submit_request(
+            self,
+            user_id:str,
+            request: Request,
+            content_buffer: ContentBuffer,
+            status_map: StatusMap[str, str]) -> Response:
         """提交请求，并等待API返回结果"""
         try:
             response = await self._submit_task(user_id, request, status_map)
             if not isinstance(response, Response):
-                generator = StreamingResponseGenerationLayer(user_id, request, response)
+                generator = StreamingResponseGenerationLayer(
+                    user_id = user_id,
+                    request = request,
+                    content_buffer = content_buffer,
+                    response_iterator = response
+                )
                 async for chunk in generator:
                     pass
                 output = generator.response
