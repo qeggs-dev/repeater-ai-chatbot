@@ -7,6 +7,7 @@ from ...Context_Manager import ContentUnit, ContentRole, FunctionResponseUnit
 from ...Request_Log import TimeStamp
 from ...Global_Config_Manager import ConfigManager
 from ...Logger_Init import config_to_log_level, LogLevel
+from ...TextBuffer import ContentBuffer
 from loguru import logger
 
 class StreamingResponseGenerationLayer:
@@ -26,6 +27,7 @@ class StreamingResponseGenerationLayer:
             self,
             user_id: str,
             request: Request,
+            content_buffer: ContentBuffer,
             response_iterator: AsyncGenerator[Delta, None],
             print_file: TextIO = sys.stdout
         ) -> None:
@@ -75,8 +77,7 @@ class StreamingResponseGenerationLayer:
         self.chunk_times:list[TimeStamp] = []
 
         # 文本缓冲区
-        self._content_buffer: list[str] = []
-        self._reasoning_buffer: list[str] = []
+        self._content_buffer = content_buffer
 
         self._print_chunk = config_to_log_level(ConfigManager.get_configs().logger.level) > LogLevel.TRACE
     
@@ -100,10 +101,10 @@ class StreamingResponseGenerationLayer:
         # 添加上下文
         self.model_response_content_unit:ContentUnit = ContentUnit()
         self.model_response_content_unit.role = self.request.output_role
-        if self._reasoning_buffer:
-            self.model_response_content_unit.reasoning_content = "".join(self._reasoning_buffer)
+        if self._content_buffer.reasoning_buffer:
+            self.model_response_content_unit.reasoning_content = str(self._content_buffer.reasoning_buffer)
         if self._content_buffer:
-            self.model_response_content_unit.content = "".join(self._content_buffer)
+            self.model_response_content_unit.content = str(self._content_buffer.content_buffer)
         self.response.historical_context = self.request.context
         self.response.new_context.append(self.model_response_content_unit)
 
@@ -155,13 +156,13 @@ class StreamingResponseGenerationLayer:
         # 记录模型推理响应内容
         if delta_data.reasoning_content:
             if self.request.print_chunk:
-                if not self._reasoning_buffer:
+                if not self._content_buffer.reasoning_buffer:
                     self._print_file.write("\n\n")
                 if self._print_chunk:
                     self._print_file.write(f"\033[7m{delta_data.reasoning_content}\033[0m")
                     self._print_file.flush()
                 logger.trace("Received Reasoning_Content chunk: {reasoning_content}", user_id = self.user_id, reasoning_content = repr(delta_data.reasoning_content))
-            self._reasoning_buffer.append(delta_data.reasoning_content)
+            self._content_buffer.reasoning_buffer.push(delta_data.reasoning_content)
         
         # 记录模型响应内容
         if delta_data.content:
@@ -172,7 +173,7 @@ class StreamingResponseGenerationLayer:
                     self._print_file.write(delta_data.content)
                     self._print_file.flush()
                 logger.trace("Received Content chunk: {content}", user_id = self.user_id, content = repr(delta_data.content))
-            self._content_buffer.append(delta_data.content)
+            self._content_buffer.content_buffer.push(delta_data.content)
         
         if delta_data.system_fingerprint:
             self.response.system_fingerprint = delta_data.system_fingerprint

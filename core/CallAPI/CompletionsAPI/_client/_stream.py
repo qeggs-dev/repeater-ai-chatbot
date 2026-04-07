@@ -19,20 +19,33 @@ from .._objects import (
 from .._caller import (
     StreamAPI
 )
+from ....TextBuffer import ContentBuffer
 from ....Status_Map import StatusMap
 from .._exceptions import *
 from .._caller import StreamingResponseGenerationLayer
 from ._client import ClientBase
 
-class ClientStream(ClientBase):
+class StreamClient(ClientBase):
     """Client with stream"""
     
-    async def submit_request(self, user_id:str, request: Request, status_map: StatusMap[str, str], response_callback: Callable[[Response], Awaitable[None]] | None = None) -> AsyncIterator[Delta]:
+    async def submit_request(
+            self,
+            user_id:str,
+            request: Request,
+            content_buffer: ContentBuffer,
+            status_map: StatusMap[str, str],
+            response_callback: Callable[[Response], Awaitable[None]] | None = None
+        ) -> AsyncIterator[Delta]:
         """提交请求，并等待API返回结果"""
         try:
             generator: AsyncIterator[Delta] = self._submit_task(user_id, request, status_map)
             async def stream() -> AsyncIterator[Delta]:
-                warping_generator = StreamingResponseGenerationLayer(user_id, request, generator)
+                warping_generator = StreamingResponseGenerationLayer(
+                    user_id = user_id,
+                    request = request,
+                    content_buffer = content_buffer,
+                    response_iterator = generator
+                )
                 async for delta in warping_generator:
                     yield delta
                 await self._preprocess_response(user_id, request, warping_generator.response, status_map)

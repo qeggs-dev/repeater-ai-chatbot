@@ -25,7 +25,7 @@ from .._exceptions import *
 from .._caller import StreamingResponseGenerationLayer
 from ._client import ClientBase
 
-class ClientNoStream(ClientBase):
+class NoStreamClient(ClientBase):
     """Client without stream"""
     
     async def submit_request(self, user_id:str, request: Request, status_map: StatusMap[str, str]) -> Response:

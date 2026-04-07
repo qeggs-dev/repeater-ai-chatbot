@@ -1,7 +1,7 @@
 from ._client import (
     ClientBase,
-    ClientNoStream,
-    ClientStream
+    NoStreamClient,
+    StreamClient
 )
 from ._caller import StreamingResponseGenerationLayer
 from ._objects import (
@@ -17,8 +17,8 @@ from . import _exceptions as Exceptions
 
 __all__ = [
     "ClientBase",
-    "ClientNoStream",
-    "ClientStream",
+    "NoStreamClient",
+    "StreamClient",
     "StreamingResponseGenerationLayer",
     "Request",
     "TokensCount",
