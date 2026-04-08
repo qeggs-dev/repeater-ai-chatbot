@@ -90,7 +90,7 @@ class ContextLoader:
             config = await self._config_manager.load(user_id)
             
             # 获取默认提示词文件名
-            parset_prompt_name = config.parset_prompt_name or GlobalConfigManager.get_configs().prompt.preset_name
+            parset_prompt_name = config.preset_prompt_name or GlobalConfigManager.get_configs().prompt.preset_name
             parset_prompt_encoding = GlobalConfigManager.get_configs().prompt.encoding
             suffix = GlobalConfigManager.get_configs().prompt.suffix
 
