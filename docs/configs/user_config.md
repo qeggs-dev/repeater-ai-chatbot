@@ -16,9 +16,9 @@
     
     // (str) 预设提示词
     // 用于快速路由定义好的提示词文件
-    "parset_prompt_name": null,
+    "preset_prompt_name": null,
 
-    // (str) 模型UID
+    // (str | list[str]) 模型UID
     // 用于指定消息处理模型
     // 允许指定多个模型
     "model_uid": null,
@@ -76,6 +76,10 @@
     // 但某些 API 可能会因此调用失败
     "remove_reasoning_prompt": null,
 
+    // (str) Request Statistics Message 模板
+    // 用于生成一段自定义的统计文本
+    "request_statistics_template": null,
+
     // (str) 渲染风格
     // 用于指定文本转图片时的CSS样式文件
     "render_style": null,
@@ -91,10 +95,6 @@
     // (str) 渲染尾部注释
     // 在生成图片的最下方添加一小段独立文本
     "render_document_bottom_comment": null,
-
-    // (str) Request Statistics Message 模板
-    // 用于生成一段自定义的统计文本
-    "request_statistics_template": null,
 
     // (bool) 是否加载提示词
     // 此选项会被API接口中传入的 load_prompt 参数覆盖
@@ -116,12 +116,20 @@
     "user_name": null,
 
     // (str) 用户资料
-    // 如果提示词中含有{user_profile}变量
+    // 如果提示词中含有{{user_profile}}变量
     // 将会展开为该值
     "user_profile": null,
+
+    // (int | float) 用户自定义年龄
+    // 这个值在模板中为 `user_custom_age`
+    "user_age": null,
+
+    // (str) 用户性别
+    // 这个值在模板中为 `user_custom_gender`
+    "user_gender": null,
     
     // (str) 时区设置
-    // 用于控制模板展开器中的{time}变量
+    // 用于控制模板展开器中的时间变量
     "timezone": null,
 
     // (bool) 是否允许跨用户数据访问
