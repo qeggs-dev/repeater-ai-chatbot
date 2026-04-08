@@ -11,7 +11,7 @@ class UserConfigs(BaseModel):
         validate_assignment=True
     )
 
-    parset_prompt_name: str | None = None
+    preset_prompt_name: str | None = None
     model_uid: str | list[str] | None = None
     temperature: float | None = Field(None, ge=0.0, le=2.0)
     top_p: float | None = Field(None, ge=0.0, le=1.0)
@@ -24,17 +24,23 @@ class UserConfigs(BaseModel):
     presence_penalty: float | None = Field(None, ge=-2.0, le=2.0)
     context_shrink_limit: int | None = None
     remove_reasoning_prompt: bool | None = None
+    request_statistics_template: str | None = None
+
     render_style: str | None = None
     render_html_template: str | None = None
     render_title: str | None = None
     render_document_bottom_comment: str | None = None
-    request_statistics_template: str | None = None
+
     load_prompt: bool | None = None
     save_context: bool | None = None
     save_new_only: bool | None = None
     save_text_only: bool | None = None
+
     user_name: str | None = None
     user_profile: str | None = None
+    user_age: int | float | None = None
+    user_gender: str | None = None
+
     timezone: float | str | None = None
     cross_user_data_access: bool | None = None
     new_requests_text_only: bool | None = None
