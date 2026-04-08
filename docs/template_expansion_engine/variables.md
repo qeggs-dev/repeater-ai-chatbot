@@ -2,14 +2,17 @@
 
 - **Variables:**
   - `now`(datetime): 当前时间
+  - `pymath`(module): Python 的数学模块
   - `version`(str): 当前版本号
   - `user_id`(str): 用户ID
   - `user_name`(str): 用户名
   - `user_info`(dict): 用户信息
   - `nick_name`(str): 用户昵称
-  - `user_age`(int): 用户年龄
+  - `user_age`(int | float): 用户年龄
   - `user_gender`(str): 用户性别
-  - `user_custom_name`(str): 用户自定义名称
+  - `user_custom_name`(str | null): 用户自定义名称
+  - `user_custom_age`(int | float | null): 用户自定义年龄
+  - `user_custom_gender`(str | null): 用户自定义性别
   - `model_uid`(str): 模型ID
   - `model_name`(str): 模型名称
   - `model_type`(str): 模型类型
