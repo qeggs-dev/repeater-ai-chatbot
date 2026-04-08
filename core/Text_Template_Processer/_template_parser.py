@@ -1,3 +1,4 @@
+import math
 import json
 import random
 import secrets
@@ -133,6 +134,7 @@ class TemplateParser:
         return self.render(
             text,
             user_id = user_id,
+            pymath = math,
             date_countdown = date_countdown,
             escape_str = escape_string,
             version = self._global_config.text_template.version or __version__,
@@ -141,11 +143,13 @@ class TemplateParser:
             model_id = self._model.id,
             model_type = self._model.type.value,
             model_group = self._model.parent,
-            user_name = self._user_info.username or "",
-            nick_name = self._user_info.nickname or "",
-            user_age = self._user_info.age or "",
-            user_gender = self._user_info.gender or "",
+            user_name = self._user_info.username,
+            nick_name = self._user_info.nickname,
             user_custom_name = self._user_config.user_name,
+            user_age = self._user_info.age,
+            user_custom_age = self._user_config.user_age,
+            user_gender = self._user_info.gender,
+            user_custom_gender = self._user_config.user_gender,
             user_info = self._user_info.model_dump(exclude_none=True),
             zodiac = date_to_zodiac,
             time = lambda time_format = default_time_format: tz_now.strftime(time_format),
