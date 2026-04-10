@@ -857,6 +857,7 @@ class Core:
                                         task_start_time = task_start_time,
                                         cross_user_data_routing = cross_user_data_routing,
                                         enable_assistant_template = enable_assistant_template,
+                                        request_statistics_template = request_statistics_template,
                                         prepare_end_time = prepare_end_time,
                                         prepare_start_time = prepare_start_time,
                                         save_only_text = save_only_text,
@@ -891,6 +892,7 @@ class Core:
                                     task_start_time = task_start_time,
                                     cross_user_data_routing = cross_user_data_routing,
                                     enable_assistant_template = enable_assistant_template,
+                                    request_statistics_template = request_statistics_template,
                                     prepare_end_time = prepare_end_time,
                                     prepare_start_time = prepare_start_time,
                                     save_only_text = save_only_text,
@@ -927,6 +929,7 @@ class Core:
         prepare_start_time: Request_Log.TimeStamp,
         cross_user_data_routing: CrossUserDataRouting[str],
         extra_template_fields: dict[str, Any] | None = None,
+        request_statistics_template: str = "",
         user_input: ContentUnit | None = None,
         output: Response = Response(),
         save_context: bool | None = None,
@@ -1036,7 +1039,7 @@ class Core:
                 if ConfigManager.get_configs().text_template.enable.request_statistics_template:
                     output.request_statistics = await asyncio.to_thread(
                         template_parser.render_ex,
-                        ConfigManager.get_configs().text_template.request_statistics_template,
+                        request_statistics_template,
                         user_id,
                         request_log = response.calling_log,
                         **extra_template_fields

@@ -370,7 +370,7 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
     // Prompt 配置
     "prompt": {
         // 告诉 Prompt 加载器预设提示词目录的路径
-        "dir": "./config/prompt/presets",
+        "base_path": "/prompt/presets",
 
         // 预设提示词文件的后缀名
         "suffix": ".md",
