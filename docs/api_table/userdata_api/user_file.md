@@ -8,7 +8,7 @@
     - **method:** `GET`
   - **Response**
     - **type:** `File`
-    - **Response Body**:
+    - **Content:**
       - *\*用户数据ZIP文件*
 
 该文件通常会包含以下文件

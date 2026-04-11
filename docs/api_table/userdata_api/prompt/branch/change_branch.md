@@ -6,9 +6,9 @@
   - **Requset**
     - **method:** `PUT`
     - **type:** `FORM`
-    - **Request Body**:
+    - **Content:**
       - `new_branch_id` (str):  新的分支ID
   - **Response**
     - **type:** `Text`
-    - **Response Body**:
+    - **Content:**
       - "Prompt branch changed"

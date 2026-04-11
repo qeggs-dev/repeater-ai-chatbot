@@ -8,7 +8,7 @@
     - `X-Admin-API-Key` (str): API 密钥
   - **Response**
     - **type:** `Text`
-    - **Response Body**
+    - **Content:**
       - "Blacklist reloaded"
 
 注：该API没有经过测试，

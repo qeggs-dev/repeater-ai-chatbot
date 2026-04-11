@@ -5,5 +5,5 @@
     - **method**: `GET`
   - **Response**
     - **type**: `JSONL流`
-    - **Response Body**
+    - **Content:**
       - *\*每行一个[Request Log Object](../request_log_object.md)*

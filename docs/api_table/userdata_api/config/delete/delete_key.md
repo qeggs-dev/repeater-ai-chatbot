@@ -6,11 +6,11 @@
   - **Requset**
     - **method:** `PUT`
     - **type:** `FORM`
-    - **Request Body**:
+    - **Content:**
       - `key` (str):  配置字段名
   - **Response**
     - **type:** `Text`
-    - **Response Body**:
+    - **Content:**
       - *\*Config 内容*
 
 这相当于[Set Config API](./set_key.md)中的

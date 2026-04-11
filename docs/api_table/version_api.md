@@ -5,7 +5,7 @@
     - **method:** `GET`
   - **Response**
     - **type:** `JSON`
-    - **Response Body**
+    - **Content:**
       - `core` (str): 核心的版本号
       - `api` (str): API模块的版本号
 
@@ -15,5 +15,5 @@
     - **method:** `GET`
   - **Response**
     - **type:** `TEXT`
-    - **Response Body**
+    - **Content:**
       - *\*目标模块的版本号*

@@ -8,7 +8,7 @@
     - `X-Admin-API-Key` (str): API 密钥
   - **Response**
     - **type:** `Text`
-    - **Response Body**
+    - **Content:**
       - "Configs reloaded"
 
 注：我无法保证所有配置都能被正确重载

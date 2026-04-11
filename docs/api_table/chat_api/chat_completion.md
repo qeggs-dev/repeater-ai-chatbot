@@ -7,7 +7,7 @@
   - **Requset**
     - **method:** `POST`
     - **type:** `JSON`
-    - **Request Body**:
+    - **Content:**
       - `message` (str | null): 用户发送的消息，允许为空，但这时模型的行为可能是未定义的
       - `history_messages` (list[dict]): 历史消息，如果填写则使用此处提供的上下文，否则使用用户保存的，格式为 `[{"role": "user", "content": "..."}, {"role": "assistant", "content": "..."}]`
       - `user_info` 用户信息，全部可选
@@ -44,7 +44,7 @@
       - `stream` (bool): 是否流式返回（设置该值为 `true` 需要保证在配置中启用了流式处理器，否则会返回`503`错误码）
   - **Response**
     - **type:** `JSON` | `JSONL STREAM`
-    - **Response Body**:
+    - **Content:**
       - `JSON`:
         - `reasoning_content` (str): CoT回复内容，即使模型没有返回CoT它仍然存在，注意判断逻辑应为非null和非空字符串
         - `content` (str): AI回复内容

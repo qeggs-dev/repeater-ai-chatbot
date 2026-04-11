@@ -7,7 +7,7 @@
     - **method:** `GET`
   - **Response**
     - **type:** `JSON`
-    - **Response Body**:
+    - **Content:**
       - `branch_id` (str):  当前分支ID
       - `size` (int): 当前分支大小
       - `modified_time` (int): 当前分支最后修改时间

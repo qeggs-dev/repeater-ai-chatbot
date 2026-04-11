@@ -6,11 +6,11 @@
   - **method**: `POST`
   - **Request**
     - **type:** `JSON`
-    - **Request Body**
+    - **Content:**
       - `id` (str): UUID 字符串
   - **Response**
     - **type:** `JSON`
-    - **Response Body**
+    - **Content:**
       - `message` (str): 响应信息
       - `nexus_message` (str): Nexus 响应信息
 

@@ -6,7 +6,7 @@
   - **Requset**
     - **method:** `POST`
     - **type:** `JSON`
-    - **Request Body**:
+    - **Content:**
       - `reasoning_content` (str): CoT内容(一般不用填写，除非你需要让它作为前缀使用)
       - `content` (str | list[ContentBlock]): 上下文内容
       - `role` (str): 上下文角色(user | assistant | system)
@@ -14,6 +14,6 @@
       - `prefix` (bool): 该单元是否为前缀（用于前缀续写模式）
   - **Response**
     - **type:** `JSON`
-    - **Response Body**:
+    - **Content:**
       - `status` (str): 状态码，如果 `http code` 为 `200` 则必为`success`
       - `context` (Context): 更新后的Context内容

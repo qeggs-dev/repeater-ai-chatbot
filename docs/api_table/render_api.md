@@ -6,7 +6,7 @@
   - **Requset**
     - **method:** `POST`
     - **type:** `JSON`
-    - **Request Body**:
+    - **Content:**
       - `text` (str): 要渲染的文本（必填）
       - `style` (str): 渲染风格
       - `image_expiry_time` (float): 图片链接有效时长
@@ -21,7 +21,7 @@
       - `quality` (int): 图片质量
   - **Response**
     - **type:** `JSON`
-    - **Response Body**:
+    - **Content:**
       - `image_url` (str): 图片渲染输出文件URL
       - `file_uuid` (str): 图片渲染输出文件的UUID
       - `style` (str): 渲染风格，如果使用了自定义CSS则返回`custom`

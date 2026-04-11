@@ -7,7 +7,7 @@
     - **method:** `GET`
   - **Response**
     - **type:** `JSON列表`
-    - **Response Body**:
+    - **Content:**
       - *\*参考[OpenAI Context](https://platform.openai.com/docs/api-reference/chat/create#chat_create-messages)*
 
 获取当前用户所有上下文信息

@@ -6,11 +6,11 @@
   - **Requset**
     - **method:** `PUT`
     - **type:** `FORM`
-    - **Request Body**:
+    - **Content:**
       - `dst_branch_id` (str): 目标分支ID
   - **Response**
     - **type:** `JSON`
-    - **Response Body**:
+    - **Content:**
       - `status` (str):  "success"
 
 注：绑定功能需要系统支持硬链接

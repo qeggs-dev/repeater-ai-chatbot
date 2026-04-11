@@ -6,9 +6,9 @@
   - **Requset**
     - **method:** `PUT`
     - **type:** `FORM`
-    - **Request Body**:
+    - **Content:**
       - `src_branch_id` (str):: 源目标分支ID
   - **Response**
     - **type:** `JSON`
-    - **Response Body**:
+    - **Content:**
       - `status` (str)::  "success"

@@ -8,7 +8,7 @@
   - **Requset**
     - **method:** `POST`
     - **type:** `JSON`
-    - **Request Body**:
+    - **Content:**
       - `user_info`
         - `username` (str): 用户名
         - `nickname` (str): 昵称
@@ -18,7 +18,7 @@
       - `extra_fields` (dict[str, Any]): 自定义扩展字段
   - **Response**
     - **type:** `Text`
-    - **Response Body**:
+    - **Content:**
       - *\*处理后的文本*
 
 注：使用该API时

@@ -6,7 +6,7 @@
   - **Requset**
     - **method:** `POST`
     - **type:** `JSON`
-    - **Request Body**:
+    - **Content:**
       - `index` (int): 上下文索引 (必须存在)
       - `content`
         - `reasoning_content` (str): CoT内容(一般不用填写，除非你需要让它作为前缀使用)
@@ -16,6 +16,6 @@
         - `prefix` (bool): 该单元是否为前缀（用于前缀续写模式，如果这里rewrite的内容不在尾部，就不建议它为true）
   - **Response**
     - **type:** `JSON`
-    - **Response Body**:
+    - **Content:**
       - `status` (str): 状态码，如果 `http code` 为 `200` 则必为`success`
       - `context` (Context): 更新后的Context内容

@@ -6,5 +6,5 @@
   - **method**: `GET`
   - **Response**
     - **type:** `JSON`
-    - **Response Body**
+    - **Content:**
       - *\*Requirement 列表*
