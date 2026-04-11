@@ -6,7 +6,7 @@ import os
 
 from ...SpecialException import CriticalException
 
-async def shutdown_server(exception: CriticalException | None = None, use_sigterm: bool = False) -> None:
+async def shutdown_server(exception: CriticalException | None = None, send_signal: int = signal.SIGINT) -> None:
     wait_time: float = 0.0
     if isinstance(exception, CriticalException):
         if callable(exception.wait):
@@ -54,9 +54,4 @@ async def shutdown_server(exception: CriticalException | None = None, use_sigter
         await asyncio.sleep(wait_time)
 
     logger.critical("The server crashed! exiting...")
-    if use_sigterm:
-        # 发送 SIGTERM 信号，这会让程序直接退出
-        os.kill(os.getpid(), signal.SIGTERM)
-    else:
-        # 发送 SIGINT 信号，因为这会触发 KeyboardInterrupt 并让程序正常退出，保证资源正常关闭
-        os.kill(os.getpid(), signal.SIGINT)
+    os.kill(os.getpid(), send_signal)

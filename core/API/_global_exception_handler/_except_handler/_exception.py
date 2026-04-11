@@ -96,7 +96,7 @@ async def exception_handler(error: BaseException) -> ORJSONResponse:
             asyncio.create_task(
                 shutdown_server(
                     error,
-                    use_sigterm = ConfigManager.get_configs().global_exception_handler.crash_exit_use_sigterm
+                    send_signal = ConfigManager.get_configs().global_exception_handler.crash_exit_signal
                 )
             )
         else:
