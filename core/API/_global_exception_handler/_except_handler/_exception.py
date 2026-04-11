@@ -93,7 +93,12 @@ async def exception_handler(error: BaseException) -> ORJSONResponse:
     # 判断是否要关闭服务器
     if is_critical_exception:
         if ConfigManager.get_configs().global_exception_handler.crash_exit:
-            asyncio.create_task(shutdown_server(error))
+            asyncio.create_task(
+                shutdown_server(
+                    error,
+                    use_sigterm = ConfigManager.get_configs().global_exception_handler.crash_exit_use_sigterm
+                )
+            )
         else:
             logger.critical(
                 "A critical error has occurred on the server, but the server has not been allowed to go down!",
