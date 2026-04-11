@@ -1,6 +1,7 @@
 import httpx
 
 from yarl import URL
+from ..SpecialException import HTTPException
 
 class StaticResourcesClient:
     def __init__(self, base_url: str, timeout: int | float | None = None):
@@ -27,20 +28,28 @@ class StaticResourcesClient:
     
     async def get_file(self, path: str | URL) -> bytes:
         """Get a file from the server."""
-        response = await self.client.get(
-            self.str_or_url(path)
-        )
+        try:
+            response = await self.client.get(
+                self.str_or_url(path)
+            )
+        except httpx.RequestError as e:
+            raise HTTPException(message = f"Get Static Resource Failed: {e}") from e
+        
         response.raise_for_status()
         return response.content
     
     async def get_text(self, path: str | URL, text_encoding: str = "utf-8") -> str:
         """Get a text file from the server."""
-        response = await self.client.get(
-            self.str_or_url(path),
-            params = {
-                "text_encoding": text_encoding,
-            }
-        )
+        try:
+            response = await self.client.get(
+                self.str_or_url(path),
+                params = {
+                    "text_encoding": text_encoding,
+                }
+            )
+        except httpx.RequestError as e:
+            raise HTTPException(message = f"Get Static Resource Failed: {e}") from e
+    
         response.raise_for_status()
         return response.text
     
