@@ -8,6 +8,7 @@ class GlobalExceptionHandlerConfig(BaseModel):
     error_message: str = "Internal Server Error"
     critical_error_message: str = "Critical Server Error!"
     crash_exit: bool = True
+    crash_exit_use_sigterm: bool = False
     traceback_save_to: str | None = None
     record_all_exceptions: bool = False
     error_output_include_traceback: bool = False
