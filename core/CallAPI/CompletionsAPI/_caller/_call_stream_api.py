@@ -19,8 +19,11 @@ from ._translation_chunk import translation_chunk
 from ._call_api_base import CallStreamAPIBase
 from .._exceptions import *
 from ....Status_Map import StatusMap
+from ._client_pool import ClientPool
+from ._client_info import ClientInfo
 
 class StreamAPI(CallStreamAPIBase):
+    clients: ClientPool = ClientPool()
     async def _call(self, user_id: str, request: Request, status_map: StatusMap[str, str]) -> AsyncIterator[Delta]:
         """
         调用流式API
@@ -35,11 +38,12 @@ class StreamAPI(CallStreamAPIBase):
         with status_map.enter(user_id, "Create OpenAI Client"):
             # 创建OpenAI Client
             logger.info(f"Created OpenAI Client", user_id = user_id)
-            client = openai.AsyncOpenAI(
-                base_url = request.url,
-                api_key = request.key,
-                timeout = request.timeout,
+            client_info = ClientInfo(
+                url = request.url,
+                key = request.key,
+                timeout = request.timeout
             )
+            client = self.clients.get_client(client_info)
 
         with status_map.enter(user_id, "Check context"):
             # 如果context为空，则抛出异常

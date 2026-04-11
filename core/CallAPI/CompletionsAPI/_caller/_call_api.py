@@ -25,8 +25,11 @@ from ....Request_Log import RequestLog, TimeStamp
 from ._call_api_base import CallNstreamAPIBase
 from ....Status_Map import StatusMap
 from .._exceptions import *
+from ._client_pool import ClientPool
+from ._client_info import ClientInfo
 
 class CallAPI(CallNstreamAPIBase):
+    clients: ClientPool = ClientPool()
     async def _call(self, user_id:str, request: Request, status_map: StatusMap[str, str]) -> Response:
         """调用API"""
         # 检查参数
@@ -42,11 +45,12 @@ class CallAPI(CallNstreamAPIBase):
         with status_map.enter(user_id, "Create OpenAI Client"):
             # 创建OpenAI Client
             logger.info(f"Created OpenAI Client", user_id = user_id)
-            client = openai.AsyncOpenAI(
-                base_url = request.url,
-                api_key = request.key,
-                timeout = request.timeout,
+            client_info = ClientInfo(
+                url = request.url,
+                key = request.key,
+                timeout = request.timeout
             )
+            client = self.clients.get_client(client_info)
         
         with status_map.enter(user_id, "Write calling log base data"):
             # 写入调用日志基础数据
