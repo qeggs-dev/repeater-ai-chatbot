@@ -2,15 +2,15 @@ from typing import Any
 from pydantic import BaseModel
 
 class HTTPErrorDetail(BaseModel):
-    status_code: int = 500
     message: str = "Internal Server Error"
+    status_code: int = 500
     extra_data: Any = None
 
 class HTTPException(Exception):
-    def __init__(self, status_code: int = 500, message: str = "Internal Server Error", extra_data: Any = None):
+    def __init__(self, message: str = "Internal Server Error", status_code: int = 500, extra_data: Any = None):
         self.detail = HTTPErrorDetail(
-            status_code=status_code,
             message=message,
+            status_code=status_code,
             extra_data=extra_data
         )
         super().__init__(message)
