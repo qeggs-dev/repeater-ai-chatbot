@@ -11,7 +11,7 @@ from ._model_api import *
 from ._index_web import *
 from ._static_api import *
 from ._status_api import *
-from ._test_connection import test_connection
+from ._test_alived import test_alived
 from ._version import (
     version,
     module_version

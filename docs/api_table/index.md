@@ -41,5 +41,5 @@ Repeater 提供了许多接口，
 ## Status API
   - [Status API](./status_api.md)
 
-## Test Connection API
-  - [Test Connection API](./test_connection.md)
+## Aived API
+  - [Alived API](./alived.md)
