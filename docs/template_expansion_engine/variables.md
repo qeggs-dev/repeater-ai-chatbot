@@ -27,6 +27,7 @@
   - [`daily_random`](./functions/daily_random.md): 获取每天固定的随机数
   - [`date_countdown`](./functions/date_countdown.md): 获取日期倒计时
   - [`generate_uuid`](./functions/generate_uuid.md): 生成UUID
+  - [`httpget`](./functions/httpget.md): HTTP GET 请求
   - [`*json`](./functions/json.md): JSON处理函数
   - [`precise_age`](./functions/precise_age.md): 获取精确年龄
   - [`randchoice`](./functions/randchoice.md): 随机抽取一个元素
