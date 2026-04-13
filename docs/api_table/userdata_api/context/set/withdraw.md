@@ -7,7 +7,7 @@
     - **method:** `POST`
     - **type:** `FORM`
     - **Content:**
-      - `context_pair_num` (int): 删除的组数
+      - `context_pair_num` (int): 删除的数量
       - `paired` (bool): 是否以成对模式删除上下文单元 (默认为 `true`)
   - **Response**
     - **type:** `JSON`
