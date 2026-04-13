@@ -1,8 +1,8 @@
 # Variable Expand API
 
-使用[变量展开引擎](../template_expansion_engine/main.md)
+使用[变量展开引擎](../template_engine/main.md)
 对用户数据进行变量展开
-具体变量请参考[变量列表](../template_expansion_engine/variables.md)
+具体变量请参考[变量列表](../template_engine/variables.md)
 
 - **`/variable_expand/{user_id:str}`**
   - **Requset**
