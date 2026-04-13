@@ -730,7 +730,7 @@ class Core:
                             
                             # 创建内容缓冲区
                             content_buffer = ContentBuffer()
-                            await self.content_buffers_pool.add_resource(user_id, content_buffer)
+                            await self.content_buffers_pool.add(user_id, content_buffer)
 
                             # 设置请求对象的参数信息
                             request.user_name = user_info.nickname
@@ -844,7 +844,7 @@ class Core:
                                     包装后处理函数，以传递更多数据
                                     """
                                     nonlocal output
-                                    await self.content_buffers_pool.remove_resource(user_id)
+                                    await self.content_buffers_pool.remove(user_id)
                                     output = await self._post_treatment(
                                         user_id = user_id,
                                         output = output,
