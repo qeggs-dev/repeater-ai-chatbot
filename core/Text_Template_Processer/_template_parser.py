@@ -132,7 +132,7 @@ class TemplateParser:
             tz_now.year ^ tz_now.month ^ tz_now.day
         )
 
-        if Global_Config.text_template.allow_http:
+        if self._global_config.text_template.allow_http:
             kwargs["httpget"] = httpx.get
         
         return self.render(
