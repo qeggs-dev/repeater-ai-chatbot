@@ -23,7 +23,7 @@ async def get_alived_users_api():
             )
         return ORJSONResponse(
             content=TasksIDResponse(
-                message = "Success",
+                message = f"There are currently {len(users)} users in the build process.",
                 count = len(users),
                 users = users
             ).model_dump()
