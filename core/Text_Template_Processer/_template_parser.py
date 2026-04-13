@@ -133,7 +133,8 @@ class TemplateParser:
         )
 
         if self._global_config.text_template.allow_http:
-            kwargs["httpget"] = httpx.get
+            http_client = httpx.Client
+            kwargs["httpget"] = http_client.get
         
         return self.render(
             text,
