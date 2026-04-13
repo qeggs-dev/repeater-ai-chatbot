@@ -1,5 +1,6 @@
 import math
 import json
+import httpx
 import random
 import secrets
 import numpy as np
@@ -130,6 +131,9 @@ class TemplateParser:
         daily_random = random.Random(
             tz_now.year ^ tz_now.month ^ tz_now.day
         )
+
+        if Global_Config.text_template.allow_http:
+            kwargs["httpget"] = httpx.get
         
         return self.render(
             text,
