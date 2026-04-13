@@ -2,9 +2,6 @@ import orjson
 import asyncio
 
 from typing import AsyncIterator
-from environs import Env
-env = Env()
-env.read_env()
 from fastapi.responses import (
     ORJSONResponse,
     StreamingResponse
