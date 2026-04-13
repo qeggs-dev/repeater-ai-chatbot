@@ -356,6 +356,9 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
         // 请求日志模板
         // 用于在请求返回时自定义统计内容信息的格式
         "request_statistics_template": "Total Tokens: {{request_log.total_tokens}} | Input: {{request_log.prompt_tokens}} | Output: {{request_log.completion_tokens}}",
+
+        // 允许模板中使用 HTTP 请求
+        "allow_http": false,
         
         // 模板展开器启用控制
         "enable": {
