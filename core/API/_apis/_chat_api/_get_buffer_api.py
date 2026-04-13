@@ -1,10 +1,3 @@
-import orjson
-import asyncio
-
-from typing import AsyncIterator
-from environs import Env
-env = Env()
-env.read_env()
 from fastapi.responses import (
     ORJSONResponse
 )
@@ -18,7 +11,7 @@ async def get_chat_buffer_api(user_id: str):
             status_code = 404,
             message = "This user does not have a task currently being generated."
         )
-    buffers = await Resource.core.content_buffers_pool.get_resource(user_id)
+    buffers = await Resource.core.content_buffers_pool.get(user_id)
 
     return ORJSONResponse(
         content = {
