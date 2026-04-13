@@ -16,7 +16,6 @@ class TextBuffer:
         """
         self._buffer: list[str] = []
         self._delimiters = delimiters
-        self._length = 0
     
     def __bool__(self) -> bool:
         """Returns True if buffer contains any non-empty text (considering delimiters)."""
@@ -32,7 +31,11 @@ class TextBuffer:
         """
         Return the length of the buffer.
         """
-        return self._length
+        raw_length = sum(len(text) for text in self._buffer)
+        if self._delimiters:
+            return raw_length + len(self._delimiters) * (len(self._buffer) - 1)
+        else:
+            return raw_length
     
     def __str__(self) -> str:
         """
@@ -44,7 +47,7 @@ class TextBuffer:
         """
         Return a string representation of the buffer.
         """
-        return f"<{self.__class__.__name__} length={self._length}>"
+        return f"<{self.__class__.__name__} length={len(self)}>"
     
     @property
     def num_segments(self) -> int:
@@ -62,7 +65,6 @@ class TextBuffer:
         """
         text = str(self)
         self._buffer = [text]
-        self._length = len(text)
         return text
     
     def push(self, text: str):
@@ -72,7 +74,6 @@ class TextBuffer:
         Args:
             text (str): The string to be pushed into the buffer
         """
-        self._length += len(text)
         self._buffer.append(text)
 
     def pop(self) -> str:
@@ -83,14 +84,12 @@ class TextBuffer:
             str: The popped string
         """
         text = self._buffer.pop()
-        self._length -= len(text)
         return text
     
     def clear(self):
         """
         Clear the buffer.
         """
-        self._length = 0
         self._buffer.clear()
     
     def copy(self) -> 'TextBuffer':
