@@ -5,7 +5,7 @@ from ...._resource import Resource
 from ._models import TasksIDResponse, UserInfo
 
 @Resource.app.get("/chat/alived_users")
-async def get_chat_tasks_id_api():
+async def get_alived_users_api():
     ids = Resource.core.content_buffers_pool.ids
     if len(ids) == 0:
         return ORJSONResponse(
