@@ -167,7 +167,7 @@ class StreamingResponseGenerationLayer:
         # 记录模型响应内容
         if delta_data.content:
             if self.request.print_chunk:
-                if not self._content_buffer:
+                if not self._content_buffer.content_buffer:
                     self._print_file.write("\n\n")
                 if self._print_chunk:
                     self._print_file.write(delta_data.content)
