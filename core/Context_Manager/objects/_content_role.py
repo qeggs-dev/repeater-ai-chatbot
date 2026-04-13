@@ -7,4 +7,4 @@ class ContentRole(StrEnum):
     SYSTEM = "system"
     USER = "user"
     ASSISTANT = "assistant"
-    FUNCTION = "tool"
+    TOOL = "tool"

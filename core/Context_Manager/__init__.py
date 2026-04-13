@@ -1,14 +1,7 @@
-from ._objects import (
+from .objects import (
     ContextObject,
     ContentUnit,
     ContentRole,
-
-    FunctionResponseUnit,
-    RequestCallingFunctionUnit,
-    RequestFunctionParameters,
-    CallingFunctionRequest,
-    CallingFunctionResponse,
-    
     ContentBlockType,
     ContentBlock,
     TextBlock,
@@ -18,6 +11,7 @@ from ._objects import (
     AudioBlock,
     FileDataBlock,
     FileBlock,
+    function_calling,
 )
 
 from ._context_loader import ContextLoader

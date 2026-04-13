@@ -19,7 +19,7 @@ from ..Data_Manager import (
 from ..User_Config_Manager import (
     ConfigManager
 )
-from ._objects import (
+from .objects import (
     ContextObject,
     ContentUnit,
     ContentRole,
