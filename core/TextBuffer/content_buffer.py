@@ -8,4 +8,9 @@ class ContentBuffer:
     tool_calls_arguments_buffer: dict[int, TextBuffer] = field(default_factory=dict)
 
     def __len__(self):
-        return len(self.reasoning_buffer) + len(self.content_buffer) + len(self.tool_calls_arguments_buffer)
+        length = 0
+        length += len(self.reasoning_buffer)
+        length += len(self.content_buffer)
+        for tool in self.tool_calls_arguments_buffer.values():
+            length += len(tool)
+        return length
