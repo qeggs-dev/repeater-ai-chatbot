@@ -164,4 +164,5 @@ class ModelRequester:
                     user_id = user_id,
                 )
                 request = e.request
+                content_buffer.clear()
                 
