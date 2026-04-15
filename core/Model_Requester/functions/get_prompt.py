@@ -1,0 +1,19 @@
+from ...Context_Manager import ToolCallPacakage
+from ...Data_Manager import PromptManager
+from .._caller import ModelRequester
+from pydantic import BaseModel
+
+@ModelRequester.reg_global_package
+class Set_Prompt(ToolCallPacakage):
+    class Params(BaseModel):
+        prompt: str
+
+    prompt_manager: PromptManager = PromptManager()
+    name = "set_prompt"
+
+    def document(self):
+        return "Overrides the current system prompt."
+
+    def call(self, args: Params):
+        self.prompt_manager.save(args.prompt)
+        return "Prompt seted."

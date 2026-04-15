@@ -31,12 +31,14 @@ from ._multi_response import MultiResponse
 
 class ModelRequester:
     _global_package: ClassVar[list[Type[ToolCallPacakage]]] = []
-    def __init__(self, user_id: str, user_configs: UserConfigs, max_concurrency: int | None = None):
+    def __init__(self, user_id: str, user_configs: UserConfigs, max_concurrency: int | None = None, *args, **kwargs):
         self._tools_caller = FunctionCaller()
         self._tools_caller.register_packages(
             user_id = user_id,
             packages = self._global_package,
-            user_configs = user_configs
+            user_configs = user_configs,
+            *args,
+            **kwargs
         )
         self._api_client = NoStreamClient(
             ConfigManager.get_configs().callapi.max_concurrency
