@@ -25,4 +25,4 @@ def validate_path(
         requested_path = new.resolve()
     
     # 检查路径是否在base_path的子目录内
-    return requested_path.is_relative_to(base)
+    return requested_path.is_relative_to(base.absolute())
