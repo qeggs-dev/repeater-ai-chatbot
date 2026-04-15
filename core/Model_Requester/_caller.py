@@ -103,7 +103,7 @@ class ModelRequester:
             )
             self._tool_responses.append(results)
             for tool_response in results:
-                self._stream_chunk_queue.put(tool_response)
+                await self._stream_chunk_queue.put(tool_response)
             if request.context:
                 request.context.extend(response.new_context)
                 request.context.extend(results)
