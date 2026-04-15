@@ -31,7 +31,7 @@ async def check_role_structure(user_id: str):
     role_rule = [
         [
             ContentRole.USER,
-            ContentRole.FUNCTION
+            ContentRole.TOOL
         ],
         [
             ContentRole.ASSISTANT
