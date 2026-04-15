@@ -785,6 +785,9 @@ class Core:
                             request.stream = ConfigManager.get_configs().model.stream
                             request.stream_options.include_obfuscation = ConfigManager.get_configs().callapi.include_obfuscation
                             request.stream_options.include_usage = ConfigManager.get_configs().callapi.include_usage
+                            allow_tool_calls = ConfigManager.get_configs().tool_calls.enabled
+                            if allow_tool_calls:
+                                allow_tool_calls = configs.allow_tool_calls
                         # endregion
 
                         # region [Pre-filled output]
@@ -838,7 +841,9 @@ class Core:
                             max_concurrency = (
                                 ConfigManager.get_configs().callapi.max_concurrency
                                 if self._max_concurrency is None else self._max_concurrency
-                            )
+                            ),
+                            context_loader = context_loader,
+                            static_resources_client = self.static_resources_client
                         )
                         try:
                             model_responses: MultiResponse | None = None
@@ -848,6 +853,7 @@ class Core:
                                 model_responses = await model_caller.submit(
                                     user_id = user_id,
                                     request = request,
+                                    allow_tool_calls = allow_tool_calls,
                                     content_buffer = content_buffer,
                                     status_map = self.task_status_map,
                                     stream = stream
@@ -886,9 +892,11 @@ class Core:
                                 user_id = user_id,
                                 traceback_info = traceback_info,
                             )
-                            output.content = f"API Error: {e}"
-                            output.status = 500
-                            return output
+                            
+                            raise HTTPException(
+                                status_code = 500,
+                                message = f"API Error: {e}"
+                            )
                     # endregion
         except Exception as e:
             traceback_info = traceback.format_exc()
