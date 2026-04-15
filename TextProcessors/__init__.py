@@ -5,3 +5,4 @@ from ._special_chars_remover import create_special_chars_remover, create_chars_r
 from ._str_to_bool import str_to_bool
 from ._format_carry_duration import format_carry_duration
 from ._escape import escape_string
+from ._text_content_cutter import text_content_cutter
