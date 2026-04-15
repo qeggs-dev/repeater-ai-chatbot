@@ -364,7 +364,9 @@ class Core:
                 else:
                     logger.info(
                         "Message:\n{message}",
-                        message = user_input.content_to_string(ConfigManager.get_configs().context.max_log_length_for_non_text_content),
+                        message = user_input.content_to_string(
+                            ConfigManager.get_configs().context.max_log_length_for_non_text_content
+                        ),
                         user_id = user_id
                     )
             else:
