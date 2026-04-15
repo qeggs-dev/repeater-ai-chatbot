@@ -48,7 +48,7 @@ class ModelRequester:
             ConfigManager.get_configs().callapi.max_concurrency
             if max_concurrency is None else max_concurrency
         )
-        self._stream_chunk_queue: asyncio.Queue[Delta | None] = asyncio.Queue()
+        self._stream_chunk_queue: asyncio.Queue[Delta | ContentUnit | None] = asyncio.Queue()
         self._tool_responses: list[list[ContentUnit]] = []
     
     @classmethod
@@ -79,7 +79,7 @@ class ModelRequester:
             raise TypeError("tools_caller must be a FunctionCaller")
         self._tools_caller = tools_caller
     
-    async def generator(self) -> AsyncGenerator[Delta, None]:
+    async def generator(self) -> AsyncGenerator[Delta | ContentUnit, None]:
         failed_times: int = 0
         while True:
             try:
@@ -102,6 +102,8 @@ class ModelRequester:
                 calling_requests = calling_requests
             )
             self._tool_responses.append(results)
+            for tool_response in results:
+                self._stream_chunk_queue.put(tool_response)
             if request.context:
                 request.context.extend(response.new_context)
                 request.context.extend(results)
