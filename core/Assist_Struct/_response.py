@@ -1,5 +1,5 @@
 from pydantic import BaseModel, ConfigDict
-from ..Context_Manager import ContentBlock
+from ..Context_Manager import ContentBlock, ContextObject
 from ..Request_Log import RequestLog
 
 class Response(BaseModel):
@@ -7,8 +7,7 @@ class Response(BaseModel):
         validate_assignment=True
     )
 
-    reasoning_content: str | None = None
-    content: str | None = None
+    context: ContextObject | None = None
     user_raw_input: str | None = None
     user_input: str | list[ContentBlock] | None = None
     model_group: str | None = None
@@ -19,6 +18,6 @@ class Response(BaseModel):
     id: str | None = None
     finish_reason_cause: str | None = None
     finish_reason_code: str | None = None
-    request_log: RequestLog | None = None
+    request_log: list[RequestLog] | None = None
     request_statistics: str | None = None
     status: int = 200
