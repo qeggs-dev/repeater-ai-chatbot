@@ -17,7 +17,8 @@
   - `stream_processing_start_time` (TimeStamp): 流式处理开始时间
   - `stream_processing_end_time` (TimeStamp): 流式处理结束时间
   - `task_end_time` (TimeStamp): 任务结束时间
-  - `chunk_times` (list[TimeStamp]): Chunk 时间列表
+  - `chunk_times` (list[TimeStamp]): Parsed Chunk 时间列表
+  - `chunk_generated_times` (list[TimeStamp]): Generated Chunk 时间列表
   - `created_time` (int): API报告的创建时间
   - `total_tokens` (int): 请求的总 Token 数量
   - `prompt_tokens` (int): 输入的 Token 数量
