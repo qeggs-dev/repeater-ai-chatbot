@@ -14,3 +14,8 @@ class ContentBuffer:
         for tool in self.tool_calls_arguments_buffer.values():
             length += len(tool)
         return length
+    
+    def clear(self):
+        self.reasoning_buffer.clear()
+        self.content_buffer.clear()
+        self.tool_calls_arguments_buffer.clear()
