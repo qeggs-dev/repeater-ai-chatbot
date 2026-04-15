@@ -62,29 +62,32 @@
         - `status` (int): 状态码，这里和http状态码一致，只是为了报告而写，通常你应该优先选择检查http报告的状态码而不是这个字段
       - `JSON STREAM`:
         - *\*每一行*
-          - `id` (str): 请求ID
-          - `reasoning_content` (str): CoT回复内容，即使模型没有返回CoT它仍然存在，注意判断逻辑应为非null和非空字符串
-          - `content` (str): AI回复内容
-          - `function_id` (str): 函数ID，如果模型没有返回函数ID，则该字段为空字符串
-          - `function_type` (str): 函数类型，如果模型没有返回函数ID，则该字段为空字符串
-          - `function_name` (str): 函数名称，如果模型没有返回函数ID，则该字段为空字符串
-          - `function_arguments` (str): 函数参数，通常是JSON格式，如果模型没有返回函数ID，则该字段为空字符串
-          - `token_usage`
-            - `prompt_tokens` (int): 输入的token数量
-            - `completion_tokens` (int): 输出的token数量
-            - `total_tokens` (int): 总的token数量
-            - `prompt_cache_hit_tokens` (int): 输入的token中缓存命中的数量
-            - `prompt_cache_miss_tokens` (int): 输入的token中缓存未命中的数量
-          - `finish_reason` (str): 模型结束生成的原因，由API厂商提供
-          - `created` (int): 请求创建时间，时间戳，单位为秒
-          - `model` (str): 模型名称
-          - `system_fingerprint` (str): 系统指纹，由API厂商提供
-          - `logprobs`
-            - `token` (str): token内容
-            - `logprob` (float): token的概率
-            - `top_logprobs`
+          - **Delta**:
+            - `id` (str): 请求ID
+            - `reasoning_content` (str): CoT回复内容，即使模型没有返回CoT它仍然存在，注意判断逻辑应为非null和非空字符串
+            - `content` (str): AI回复内容
+            - `function_id` (str): 函数ID，如果模型没有返回函数ID，则该字段为空字符串
+            - `function_type` (str): 函数类型，如果模型没有返回函数ID，则该字段为空字符串
+            - `function_name` (str): 函数名称，如果模型没有返回函数ID，则该字段为空字符串
+            - `function_arguments` (str): 函数参数，通常是JSON格式，如果模型没有返回函数ID，则该字段为空字符串
+            - `token_usage`
+              - `prompt_tokens` (int): 输入的token数量
+              - `completion_tokens` (int): 输出的token数量
+              - `total_tokens` (int): 总的token数量
+              - `prompt_cache_hit_tokens` (int): 输入的token中缓存命中的数量
+              - `prompt_cache_miss_tokens` (int): 输入的token中缓存未命中的数量
+            - `finish_reason` (str): 模型结束生成的原因，由API厂商提供
+            - `created` (int): 请求创建时间，时间戳，单位为秒
+            - `model` (str): 模型名称
+            - `system_fingerprint` (str): 系统指纹，由API厂商提供
+            - `logprobs`
               - `token` (str): token内容
               - `logprob` (float): token的概率
+              - `top_logprobs`
+                - `token` (str): token内容
+                - `logprob` (float): token的概率
+          - **ContentUnit**:
+            - *\*ContentUnit* (ContentUnit): 请求内容单元 (通常是 Tool 的响应)
 
 注：该API有**RUL(Request User Lock)**
 在 `user_id` 相同且上一个请求**未完成**时
