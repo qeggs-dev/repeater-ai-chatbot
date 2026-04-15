@@ -44,6 +44,12 @@
 
 ---
 
+## Tool Calls
+
+请参阅：[Tool Calls](./tool_calls/index.md)
+
+---
+
 ## Prompt
 
 该项目在 [`repeater-static-data/prompt/presets/official`](https://github.com/qeggs-dev/repeater-static-data/tree/main/prompt/presets/official) 中
