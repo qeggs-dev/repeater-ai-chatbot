@@ -22,14 +22,14 @@ class HTTPRequests(ToolCallPacakage):
     class Params(BaseModel):
         method: HTTPMethod = Field(HTTPMethod.GET, description="The HTTP method to use for the request.")
         url: str = Field("", description="The target URL of the request.")
-        params: dict[str, Any] | None = Field(None, description="Query parameters to include in the request URL.")
-        headers: dict[str, Any] | None = Field(None, description="HTTP headers to send with the request.")
-        cookies: dict[str, Any] | None = Field(None, description="Cookies to attach to the request.")
-        data: dict[str, Any] | None = Field(None, description="Form-data to send with the request.")
-        json: Any | None = Field(None, description="JSON data to send in the request body.")
+        query_params: dict[str, str] | None = Field(None, description="Query parameters to append to the request URL.")
+        headers: dict[str, str] | None = Field(None, description="HTTP headers to send with the request.")
+        cookies: dict[str, str] | None = Field(None, description="Cookies to attach to the request.")
+        form_data: dict[str, str] | None = Field(None, description="Form-data to send with the request.")
+        json_data: Any | None = Field(None, description="JSON data to send in the request body.")
         auth: tuple[str, str] | None = Field(None, description="Basic authentication credentials as a (username, password) tuple.")
         follow_redirects: bool = Field(True, description="Whether to automatically follow HTTP redirects.")
-        timeout: int = Field(10, description="Request timeout in seconds.")
+        timeout_seconds: int = Field(10, description="Request timeout in seconds.")
     
     class Result(BaseModel):
         status_code: int | None = None
@@ -55,12 +55,14 @@ class HTTPRequests(ToolCallPacakage):
             response = await self.client.request(
                 args.method,
                 args.url,
-                params = args.params,
+                params = args.query_params,
                 headers = args.headers,
                 cookies = args.cookies,
+                data = args.form_data,
+                json = args.json_data,
                 auth = args.auth,
                 follow_redirects = args.follow_redirects,
-                timeout = args.timeout,
+                timeout = args.timeout_seconds,
             )
         except httpx.Timeout:
             return self.Result(
