@@ -2,7 +2,7 @@ from pydantic import BaseModel, Field, ConfigDict
 from typing import Any
 from ._timestamp_object import TimeStamp
 
-class RequestLogObject(BaseModel):
+class RequestLog(BaseModel):
     """
     Class to represent a request log object.
     """
@@ -29,6 +29,7 @@ class RequestLogObject(BaseModel):
     stream_processing_end_time: TimeStamp = Field(default_factory=lambda: TimeStamp(timestamp=0, monotonic=0))
     task_end_time: TimeStamp = Field(default=lambda: TimeStamp(timestamp=0, monotonic=0))
     chunk_times: list[TimeStamp] = Field(default_factory=list)
+    chunk_generated_times: list[TimeStamp] = Field(default_factory=list)
     created_time: int = 0
 
     total_tokens: int = 0
@@ -42,7 +43,7 @@ class RequestLogObject(BaseModel):
     new_content_length: int = 0
     
 
-class CallAPILogObject(BaseModel):
+class CallAPILog(BaseModel):
     """
     Class to represent a call API log object.
     """

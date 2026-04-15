@@ -9,7 +9,7 @@ from pathlib import Path
 from loguru import logger
 from ..Global_Config_Manager import ConfigManager
 from typing import List, AsyncIterator, Generator, Iterable
-from ._request_log_object import RequestLogObject, CallAPILogObject
+from ._request_log_object import RequestLog, CallAPILog
 from pydantic import ValidationError
 
 class RequestLogManager:
@@ -22,7 +22,7 @@ class RequestLogManager:
         ):
 
         # 日志缓存列表
-        self._log_list: List[RequestLogObject | CallAPILogObject] = []
+        self._log_list: List[RequestLog | CallAPILog] = []
 
         # 防抖保存等待时间
         if debonce_save_wait_time is None:
@@ -59,8 +59,24 @@ class RequestLogManager:
         """
         time = datetime.datetime.now()
         return self._base_dir / f"{time.strftime('%Y-%m-%d')}.jsonl"
+    
+    async def _debonce_save(self) -> None:
+        # 防抖保存操作
+        if self._debonce_task and not self._debonce_task.done():
+            self._debonce_task.cancel()  # 如果已有任务，先取消
+        if len(self._log_list) < self._max_cache_size:
+            logger.info("Request log debonce task created")
+            wait_time = self._debonce_save_wait_time
+        else:
+            logger.info("Request log saved immediately")
+            wait_time = 0
+        self._debonce_task = asyncio.create_task(
+            self._wait_and_save_async(
+                wait_time = wait_time
+            )
+        )
 
-    async def add_request_log(self, request_log: RequestLogObject | CallAPILogObject) -> None:
+    async def add_request_log(self, request_log: RequestLog | CallAPILog) -> None:
         """
         添加调用日志项
 
@@ -71,25 +87,34 @@ class RequestLogManager:
             # 添加日志项
             self._log_list.append(request_log)
             logger.info("Request log added", user_id=request_log.user_id)
-            
-            # 防抖保存操作
-            if self._debonce_task and not self._debonce_task.done():
-                self._debonce_task.cancel()  # 如果已有任务，先取消
-            if len(self._log_list) < self._max_cache_size:
-                logger.info("Request log debonce task created")
-                wait_time = self._debonce_save_wait_time
-            else:
-                logger.info("Request log saved immediately")
-                wait_time = 0
-            self._debonce_task = asyncio.create_task(
-                self._wait_and_save_async(
-                    wait_time = wait_time
-                )
-            )
+            await self._debonce_save()
+
+    async def add_multi_request_log(self, request_logs: list[RequestLog | CallAPILog]) -> None:
+        """
+        添加多个调用日志项
+
+        :param request_log: 调用日志项
+        :return: None
+        """
+        async with self._async_lock:
+            # 添加日志项
+            user_ids: dict[str, int] = {}
+            for request_log in request_logs:
+                self._log_list.append(request_log)
+                if request_log.user_id not in user_ids:
+                    user_ids[request_log.user_id] = 1
+                else:
+                    user_ids[request_log.user_id] += 1
+            for user_id, count in user_ids.items():
+                if count == 1:
+                    logger.info(f"Request log added", user_id=user_id)
+                else:
+                    logger.info(f"Request log added {count} times", user_id=user_id)
+            await self._debonce_save()
         
     # 将日志列表转换为字节流
     @staticmethod
-    def _log_bytestream(log_list: Iterable[RequestLogObject | CallAPILogObject]) -> Generator[bytes, None, None]:
+    def _log_bytestream(log_list: Iterable[RequestLog | CallAPILog]) -> Generator[bytes, None, None]:
         for log in log_list:
             yield orjson.dumps(log.model_dump()) + b"\n"
 
@@ -145,7 +170,7 @@ class RequestLogManager:
         # 清空日志列表
         self._log_list.clear()
 
-    async def read_request_log(self) -> List[RequestLogObject]:
+    async def read_request_log(self) -> List[RequestLog]:
         """
         从文件读取所有调用日志
 
@@ -156,7 +181,7 @@ class RequestLogManager:
             request_log_list.append(request_log)
         return request_log_list
 
-    async def read_stream_request_log(self) -> AsyncIterator[RequestLogObject]:
+    async def read_stream_request_log(self) -> AsyncIterator[RequestLog]:
         """
         从文件流式读取所有调用日志
 
@@ -191,7 +216,7 @@ class RequestLogManager:
                             )
                             continue
                         try:
-                            yield RequestLogObject(**data)  # 生成文件日志
+                            yield RequestLog(**data)  # 生成文件日志
                         except ValidationError as e:
                             errors = e.errors()
                             for error in errors:
