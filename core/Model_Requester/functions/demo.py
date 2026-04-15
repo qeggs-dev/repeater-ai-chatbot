@@ -2,6 +2,7 @@ from ...Context_Manager import ToolCallPacakage
 from .._caller import ModelRequester
 from pydantic import BaseModel
 
+@ModelRequester.reg_global_package
 class Demo(ToolCallPacakage):
     
     class Params(BaseModel):
@@ -16,5 +17,3 @@ class Demo(ToolCallPacakage):
 
     def call(self, args: Params):
         return f"Hello {args.name}, your data is {args.data}"
-
-ModelRequester.reg_global_package(Demo)

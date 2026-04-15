@@ -4,6 +4,7 @@ from ...Context_Manager import ToolCallPacakage, CallType
 from .._caller import ModelRequester
 from pydantic import BaseModel, Field
 
+@ModelRequester.reg_global_package
 class HTTPGET(ToolCallPacakage):
     client = httpx.AsyncClient()
     class Params(BaseModel):
@@ -49,6 +50,3 @@ class HTTPGET(ToolCallPacakage):
             "request_status": "success",
             "data": data,
         }
-        
-
-ModelRequester.reg_global_package(HTTPGET)

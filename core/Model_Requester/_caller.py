@@ -52,6 +52,7 @@ class ModelRequester:
     @classmethod
     def reg_global_package(cls, package: Type[ToolCallPacakage]):
         cls._global_package.append(package)
+        return package
     
     def reg_func(self, function: Function):
         self._tools_caller.register_function(function)
