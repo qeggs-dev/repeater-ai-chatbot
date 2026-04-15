@@ -376,6 +376,12 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
         }
     },
 
+    // Tool Calls 配置
+    "tool_calls": {
+        // 是否启用 Tool Calls
+        "enabled": false
+    }
+
     // Prompt 配置
     "prompt": {
         // 告诉 Prompt 加载器预设提示词目录的路径
