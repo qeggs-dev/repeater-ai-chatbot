@@ -1,9 +1,8 @@
 from .demo import Demo
-from .httpget import HTTPGET
+from .http_requests import HTTPRequests
 from .set_prompt import SetPrompt
 
 __all__ = [
-    "Demo",
-    "HTTPGET",
+    "HTTPRequests",
     "SetPrompt",
 ]
