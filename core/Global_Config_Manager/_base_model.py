@@ -1,7 +1,7 @@
 from pydantic import BaseModel, ConfigDict, Field
 from ._models import *
 
-class Global_Config(BaseModel):
+class GlobalConfigs(BaseModel):
     model_config = ConfigDict(case_sensitive=False)
 
     blacklist: BacklistConfig = Field(default_factory=BacklistConfig)

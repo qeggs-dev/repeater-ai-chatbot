@@ -9,16 +9,16 @@ from box import Box
 from pathlib import Path
 from typing import ClassVar, Generator, Iterable
 
-from ._base_model import Global_Config
+from ._base_model import GlobalConfigs
 
 class ConfigManager:
-    _configs: ClassVar[Global_Config] = Global_Config()
+    _configs: ClassVar[GlobalConfigs] = GlobalConfigs()
     _instance: ClassVar[ConfigManager] | None = None
     _base_path: ClassVar[Path] = Path("./configs/project_configs")
     _force_load_list: ClassVar[list[Path]] = []
 
     @classmethod
-    def get_configs(cls) -> Global_Config:
+    def get_configs(cls) -> GlobalConfigs:
         return cls._configs
 
     def __new__(cls):
@@ -69,7 +69,7 @@ class ConfigManager:
             return orjson.loads(f.read())
     
     @classmethod
-    def load(cls, create_if_missing: bool = False, temp_loadpath: str | os.PathLike | None = None) -> Global_Config:
+    def load(cls, create_if_missing: bool = False, temp_loadpath: str | os.PathLike | None = None) -> GlobalConfigs:
         """
         Load the configs from the config files.
 
@@ -91,7 +91,7 @@ class ConfigManager:
                     configs.append(Box(cls._load_json(path)))
             
             if not configs:
-                cls._configs = Global_Config()
+                cls._configs = GlobalConfigs()
                 if create_if_missing:
                     cls.save(cls._configs)
                     return cls._configs
@@ -101,7 +101,7 @@ class ConfigManager:
                 base_config.merge_update(config)
             
             merge_config = base_config.to_dict()
-            cls._configs = Global_Config(**merge_config)
+            cls._configs = GlobalConfigs(**merge_config)
             return cls._configs
         except Exception as e:
             if create_if_missing:
@@ -111,7 +111,7 @@ class ConfigManager:
                 raise
     
     @staticmethod
-    def _dump_yaml(path: Path, data: Global_Config) -> None:
+    def _dump_yaml(path: Path, data: GlobalConfigs) -> None:
         with open(path, "w", encoding="utf-8") as f:
             f.write(
                 yaml.safe_dump(
@@ -122,7 +122,7 @@ class ConfigManager:
             )
     
     @staticmethod
-    def _dump_json(path: Path, data: Global_Config) -> None:
+    def _dump_json(path: Path, data: GlobalConfigs) -> None:
         with open(path, "wb") as f:
             f.write(
                 orjson.dumps(
@@ -131,7 +131,7 @@ class ConfigManager:
             )
     
     @classmethod
-    def save(cls, config: Global_Config | None = None, filename: str | os.PathLike = "config.json") -> None:
+    def save(cls, config: GlobalConfigs | None = None, filename: str | os.PathLike = "config.json") -> None:
         """
         Save the config to the config files.
         
