@@ -206,7 +206,6 @@ class FunctionCaller:
             except orjson.JSONEncodeError as error:
                 result = await self._any_call(
                     function.on_result_json_encode_error,
-                    raw_result,
                     error
                 )
         else:
