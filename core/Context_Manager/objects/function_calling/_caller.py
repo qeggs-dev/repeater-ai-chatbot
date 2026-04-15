@@ -3,7 +3,7 @@ import asyncio
 import inspect
 
 from typing import Any, Type, Awaitable, Callable, TypeVar
-from pydantic import ValidationError
+from pydantic import BaseModel, ValidationError
 from loguru import logger
 
 from TextProcessors import text_content_cutter
@@ -202,8 +202,10 @@ class FunctionCaller:
         )
 
         raw_result = await function.call(arguments)
-        
-        if function.json_result:
+
+        if isinstance(raw_result, BaseModel):
+            result = raw_result.model_dump_json()
+        elif function.json_result:
             try:
                 bin_result = orjson.dumps(raw_result)
 
@@ -228,7 +230,7 @@ class FunctionCaller:
             "Tool {name} Result:\n{result}",
             user_id = user_id,
             name = function.name,
-            result = text_content_cutter(result, ConfigManager.get_configs().tool_calls.result_max_length_for_log)
+            result = text_content_cutter(result, ConfigManager.get_configs().tool_calls.result_max_length_for_logs)
         )
         
         return ContentUnit(

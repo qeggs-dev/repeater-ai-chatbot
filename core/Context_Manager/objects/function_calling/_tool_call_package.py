@@ -16,6 +16,9 @@ class ToolCallPacakage(ABC):
     class Params(BaseModel):
         pass
 
+    class Result(BaseModel):
+        pass
+
     name: ClassVar[str] = ""
     enabled: ClassVar[bool] = True
     force_choice: ClassVar[bool] = False
