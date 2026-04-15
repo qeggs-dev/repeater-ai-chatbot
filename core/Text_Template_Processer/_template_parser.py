@@ -5,7 +5,7 @@ import random
 import secrets
 import numpy as np
 
-from ..Global_Config_Manager import Global_Config
+from ..Global_Config_Manager import GlobalConfigs
 from ..User_Config_Manager import UserConfigs
 from ..Assist_Struct import Request_User_Info
 from .._info import __version__
@@ -33,7 +33,7 @@ class TemplateParser:
             self,
             model: ModelAPI = ModelAPI(),
             user_info: Request_User_Info = Request_User_Info(),
-            global_config: Global_Config = Global_Config(),
+            global_config: GlobalConfigs = GlobalConfigs(),
             user_config: UserConfigs = UserConfigs(),
         ):
         self._model = model
