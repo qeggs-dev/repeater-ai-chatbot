@@ -117,6 +117,7 @@ class ModelRequester:
         request: Request,
         content_buffer: ContentBuffer,
         status_map: StatusMap[str, str],
+        allow_tool_calls: bool = True,
         tool_choice_model: ToolChoice = ToolChoice.AUTO,
         stream: bool = False,
     ) -> MultiResponse:
@@ -124,8 +125,9 @@ class ModelRequester:
         responses.historical_context = request.context
         submit_context = request.context.remove_reasoning_content()
         request.context = submit_context
-        request.tools = self._tools_caller.to_request()
-        request.tool_choice = self._tools_caller.to_choice(tool_choice_model)
+        if allow_tool_calls:
+            request.tools = self._tools_caller.to_request()
+            request.tool_choice = self._tools_caller.to_choice(tool_choice_model)
         while True:
             try:
                 if stream:
