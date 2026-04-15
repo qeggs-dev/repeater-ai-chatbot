@@ -47,7 +47,8 @@
     - **Content:**
       - `JSON`:
         - `reasoning_content` (str): CoT回复内容，即使模型没有返回CoT它仍然存在，注意判断逻辑应为非null和非空字符串
-        - `content` (str): AI回复内容
+        - `context`
+          - `context_list` (list[ContentUnit]): 上下文列表，包含所有新生成的上下文内容
         - `user_raw_input` (str): 用户发送的原始消息
         - `user_input` (str | list[ContentBlock]): 用户发送的消息经过格式化后处理后的内容，使用[OpenAI Chat Completion User Message Content](https://platform.openai.com/docs/api-reference/chat/create#chat_create-messages-user_message-content)格式
         - `model_group` (str): 模型组，由[API_Info文件](../configs/api_info.md)决定
