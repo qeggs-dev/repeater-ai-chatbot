@@ -1,6 +1,12 @@
 import orjson
 import asyncio
 import inspect
+
+from typing import Any, Type, Awaitable, Callable, TypeVar
+from pydantic import ValidationError
+from loguru import logger
+
+from TextProcessors import text_content_cutter
 from .function import (
     Function
 )
@@ -9,12 +15,9 @@ from .._content_unit import ContentUnit
 from .._content_role import ContentRole
 from ....User_Config_Manager import UserConfigs
 from ....Global_Config_Manager import ConfigManager
-from pydantic import ValidationError
 from ._exceptions import JSONDecodeError, ArgumentError
-from typing import Any, Type, Awaitable, Callable, TypeVar
 from ._choice import ToolChoice
 from ._tool_call_package import ToolCallPacakage
-from loguru import logger
 
 T = TypeVar("T")
 
@@ -182,9 +185,19 @@ class FunctionCaller:
         
         
         logger.info(
-            "Calling function {name}\nUse Arguments: {arguments}",
+            "Calling Tool",
+            user_id = user_id
+        )
+
+        logger.info(
+            "Call Tool Name: {name}",
             user_id = user_id,
-            name = function.name,
+            name = function.name
+        )
+
+        logger.info(
+            "Use Arguments:\n{arguments}",
+            user_id = user_id,
             arguments = arguments.model_dump_json(indent=4, ensure_ascii=False)
         )
 
@@ -210,6 +223,13 @@ class FunctionCaller:
                 )
         else:
             result = str(raw_result)
+        
+        logger.info(
+            "Tool {name} Result:\n{result}",
+            user_id = user_id,
+            name = function.name,
+            result = text_content_cutter(result, ConfigManager.get_configs().tool_calls.result_max_length_for_log)
+        )
         
         return ContentUnit(
             role = ContentRole.TOOL,
