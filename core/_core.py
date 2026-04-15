@@ -15,8 +15,15 @@ import aiofiles
 from loguru import logger
 
 # ==== 自定义库 ==== #
-from .CallAPI import (
-    CompletionsAPI
+from .CallAPI.CompletionsAPI import (
+    Request,
+    Response,
+    Delta,
+    CallAPIException
+)
+from .Model_Requester import (
+    ModelRequester,
+    MultiResponse
 )
 from .Data_Manager import (
     ContextManager,
@@ -39,7 +46,7 @@ from .TextBuffer import ContentBuffer
 from RegexChecker import RegexChecker
 from .Global_Config_Manager import ConfigManager
 from .Assist_Struct import (
-    Response,
+    Response as RepeaterResponse,
     Request_User_Info,
     CrossUserDataRouting,
     AdditionalData
@@ -64,6 +71,9 @@ from .Status_Map import StatusMap
 class Core:
     # region > init
     def __init__(self, max_concurrency: int | None = None):
+        # 配置最大并发数
+        self._max_concurrency = max_concurrency
+
         # 全局锁(用于获取会话锁)
         self.lock = asyncio.Lock()
 
@@ -71,16 +81,6 @@ class Core:
         self.context_manager = ContextManager()
         self.prompt_manager = PromptManager()
         self.user_config_manager: UserConfigManager = UserConfigManager()
-
-        # 初始化Client并设置并发大小
-        self.api_client = CompletionsAPI.NoStreamClient(
-            ConfigManager.get_configs().callapi.max_concurrency
-            if max_concurrency is None else max_concurrency
-        )
-        self.stream_api_client = CompletionsAPI.StreamClient(
-            ConfigManager.get_configs().callapi.max_concurrency
-            if max_concurrency is None else max_concurrency
-        )
 
         # 初始化 Model 管理器
         self.model_api_manager = ModelsClient(
@@ -97,6 +97,7 @@ class Core:
         # 初始化锁池
         self.namespace_locks: AsyncLockPool = AsyncLockPool()
 
+        # 初始化内容缓冲池
         self.content_buffers_pool: ResourcePool[ContentBuffer] = ResourcePool()
 
         # 初始化调用日志管理器
@@ -699,7 +700,7 @@ class Core:
                         # region [Make Request Object]
                         with self.task_status_map.enter(user_id, "Make Request Object"):
                             # 创建请求对象
-                            request = CompletionsAPI.Request()
+                            request = Request()
                             # 设置上下文
                             request.context = submit_context
                             
@@ -784,13 +785,12 @@ class Core:
                             request.stream = ConfigManager.get_configs().model.stream
                             request.stream_options.include_obfuscation = ConfigManager.get_configs().callapi.include_obfuscation
                             request.stream_options.include_usage = ConfigManager.get_configs().callapi.include_usage
-                            request.print_chunk = print_chunk
                         # endregion
 
                         # region [Pre-filled output]
                         with self.task_status_map.enter(user_id, "Pre-filled output"):
                             # 输出 (为了自动填充输出内容)
-                            output = Response()
+                            output = RepeaterResponse()
                             output.model_group = model.parent
                             output.model_name = model.name
                             output.model_type = model.type.value
@@ -831,59 +831,33 @@ class Core:
 
                     # region [Requesting]
                     with self.task_status_map.enter(user_id, "Requesting"):
-                        # 提交请求
+                        # 初始化 Client 并设置并发大小
+                        model_caller = ModelRequester(
+                            user_id = user_id,
+                            user_configs = configs,
+                            max_concurrency = (
+                                ConfigManager.get_configs().callapi.max_concurrency
+                                if self._max_concurrency is None else self._max_concurrency
+                            )
+                        )
                         try:
-                            response: CompletionsAPI.Response = CompletionsAPI.Response()
-                            if stream:
-                                async def generator_wrapper(generator: CompletionsAPI.StreamingResponseGenerationLayer) -> AsyncIterator[CompletionsAPI.Delta]:
-                                    async for chunk in generator:
-                                        yield chunk
-                                
-                                async def post_treatment(response: CompletionsAPI.Response):
-                                    """
-                                    包装后处理函数，以传递更多数据
-                                    """
-                                    nonlocal output
-                                    await self.content_buffers_pool.remove(user_id)
-                                    output = await self._post_treatment(
-                                        user_id = user_id,
-                                        output = output,
-                                        response = response,
-                                        template_parser = template_parser,
-                                        user_input = user_input,
-                                        save_context = save_context,
-                                        save_new_only = save_new_only,
-                                        context_loader = context_loader,
-                                        task_start_time = task_start_time,
-                                        cross_user_data_routing = cross_user_data_routing,
-                                        enable_assistant_template = enable_assistant_template,
-                                        request_statistics_template = request_statistics_template,
-                                        prepare_end_time = prepare_end_time,
-                                        prepare_start_time = prepare_start_time,
-                                        save_only_text = save_only_text,
-                                    )
-                                
-                                response_iterator = await self.stream_api_client.submit_request(
+                            model_responses: MultiResponse | None = None
+                            
+                            async def submit():
+                                nonlocal output, model_responses
+                                model_responses = await model_caller.submit(
                                     user_id = user_id,
                                     request = request,
                                     content_buffer = content_buffer,
-                                    response_callback = post_treatment,
-                                    status_map = self.task_status_map
-                                )
-
-                                return generator_wrapper(response_iterator)
-                            else:
-                                response = await self.api_client.submit_request(
-                                    user_id = user_id,
-                                    request = request,
-                                    content_buffer = content_buffer,
-                                    status_map = self.task_status_map
+                                    status_map = self.task_status_map,
+                                    stream = stream
                                 )
                                 
+                                await self.content_buffers_pool.remove(user_id)
                                 output = await self._post_treatment(
                                     user_id = user_id,
                                     output = output,
-                                    response = response,
+                                    responses = model_responses,
                                     template_parser = template_parser,
                                     user_input = user_input,
                                     save_context = save_context,
@@ -897,9 +871,15 @@ class Core:
                                     prepare_start_time = prepare_start_time,
                                     save_only_text = save_only_text,
                                 )
+                            
+                            task = asyncio.create_task(submit())
+
+                            if stream:
+                                return model_caller.generator()
+                            else:
+                                await task
                                 return output
-                        
-                        except CompletionsAPI.Exceptions.CallApiException as e:
+                        except CallAPIException as e:
                             traceback_info = traceback.format_exc()
                             logger.exception(
                                 "CallAPI Error: \n{traceback_info}",
@@ -921,7 +901,7 @@ class Core:
         self,
         user_id: str,
         template_parser: TemplateParser,
-        response: CompletionsAPI.Response,
+        responses: MultiResponse,
         task_start_time: Request_Log.TimeStamp,
         context_loader: ContextLoader,
         prepare_end_time: Request_Log.TimeStamp,
@@ -931,49 +911,53 @@ class Core:
         extra_template_fields: dict[str, Any] | None = None,
         request_statistics_template: str = "",
         user_input: ContentUnit | None = None,
-        output: Response = Response(),
+        output: RepeaterResponse = RepeaterResponse(),
         save_context: bool | None = None,
         save_only_text: bool = False,
         save_new_only: bool = False,
     ) -> Response:
         with self.task_status_map.enter(user_id, "PostProcessing"):
             # 补充调用日志的时间信息
-            response.calling_log.task_start_time = task_start_time
-            response.calling_log.prepare_start_time = prepare_start_time
-            response.calling_log.prepare_end_time = prepare_end_time
-            response.calling_log.created_time = response.created
+            for response in responses:
+                response.request_log.task_start_time = task_start_time
+                response.request_log.prepare_start_time = prepare_start_time
+                response.request_log.prepare_end_time = prepare_end_time
+                response.request_log.created_time = response.created
             saved_user_id = cross_user_data_routing.context.save_to_user_id
             if extra_template_fields is None:
                 extra_template_fields = {}
+            
+            new_context = responses.new_contexts()
 
             # 展开模型输出内容中的变量
             def expand_variables():
-                for index in range(len(response.new_context.context_list)):
-                    content_unit = response.new_context.context_list[index]
-                    content = content_unit.content
-                    if isinstance(content, str):
-                        content = template_parser.render_ex(
-                            content,
-                            user_id,
-                            **extra_template_fields
-                        )
-                        content_unit.content = content
-                    else:
-                        content = content_unit.to_plaintext_content()
-                        content = template_parser.render_ex(
-                            content,
-                            user_id,
-                            **extra_template_fields
-                        )
-                        content_unit.remove_context_block(TextBlock)
-                        content_unit.content.append(
-                            TextBlock(content)
-                        )
+                content_unit = new_context.last_content
+                content = content_unit.content
+                if isinstance(content, str):
+                    content = template_parser.render_ex(
+                        content,
+                        user_id,
+                        **extra_template_fields
+                    )
+                    content_unit.content = content
+                else:
+                    content = content_unit.to_plaintext_content()
+                    content = template_parser.render_ex(
+                        content,
+                        user_id,
+                        **extra_template_fields
+                    )
+                    content_unit.remove_context_block(TextBlock)
+                    content_unit.content.append(
+                        TextBlock(content)
+                    )
+                if content_unit.reasoning_content:
                     content_unit.reasoning_content = template_parser.render_ex(
                         content_unit.reasoning_content,
                         user_id,
                         **extra_template_fields
                     )
+                new_context.last_content = content_unit
             
             # 通过合并频繁的同步操作，减少创建 Thread 带来的开销
             if enable_assistant_template:
@@ -982,7 +966,7 @@ class Core:
             
             with self.task_status_map.enter(user_id, "Saving Context"):
                 if cross_user_data_routing.context.save_to_user_id == user_id:
-                    historical_context = response.historical_context
+                    historical_context = responses.historical_context
                 else:
                     historical_context = await context_loader.load_context(saved_user_id)
                     historical_context.append(user_input)
@@ -993,16 +977,16 @@ class Core:
                         saved_context: ContextObject = ContextObject()
                         if user_input is not None:
                             saved_context.append(user_input)
-                        if response.new_context:
-                            saved_context.extend(response.new_context)
+                        if new_context:
+                            saved_context.extend(new_context)
                         logger.info(
                             "Saving new context...",
                             user_id = saved_user_id,
                         )
                     else:
                         saved_context = historical_context
-                        if response.new_context:
-                            saved_context.extend(response.new_context)
+                        if new_context:
+                            saved_context.extend(new_context)
                         logger.info(
                             "Saving context...",
                             user_id = saved_user_id,
@@ -1016,32 +1000,32 @@ class Core:
                     logger.warning("Context not saved", user_id = saved_user_id)
 
             # 记录任务结束时间
-            response.calling_log.task_end_time = Request_Log.TimeStamp()
+            for response in responses:
+                response.request_log.task_end_time = Request_Log.TimeStamp()
 
             # 记录调用日志
             with self.task_status_map.enter(user_id, "Recording request log"):
-                await self.request_log.add_request_log(response.calling_log)
+                await self.request_log.add_multi_request_log(responses.request_logs())
 
             # 记录API调用成功
             logger.success(f"Task Finished!", user_id = saved_user_id)
 
             # 返回模型输出内容
             with self.task_status_map.enter(user_id, "Returning response"):
-                output.reasoning_content = response.new_context.last_content.reasoning_content
-                output.content = response.new_context.last_content.content
-                output.create_time = response.created
-                output.id = response.id
+                output.context = new_context
+                output.create_time = responses[0].created
+                output.id = responses[0].id
 
-                output.finish_reason_cause = response.finish_reason_cause
-                output.finish_reason_code = response.finish_reason.value
-                output.request_log = response.calling_log
+                output.finish_reason_cause = responses[-1].finish_reason_cause
+                output.finish_reason_code = responses[-1].finish_reason.value
+                output.request_log = responses.request_logs()
 
                 if ConfigManager.get_configs().text_template.enable.request_statistics_template:
                     output.request_statistics = await asyncio.to_thread(
                         template_parser.render_ex,
                         request_statistics_template,
                         user_id,
-                        request_log = response.calling_log,
+                        request_log = responses[-1].request_log,
                         **extra_template_fields
                     )
 
