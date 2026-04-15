@@ -26,7 +26,8 @@ class FunctionCaller:
     def to_request(self) -> list[dict[str, Any]]:
         request: list[dict[str, Any]] = []
         for function in self._functions.values():
-            request.append(function.struct().model_dump(exclude_none=True))
+            if function.enabled:
+                request.append(function.struct().model_dump(exclude_none=True))
         return request
     
     def to_choice(self, choice_mode: ToolChoice = ToolChoice.AUTO):
