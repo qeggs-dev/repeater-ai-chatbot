@@ -1,8 +1,8 @@
-class CallApiException(Exception):
+class CallAPIException(Exception):
     """Base class for exceptions in this module."""
     pass
 
-class BadRequestError(CallApiException):
+class BadRequestError(CallAPIException):
     """Exception raised when the request is bad."""
     pass
 
@@ -21,18 +21,18 @@ class ModelNotFoundError(BadRequestError):
     def __str__(self):
         return self.message
 
-class APIConnectionError(CallApiException):
+class APIConnectionError(CallAPIException):
     """Exception raised when the API connection fails."""
     pass
 
-class APITimeoutError(CallApiException):
+class APITimeoutError(CallAPIException):
     """Exception raised when the API request times out."""
     pass
 
-class StreamNotAvailable(CallApiException):
+class StreamNotAvailable(CallAPIException):
     """Exception raised when the stream is not available."""
     pass
 
-class APIServerError(CallApiException):
+class APIServerError(CallAPIException):
     """Exception raised when the API server returns an error."""
     pass

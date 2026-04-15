@@ -1,12 +1,13 @@
 from pydantic import BaseModel, Field, ConfigDict
-from typing import Callable
+from typing import Callable, Any
 from ._delta import Delta
 from ._stream_options import StreamOptions
 from ....Context_Manager import (
     ContentRole
 )
+from ....Context_Manager.objects.function_calling import FunctionCaller
 
-from ....Context_Manager import ContextObject, CallingFunctionRequest
+from ....Context_Manager import ContextObject
 
 class Request(BaseModel):
     """
@@ -31,11 +32,15 @@ class Request(BaseModel):
     thinking: bool | None = None
     stop: list[str] | None = None
     context: ContextObject | None = None
+    prompt: str | None = None
+    echo: bool = False
+    suffix: str | None = None
     remove_reasoning_prompt: bool = True
     logprobs: bool = False
     top_logprobs: int | None = None
     print_chunk: bool = True
     output_role: ContentRole = ContentRole.ASSISTANT
-    function_calling: CallingFunctionRequest | None = None
+    tools: list[dict[str, Any]] | None = None
+    tool_choice: str | dict[str, dict[str, str]] | None = None
     continue_processing_callback_function: Callable[[str, Delta], bool] | None = None
     stream_options: StreamOptions = Field(default_factory=StreamOptions)

@@ -19,11 +19,9 @@ from ._translation_chunk import translation_chunk
 from ._call_api_base import CallStreamAPIBase
 from .._exceptions import *
 from ....Status_Map import StatusMap
-from ._client_pool import ClientPool
 from ._client_info import ClientInfo
 
 class StreamAPI(CallStreamAPIBase):
-    clients: ClientPool = ClientPool()
     async def _call(self, user_id: str, request: Request, status_map: StatusMap[str, str]) -> AsyncIterator[Delta]:
         """
         调用流式API
@@ -78,7 +76,8 @@ class StreamAPI(CallStreamAPIBase):
                 stop = request.stop,
                 stream = True,
                 messages = request.context.to_full_context(remove_reasoning_prompt = request.remove_reasoning_prompt),
-                tools = request.function_calling.tools if request.function_calling else None,
+                tools = request.tools,
+                tool_choice = request.tool_choice,
                 stream_options=request.stream_options.model_dump(),
                 extra_body = extra_body
             )

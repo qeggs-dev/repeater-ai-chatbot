@@ -13,7 +13,15 @@ from ._objects import (
     Logprob,
     Delta
 )
-from . import _exceptions as Exceptions
+from ._exceptions import (
+    CallAPIException,
+    BadRequestError,
+    ModelNotFoundError,
+    APIConnectionError,
+    APITimeoutError,
+    StreamNotAvailable,
+    APIServerError
+)
 
 __all__ = [
     "ClientBase",
@@ -27,5 +35,11 @@ __all__ = [
     "FinishReason",
     "Logprob",
     "Delta",
-    "Exceptions"
+    "CallAPIException",
+    "BadRequestError",
+    "ModelNotFoundError",
+    "APIConnectionError",
+    "APITimeoutError",
+    "StreamNotAvailable",
+    "APIServerError"
 ]

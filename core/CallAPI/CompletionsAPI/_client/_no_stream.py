@@ -86,4 +86,4 @@ class NoStreamClient(ClientBase):
                 raise APIServerError(e.message)
         except Exception as e:
             logger.error(f"Error: {e}", user_id = user_id)
-            raise CallApiException(e) from e
+            raise CallAPIException(e) from e

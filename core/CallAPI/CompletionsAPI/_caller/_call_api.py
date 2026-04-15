@@ -11,13 +11,13 @@ from loguru import logger
 from .._objects import (
     Request,
     Response,
+    ToolCall,
     Top_Logprob,
     Logprob,
     TokensCount,
     FinishReason
 )
 from ....Context_Manager import (
-    FunctionResponseUnit,
     ContentUnit,
     ContentRole
 )
@@ -25,11 +25,9 @@ from ....Request_Log import RequestLog, TimeStamp
 from ._call_api_base import CallNstreamAPIBase
 from ....Status_Map import StatusMap
 from .._exceptions import *
-from ._client_pool import ClientPool
 from ._client_info import ClientInfo
 
 class CallAPI(CallNstreamAPIBase):
-    clients: ClientPool = ClientPool()
     async def _call(self, user_id:str, request: Request, status_map: StatusMap[str, str]) -> Response:
         """调用API"""
         # 检查参数
@@ -39,8 +37,10 @@ class CallAPI(CallNstreamAPIBase):
         with status_map.enter(user_id, "Init objects"):
             # 创建模型响应对象
             model_response = Response()
+            # 设置 user_id
+            model_response.user_id = user_id
             # 创建调用日志对象
-            model_response.calling_log = RequestLog()
+            model_response.request_log = RequestLog()
 
         with status_map.enter(user_id, "Create OpenAI Client"):
             # 创建OpenAI Client
@@ -54,11 +54,11 @@ class CallAPI(CallNstreamAPIBase):
         
         with status_map.enter(user_id, "Write calling log base data"):
             # 写入调用日志基础数据
-            model_response.calling_log.url = request.url
-            model_response.calling_log.user_id = user_id
-            model_response.calling_log.user_name = request.user_name
-            model_response.calling_log.model = request.model
-            model_response.calling_log.stream = request.stream
+            model_response.request_log.url = request.url
+            model_response.request_log.user_id = user_id
+            model_response.request_log.user_name = request.user_name
+            model_response.request_log.model = request.model
+            model_response.request_log.stream = request.stream
 
         # 如果上下文为空，则抛出异常
         with status_map.enter(user_id, "Check context"):
@@ -94,7 +94,8 @@ class CallAPI(CallNstreamAPIBase):
                 stop = request.stop,
                 stream = False,
                 messages = request.context.to_full_context(remove_reasoning_prompt = request.remove_reasoning_prompt),
-                tools = request.function_calling.tools if request.function_calling else None,
+                tools = request.tools,
+                tool_choice = request.tool_choice,
                 stream_options = request.stream_options.model_dump(),
                 extra_body = extra_body
             )
@@ -136,39 +137,35 @@ class CallAPI(CallNstreamAPIBase):
                     model_response.finish_reason = FinishReason(choices.finish_reason)
                 # 
                 if hasattr(choices, "message"):
-                    # 处理输出内容
-                    if hasattr(choices.message, "content"):
-                        model_response_content_unit.content = choices.message.content
-                        self._print_file.write(f"\n\n{model_response_content_unit.content}\n\n")
-                        self._print_file.flush()
-                    
                     # 处理推理内容
                     if hasattr(choices.message, "reasoning_content"):
                         model_response_content_unit.reasoning_content = choices.message.reasoning_content
                         self._print_file.write(f"\n\n\033[7m{model_response_content_unit.reasoning_content}\033[0m")
                         self._print_file.flush()
                     
+                    # 处理输出内容
+                    if hasattr(choices.message, "content"):
+                        model_response_content_unit.content = choices.message.content
+                        self._print_file.write(f"\n\n{model_response_content_unit.content}\n\n")
+                        self._print_file.flush()
+                    
                     # 处理工具调用
                     if hasattr(choices.message, "tool_calls") and choices.message.tool_calls is not None:
-                        for tool_call in choices.message.tool_calls:
+                        for call in choices.message.tool_calls:
+                            tool_call = ToolCall()
                             # 处理调用函数
-                            if hasattr(tool_call, "id"):
-                                id = tool_call.id
-                            else:
-                                id = ""
-                            if hasattr(tool_call, "type"):
-                                type = tool_call.type
-                            else:
-                                type = ""
-                            if hasattr(tool_call, "function"):
-                                if hasattr(tool_call.function, "name"):
-                                    name = tool_call.function.name
-                                else:
-                                    name = ""
-                                if hasattr(tool_call.function, "arguments"):
-                                    arguments = tool_call.function.arguments
-                                else:
-                                    arguments = ""
+                            if hasattr(call, "id"):
+                                tool_call.id = call.id
+                            if hasattr(call, "type"):
+                                tool_call.type = call.type
+                            if hasattr(call, "function"):
+                                if hasattr(call.function, "name"):
+                                    tool_call.name = call.function.name
+                                if hasattr(call.function, "arguments"):
+                                    tool_call.arguments = call.function.arguments
+                                    self._print_file.write(f"\n\n\033[104m{tool_call.arguments}\033[0m\n\n")
+                                    self._print_file.flush()
+                            model_response.tool_calls.append(tool_call)
             
             # 处理logprobs
             if hasattr(response.choices, "logprobs"):
@@ -210,16 +207,16 @@ class CallAPI(CallNstreamAPIBase):
             self._print_file.write("\n\n")
 
             # 添加日志统计数据
-            model_response.calling_log.id = model_response.id
-            model_response.calling_log.total_chunk = chunk_count
-            model_response.calling_log.empty_chunk = empty_chunk_count
-            model_response.calling_log.request_start_time = request_start_time
-            model_response.calling_log.request_end_time = request_end_time
-            model_response.calling_log.total_tokens = model_response.token_usage.total_tokens
-            model_response.calling_log.prompt_tokens = model_response.token_usage.prompt_tokens
-            model_response.calling_log.completion_tokens = model_response.token_usage.completion_tokens
-            model_response.calling_log.cache_hit_count = model_response.token_usage.prompt_cache_hit_tokens
-            model_response.calling_log.cache_miss_count = model_response.token_usage.prompt_cache_miss_tokens
+            model_response.request_log.id = model_response.id
+            model_response.request_log.total_chunk = chunk_count
+            model_response.request_log.empty_chunk = empty_chunk_count
+            model_response.request_log.request_start_time = request_start_time
+            model_response.request_log.request_end_time = request_end_time
+            model_response.request_log.total_tokens = model_response.token_usage.total_tokens
+            model_response.request_log.prompt_tokens = model_response.token_usage.prompt_tokens
+            model_response.request_log.completion_tokens = model_response.token_usage.completion_tokens
+            model_response.request_log.cache_hit_count = model_response.token_usage.prompt_cache_hit_tokens
+            model_response.request_log.cache_miss_count = model_response.token_usage.prompt_cache_miss_tokens
 
             # 添加上下文
             model_response.historical_context = request.context

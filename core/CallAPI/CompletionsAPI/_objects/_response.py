@@ -4,7 +4,7 @@ from ....Request_Log import RequestLog, TimeStamp
 from ._tokens_count import TokensCount
 from ._finish_reason import FinishReason
 from ._logprob import Logprob
-
+from ._tool_calls import ToolCall
 
 class Response(BaseModel):
     """
@@ -15,12 +15,14 @@ class Response(BaseModel):
     )
 
     id: str = ""
+    user_id: str = ""
     historical_context: ContextObject = Field(default_factory=ContextObject)
     new_context: ContextObject = Field(default_factory=ContextObject)
     created: int = 0
     model: str = ""
     token_usage: TokensCount | None = None
     stream: bool = False
+    tool_calls: list[ToolCall] | None = None
 
     stream_processing_start_time_ns:TimeStamp = Field(default_factory=TimeStamp)
     stream_processing_end_time_ns:TimeStamp = Field(default_factory=TimeStamp)
@@ -28,7 +30,7 @@ class Response(BaseModel):
     finish_reason: FinishReason = FinishReason.STOP
     system_fingerprint: str = ""
     logprobs: list[Logprob] | None = None
-    calling_log: RequestLog = Field(default_factory=RequestLog)
+    request_log: RequestLog = Field(default_factory=RequestLog)
 
     @property
     def finish_reason_cause(self) -> str:

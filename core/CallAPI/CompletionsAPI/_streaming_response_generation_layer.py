@@ -1,13 +1,14 @@
 import sys
+import asyncio
 
 from typing import AsyncGenerator, Self, TextIO
-from ._objects import Request, Delta, Response
+from ._objects import Request, Delta, ToolCall, Response
 from ...Request_Log import RequestLog
-from ...Context_Manager import ContentUnit, ContentRole, FunctionResponseUnit
+from ...Context_Manager import ContentUnit, ContentRole
 from ...Request_Log import TimeStamp
 from ...Global_Config_Manager import ConfigManager
 from ...Logger_Init import config_to_log_level, LogLevel
-from ...TextBuffer import ContentBuffer
+from ...TextBuffer import ContentBuffer, TextBuffer
 from loguru import logger
 
 class StreamingResponseGenerationLayer:
@@ -42,18 +43,20 @@ class StreamingResponseGenerationLayer:
         # 创建响应对象
         self.response = Response()
         # 创建调用日志
-        self.response.calling_log = RequestLog()
+        self.response.request_log = RequestLog()
 
         # 设置用户ID
         self.user_id = user_id
-        
 
         # 写入调用日志基础信息
-        self.response.calling_log.url = self.request.url
-        self.response.calling_log.user_id = self.user_id
-        self.response.calling_log.user_name = self.request.user_name
-        self.response.calling_log.model = self.request.model
-        self.response.calling_log.stream = self.request.stream
+        self.response.request_log.url = self.request.url
+        self.response.request_log.user_id = self.user_id
+        self.response.request_log.user_name = self.request.user_name
+        self.response.request_log.model = self.request.model
+        self.response.request_log.stream = self.request.stream
+
+        # set tool calls
+        self.tool_calls: dict[int, ToolCall] = {}
 
         # 如果context为空，则抛出异常
         if not self.request.context:
@@ -75,6 +78,9 @@ class StreamingResponseGenerationLayer:
         self.created:TimeStamp = TimeStamp()
         # chunk耗时列表
         self.chunk_times:list[TimeStamp] = []
+        self.chunk_generated_times:list[TimeStamp] = []
+
+        self._chunk_queue: asyncio.Queue[Delta | None] = asyncio.Queue()
 
         # 文本缓冲区
         self._content_buffer = content_buffer
@@ -86,17 +92,25 @@ class StreamingResponseGenerationLayer:
         self._print_file.flush()
 
         # 添加日志统计数据
-        self.response.calling_log.id = self.response.id
-        self.response.calling_log.total_chunk = self.chunk_count
-        self.response.calling_log.empty_chunk = self.empty_chunk_count
-        self.response.calling_log.request_start_time = self.request_start_time
-        self.response.calling_log.request_end_time = self.request_end_time
-        self.response.calling_log.chunk_times = self.chunk_times
-        self.response.calling_log.total_tokens = self.response.token_usage.total_tokens
-        self.response.calling_log.prompt_tokens = self.response.token_usage.prompt_tokens
-        self.response.calling_log.completion_tokens = self.response.token_usage.completion_tokens
-        self.response.calling_log.cache_hit_count = self.response.token_usage.prompt_cache_hit_tokens
-        self.response.calling_log.cache_miss_count = self.response.token_usage.prompt_cache_miss_tokens
+        self.response.request_log.id = self.response.id
+        self.response.request_log.total_chunk = self.chunk_count
+        self.response.request_log.empty_chunk = self.empty_chunk_count
+        self.response.request_log.request_start_time = self.request_start_time
+        self.response.request_log.request_end_time = self.request_end_time
+        self.response.request_log.chunk_times = self.chunk_times
+        self.response.request_log.chunk_generated_times = self.chunk_generated_times
+        self.response.request_log.total_tokens = self.response.token_usage.total_tokens
+        self.response.request_log.prompt_tokens = self.response.token_usage.prompt_tokens
+        self.response.request_log.completion_tokens = self.response.token_usage.completion_tokens
+        self.response.request_log.cache_hit_count = self.response.token_usage.prompt_cache_hit_tokens
+        self.response.request_log.cache_miss_count = self.response.token_usage.prompt_cache_miss_tokens
+
+        # 由于工具调用不分顺序，而是通过 ID 定位
+        # 所以这里这里可以忽略索引
+        if self.tool_calls:
+            for index, buffer in self._content_buffer.tool_calls_arguments_buffer.items():
+                self.tool_calls[index].arguments = str(buffer)
+        self.response.tool_calls = list(self.tool_calls.values())
 
         # 添加上下文
         self.model_response_content_unit:ContentUnit = ContentUnit()
@@ -105,32 +119,40 @@ class StreamingResponseGenerationLayer:
             self.model_response_content_unit.reasoning_content = str(self._content_buffer.reasoning_buffer)
         if self._content_buffer:
             self.model_response_content_unit.content = str(self._content_buffer.content_buffer)
+        if self.response.tool_calls:
+            self.model_response_content_unit.tool_calls = [call.to_calling_request() for call in self.response.tool_calls]
         self.response.historical_context = self.request.context
         self.response.new_context.append(self.model_response_content_unit)
+    
+    async def _read_chunk(self):
+        async for chunk in self._response_iterator:
+            await self._chunk_queue.put(chunk)
+            self.chunk_generated_times.append(TimeStamp())
+        await self._chunk_queue.put(None)
 
     def __aiter__(self) -> Self:
         """
         Returns the streaming response generation layer as an iterator.
         """
         stream_processing_start_time:int = TimeStamp()
-        self.response.calling_log.stream_processing_start_time = stream_processing_start_time
+        self.response.request_log.stream_processing_start_time = stream_processing_start_time
+        asyncio.create_task(self._read_chunk())
         return self
 
     async def __anext__(self) -> Delta:
         """
         Returns the next chunk of data from the streaming response generation layer.
         """
-        try:
-            delta_data = await anext(self._response_iterator)
-            self._parse_delta(delta_data)
-            return delta_data
-        except StopAsyncIteration as e:
+        delta_data = await self._chunk_queue.get()
+        if delta_data is None:
             if not self._finished:
                 self._finished = True
-            stream_processing_end_time: int = TimeStamp()
-            self.response.calling_log.stream_processing_end_time = stream_processing_end_time
-            self.finally_stream()
-            raise e
+                stream_processing_end_time: int = TimeStamp()
+                self.response.request_log.stream_processing_end_time = stream_processing_end_time
+                self.finally_stream()
+                raise StopAsyncIteration
+        self._parse_delta(delta_data)
+        return delta_data
 
     def _parse_delta(self, delta_data: Delta):
         # 记录会话开启时间
@@ -175,6 +197,28 @@ class StreamingResponseGenerationLayer:
                 logger.trace("Received Content chunk: {content}", user_id = self.user_id, content = repr(delta_data.content))
             self._content_buffer.content_buffer.push(delta_data.content)
         
+        # 记录模型工具调用内容
+        if delta_data.tool_calls:
+            for index, tool_call in enumerate(delta_data.tool_calls):
+                if self.request.print_chunk:
+                    if not self._content_buffer.tool_calls_arguments_buffer:
+                        self._print_file.write("\n\n")
+                    if self._print_chunk:
+                        self._print_file.write(f"\033[104m{tool_call.arguments}\033[0m")
+                        self._print_file.flush()
+                    logger.trace("Received Tool_Call[{index}] chunk: {tool_call}", user_id = self.user_id, index = index, tool_call = repr(tool_call))
+                if index not in self.tool_calls:
+                    self.tool_calls[index] = ToolCall()
+                if tool_call.id:
+                    self.tool_calls[index].id = tool_call.id
+                if tool_call.type:
+                    self.tool_calls[index].type = tool_call.type
+                if tool_call.name:
+                    self.tool_calls[index].name = tool_call.name
+                if index not in self._content_buffer.tool_calls_arguments_buffer:
+                    self._content_buffer.tool_calls_arguments_buffer[index] = TextBuffer()
+                self._content_buffer.tool_calls_arguments_buffer[index].push(tool_call.arguments)
+        
         if delta_data.system_fingerprint:
             self.response.system_fingerprint = delta_data.system_fingerprint
 
@@ -182,12 +226,6 @@ class StreamingResponseGenerationLayer:
         if delta_data.is_empty:
             self.empty_chunk_count += 1
         self.chunk_count += 1
-
-        # 处理回调函数
-        if self.request.continue_processing_callback_function is not None:
-            if self.request.continue_processing_callback_function(self.user_id, delta_data):
-                self._response_iterator.aclose()
-                raise StopIteration
         
         # 刷新打印缓冲区
         self._print_file.flush()

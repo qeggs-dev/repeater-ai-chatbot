@@ -1,4 +1,4 @@
-from .._objects import Delta, TokensCount, FinishReason
+from .._objects import Delta, ToolCall, TokensCount, FinishReason
 from openai.types.chat import ChatCompletionChunk
 
 async def translation_chunk(
@@ -40,19 +40,21 @@ async def translation_chunk(
                     delta_data.content = content
             
             # 转录工具调用
-            if hasattr(choice.delta, "tool_calls"):
+            if hasattr(choice.delta, "tool_calls") and choice.delta.tool_calls:
                 content = choice.delta.tool_calls
-                if content:
-                    tool = content[0]
-                    if hasattr(tool, "id"):
-                        delta_data.function_id = tool.id
-                    if hasattr(tool, "type"):
-                        delta_data.function_type = tool.type
-                    if hasattr(tool, "function"):
-                        if hasattr(tool.function, "name"):
-                            delta_data.function_name = tool.function.name
-                        if hasattr(tool.function, "arguments"):
-                            delta_data.function_arguments = tool.function.arguments
+                delta_data.tool_calls = []
+                for call in content:
+                    tool_call = ToolCall()
+                    if hasattr(call, "id"):
+                        tool_call.id = call.id
+                    if hasattr(call, "type"):
+                        tool_call.type = call.type
+                    if hasattr(call, "function") and call.function is not None:
+                        if hasattr(call.function, "name"):
+                            tool_call.name = call.function.name
+                        if hasattr(call.function, "arguments"):
+                            tool_call.arguments = call.function.arguments
+                    delta_data.tool_calls.append(tool_call)
         
         if hasattr(choice, "finish_reason"):
             # 我不知道为什么，这里就是会出现 None

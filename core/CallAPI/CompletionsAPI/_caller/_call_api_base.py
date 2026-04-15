@@ -4,6 +4,7 @@ from abc import ABC, abstractmethod
 from .._objects import Request, Response, Delta
 from .._exceptions import *
 from ....Status_Map import StatusMap
+from ._client_pool import ClientPool
 import openai
 
 T = TypeVar("T")
@@ -12,6 +13,8 @@ class BaseCallAPI(ABC):
     """
     Abstract class for calling API
     """
+    clients: ClientPool = ClientPool()
+
     def __init__(self, print_file: TextIO = sys.stdout):
         self._print_file = print_file
 
@@ -39,7 +42,7 @@ class BaseCallAPI(ABC):
         except openai.APIConnectionError as e:
             raise APIConnectionError(str(e)) from e
         except Exception as e:
-            raise CallApiException(str(e)) from e
+            raise CallAPIException(str(e)) from e
     
     @abstractmethod
     def _call(self, user_id: str, request: Request, statsus_map: StatusMap[str, str]) -> T:

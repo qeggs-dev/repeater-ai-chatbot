@@ -3,6 +3,7 @@ from pydantic import BaseModel, Field
 from ._finish_reason import FinishReason
 from ._tokens_count import TokensCount
 from ._logprob import Logprob
+from ._tool_calls import ToolCall
 
 class Delta(BaseModel):
     """
@@ -11,10 +12,7 @@ class Delta(BaseModel):
     id: str = ""
     reasoning_content: str = ""
     content: str = ""
-    function_id: str = ""
-    function_type: str = ""
-    function_name: str = ""
-    function_arguments: str = ""
+    tool_calls: list[ToolCall] | None = None
     token_usage: TokensCount = Field(default_factory=TokensCount)
     finish_reason: FinishReason | None = None
     created: int = 0
@@ -27,4 +25,4 @@ class Delta(BaseModel):
         """
         Check if the delta data is empty.
         """
-        return not (self.reasoning_content or self.content or self.function_name or self.function_arguments or self.token_usage)
+        return not (self.reasoning_content or self.content or self.tool_calls or self.token_usage)
