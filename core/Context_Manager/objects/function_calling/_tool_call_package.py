@@ -22,10 +22,12 @@ class ToolCallPacakage(ABC):
     json_result: ClassVar[bool] = False
     call_type: ClassVar[CallType] = CallType.SYNC
 
-    def __init__(self, user_id: str, user_configs: UserConfigs, global_configs: GlobalConfigs):
+    def __init__(self, user_id: str, user_configs: UserConfigs, global_configs: GlobalConfigs, *args, **kwargs):
         self.user_id = user_id
         self.user_configs = user_configs
         self.global_configs = global_configs
+        self.extra_positional_args = args
+        self.extra_keyword_args = kwargs
 
     def document(self) -> str:
         """

@@ -65,12 +65,14 @@ class FunctionCaller:
             self._already_force_function = True
         self._functions[function.name] = function
     
-    def register_packages(self, user_id: str, packages: list[Type[ToolCallPacakage]], user_configs: UserConfigs):
+    def register_packages(self, user_id: str, packages: list[Type[ToolCallPacakage]], user_configs: UserConfigs, *args, **kwargs):
         for package in packages:
             package_instance = package(
                 user_id = user_id,
                 user_configs = user_configs,
                 global_configs = ConfigManager.get_configs(),
+                *args,
+                **kwargs
             )
             if len(package_instance.Params.model_fields) == 0:
                 parameters = None
