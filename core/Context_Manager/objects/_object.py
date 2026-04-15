@@ -198,19 +198,19 @@ class ContextObject(BaseModel):
             if not self.context_list:
                 return ContextObject()
             try:
-                # 第一步：pop直到找到助手消息
+                # 第一步：pop 直到不是用户消息
                 while (self.context_list and 
-                    self.last_content.role != ContentRole.ASSISTANT):
+                    self.last_content.role == ContentRole.USER):
                     pop_items.append(self.context_list.pop())
                 
-                # 第二步：pop助手消息
+                # 第二步：pop 非用户消息
                 while (self.context_list and 
-                    self.last_content.role == ContentRole.ASSISTANT):
+                    self.last_content.role != ContentRole.USER):
                     pop_items.append(self.context_list.pop())
                 
-                # 第三步：pop相关联的用户消息
+                # 第三步：pop 相关联的用户消息
                 while (self.context_list and 
-                    self.last_content.role != ContentRole.ASSISTANT):
+                    self.last_content.role == ContentRole.USER):
                     pop_items.append(self.context_list.pop())
             except IndexError:
                 pass
