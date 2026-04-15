@@ -50,7 +50,7 @@ class HTTPGET(ToolCallPacakage):
         return {
             "status_code": response.status_code,
             "reason": "success",
-            "headers": response.headers,
-            "cookies": response.cookies,
+            "headers": dict(response.headers),
+            "cookies": dict(response.cookies),
             "data": data,
         }
