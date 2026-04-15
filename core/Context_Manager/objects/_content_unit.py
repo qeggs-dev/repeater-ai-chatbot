@@ -1,5 +1,6 @@
 from __future__ import annotations
 from pydantic import BaseModel, Field, ConfigDict
+from TextProcessors import text_content_cutter
 from .._exceptions import *
 from ._content_role import ContentRole
 from ._content_block import (
@@ -91,22 +92,6 @@ class ContentUnit(BaseModel):
                     buffer.append(block.text)
             self.content = "\n".join(buffer)
     
-    @staticmethod
-    def _text_content_cutter(text: str, non_text_max_len: int = 10) -> str:
-        max_length = non_text_max_len - 3
-        if max_length is None:
-            return text
-        
-        if len(text) > max_length:
-            if max_length > 6:
-                return text[:max_length - 6] + "..." + text[-3:]
-            elif max_length > 3:
-                return text[:max_length - 3] + "..."
-            else:
-                return "..."
-        else:
-            return text
-    
     def content_to_string(self, non_text_max_len: int = 10) -> str:
         message_texts: list[str] = []
         for block in self.content:
@@ -114,19 +99,19 @@ class ContentUnit(BaseModel):
                 message_texts.append(block.text)
             elif isinstance(block, ImageBlock):
                 message_texts.append(
-                    f"[Image: {self._text_content_cutter(block.image_url.url, non_text_max_len)}]"
+                    f"[Image: {text_content_cutter(block.image_url.url, non_text_max_len)}]"
                 )
             elif isinstance(block, VideoBlock):
                 message_texts.append(
-                    f"[Video: {self._text_content_cutter(block.video_url.url, non_text_max_len)}]"
+                    f"[Video: {text_content_cutter(block.video_url.url, non_text_max_len)}]"
                 )
             elif isinstance(block, AudioBlock):
                 message_texts.append(
-                    f"[Audio: {self._text_content_cutter(block.input_audio.data, non_text_max_len)}]"
+                    f"[Audio: {text_content_cutter(block.input_audio.data, non_text_max_len)}]"
                 )
             elif isinstance(block, FileBlock):
                 message_texts.append(
-                    f"[File: {self._text_content_cutter(block.file.filename, non_text_max_len)}]"
+                    f"[File: {text_content_cutter(block.file.filename, non_text_max_len)}]"
                 )
             else:
                 message_texts.append(f"[Unknown Block: {block}]")
