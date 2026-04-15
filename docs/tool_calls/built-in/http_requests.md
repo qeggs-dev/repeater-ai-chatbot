@@ -6,14 +6,14 @@
 {
   "method": "", // The HTTP method to use for the request.
   "url": "", // The target URL of the request.
-  "params": null, // Query parameters to include in the request URL.
+  "query_params": null, // Query parameters to include in the request URL.
   "headers": null, // HTTP headers to send with the request.
   "cookies": null, // Cookies to attach to the request.
-  "data": null, // Form-data to send with the request.
-  "json": null, // JSON data to send in the request body.
+  "form_data": null, // Form-data to send with the request.
+  "json_data": null, // JSON data to send in the request body.
   "auth": null, // Basic authentication credentials as a (username, password) tuple.
   "follow_redirects": true, // Whether to automatically follow HTTP redirects.
-  "timeout": 10, // Request timeout in seconds.
+  "timeout_seconds": 10, // Request timeout in seconds.
 }
 ```
 
