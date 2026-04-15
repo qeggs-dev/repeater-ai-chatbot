@@ -128,7 +128,7 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
         "remove_reasoning_prompt": true,
 
         // 非文本数据在日志中的最大显示长度
-        // 默认为 null，表示不限制
+        // 设置为 null 则不进行截断
         "max_log_length_for_non_text_content": 25
     },
 
