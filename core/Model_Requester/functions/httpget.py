@@ -21,7 +21,7 @@ class HTTPGET(ToolCallPacakage):
     json_result = True
 
     def document(self):
-        return "httpget"
+        return "send a GET request to a URL and return the response."
 
     async def call(self, args: Params):
         try:
@@ -38,6 +38,8 @@ class HTTPGET(ToolCallPacakage):
             return {
                 "status_code": None,
                 "reason": "Timeout",
+                "headers": None,
+                "cookies": None,
                 "data": None,
             }
         try:
@@ -47,6 +49,8 @@ class HTTPGET(ToolCallPacakage):
         
         return {
             "status_code": response.status_code,
-            "request_status": "success",
+            "reason": "success",
+            "headers": response.headers,
+            "cookies": response.cookies,
             "data": data,
         }
