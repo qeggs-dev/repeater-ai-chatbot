@@ -332,21 +332,6 @@ class Core:
     # endregion
 
     # region > print request log
-    @staticmethod
-    def _text_content_cutter(text: str) -> str:
-        max_log_length = ConfigManager.get_configs().context.max_log_length_for_non_text_content
-        if max_log_length is None:
-            return text
-        
-        if len(text) > max_log_length:
-            if max_log_length > 6:
-                return text[:max_log_length - 6] + "..." + text[-3:]
-            elif max_log_length > 3:
-                return text[:max_log_length - 3] + "..."
-            else:
-                return "..."
-        else:
-            return text
     def _print_request_info(
             self,
             user_id: str,
