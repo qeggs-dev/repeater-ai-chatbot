@@ -92,26 +92,26 @@ class ContentUnit(BaseModel):
                     buffer.append(block.text)
             self.content = "\n".join(buffer)
     
-    def content_to_string(self, non_text_max_len: int = 10) -> str:
+    def content_to_string(self, non_text_length_limit: int | None = 10) -> str:
         message_texts: list[str] = []
         for block in self.content:
             if isinstance(block, TextBlock):
                 message_texts.append(block.text)
             elif isinstance(block, ImageBlock):
                 message_texts.append(
-                    f"[Image: {text_content_cutter(block.image_url.url, non_text_max_len)}]"
+                    f"[Image: {text_content_cutter(block.image_url.url, non_text_length_limit)}]"
                 )
             elif isinstance(block, VideoBlock):
                 message_texts.append(
-                    f"[Video: {text_content_cutter(block.video_url.url, non_text_max_len)}]"
+                    f"[Video: {text_content_cutter(block.video_url.url, non_text_length_limit)}]"
                 )
             elif isinstance(block, AudioBlock):
                 message_texts.append(
-                    f"[Audio: {text_content_cutter(block.input_audio.data, non_text_max_len)}]"
+                    f"[Audio: {text_content_cutter(block.input_audio.data, non_text_length_limit)}]"
                 )
             elif isinstance(block, FileBlock):
                 message_texts.append(
-                    f"[File: {text_content_cutter(block.file.filename, non_text_max_len)}]"
+                    f"[File: {text_content_cutter(block.file.filename, non_text_length_limit)}]"
                 )
             else:
                 message_texts.append(f"[Unknown Block: {block}]")
