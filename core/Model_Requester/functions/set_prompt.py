@@ -4,7 +4,7 @@ from .._caller import ModelRequester
 from pydantic import BaseModel
 
 @ModelRequester.reg_global_package
-class Set_Prompt(ToolCallPacakage):
+class SetPrompt(ToolCallPacakage):
     class Params(BaseModel):
         prompt: str
 
