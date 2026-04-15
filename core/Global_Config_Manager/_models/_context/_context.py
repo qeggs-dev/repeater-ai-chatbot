@@ -10,4 +10,4 @@ class ContextConfig(BaseModel):
     remove_reasoning_prompt: bool = False
     new_requests_text_only: bool = False
 
-    max_log_length_for_non_text_content: int | None = None
+    max_log_length_for_non_text_content: int | None = 25
