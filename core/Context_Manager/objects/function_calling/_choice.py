@@ -1,8 +1,8 @@
 from enum import StrEnum
 
-class Choice(StrEnum):
+class ToolChoice(StrEnum):
     """
-    Enum for choices
+    Enum for tool choices
     """
     NONE = "none"
     AUTO = "auto"

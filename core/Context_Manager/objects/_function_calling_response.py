@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from .._tool_types import ToolTypes
+from ._tool_types import ToolTypes
 
 class SpecifiedFunction(BaseModel):
     name: str = ""

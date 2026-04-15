@@ -1,35 +1,43 @@
 import orjson
 import asyncio
-from ._function import (
-    Function,
-    CallingRequest,
-    CallType
+import inspect
+from .function import (
+    Function
 )
+from .._function_calling_response import CallingRequest
 from .._content_unit import ContentUnit
 from .._content_role import ContentRole
+from ....User_Config_Manager import UserConfigs
+from ....Global_Config_Manager import ConfigManager
 from pydantic import ValidationError
 from ._exceptions import JSONDecodeError, ArgumentError
-from typing import Any, Callable
-from ._choice import Choice
+from typing import Any, Type, Awaitable, Callable, TypeVar
+from ._choice import ToolChoice
+from ._tool_call_package import ToolCallPacakage
 from loguru import logger
+
+T = TypeVar("T")
 
 class FunctionCaller:
     def __init__(self):
         self._functions: dict[str, Function] = {}
         self._already_force_function: bool = False
     
-    def to_request(self):
-        return [function.struct().model_dump(exclude_none=True) for function in self._functions.values()]
+    def to_request(self) -> list[dict[str, Any]]:
+        request: list[dict[str, Any]] = []
+        for function in self._functions.values():
+            request.append(function.struct().model_dump(exclude_none=True))
+        return request
     
-    def to_choices(self, choice_mode: Choice = Choice.AUTO):
+    def to_choice(self, choice_mode: ToolChoice = ToolChoice.AUTO):
         match choice_mode:
-            case Choice.NONE:
-                return Choice.NONE.value
-            case Choice.AUTO:
-                return Choice.AUTO.value
-            case Choice.REQUIRED:
-                return Choice.REQUIRED.value
-            case Choice.FORCE:
+            case ToolChoice.NONE:
+                return ToolChoice.NONE.value
+            case ToolChoice.AUTO:
+                return ToolChoice.AUTO.value
+            case ToolChoice.REQUIRED:
+                return ToolChoice.REQUIRED.value
+            case ToolChoice.FORCE:
                 for function in self._functions.values():
                     if function.force_choice:
                         return {
@@ -56,6 +64,34 @@ class FunctionCaller:
             self._already_force_function = True
         self._functions[function.name] = function
     
+    def register_packages(self, user_id: str, packages: list[Type[ToolCallPacakage]], user_configs: UserConfigs):
+        for package in packages:
+            package_instance = package(
+                user_id = user_id,
+                user_configs = user_configs,
+                global_configs = ConfigManager.get_configs(),
+            )
+            if len(package_instance.Params.model_fields) == 0:
+                parameters = None
+            else:
+                parameters = package_instance.Params
+            function = Function(
+                name = package_instance.name,
+                description = package_instance.document(),
+                enabled = package_instance.enabled,
+                force_choice = package_instance.force_choice,
+                callable = package_instance.call,
+                json_result = package_instance.json_result,
+                call_type = package_instance.call_type,
+                parameters = parameters,
+                on_error = package_instance.on_error,
+                on_args_json_decode_error = package_instance.on_args_json_decode_error,
+                on_args_validation_error = package_instance.on_args_validation_error,
+                on_result_json_encode_error = package_instance.on_result_json_encode_error,
+                on_json_result_string_encode_error = package_instance.on_json_result_string_encode_error,
+            )
+            self.register_function(function)
+    
     def unregister_function(self, function_name: str):
         if function_name in self._functions:
             function = self._functions.pop(function_name)
@@ -64,26 +100,32 @@ class FunctionCaller:
         else:
             raise ValueError(f"Function {function_name} not found")
     
-    async def call_functions(self, user_id: str, calling_requests: list[tuple[CallingRequest, Callable[[Exception], ContentUnit | None] | None]], max_concurrent: int = 10) -> list[ContentUnit]:
+    async def _any_call(self, func: Callable[..., Awaitable[T] | T] | None, *args, **kwargs) -> T:
+        if callable(func):
+            if inspect.iscoroutinefunction(func):
+                return await func(*args, **kwargs)
+            else:
+                return func(*args, **kwargs)
+        else:
+            return None
+    
+    async def call_functions(self, user_id: str, calling_requests: list[CallingRequest], max_concurrent: int = 10) -> list[ContentUnit]:
         results: asyncio.Queue = asyncio.Queue()
         tasks: set[asyncio.Task] = set()
         semaphore = asyncio.Semaphore(max_concurrent)
-        async def _call_function(user_id: str, calling_request: CallingRequest, on_error: Callable[[Exception], ContentUnit | None] | None):
+        async def _call_function(user_id: str, calling_request: CallingRequest):
             async with semaphore:
                 result = await self.call_function(
                     user_id = user_id,
-                    calling_request = calling_request,
-                    on_error = on_error
+                    calling_request = calling_request
                 )
                 await results.put(result)
         for request in calling_requests:
-            calling_request, on_error = request
             tasks.add(
                 asyncio.create_task(
                     _call_function(
                         user_id = user_id,
-                        calling_request = calling_request,
-                        on_error = on_error
+                        calling_request = request
                     )
                 )
             )
@@ -98,20 +140,40 @@ class FunctionCaller:
         
         return results_list
     
-    async def call_function(self, user_id: str, calling_request: CallingRequest, on_error: Callable[[Exception], ContentUnit | None] | None = None) -> ContentUnit:
+    async def call_function(self, user_id: str, calling_request: CallingRequest) -> ContentUnit:
         function = self._functions[calling_request.function.name]
         parameters = function.parameters
         if parameters is not None:
             try:
                 arguments = parameters(**orjson.loads(calling_request.function.arguments))
-            except orjson.JSONDecodeError as e:
-                raise JSONDecodeError(f"Invalid JSON: {e}") from e
-            except ValidationError as e:
-                errors = e.errors()
-                buffer: list[str] = []
-                for error in errors:
-                    buffer.append(f"{'.'.join(error['loc'])}: {error['msg']}")
-                raise ArgumentError("\n".join(buffer)) from e
+            except orjson.JSONDecodeError as error:
+                if function.on_args_json_decode_error:
+                    return ContentUnit(
+                        role = ContentRole.TOOL,
+                        tool_call_id = calling_request.id,
+                        content = await self._any_call(
+                            function.on_args_json_decode_error,
+                            error
+                        )
+                    )
+                else:
+                    raise JSONDecodeError(f"Invalid JSON: {error}") from error
+            except ValidationError as error:
+                if function.on_args_validation_error:
+                    return ContentUnit(
+                        role = ContentRole.TOOL,
+                        tool_call_id = calling_request.id,
+                        content = await self._any_call(
+                            function.on_args_validation_error,
+                            error
+                        )
+                    )
+                else:
+                    errors = error.errors()
+                    buffer: list[str] = []
+                    for error in errors:
+                        buffer.append(f"{'.'.join(error['loc'])}: {error['msg']}")
+                    raise ArgumentError("\n".join(buffer)) from error
         else:
             arguments = None
         
@@ -123,15 +185,27 @@ class FunctionCaller:
             arguments = arguments.model_dump_json(indent=4, ensure_ascii=False)
         )
 
-        try:
-            raw_result = await function.call(arguments)
-        except Exception as e:
-            if on_error is not None:
-                return on_error(e)
-            raise
+        raw_result = await function.call(arguments)
         
         if function.json_result:
-            result = orjson.dumps(raw_result)
+            try:
+                bin_result = orjson.dumps(raw_result)
+
+                try:
+                    result = bin_result.decode("utf-8")
+                except UnicodeEncodeError as error:
+                    result = await self._any_call(
+                        function.on_json_result_string_encode_error,
+                        result,
+                        error
+                    )
+                
+            except orjson.JSONEncodeError as error:
+                result = await self._any_call(
+                    function.on_result_json_encode_error,
+                    raw_result,
+                    error
+                )
         else:
             result = str(raw_result)
         

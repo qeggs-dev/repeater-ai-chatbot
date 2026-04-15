@@ -10,6 +10,7 @@ from ._content_block import (
     AudioBlock,
     FileBlock
 )
+from ._function_calling_response import CallingRequest
 from typing import Any, Type
 
 class ContentUnit(BaseModel):
@@ -21,15 +22,25 @@ class ContentUnit(BaseModel):
         exclude_none = True
     )
 
-    reasoning_content:str = ""
+    reasoning_content: str | None = None
     content: str | list[ContentBlock] = ""
     role: ContentRole = ContentRole.USER
     role_name: str |  None = None
     prefix: bool | None = None
+    tool_calls: list[CallingRequest] | None = None
     tool_call_id: str | None = None
 
     def __len__(self) -> int:
-        return len(self.content) + len(self.reasoning_content)
+        length: int = 0
+        if isinstance(self.content, str):
+            length = len(self.content)
+        else:
+            for block in self.content:
+                if isinstance(block, TextBlock):
+                    length += len(block.text)
+        if self.reasoning_content:
+            length += len(self.reasoning_content)
+        return length
     
     def only_context_block(self, block_type: Type[ContentBlock]) -> None:
         """

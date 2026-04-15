@@ -3,7 +3,6 @@ from pydantic import BaseModel, Field, ConfigDict
 from typing import overload, Iterable, Any
 from copy import deepcopy
 from .._exceptions import *
-from ._func_calling_objects import CallingFunctionResponse
 from ._content_role import ContentRole
 from ._content_unit import ContentUnit
 
@@ -276,6 +275,16 @@ class ContextObject(BaseModel):
             return None
         return self.context_list[-1]
     
+    @last_content.setter
+    def last_content(self, content: ContentUnit) -> None:
+        """
+        设置最后一个上下文单元
+        """
+        if not self.context_list:
+            self.context_list.append(content)
+        else:
+            self.context_list[-1] = content
+    
     def append(self, content: ContentUnit) -> None:
         """
         添加上下文单元
@@ -374,13 +383,6 @@ class ContextObject(BaseModel):
         """
         return not self.prompt and not self.context_list
     
-    @property
-    def has_new_func_calling_response(self) -> bool:
-        """
-        判断上下文是否包含新的函数调用响应
-        """
-        return self.last_content.funcResponse is not None
-    
     def shrink(self, length: int, ensure_role_at_top: ContentRole = ContentRole.USER):
         """
         缩小上下文长度
@@ -452,4 +454,22 @@ class ContextObject(BaseModel):
                 raise TypeError("context must be list of dict")
             context_obj.context_list.append(ContentUnit(**content))
         return context_obj
-        
+    
+    def remove_reasoning_content(self) -> ContextObject:
+        """
+        移除推理内容
+        :return: 移除推理内容后的对象
+        """
+        context_list: list[ContentUnit] = []
+        for content in self.context_list:
+            if content.reasoning_content:
+                copy_content = content.model_copy(deep=True)
+                copy_content.reasoning_content = None
+                context_list.append(copy_content)
+            else:
+                context_list.append(content)
+
+        return ContextObject(
+            prompt = self.prompt,
+            context_list = context_list,
+        )
