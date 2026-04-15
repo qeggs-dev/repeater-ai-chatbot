@@ -383,7 +383,11 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
 
         // Tool Calls 结果最大长度（用于日志）
         // 设置为 null 则不限制长度
-        "result_max_length_for_logs": 100
+        "result_max_length_for_logs": 100,
+
+        // 允许全部 HTTP 方法
+        // 如果设置为 false，则只允许 GET 方法
+        "allow_all_http_methods": false
     },
 
     // Prompt 配置
