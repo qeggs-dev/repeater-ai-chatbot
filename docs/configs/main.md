@@ -379,8 +379,12 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
     // Tool Calls 配置
     "tool_calls": {
         // 是否启用 Tool Calls
-        "enabled": false
-    }
+        "enabled": false,
+
+        // Tool Calls 结果最大长度（用于日志）
+        // 设置为 null 则不限制长度
+        "result_max_length_for_logs": 100
+    },
 
     // Prompt 配置
     "prompt": {
