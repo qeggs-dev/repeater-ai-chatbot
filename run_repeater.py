@@ -1,5 +1,5 @@
 import time
-start_import_time = time.monotonic_ns()
+start_import_time = time.perf_counter_ns()
 import sys
 import asyncio
 
@@ -11,10 +11,10 @@ from core import (
     __api_version__ as core_api_version,
 )
 from loguru import logger
-end_import_time = time.monotonic_ns()
+end_import_time = time.perf_counter_ns()
 
 def main(run_server: bool | None = None):
-    start_load_configs_time = time.monotonic_ns()
+    start_load_configs_time = time.perf_counter_ns()
     env = Env()
     env.read_env()
     config_loader = Global_Config_Manager.ConfigManager()
@@ -25,7 +25,7 @@ def main(run_server: bool | None = None):
     config_loader.load(
         create_if_missing=True
     )
-    end_load_configs_time = time.monotonic_ns()
+    end_load_configs_time = time.perf_counter_ns()
 
     Server.init_logger()
 
@@ -39,9 +39,9 @@ def main(run_server: bool | None = None):
         load_configs_time = (end_load_configs_time - start_load_configs_time) / 1e6
     )
 
-    start_init_resource_time = time.monotonic_ns()
+    start_init_resource_time = time.perf_counter_ns()
     Server.init_all()
-    end_init_resource_time = time.monotonic_ns()
+    end_init_resource_time = time.perf_counter_ns()
 
     logger.info(
         "Init Server Time: {init_resource_time:.2f}s",
