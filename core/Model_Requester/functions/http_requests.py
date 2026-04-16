@@ -1,26 +1,16 @@
 import json
 import httpx
 from ...Context_Manager import ToolCallPacakage, CallType
+from ...Global_Config_Manager import HTTPMethods
 from .._caller import ModelRequester
 from typing import Any
 from pydantic import BaseModel, Field
-from enum import StrEnum
-
-class HTTPMethod(StrEnum):
-    GET = "GET"
-    POST = "POST"
-    PUT = "PUT"
-    DELETE = "DELETE"
-    PATCH = "PATCH"
-    HEAD = "HEAD"
-    OPTIONS = "OPTIONS"
-    TRACE = "TRACE"
 
 @ModelRequester.reg_global_package
 class HTTPRequests(ToolCallPacakage):
     client = httpx.AsyncClient()
     class Params(BaseModel):
-        method: HTTPMethod = Field(HTTPMethod.GET, description="The HTTP method to use for the request.")
+        method: HTTPMethods = Field(HTTPMethods.GET, description="The HTTP method to use for the request.")
         url: str = Field("", description="The target URL of the request.")
         query_params: dict[str, str] | None = Field(None, description="Query parameters to append to the request URL.")
         headers: dict[str, str] | None = Field(None, description="HTTP headers to send with the request.")
@@ -44,13 +34,23 @@ class HTTPRequests(ToolCallPacakage):
 
     def document(self):
         return "send a any method HTTP request to a URL and return the response."
+    
+    def validation_method(self, method: HTTPMethods) -> bool:
+        allowed_http_methods = self.global_configs.tool_calls.allowed_http_methods
+        if allowed_http_methods is None:
+            return False
+        elif isinstance(allowed_http_methods, list):
+            return method in allowed_http_methods
+        elif allowed_http_methods == "ALL":
+            return True
+        else:
+            return False
 
     async def call(self, args: Params):
-        if not self.global_configs.tool_calls.allow_all_http_methods:
-            if args.method != HTTPMethod.GET:
-                return self.Result(
-                    reason = "Not allowed to use non-GET HTTP methods."
-                )
+        if not self.validation_method(args.method):
+            return self.Result(
+                reason=f"HTTP method {args.method} is not allowed."
+            )
         try:
             response = await self.client.request(
                 args.method,
