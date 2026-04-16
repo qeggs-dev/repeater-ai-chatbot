@@ -2,6 +2,8 @@
 
 该工具用于发送 HTTP 请求
 
+注册名：`http_requests`
+
 ``` json
 {
   "method": "", // The HTTP method to use for the request.
