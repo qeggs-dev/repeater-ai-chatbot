@@ -38,7 +38,7 @@ async def render(
     """
     Endpoint for rendering markdown text to image
     """
-    start_time = time.monotonic_ns()
+    start_time = time.perf_counter_ns()
 
     global_configs = ConfigManager.get_configs()
 
@@ -113,7 +113,7 @@ async def render(
             text_encoding = html_template_encoding
         )
     
-    end_of_preprocessing = time.monotonic_ns()
+    end_of_preprocessing = time.perf_counter_ns()
 
     # 调用生成HTML
     html = await markdown_to_html(
@@ -135,7 +135,7 @@ async def render(
         preprocess_map_after = preprocess_map_after,
     )
 
-    end_of_md_to_html = time.monotonic_ns()
+    end_of_md_to_html = time.perf_counter_ns()
 
     # 生成图片
     response = await Server.html_render_client.render(html)
@@ -148,7 +148,7 @@ async def render(
     create_ms = result.created_ms
     created = result.created
 
-    end_of_render = time.monotonic_ns()
+    end_of_render = time.perf_counter_ns()
 
     return ORJSONResponse(
         Render_Response(

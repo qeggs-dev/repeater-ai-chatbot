@@ -8,7 +8,7 @@ class TimeStamp(BaseModel):
     )
 
     timestamp: int = Field(default_factory=lambda: time.time_ns())
-    monotonic: int = Field(default_factory=lambda: time.monotonic_ns())
+    monotonic: int = Field(default_factory=lambda: time.perf_counter_ns())
 
     def record(self, update_time: bool = True, update_monotonic: bool = True) -> None:
         """
@@ -17,7 +17,7 @@ class TimeStamp(BaseModel):
         if update_time:
             self.timestamp = time.time_ns()
         if update_monotonic:
-            self.monotonic = time.monotonic_ns()
+            self.monotonic = time.perf_counter_ns()
     
     def __add__(self, other: TimeStamp | int) -> TimeStamp:
         if isinstance(other, TimeStamp):

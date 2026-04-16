@@ -1,6 +1,7 @@
 # ==== 标准库 ==== #
 from __future__ import annotations
 import inspect
+import time
 
 from typing import (
     ClassVar,
@@ -50,6 +51,32 @@ class Server:
     licenses: ClassVar[LicenseLoader | None] = None
     _instance: ClassVar[Server | None] = None
 
+    class _Initializing_Timer:
+        def __init__(
+            self,
+            name: str,
+        ):
+            self._enter_time: int = 0
+            self._exit_time: int = 0
+            self._task_name: str = name
+        
+        def __enter__(self) -> None:
+            logger.info(
+                "Initializing {name}...",
+                name = self._task_name
+            )
+            self._enter_time = time.perf_counter_ns()
+
+        def __exit__(self, exc_type, exc_val, exc_tb) -> None:
+            self._exit_time = time.perf_counter_ns()
+            duration_ns = self._exit_time - self._enter_time
+            duration_ms = duration_ns // (10**6)
+            logger.info(
+                "Initialized {name} in {initialize_time} ms.",
+                name = self._task_name,
+                initialize_time = duration_ms
+            )
+
     def __new__(cls):
         if cls._instance is None:
             cls._instance = super().__new__(cls)
@@ -80,8 +107,8 @@ class Server:
     
     @classmethod
     def init_core(cls):
-        logger.info("Initializing The Core...")
-        cls.core = Core()
+        with cls._Initializing_Timer("Core"):
+            cls.core = Core()
     
     @classmethod
     def init_logger(cls):
@@ -93,33 +120,33 @@ class Server:
 
     @classmethod
     def init_admin_key_manager(cls):
-        logger.info("Initializing Admin Key Manager...")
-        # 生成或读取API Key
-        cls.admin_key_manager = AdminKeyManager()
+        with cls._Initializing_Timer("Admin Key Manager"):
+            # 生成或读取API Key
+            cls.admin_key_manager = AdminKeyManager()
     
     @classmethod
     def init_licenses_data(cls):
-        logger.info("Initializing Licenses Data...")
-        cls.licenses = LicenseLoader(ConfigManager.get_configs().licenses)
-        cls.licenses.scan_licenses()
+        with cls._Initializing_Timer("Licenses Data"):
+            cls.licenses = LicenseLoader(ConfigManager.get_configs().licenses)
+            cls.licenses.scan_licenses()
     
     @classmethod
     def init_nexus_client(cls):
-        logger.info("Initializing Nexus Client...")
-        cls.nexus_client = NexusClient(
-            base_url = ConfigManager.get_configs().nexus.base_url,
-            request_timeout = ConfigManager.get_configs().nexus.api_timeout,
-        )
+        with cls._Initializing_Timer("Nexus Client"):
+            cls.nexus_client = NexusClient(
+                base_url = ConfigManager.get_configs().nexus.base_url,
+                request_timeout = ConfigManager.get_configs().nexus.api_timeout,
+            )
 
     @classmethod
     def init_html_render_client(cls):
-        logger.info("Initializing HTML Render Client...")
-        # 渲染配置
-        render_config = ConfigManager.get_configs().render
-        cls.html_render_client = HTMLRenderClient(
-            base_url = render_config.to_image.base_url,
-            timeout = render_config.to_image.timeout
-        )
+        with cls._Initializing_Timer("HTML Render Client"):
+            # 渲染配置
+            render_config = ConfigManager.get_configs().render
+            cls.html_render_client = HTMLRenderClient(
+                base_url = render_config.to_image.base_url,
+                timeout = render_config.to_image.timeout
+            )
     
     @classmethod
     def init_server(
