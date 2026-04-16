@@ -12,6 +12,7 @@ from ._content_block import (
     FileBlock
 )
 from ._function_calling_response import CallingRequest
+from ...TextBuffer import TextBuffer, IndentedText
 from typing import Any, Type
 
 class ContentUnit(BaseModel):
@@ -70,11 +71,11 @@ class ContentUnit(BaseModel):
         if isinstance(self.content, str):
             return self.content
         else:
-            text_buffer: list[str] = []
+            text_buffer: TextBuffer = TextBuffer()
             for block in self.content:
                 if isinstance(block, TextBlock):
                     text_buffer.append(block.text)
-            return "".join(text_buffer)
+            return str(text_buffer)
  
     def to_content(self, remove_reasoning_prompt: bool = False) -> dict[str, Any]:
         if remove_reasoning_prompt:
@@ -86,14 +87,14 @@ class ContentUnit(BaseModel):
     
     def reduce_to_text(self):
         if isinstance(self.content, list):
-            buffer: list[str] = []
+            buffer: TextBuffer = TextBuffer(separator="\n")
             for block in self.content:
                 if isinstance(block, TextBlock):
                     buffer.append(block.text)
-            self.content = "\n".join(buffer)
+            self.content = str(buffer)
     
     def content_to_string(self, non_text_length_limit: int | None = 10) -> str:
-        message_texts: list[str] = []
+        message_texts: TextBuffer = TextBuffer()
         for block in self.content:
             if isinstance(block, TextBlock):
                 message_texts.append(block.text)
@@ -119,11 +120,21 @@ class ContentUnit(BaseModel):
         return "\n".join(message_texts)
 
     def __str__(self) -> str:
-        text_buffer: list[str] = []
+        text_buffer: TextBuffer = TextBuffer()
         if self.reasoning_content:
             text_buffer.append("Reasoning:")
-            text_buffer.append(self.reasoning_content.replace("\n", "\n  "))
+            text_buffer.append(
+                IndentedText(
+                    self.reasoning_content,
+                    indent_level = 2,
+                )
+            )
         if self.content:
             text_buffer.append("Content:")
-            text_buffer.append(self.content_to_string().replace("\n", "\n  "))
-        return "\n".join(text_buffer)
+            text_buffer.append(
+                IndentedText(
+                    self.content_to_string(),
+                    indent_level = 2,
+                )
+            )
+        return str(text_buffer)

@@ -6,6 +6,7 @@ from pydantic import BaseModel, ValidationError
 from .function import CallType
 from ....User_Config_Manager import UserConfigs
 from ....Global_Config_Manager import GlobalConfigs
+from ....TextBuffer import TextBuffer
 
 T = TypeVar("T")
 
@@ -50,10 +51,10 @@ class ToolCallPacakage(ABC):
     
     async def on_args_validation_error(self, error: ValidationError) -> T | None:
         errors = error.errors()
-        buffer: list[str] = []
+        buffer: TextBuffer = TextBuffer()
         for error in errors:
             buffer.append(f"{'.'.join(error['loc'])}: {error['msg']}")
-        error_message = "\n".join(buffer)
+        error_message = str(bufufer)
         return f"Tool Args Validation Error for {self.name}:\n{error_message}"
 
     async def on_args_json_decode_error(self, error: orjson.JSONDecodeError) -> T | None:

@@ -18,6 +18,7 @@ from ....Global_Config_Manager import ConfigManager
 from ._exceptions import JSONDecodeError, ArgumentError
 from ._choice import ToolChoice
 from ._tool_call_package import ToolCallPacakage
+from ....TextBuffer import TextBuffer
 
 T = TypeVar("T")
 
@@ -28,8 +29,10 @@ class FunctionCaller:
     
     def to_request(self) -> list[dict[str, Any]]:
         request: list[dict[str, Any]] = []
-        for function in self._functions.values():
-            if function.enabled:
+        allow_register = ConfigManager.get_configs().tool_calls.registed
+        for name in allow_register:
+            function = self._functions.get(name)
+            if function is not None and function.enabled:
                 request.append(function.struct().model_dump(exclude_none=True))
         return request
     
@@ -176,10 +179,10 @@ class FunctionCaller:
                     )
                 else:
                     errors = error.errors()
-                    buffer: list[str] = []
+                    buffer: TextBuffer = TextBuffer(separator="\n")
                     for error in errors:
                         buffer.append(f"{'.'.join(error['loc'])}: {error['msg']}")
-                    raise ArgumentError("\n".join(buffer)) from error
+                    raise ArgumentError(str(buffer)) from error
         else:
             arguments = None
         
