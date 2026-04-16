@@ -125,44 +125,64 @@ class ModelRequester:
         tool_choice_model: ToolChoice = ToolChoice.AUTO,
         stream: bool = False,
     ) -> MultiResponse:
+        generated_times: int = 0
+        max_generated_times: int = ConfigManager.get_configs().callapi.max_regenerate_times
         responses: MultiResponse = MultiResponse()
         responses.historical_context = request.context
         submit_context = request.context.remove_reasoning_content()
         request.context = submit_context
-        if allow_tool_calls:
+        if allow_tool_calls and max_generated_times > 1:
             request.tools = self._tools_caller.to_request()
             request.tool_choice = self._tools_caller.to_choice(tool_choice_model)
-        while True:
-            try:
-                if stream:
-                    async def send_chunk(delta: Delta):
-                        await self._stream_chunk_queue.put(delta)
-                    response = await self._stream_api_client.submit_request(
-                        user_id = user_id,
+        try:
+            while True:
+                try:
+                    generated_times += 1
+                    if stream:
+                        async def send_chunk(delta: Delta):
+                            await self._stream_chunk_queue.put(delta)
+                        response = await self._stream_api_client.submit_request(
+                            user_id = user_id,
+                            request = request,
+                            content_buffer = content_buffer,
+                            status_map = status_map,
+                            chunk_callback = send_chunk
+                        )
+                    else:
+                        response = await self._api_client.submit_request(
+                            user_id = user_id,
+                            request = request,
+                            content_buffer = content_buffer,
+                            status_map = status_map
+                        )
+                    responses.add(response)
+                    responses.tool_requests = self._tool_responses
+                    await self._parse_response(
                         request = request,
-                        content_buffer = content_buffer,
-                        status_map = status_map,
-                        chunk_callback = send_chunk
+                        response = response
                     )
-                else:
-                    response = await self._api_client.submit_request(
+                    raise GenerateFinished
+                except Regenerate as e:
+                    logger.info(
+                        "Regenerate",
                         user_id = user_id,
-                        request = request,
-                        content_buffer = content_buffer,
-                        status_map = status_map
                     )
-                responses.add(response)
-                responses.tool_requests = self._tool_responses
-                await self._parse_response(
-                    request = request,
-                    response = response
-                )
-                return responses
-            except Regenerate as e:
-                logger.info(
-                    "Regenerate",
-                    user_id = user_id,
-                )
-                request = e.request
-                content_buffer.clear()
+                    request = e.request
+                    content_buffer.clear()
+                    if generated_times >= max_generated_times:
+                        raise GenerateFinished
+                    elif (generated_times + 1) >= max_generated_times:
+                        logger.warning(
+                            "Times too many, removeing tools",
+                            user_id = user_id,
+                        )
+                        request.tools = None
+                        request.tool_choice = None
+        except GenerateFinished as e:
+            logger.info(
+                "GenerateFinished",
+                user_id = user_id,
+            )
+            content_buffer.clear()
+            return responses
                 
