@@ -5,6 +5,7 @@ from fastapi.responses import (
 from ......User_Config_Manager import (
     UserConfigs
 )
+from ......TextBuffer import TextBuffer
 from .._requests import (
     SetConfigRequest,
     FieldType
@@ -85,10 +86,10 @@ async def set_config_field(user_id: str, key: str, request: SetConfigRequest):
             setattr(config, key, value)
         except ValidationError as e:
             errors = e.errors()
-            text_buffer:list[str] = []
+            text_buffer:TextBuffer = TextBuffer(separator="\n")
             for error in errors:
                 text_buffer.append(f"{'.'.join(error['loc'])}: {error['msg']}")
-            raise HTTPException(400, "\n".join(text_buffer))
+            raise HTTPException(400, str(text_buffer))
     else:
         raise HTTPException(400, "Invalid config key")
 

@@ -2,6 +2,7 @@ import aiofiles
 
 from os import PathLike, get_terminal_size
 from ...Global_Config_Manager import ConfigManager
+from ...TextBuffer import TextBuffer
 
 class GetCode:
     def __init__(
@@ -61,7 +62,7 @@ class GetCode:
             self._bottom_border_limit: int = bottom_border_limit
 
     async def get_code_async(self) -> str:
-        text_buffer: list[str] = []
+        text_buffer: TextBuffer = TextBuffer(separator="\n")
         max_length: int = 0
         add_bottom_border = self._add_bottom_border
         async with aiofiles.open(
@@ -89,10 +90,10 @@ class GetCode:
             return ""
         if add_bottom_border:
             text_buffer.append(self._get_last_line(max_length = max_length))
-        return "\n".join(text_buffer)
+        return str(text_buffer)
                     
     def get_code(self) -> str:
-        text_buffer: list[str] = []
+        text_buffer: TextBuffer = TextBuffer(separator="\n")
         max_length: int = 0
         add_bottom_border = self._add_bottom_border
         with open(
@@ -118,7 +119,7 @@ class GetCode:
             return ""
         if add_bottom_border:
             text_buffer.append(self._get_last_line(max_length = max_length))
-        return "\n".join(text_buffer)
+        return str(text_buffer)
     
     def _get_columns_pointer_line(self):
         spaces = self._fill_char * self._reserve_space
@@ -158,7 +159,7 @@ class GetCode:
         return None
     
     def _get_last_line(self, max_length: int) -> str:
-        text_buffer: list[str] = []
+        text_buffer: TextBuffer = TextBuffer()
         
         text_buffer.append("└")
 
@@ -178,4 +179,4 @@ class GetCode:
         for i in range(min(bottom_border_limit, max_length)):
             text_buffer.append("─")
 
-        return "".join(text_buffer)
+        return str(text_buffer)
