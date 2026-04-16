@@ -69,12 +69,10 @@ class Server:
 
         def __exit__(self, exc_type, exc_val, exc_tb) -> None:
             self._exit_time = time.perf_counter_ns()
-            duration_ns = self._exit_time - self._enter_time
-            duration_ms = duration_ns // (10**6)
             logger.info(
-                "Initialized {name} in {initialize_time} ms.",
+                "Initialized {name} in {initialize_time:.3f} ms.",
                 name = self._task_name,
-                initialize_time = duration_ms
+                initialize_time = (self._exit_time - self._enter_time) / 1e6
             )
 
     def __new__(cls):
