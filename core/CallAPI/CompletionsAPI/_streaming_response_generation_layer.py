@@ -80,7 +80,7 @@ class StreamingResponseGenerationLayer:
         self.chunk_times:list[TimeStamp] = []
         self.chunk_generated_times:list[TimeStamp] = []
 
-        self._chunk_queue: asyncio.Queue[Delta | None] = asyncio.Queue()
+        self._chunk_queue: asyncio.Queue[Delta | Exception | None] = asyncio.Queue()
 
         # 文本缓冲区
         self._content_buffer = content_buffer
@@ -125,10 +125,13 @@ class StreamingResponseGenerationLayer:
         self.response.new_context.append(self.model_response_content_unit)
     
     async def _read_chunk(self):
-        async for chunk in self._response_iterator:
-            await self._chunk_queue.put(chunk)
-            self.chunk_generated_times.append(TimeStamp())
-        await self._chunk_queue.put(None)
+        try:
+            async for chunk in self._response_iterator:
+                await self._chunk_queue.put(chunk)
+                self.chunk_generated_times.append(TimeStamp())
+            await self._chunk_queue.put(None)
+        except Exception as e:
+            await self._chunk_queue.put(e)
 
     def __aiter__(self) -> Self:
         """
@@ -151,8 +154,11 @@ class StreamingResponseGenerationLayer:
                 self.response.request_log.stream_processing_end_time = stream_processing_end_time
                 self.finally_stream()
                 raise StopAsyncIteration
-        self._parse_delta(delta_data)
-        return delta_data
+        elif isinstance(delta_data, Exception):
+            raise delta_data
+        else:
+            self._parse_delta(delta_data)
+            return delta_data
 
     def _parse_delta(self, delta_data: Delta):
         # 记录会话开启时间
@@ -184,7 +190,7 @@ class StreamingResponseGenerationLayer:
                     self._print_file.write(f"\033[7m{delta_data.reasoning_content}\033[0m")
                     self._print_file.flush()
                 logger.trace("Received Reasoning_Content chunk: {reasoning_content}", user_id = self.user_id, reasoning_content = repr(delta_data.reasoning_content))
-            self._content_buffer.reasoning_buffer.push(delta_data.reasoning_content)
+            self._content_buffer.reasoning_buffer.append(delta_data.reasoning_content)
         
         # 记录模型响应内容
         if delta_data.content:
@@ -195,7 +201,7 @@ class StreamingResponseGenerationLayer:
                     self._print_file.write(delta_data.content)
                     self._print_file.flush()
                 logger.trace("Received Content chunk: {content}", user_id = self.user_id, content = repr(delta_data.content))
-            self._content_buffer.content_buffer.push(delta_data.content)
+            self._content_buffer.content_buffer.append(delta_data.content)
         
         # 记录模型工具调用内容
         if delta_data.tool_calls:
@@ -217,7 +223,7 @@ class StreamingResponseGenerationLayer:
                     self.tool_calls[index].name = tool_call.name
                 if index not in self._content_buffer.tool_calls_arguments_buffer:
                     self._content_buffer.tool_calls_arguments_buffer[index] = TextBuffer()
-                self._content_buffer.tool_calls_arguments_buffer[index].push(tool_call.arguments)
+                self._content_buffer.tool_calls_arguments_buffer[index].append(tool_call.arguments)
         
         if delta_data.system_fingerprint:
             self.response.system_fingerprint = delta_data.system_fingerprint
