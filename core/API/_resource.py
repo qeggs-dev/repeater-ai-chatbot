@@ -20,6 +20,7 @@ from ._lifespan import lifespan
 from ._info import __version__
 from ..Licenses_Loader import LicenseLoader
 from ..Nexus_Client import NexusClient
+from loguru import logger
 
 class Resource:
     startup: ClassVar[Sequence[Callable[[], Any]] | None] = None
@@ -33,6 +34,7 @@ class Resource:
         version = __version__
     )
     core: ClassVar[Core | None] = None
+    server: ClassVar[uvicorn.Server | None] = None
     chat_task_pool: ClassVar[TaskPool] = TaskPool()
     admin_key_manager: ClassVar[AdminKeyManager | None] = None
     html_render_client: ClassVar[HTMLRenderClient | None] = None
@@ -49,6 +51,7 @@ class Resource:
     def inited(cls):
         check_list: list[Any | None] = [
             cls.core,
+            cls.server,
             cls.admin_key_manager,
             cls.html_render_client,
             cls.nexus_client,
@@ -66,10 +69,11 @@ class Resource:
         cls.init_nexus_client()
         cls.init_licenses_data()
         cls.init_admin_key_manager()
-        cls.init_browser_pool_manager()
+        cls.init_html_render_client()
     
     @classmethod
     def init_core(cls):
+        logger.info("Initializing The Core...")
         cls.core = Core()
     
     @classmethod
@@ -78,48 +82,61 @@ class Resource:
         logger_init(
             ConfigManager.get_configs().logger,
         )
+        logger.info("Logger has been initialized.")
 
     @classmethod
     def init_admin_key_manager(cls):
+        logger.info("Initializing Admin Key Manager...")
         # 生成或读取API Key
         cls.admin_key_manager = AdminKeyManager()
     
     @classmethod
     def init_licenses_data(cls):
+        logger.info("Initializing Licenses Data...")
         cls.licenses = LicenseLoader(ConfigManager.get_configs().licenses)
         cls.licenses.scan_licenses()
     
     @classmethod
     def init_nexus_client(cls):
+        logger.info("Initializing Nexus Client...")
         cls.nexus_client = NexusClient(
             base_url = ConfigManager.get_configs().nexus.base_url,
             request_timeout = ConfigManager.get_configs().nexus.api_timeout,
         )
 
     @classmethod
-    def init_browser_pool_manager(cls):
+    def init_html_render_client(cls):
+        logger.info("Initializing HTML Render Client...")
         # 渲染配置
         render_config = ConfigManager.get_configs().render
         cls.html_render_client = HTMLRenderClient(
             base_url = render_config.to_image.base_url,
             timeout = render_config.to_image.timeout
         )
-
+    
     @classmethod
-    def run_server(
+    def init_server(
         cls,
         host: str,
         port: int,
         workers: int = 1,
         reload: bool = False
+    ):
+        # 初始化API
+        cls.server = uvicorn.Server(
+            uvicorn.Config(
+                app = cls.app,
+                host = host,
+                port = port,
+                workers = workers,
+                reload = reload
+            )
+        )
+
+    @classmethod
+    def run_server(
+        cls
     ) -> None:
         if not cls.inited():
             raise RuntimeError("API not initialized")
-        uvicorn.run(
-            app = cls.app,
-            host = host,
-            port = port,
-            workers = workers,
-            reload = reload,
-            log_config = None,
-        )
+        cls.server.run()
