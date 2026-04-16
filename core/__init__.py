@@ -6,3 +6,4 @@ from ._info import (
     __license__,
     __copyright__,
 )
+from .API import Resource
