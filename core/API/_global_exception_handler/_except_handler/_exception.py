@@ -13,7 +13,7 @@ from ....Global_Config_Manager import ConfigManager
 from .._shutdown_server import shutdown_server
 from .._save_error_traceback import save_error_traceback
 from .._error_output_model import ErrorResponse
-from ._traceback import format_traceback
+from ._traceback import RepeaterTraceback
 
 async def exception_handler(error: BaseException) -> ORJSONResponse:
     error_time = time.time_ns()
@@ -36,7 +36,8 @@ async def exception_handler(error: BaseException) -> ORJSONResponse:
         is_http_exception: bool = False
 
     if ConfigManager.get_configs().global_exception_handler.repeater_traceback.enable:
-        traceback_str = await format_traceback(
+        repeater_traceback = RepeaterTraceback()
+        traceback_str = await repeater_traceback.format_traceback(
             time.strftime(
                 ConfigManager.get_configs().global_exception_handler.repeater_traceback.timeformat,
                 time.localtime(error_time / 1e9)
