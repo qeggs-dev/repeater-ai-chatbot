@@ -1,16 +1,20 @@
+import time
+start_import_time = time.monotonic_ns()
 import sys
 import asyncio
 
 from environs import Env
 from core import (
     Global_Config_Manager,
-    Resource,
+    Server,
     __version__ as core_version,
     __api_version__ as core_api_version,
 )
 from loguru import logger
+end_import_time = time.monotonic_ns()
 
-def main():
+def main(run_server: bool | None = None):
+    start_load_configs_time = time.monotonic_ns()
     env = Env()
     env.read_env()
     config_loader = Global_Config_Manager.ConfigManager()
@@ -21,7 +25,28 @@ def main():
     config_loader.load(
         create_if_missing=True
     )
-    Resource.init_all()
+    end_load_configs_time = time.monotonic_ns()
+
+    Server.init_logger()
+
+    logger.info(
+        "Import Packages Time: {import_packages_time:.2f}s",
+        import_packages_time = (end_import_time - start_import_time) / 1e9
+    )
+
+    logger.info(
+        "Load Configs Time: {load_configs_time:.2f}ms",
+        load_configs_time = (end_load_configs_time - start_load_configs_time) / 1e6
+    )
+
+    start_init_resource_time = time.monotonic_ns()
+    Server.init_all()
+    end_init_resource_time = time.monotonic_ns()
+
+    logger.info(
+        "Init Server Time: {init_resource_time:.2f}s",
+        init_resource_time = (end_init_resource_time - start_init_resource_time) / 1e9
+    )   
 
     host = "0.0.0.0" # 默认监听所有地址
     port = 8000 # 默认监听8000端口
@@ -47,7 +72,8 @@ def main():
     if reload is None:
         reload: bool = env_config_reload
     
-    run_server: bool = Global_Config_Manager.ConfigManager.get_configs().server.run_server
+    if run_server is None:
+        run_server: bool = Global_Config_Manager.ConfigManager.get_configs().server.run_server
 
     logger.info(f"Starting server at {host}:{port}")
 
@@ -61,7 +87,7 @@ def main():
     logger.info(f"Core Version: {core_version}")
     logger.info(f"Core API Version: {core_api_version}")
     
-    Resource.init_server(
+    Server.init_server(
         host = host,
         port = port,
         workers = workers,
@@ -72,7 +98,7 @@ def main():
         logger.info("Server starting...")
         try:
             asyncio.run(
-                Resource.run_server()
+                Server.run_server()
             )
         except KeyboardInterrupt:
             logger.info("Server shutting down...")
