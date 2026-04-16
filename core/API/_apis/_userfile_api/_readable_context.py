@@ -1,10 +1,9 @@
 from ....Context_Manager import (
     ContextObject
 )
-from ....TextBuffer import TextBuffer
 
 def readable_context(context: ContextObject) -> str:
-    text_buffer = TextBuffer(separator="\n")
+    text_buffer: list[str] = []
     text_buffer.append("======== Context  ========")
     for item in context.context_list:
         text_buffer.append(f"[{item.role.name}]:")
@@ -19,4 +18,4 @@ def readable_context(context: ContextObject) -> str:
         
         text_buffer.append("==========================")
         text_buffer.append("")
-    return str(text_buffer)
+    return "\n".join(text_buffer)
