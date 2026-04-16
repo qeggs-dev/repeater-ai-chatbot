@@ -1,3 +1,4 @@
+from __future__ import annotations
 from typing import Generator, Iterable, Any, overload
 
 class TextBuffer:
@@ -251,7 +252,7 @@ class TextBuffer:
         """
         self._buffer.clear()
     
-    def copy(self) -> "TextBuffer":
+    def copy(self) -> TextBuffer:
         """
         Copy the buffer.
 
@@ -274,7 +275,7 @@ class TextBuffer:
         for text in self._buffer:
             yield text
     
-    def __add__(self, other: str | "TextBuffer") -> "TextBuffer":
+    def __add__(self, other: str | TextBuffer) -> TextBuffer:
         """
         Add a string or another buffer to the buffer.
 
@@ -295,7 +296,7 @@ class TextBuffer:
             return NotImplemented
         
 
-    def __iadd__(self, other: str | "TextBuffer") -> "TextBuffer":
+    def __iadd__(self, other: str | TextBuffer) -> TextBuffer:
         """
         Add a string or another buffer to the buffer in-place.
 
@@ -314,7 +315,7 @@ class TextBuffer:
         else:
             return NotImplemented
     
-    def __radd__(self, other: str | "TextBuffer") -> "TextBuffer":
+    def __radd__(self, other: str | TextBuffer) -> TextBuffer:
         """
         Add a string or another buffer to the buffer.
 
