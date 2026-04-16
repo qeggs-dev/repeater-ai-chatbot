@@ -18,7 +18,6 @@ from ....Global_Config_Manager import ConfigManager
 from ._exceptions import JSONDecodeError, ArgumentError
 from ._choice import ToolChoice
 from ._tool_call_package import ToolCallPacakage
-from ....TextBuffer import TextBuffer
 
 T = TypeVar("T")
 
@@ -179,10 +178,10 @@ class FunctionCaller:
                     )
                 else:
                     errors = error.errors()
-                    buffer: TextBuffer = TextBuffer(separator="\n")
+                    buffer: list[str] = []
                     for error in errors:
                         buffer.append(f"{'.'.join(error['loc'])}: {error['msg']}")
-                    raise ArgumentError(str(buffer)) from error
+                    raise ArgumentError("\n".join(buffer)) from error
         else:
             arguments = None
         
