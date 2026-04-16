@@ -72,7 +72,6 @@ class Server:
 
     @classmethod
     def init_all(cls):
-        cls.init_logger()
         cls.init_core()
         cls.init_nexus_client()
         cls.init_licenses_data()
