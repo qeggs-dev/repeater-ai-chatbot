@@ -1,6 +1,6 @@
 from ......SpecialException import CriticalException
 import asyncio
-from ....._resource import Resource
+from ....._server import Server
 from fastapi import (
     HTTPException,
     Header
@@ -10,14 +10,14 @@ from fastapi.responses import (
 )
 from loguru import logger
 
-@Resource.app.post("/admin/debug/crash")
+@Server.app.post("/admin/debug/crash")
 async def crash_api(
         api_key: str = Header(..., alias="X-Admin-API-Key")
     ):
     """
     This API is used to collapse the server.
     """
-    if not Resource.admin_key_manager.validate_key(api_key):
+    if not Server.admin_key_manager.validate_key(api_key):
         raise HTTPException(detail="Invalid API key", status_code=401)
     logger.info(
         "Manually causing a program crash.",

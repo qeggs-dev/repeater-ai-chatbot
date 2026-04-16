@@ -1,11 +1,11 @@
-from ...._resource import Resource
+from ...._server import Server
 from fastapi.responses import (
     ORJSONResponse
 )
 from loguru import logger
 from .._user_data_type import UserDataType, get_manager
 
-@Resource.app.get("/userdata/{user_data_type}/branchs/{user_id}")
+@Server.app.get("/userdata/{user_data_type}/branchs/{user_id}")
 async def get_branch_id_list(user_data_type: UserDataType, user_id: str):
     """
     Endpoint for getting branch ID

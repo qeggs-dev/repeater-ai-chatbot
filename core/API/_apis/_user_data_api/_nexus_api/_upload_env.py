@@ -1,12 +1,12 @@
 from fastapi.responses import ORJSONResponse
 
-from ...._resource import Resource
+from ...._server import Server
 from .._user_data_type import UserDataType, get_manager
 from .....Nexus_Client import InvalidUUIDError
 from ._environment_model import EnvironmentModel
 from ._upload_model import UploadRequest, UploadResponse
 
-@Resource.app.post("/nexus/upload/{user_id}/environment")
+@Server.app.post("/nexus/upload/{user_id}/environment")
 async def upload_env_to_nexus(user_id: str, request: UploadRequest):
     context_manager = get_manager(UserDataType.CONTEXT)
     prompt_manager = get_manager(UserDataType.PROMPT)
@@ -18,7 +18,7 @@ async def upload_env_to_nexus(user_id: str, request: UploadRequest):
         config = await config_manager.load(user_id)
     )
     try:
-        response = await Resource.nexus_client.submit(
+        response = await Server.nexus_client.submit(
             "repeater.environment",
             content = {
                 "metadata": {

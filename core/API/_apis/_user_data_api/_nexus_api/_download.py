@@ -1,15 +1,15 @@
 from fastapi.responses import ORJSONResponse
 
-from ...._resource import Resource
+from ...._server import Server
 from .._user_data_type import UserDataType, get_manager
 from .....Nexus_Client import InvalidUUIDError
 from ._download_model import DownloadRequest, DownloadResponse
 
-@Resource.app.post("/nexus/download/{user_id}/single/{user_data_type}")
+@Server.app.post("/nexus/download/{user_id}/single/{user_data_type}")
 async def download_from_nexus(user_id: str, user_data_type: UserDataType, request: DownloadRequest):
     manager = get_manager(user_data_type)
     try:
-        response = await Resource.nexus_client.download(f"repeater.{user_data_type.value}", request.id, "content")
+        response = await Server.nexus_client.download(f"repeater.{user_data_type.value}", request.id, "content")
     except InvalidUUIDError as e:
         return ORJSONResponse(
             content = DownloadResponse(

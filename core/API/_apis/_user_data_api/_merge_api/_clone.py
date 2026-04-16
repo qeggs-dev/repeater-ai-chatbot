@@ -1,4 +1,4 @@
-from ...._resource import Resource
+from ...._server import Server
 from fastapi.responses import (
     ORJSONResponse
 )
@@ -8,7 +8,7 @@ from fastapi import (
 from loguru import logger
 from .._user_data_type import UserDataType, get_manager
 
-@Resource.app.put("/userdata/{user_data_type}/clone/{user_id}")
+@Server.app.put("/userdata/{user_data_type}/clone/{user_id}")
 async def clone_branch(user_data_type: UserDataType, user_id: str, dst_branch_id: str = Form(...)):
     """
     Cloning branch
@@ -30,7 +30,7 @@ async def clone_branch(user_data_type: UserDataType, user_id: str, dst_branch_id
     return ORJSONResponse({"status": "success"})
 
 
-@Resource.app.put("/userdata/{user_data_type}/clone_from/{user_id}")
+@Server.app.put("/userdata/{user_data_type}/clone_from/{user_id}")
 async def clone_branch_from(user_data_type: UserDataType, user_id: str, src_branch_id: str = Form(...)):
     """
     Cloning branch from another branch

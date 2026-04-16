@@ -1,19 +1,19 @@
 from fastapi.responses import ORJSONResponse
 from pydantic import BaseModel
 
-from ...._resource import Resource
+from ...._server import Server
 from .._user_data_type import UserDataType, get_manager
 from .....Nexus_Client import InvalidUUIDError
 from ._upload_model import UploadRequest, UploadResponse
 
-@Resource.app.post("/nexus/upload/{user_id}/single/{user_data_type}")
+@Server.app.post("/nexus/upload/{user_id}/single/{user_data_type}")
 async def upload_to_nexus(user_id: str, user_data_type: UserDataType, request: UploadRequest):
     manager = get_manager(user_data_type)
     data = await manager.load(user_id)
     if isinstance(data, BaseModel):
         data = data.model_dump(exclude_none = True)
     try:
-        response = await Resource.nexus_client.submit(
+        response = await Server.nexus_client.submit(
             f"repeater.{user_data_type.value}",
             content = {
                 "metadata": {

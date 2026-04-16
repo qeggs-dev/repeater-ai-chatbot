@@ -1,6 +1,6 @@
 import asyncio
 
-from ..._resource import Resource
+from ..._server import Server
 from fastapi.responses import PlainTextResponse
 from ....Text_Template_Processer import TemplateParser
 from ....Global_Config_Manager import ConfigManager as Global_Config_Manager
@@ -8,7 +8,7 @@ from ....User_Config_Manager import ConfigManager
 from ._requests import ExpandVariableRequest
 from jinja2 import TemplateError
 
-@Resource.app.post("/variable_expand/{user_id}")
+@Server.app.post("/variable_expand/{user_id}")
 async def expand_variables(user_id: str, request: ExpandVariableRequest):
     """
     Endpoint for expanding variables

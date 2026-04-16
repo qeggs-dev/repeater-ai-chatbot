@@ -1,4 +1,4 @@
-from ....._resource import Resource
+from ....._server import Server
 from typing import Any
 from fastapi.responses import (
     ORJSONResponse,
@@ -20,7 +20,7 @@ from loguru import logger
 
 from pydantic import BaseModel, ValidationError
 
-@Resource.app.put("/userdata/config/delkey/{user_id}")
+@Server.app.put("/userdata/config/delkey/{user_id}")
 async def delete_config_field(user_id: str, key: str = Form(...)):
     """
     Endpoint for delkey config
@@ -34,7 +34,7 @@ async def delete_config_field(user_id: str, key: str = Form(...)):
     """
 
     # 读取配置
-    config = await Resource.core.user_config_manager.load(user_id=user_id)
+    config = await Server.core.user_config_manager.load(user_id=user_id)
     
     # 更新配置
     try:
@@ -50,7 +50,7 @@ async def delete_config_field(user_id: str, key: str = Form(...)):
         raise HTTPException(500, "The default value is not one of the valid values for this field and can not be assigned.")
 
     # 保存配置
-    await Resource.core.user_config_manager.save(user_id=user_id, configs=config)
+    await Server.core.user_config_manager.save(user_id=user_id, configs=config)
 
     logger.info("Delete user config field: {key}", user_id = user_id, key = key)
 

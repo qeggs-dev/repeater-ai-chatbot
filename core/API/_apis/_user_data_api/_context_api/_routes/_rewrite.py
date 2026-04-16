@@ -1,4 +1,4 @@
-from ....._resource import Resource
+from ....._server import Server
 from fastapi.responses import (
     ORJSONResponse
 )
@@ -9,7 +9,7 @@ from .._requests import (
     RewriteContext
 )
 
-@Resource.app.post("/userdata/context/rewrite/{user_id}")
+@Server.app.post("/userdata/context/rewrite/{user_id}")
 async def rewrite_context(user_id: str, rewrite_context: RewriteContext):
     """
     Endpoint for rewriting context
@@ -22,7 +22,7 @@ async def rewrite_context(user_id: str, rewrite_context: RewriteContext):
         ORJSONResponse: New context
     """
     # 从context_loader中加载用户ID为user_id的上下文
-    context_loader = await Resource.core.get_context_loader()
+    context_loader = await Server.core.get_context_loader()
     context = await context_loader.load_context(user_id)
 
     # 检查索引是否在上下文范围内

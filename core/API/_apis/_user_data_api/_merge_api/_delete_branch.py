@@ -1,11 +1,11 @@
-from ...._resource import Resource
+from ...._server import Server
 from fastapi.responses import (
     PlainTextResponse
 )
 from .._user_data_type import UserDataType, get_manager
 from loguru import logger
 
-@Resource.app.delete("/userdata/{user_data_type}/delete/{user_id}")
+@Server.app.delete("/userdata/{user_data_type}/delete/{user_id}")
 async def delete_branch(user_data_type: UserDataType, user_id: str):
     """
     Endpoint for deleting

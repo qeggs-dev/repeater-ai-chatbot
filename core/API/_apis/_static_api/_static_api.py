@@ -1,6 +1,6 @@
 import aiofiles
 
-from ..._resource import Resource
+from ..._server import Server
 from fastapi.responses import FileResponse, PlainTextResponse
 from fastapi import HTTPException, Query
 from PathProcessors import validate_path
@@ -8,7 +8,7 @@ from pathlib import Path
 
 from ....Global_Config_Manager import ConfigManager
 
-@Resource.app.get("/static/{path:path}")
+@Server.app.get("/static/{path:path}")
 async def static_file(path: str, text_encoding: str | None = Query(None)):
     """Return static files"""
     static_dir = Path(ConfigManager.get_configs().static.static_dir)

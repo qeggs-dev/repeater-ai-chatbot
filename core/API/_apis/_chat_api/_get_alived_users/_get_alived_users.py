@@ -1,12 +1,12 @@
 from fastapi.responses import (
     ORJSONResponse
 )
-from ...._resource import Resource
+from ...._server import Server
 from ._models import TasksIDResponse, UserInfo
 
-@Resource.app.get("/chat/alived_users")
+@Server.app.get("/chat/alived_users")
 async def get_alived_users_api():
-    ids = Resource.core.content_buffers_pool.ids
+    ids = Server.core.content_buffers_pool.ids
     if len(ids) == 0:
         return ORJSONResponse(
             content=TasksIDResponse(
@@ -17,7 +17,7 @@ async def get_alived_users_api():
     else:
         users: dict[str, UserInfo] = {}
         for id in ids:
-            buffer = await Resource.core.content_buffers_pool.get(id)
+            buffer = await Server.core.content_buffers_pool.get(id)
             users[id] = UserInfo(
                 generated_length=len(buffer)
             )

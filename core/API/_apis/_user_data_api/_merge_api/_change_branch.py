@@ -1,4 +1,4 @@
-from ...._resource import Resource
+from ...._server import Server
 from fastapi import Form
 from fastapi.responses import (
     PlainTextResponse
@@ -6,7 +6,7 @@ from fastapi.responses import (
 from loguru import logger
 from .._user_data_type import UserDataType, get_manager
 
-@Resource.app.put("/userdata/{user_data_type}/change/{user_id}")
+@Server.app.put("/userdata/{user_data_type}/change/{user_id}")
 async def change_branch(user_data_type: UserDataType, user_id: str, new_branch_id: str = Form(...)):
     """
     Endpoint for changing branch

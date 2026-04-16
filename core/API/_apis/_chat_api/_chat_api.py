@@ -9,7 +9,7 @@ from fastapi.responses import (
 from ....SpecialException import (
     HTTPException
 )
-from ..._resource import Resource
+from ..._server import Server
 from ....Assist_Struct import Response
 from ....CallAPI import CompletionsAPI
 
@@ -17,7 +17,7 @@ from ._requests import (
     ChatRequest
 )
 
-@Resource.app.post("/chat/completion/{user_id}")
+@Server.app.post("/chat/completion/{user_id}")
 async def chat_endpoint(
     user_id: str,
     request: ChatRequest
@@ -25,7 +25,7 @@ async def chat_endpoint(
     """
     Endpoint for chat
     """
-    chat_coroutine = Resource.core.chat(
+    chat_coroutine = Server.core.chat(
         user_id = user_id,
         message = request.message,
         history_messages = request.history_messages,
@@ -47,7 +47,7 @@ async def chat_endpoint(
         stream = request.stream
     )
     try:
-        response = await Resource.chat_task_pool.run_task(user_id, chat_coroutine)
+        response = await Server.chat_task_pool.run_task(user_id, chat_coroutine)
     except asyncio.CancelledError:
         raise HTTPException(
             message = "Chat Completion Task Cancelled or System Abnormal Shutdown.",

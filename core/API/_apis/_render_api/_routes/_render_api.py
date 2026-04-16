@@ -1,7 +1,7 @@
 import time
 import aiofiles
 
-from ...._resource import Resource
+from ...._server import Server
 from .....Markdown_Render import (
     markdown_to_html,
 )
@@ -30,7 +30,7 @@ from .....SpecialException import HTTPException
 delayed_tasks_pool = DelayedTasksPool()
 ExitHandler.add_function(delayed_tasks_pool.cancel_all())
 
-@Resource.app.post("/render/{user_id}")
+@Server.app.post("/render/{user_id}")
 async def render(
     user_id: str,
     request:RenderRequest
@@ -56,12 +56,12 @@ async def render(
         raise HTTPException(status_code=400, message="custom html_template is not allowed")
     
     # 获取用户配置
-    config = await Resource.core.user_config_manager.load(user_id)
+    config = await Server.core.user_config_manager.load(user_id)
         
     style_name, css = await get_style(
         request = request,
         user_configs = config,
-        static_resources_client = Resource.core.static_resources_client,
+        static_resources_client = Server.core.static_resources_client,
     )
     
     if not request.image_expiry_time:
@@ -108,7 +108,7 @@ async def render(
         html_template = request.html_template
     else:
         html_template_file = html_template_dir / f"{html_template_name}{html_template_suffix}"
-        html_template = await Resource.core.static_resources_client.get_text(
+        html_template = await Server.core.static_resources_client.get_text(
             html_template_file,
             text_encoding = html_template_encoding
         )
@@ -138,7 +138,7 @@ async def render(
     end_of_md_to_html = time.monotonic_ns()
 
     # 生成图片
-    response = await Resource.html_render_client.render(html)
+    response = await Server.html_render_client.render(html)
     result = response.get_data()
     if result is None:
         raise HTTPException(status_code=500, message="The response data could not be obtained correctly.")

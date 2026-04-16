@@ -1,4 +1,4 @@
-from ....._resource import Resource
+from ....._server import Server
 from ......Context_Manager import (
     ContentRole
 )
@@ -7,7 +7,7 @@ from fastapi.responses import (
 )
 from loguru import logger
 
-@Resource.app.post("/userdata/context/role_mapping/{user_id}")
+@Server.app.post("/userdata/context/role_mapping/{user_id}")
 async def role_mapping(user_id: str, role_map: dict[ContentRole, ContentRole | None]):
     """
     Context role mapping endpoint.
@@ -19,7 +19,7 @@ async def role_mapping(user_id: str, role_map: dict[ContentRole, ContentRole | N
     Returns:
         ORJSONResponse: A response indicating the success or failure of the operation.
     """
-    context_loader = await Resource.core.get_context_loader()
+    context_loader = await Server.core.get_context_loader()
     context = await context_loader.load_context(user_id)
 
     context.role_map(role_map)

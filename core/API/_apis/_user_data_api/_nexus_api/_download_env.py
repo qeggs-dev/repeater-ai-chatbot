@@ -1,19 +1,19 @@
 from fastapi.responses import ORJSONResponse
 
-from ...._resource import Resource
+from ...._server import Server
 from .._user_data_type import UserDataType, get_manager
 from .....Nexus_Client import InvalidUUIDError
 from ._download_model import DownloadRequest, DownloadResponse
 from ._environment_model import EnvironmentModel
 
-@Resource.app.post("/nexus/download/{user_id}/environment")
+@Server.app.post("/nexus/download/{user_id}/environment")
 async def download_env_from_nexus(user_id: str, request: DownloadRequest):
     context_manager = get_manager(UserDataType.CONTEXT)
     prompt_manager = get_manager(UserDataType.PROMPT)
     config_manager = get_manager(UserDataType.CONFIG)
     
     try:
-        response = await Resource.nexus_client.download("repeater.environment", user_id, "content")
+        response = await Server.nexus_client.download("repeater.environment", user_id, "content")
     except InvalidUUIDError as e:
         return ORJSONResponse(
             content = DownloadResponse(

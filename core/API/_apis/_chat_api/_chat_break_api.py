@@ -1,11 +1,11 @@
 from fastapi.responses import (
     ORJSONResponse
 )
-from ..._resource import Resource
+from ..._server import Server
 
-@Resource.app.post("/chat/break/{user_id}")
+@Server.app.post("/chat/break/{user_id}")
 async def chat_break_api(user_id: str):
-    cancel_count = await Resource.chat_task_pool.cancel_tasks(user_id)
+    cancel_count = await Server.chat_task_pool.cancel_tasks(user_id)
     return ORJSONResponse(
         {
             "code": 200,

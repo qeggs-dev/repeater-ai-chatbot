@@ -5,7 +5,7 @@ import signal
 import os
 
 from ...SpecialException import CriticalException
-from .._resource import Resource
+from .._server import Server
 
 async def shutdown_server(exception: CriticalException | None = None) -> None:
     wait_time: float = 0.0
@@ -55,4 +55,4 @@ async def shutdown_server(exception: CriticalException | None = None) -> None:
         await asyncio.sleep(wait_time)
 
     logger.critical("The server crashed! exiting...")
-    await Resource.server.shutdown()
+    await Server.server.shutdown()

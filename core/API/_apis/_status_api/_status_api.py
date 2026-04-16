@@ -1,11 +1,11 @@
-from ..._resource import Resource
+from ..._server import Server
 from fastapi.responses import ORJSONResponse
 
-@Resource.app.get("/status/core/task/{user_id}")
+@Server.app.get("/status/core/task/{user_id}")
 def get_core_task_status(user_id: str):
-    if Resource.core.task_status_map.contains(user_id):
+    if Server.core.task_status_map.contains(user_id):
         return ORJSONResponse(
-            content = Resource.core.task_status_map.get_status(user_id)
+            content = Server.core.task_status_map.get_status(user_id)
         )
     else:
         return ORJSONResponse(

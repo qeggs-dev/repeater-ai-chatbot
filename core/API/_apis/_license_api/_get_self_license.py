@@ -1,11 +1,11 @@
-from ..._resource import Resource
+from ..._server import Server
 from fastapi.responses import ORJSONResponse
 
-@Resource.app.get("/license/self")
+@Server.app.get("/license/self")
 async def get_license():
     """
     Get license information
     """
     return ORJSONResponse(
-        await Resource.licenses.get_self_license(),
+        await Server.licenses.get_self_license(),
     )

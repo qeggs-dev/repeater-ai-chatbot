@@ -1,4 +1,4 @@
-from .._resource import Resource
+from .._server import Server
 from .._info import __version__ as __api_version__
 from ..._info import __version__ as __core_version__
 from fastapi.responses import (
@@ -11,14 +11,14 @@ versions = {
     "api": __api_version__
 }
 
-@Resource.app.get("/version")
+@Server.app.get("/version")
 async def version():
     """
     Return the version of the API and the core
     """
     return ORJSONResponse(versions)
 
-@Resource.app.get("/version/{module}")
+@Server.app.get("/version/{module}")
 async def module_version(module: str):
     """
     Return the version of the specified module

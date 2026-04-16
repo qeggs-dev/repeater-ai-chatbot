@@ -1,10 +1,10 @@
-from ....._resource import Resource
+from ....._server import Server
 from fastapi.responses import (
     ORJSONResponse
 )
 from loguru import logger
 
-@Resource.app.get("/userdata/context/userlist")
+@Server.app.get("/userdata/context/userlist")
 async def get_context_userlist():
     """
     Endpoint for getting context
@@ -13,7 +13,7 @@ async def get_context_userlist():
         ORJSONResponse: A ORJSONResponse containing a list of user IDs
     """
     # 从chat.context_manager中获取所有用户ID
-    userid_list = await Resource.core.context_manager.get_all_user_id()
+    userid_list = await Server.core.context_manager.get_all_user_id()
 
     logger.info(f"Get Context userlist")
 

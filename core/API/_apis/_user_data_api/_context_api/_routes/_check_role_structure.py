@@ -1,4 +1,4 @@
-from ....._resource import Resource
+from ....._server import Server
 from ......Context_Manager import (
     ContentRole
 )
@@ -8,7 +8,7 @@ from fastapi.responses import (
 from loguru import logger
 from .._responses import RoleStructureCheckerResponse
 
-@Resource.app.get("/userdata/context/structure_check/role/{user_id}")
+@Server.app.get("/userdata/context/structure_check/role/{user_id}")
 async def check_role_structure(user_id: str):
     """
     Endpoint to check the role structure error of a user's context.
@@ -20,7 +20,7 @@ async def check_role_structure(user_id: str):
         ORJSONResponse: The response containing the context role structure error.
     """
     # 从chat.context_manager中加载用户ID为user_id的上下文
-    context_loader = await Resource.core.get_context_loader()
+    context_loader = await Server.core.get_context_loader()
     context = await context_loader.load_context(user_id)
     
     logger.info(

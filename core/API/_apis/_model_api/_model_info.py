@@ -1,17 +1,17 @@
-from ..._resource import Resource
+from ..._server import Server
 from ....Model_API import ModelType, ModelsResponse, ExceptionResponse
 from fastapi.responses import ORJSONResponse
 from fastapi import HTTPException
 from ._resources import MODEL_TYPES
 
-@Resource.app.get("/model/info/{model_type}/{model_uid}")
+@Server.app.get("/model/info/{model_type}/{model_uid}")
 async def model_info(model_type: str, model_uid: str):
     if model_type not in MODEL_TYPES:
         raise HTTPException(
             status_code=400,
             detail="Invalid model type."
         )
-    model_info = await Resource.core.model_api_manager.get_model(
+    model_info = await Server.core.model_api_manager.get_model(
         ModelType(model_type),
         model_uid
     )

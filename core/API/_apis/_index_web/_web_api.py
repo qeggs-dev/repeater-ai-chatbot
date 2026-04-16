@@ -1,10 +1,10 @@
-from ..._resource import Resource
+from ..._server import Server
 from ....Global_Config_Manager import ConfigManager
 from fastapi.responses import FileResponse, ORJSONResponse
 from pathlib import Path
 from PathProcessors import validate_path
 
-@Resource.app.get("/web/{file_name:path}")
+@Server.app.get("/web/{file_name:path}")
 async def web_file(file_name: str):
     web_directory = Path(ConfigManager.get_configs().web.web_directory)
     if not validate_path(web_directory, file_name):
