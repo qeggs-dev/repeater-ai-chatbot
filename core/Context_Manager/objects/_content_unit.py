@@ -74,7 +74,7 @@ class ContentUnit(BaseModel):
             text_buffer: TextBuffer = TextBuffer()
             for block in self.content:
                 if isinstance(block, TextBlock):
-                    text_buffer.append(block.text)
+                    text_buffer.push(block.text)
             return str(text_buffer)
  
     def to_content(self, remove_reasoning_prompt: bool = False) -> dict[str, Any]:
@@ -90,48 +90,48 @@ class ContentUnit(BaseModel):
             buffer: TextBuffer = TextBuffer(separator="\n")
             for block in self.content:
                 if isinstance(block, TextBlock):
-                    buffer.append(block.text)
+                    buffer.push(block.text)
             self.content = str(buffer)
     
     def content_to_string(self, non_text_length_limit: int | None = 10) -> str:
         message_texts: TextBuffer = TextBuffer()
         for block in self.content:
             if isinstance(block, TextBlock):
-                message_texts.append(block.text)
+                message_texts.push(block.text)
             elif isinstance(block, ImageBlock):
-                message_texts.append(
+                message_texts.push(
                     f"[Image: {text_content_cutter(block.image_url.url, non_text_length_limit)}]"
                 )
             elif isinstance(block, VideoBlock):
-                message_texts.append(
+                message_texts.push(
                     f"[Video: {text_content_cutter(block.video_url.url, non_text_length_limit)}]"
                 )
             elif isinstance(block, AudioBlock):
-                message_texts.append(
+                message_texts.push(
                     f"[Audio: {text_content_cutter(block.input_audio.data, non_text_length_limit)}]"
                 )
             elif isinstance(block, FileBlock):
-                message_texts.append(
+                message_texts.push(
                     f"[File: {text_content_cutter(block.file.filename, non_text_length_limit)}]"
                 )
             else:
-                message_texts.append(f"[Unknown Block: {block}]")
+                message_texts.push(f"[Unknown Block: {block}]")
     
         return "\n".join(message_texts)
 
     def __str__(self) -> str:
         text_buffer: TextBuffer = TextBuffer()
         if self.reasoning_content:
-            text_buffer.append("Reasoning:")
-            text_buffer.append(
+            text_buffer.push("Reasoning:")
+            text_buffer.push(
                 IndentedText(
                     self.reasoning_content,
                     indent_level = 2,
                 )
             )
         if self.content:
-            text_buffer.append("Content:")
-            text_buffer.append(
+            text_buffer.push("Content:")
+            text_buffer.push(
                 IndentedText(
                     self.content_to_string(),
                     indent_level = 2,
