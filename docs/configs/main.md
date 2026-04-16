@@ -381,13 +381,22 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
         // 是否启用 Tool Calls
         "enabled": false,
 
+        // 注册的 Tool Calls
+        // 即使是内置 Tool
+        // 也需要在此注册
+        // 你需要在此处填写它们的注册名
+        // 否则模型将无法找到它们
+        "registed": [],
+
         // Tool Calls 结果最大长度（用于日志）
         // 设置为 null 则不限制长度
         "result_max_length_for_logs": 100,
 
-        // 允许全部 HTTP 方法
-        // 如果设置为 false，则只允许 GET 方法
-        "allow_all_http_methods": false
+        // 允许的 HTTP 方法
+        // 设置为 null 则所有方法不可用
+        // 设置为 "ALL" 则所有方法可用
+        // 可以指定仅能的方法，比如 ["GET", "POST"]
+        "allowed_http_methods": null
     },
 
     // Prompt 配置
