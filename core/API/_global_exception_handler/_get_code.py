@@ -78,9 +78,9 @@ class GetCode:
                     index=index,
                 )
                 if isinstance(processed_text, str):
-                    text_buffer.append(processed_text)
+                    text_buffer.push_single_no_conversion(processed_text)
                 if index == self._line and not (self._column is None and self._end_column is None):
-                    text_buffer.append(self._get_columns_pointer_line())
+                    text_buffer.push_single_no_conversion(self._get_columns_pointer_line())
                 if (index - self._end_line) > self._dilation:
                     add_bottom_border = False
                     break
@@ -89,7 +89,7 @@ class GetCode:
         if not text_buffer:
             return ""
         if add_bottom_border:
-            text_buffer.append(self._get_last_line(max_length = max_length))
+            text_buffer.push_single_no_conversion(self._get_last_line(max_length = max_length))
         return str(text_buffer)
                     
     def get_code(self) -> str:
@@ -108,9 +108,9 @@ class GetCode:
                     index=index,
                 )
                 if isinstance(processed_text, str):
-                    text_buffer.append(processed_text)
+                    text_buffer.push_single_no_conversion(processed_text)
                 if index == self._line and not (self._column is None and self._end_column is None):
-                    text_buffer.append(self._get_columns_pointer_line())
+                    text_buffer.push_single_no_conversion(self._get_columns_pointer_line())
                 if (index - self._end_line) > self._dilation:
                     add_bottom_border = False
                     break
@@ -118,7 +118,7 @@ class GetCode:
         if not text_buffer:
             return ""
         if add_bottom_border:
-            text_buffer.append(self._get_last_line(max_length = max_length))
+            text_buffer.push_single_no_conversion(self._get_last_line(max_length = max_length))
         return str(text_buffer)
     
     def _get_columns_pointer_line(self):
@@ -161,10 +161,10 @@ class GetCode:
     def _get_last_line(self, max_length: int) -> str:
         text_buffer: TextBuffer = TextBuffer()
         
-        text_buffer.append("└")
+        text_buffer.push_single_no_conversion("└")
 
         for i in range(self._reserve_space):
-            text_buffer.append("─")
+            text_buffer.push_single_no_conversion("─")
 
         if self._bottom_border_limit is not None:
             bottom_border_limit = self._bottom_border_limit
@@ -172,11 +172,11 @@ class GetCode:
             bottom_border_limit = get_terminal_size().columns - self._reserve_space - 2
         
         if bottom_border_limit > 0:
-            text_buffer.append("┴")
+            text_buffer.push_single_no_conversion("┴")
         else:
-            text_buffer.append("┘")
+            text_buffer.push_single_no_conversion("┘")
         
         for i in range(min(bottom_border_limit, max_length)):
-            text_buffer.append("─")
+            text_buffer.push_single_no_conversion("─")
 
         return str(text_buffer)
