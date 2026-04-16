@@ -1,5 +1,5 @@
 import sys
-import uvicorn
+import asyncio
 
 from environs import Env
 from core import (
@@ -70,7 +70,12 @@ def main():
 
     if run_server:
         logger.info("Server starting...")
-        Resource.run_server()
+        try:
+            asyncio.run(
+                Resource.run_server()
+            )
+        except KeyboardInterrupt:
+            logger.info("Server shutting down...")
     else:
         logger.warning("Server startup is disabled.")
 
