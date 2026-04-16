@@ -48,13 +48,17 @@ class RepeaterTraceback:
             if self.is_library_code(file_path):
                 frame_flag = "Library Code"
                 if exclude_library:
-                    text_buffer.append(f"[{index}] Frame ({frame_flag}): {file_path.as_posix()}:{frame.lineno}")
+                    text_buffer.push_single_no_conversion(
+                        f"[{index}] Frame ({frame_flag}): {file_path.as_posix()}:{frame.lineno}"
+                    )
                     continue
             else:
                 frame_flag = "App Code"
             
-            text_buffer.append(f"[{index}] Frame ({frame_flag}): {file_path.as_posix()}:{frame.lineno}")
-            text_buffer.append(
+            text_buffer.push_single_no_conversion(
+                f"[{index}] Frame ({frame_flag}): {file_path.as_posix()}:{frame.lineno}"
+            )
+            text_buffer.push_single(
                 IndentedText(
                     f"- Function: {frame.name}",
                     f"- Line: {frame.lineno} ~ {frame.end_lineno}",
@@ -63,7 +67,7 @@ class RepeaterTraceback:
                     indent_level = 2
                 )
             )
-            text_buffer.append(
+            text_buffer.push_single(
                 IndentedText(
                     json.dumps(frame.locals, indent=4, ensure_ascii=False),
                     indent_level = 4
@@ -131,7 +135,7 @@ class RepeaterTraceback:
             text_buffer = TextBuffer(separator="\n")
             errors = exc_value.errors()
             for error in errors:
-                text_buffer.append(f"{'.'.join(error['loc'])} - {error['msg']}")
+                text_buffer.push_single_no_conversion(f"{'.'.join(error['loc'])} - {error['msg']}")
             message = str(text_buffer)
         else:
             message = str(exc_value)
@@ -165,7 +169,7 @@ class RepeaterTraceback:
             )
         
         format_texts: TextBuffer = TextBuffer(separator = "\n")
-        format_texts.append(
+        format_texts.push_no_conversion(
             f"{error_name}",
             "  - Time:",
             f"    {time_str}",
@@ -184,17 +188,17 @@ class RepeaterTraceback:
             f"    {indented_traceback}",
         )
         if enable_code_reader:
-            format_texts.append(
+            format_texts.push_no_conversion(
                 "File Context:",
                 code
             )
         
         format_texts.push_empty()
-        format_texts.append(
+        format_texts.push_no_conversion(
             f"{error_name}:",
             message,
         )
         format_texts.push_empty()
         
-        return (format_texts)
+        return str(format_texts)
         
