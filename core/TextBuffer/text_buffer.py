@@ -159,6 +159,15 @@ class TextBuffer:
         """
         self.consume_iterable(text)
     
+    def push_no_conversion(self, *text: Any):
+        """
+        Push a string into the buffer without converting it to a string.
+
+        Args:
+            text (str): The string to be pushed into the buffer
+        """
+        self.consume_iterable_no_conversion(text)
+    
     def push_single(self, text: Any):
         """
         Push a single string into the buffer.
