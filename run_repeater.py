@@ -4,7 +4,7 @@ import uvicorn
 from environs import Env
 from core import (
     Global_Config_Manager,
-    API as Core_API,
+    Resource,
     __version__ as core_version,
     __api_version__ as core_api_version,
 )
@@ -21,7 +21,7 @@ def main():
     config_loader.load(
         create_if_missing=True
     )
-    Core_API.Resource.init_all()
+    Resource.init_all()
 
     host = "0.0.0.0" # 默认监听所有地址
     port = 8000 # 默认监听8000端口
@@ -61,15 +61,16 @@ def main():
     logger.info(f"Core Version: {core_version}")
     logger.info(f"Core API Version: {core_api_version}")
     
+    Resource.init_server(
+        host = host,
+        port = port,
+        workers = workers,
+        reload = reload
+    )
 
     if run_server:
         logger.info("Server starting...")
-        Core_API.Resource.run_server(
-            host = host,
-            port = port,
-            workers = workers,
-            reload = reload
-        )
+        Resource.run_server()
     else:
         logger.warning("Server startup is disabled.")
 
