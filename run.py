@@ -930,7 +930,7 @@ class SlovesStarter:
             try:
                 if self.allow_print:
                     self.print_divider_line()
-                start = time.monotonic_ns()
+                start = time.perf_counter_ns()
                 result: subprocess.CompletedProcess[bytes] = subprocess.run(
                     cmd,
                     cwd = cwd,
@@ -956,7 +956,7 @@ class SlovesStarter:
                 askfile.flush()
                 raise
             finally:
-                end = time.monotonic_ns()
+                end = time.perf_counter_ns()
                 if print_runtime and callable(runtime_handler):
                     askfile.write(runtime_handler(start, end))
                     askfile.write("\n")
