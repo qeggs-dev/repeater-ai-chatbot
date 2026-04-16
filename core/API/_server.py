@@ -29,7 +29,7 @@ from ..Licenses_Loader import LicenseLoader
 from ..Nexus_Client import NexusClient
 from loguru import logger
 
-class Resource:
+class Server:
     startup: ClassVar[Sequence[Callable[[], Any]] | None] = None
     shutdown: ClassVar[Sequence[Callable[[], Any]]] | None = None
     
@@ -48,7 +48,7 @@ class Resource:
     html_render_client: ClassVar[HTMLRenderClient | None] = None
     nexus_client: ClassVar[NexusClient | None] = None
     licenses: ClassVar[LicenseLoader | None] = None
-    _instance: ClassVar[Resource | None] = None
+    _instance: ClassVar[Server | None] = None
 
     def __new__(cls):
         if cls._instance is None:
