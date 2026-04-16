@@ -170,7 +170,7 @@ class TextBuffer:
             text = str(text)
         self._buffer.append(text)
     
-    def push_no_conversion(self, text: str):
+    def push_single_no_conversion(self, text: str):
         """
         Push a string into the buffer without converting it to a string.
 
@@ -220,11 +220,11 @@ class TextBuffer:
             text = str(text)
         self._buffer.append(text)
     
-    def push_empty(self):
+    def push_empty(self, n: int = 1) -> None:
         """
         Push an empty string into the buffer.
         """
-        self._buffer.append("")
+        self._buffer.extend([""] * n)
 
     def pop(self) -> str:
         """
@@ -315,11 +315,12 @@ class TextBuffer:
         Returns:
             TextBuffer: The resulting buffer
         """
-        buffer = self.copy()
         if isinstance(other, str):
+            buffer = self.copy()
             buffer._buffer.insert(0, other)
             return buffer
         elif isinstance(other, TextBuffer):
+            buffer = other.copy()
             buffer._buffer = other._buffer + buffer._buffer
             return buffer
         else:
