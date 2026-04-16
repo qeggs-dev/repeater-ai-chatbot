@@ -190,7 +190,7 @@ class StreamingResponseGenerationLayer:
                     self._print_file.write(f"\033[7m{delta_data.reasoning_content}\033[0m")
                     self._print_file.flush()
                 logger.trace("Received Reasoning_Content chunk: {reasoning_content}", user_id = self.user_id, reasoning_content = repr(delta_data.reasoning_content))
-            self._content_buffer.reasoning_buffer.append(delta_data.reasoning_content)
+            self._content_buffer.reasoning_buffer.push_single_no_conversion(delta_data.reasoning_content)
         
         # 记录模型响应内容
         if delta_data.content:
@@ -201,7 +201,7 @@ class StreamingResponseGenerationLayer:
                     self._print_file.write(delta_data.content)
                     self._print_file.flush()
                 logger.trace("Received Content chunk: {content}", user_id = self.user_id, content = repr(delta_data.content))
-            self._content_buffer.content_buffer.append(delta_data.content)
+            self._content_buffer.content_buffer.push_single_no_conversion(delta_data.content)
         
         # 记录模型工具调用内容
         if delta_data.tool_calls:
@@ -223,7 +223,7 @@ class StreamingResponseGenerationLayer:
                     self.tool_calls[index].name = tool_call.name
                 if index not in self._content_buffer.tool_calls_arguments_buffer:
                     self._content_buffer.tool_calls_arguments_buffer[index] = TextBuffer()
-                self._content_buffer.tool_calls_arguments_buffer[index].append(tool_call.arguments)
+                self._content_buffer.tool_calls_arguments_buffer[index].push_single_no_conversion(tool_call.arguments)
         
         if delta_data.system_fingerprint:
             self.response.system_fingerprint = delta_data.system_fingerprint
