@@ -1,4 +1,4 @@
-from typing import Generator
+from typing import Generator, Any
 
 class TextBuffer:
     """
@@ -6,23 +6,44 @@ class TextBuffer:
     It provides methods for pushing, popping, merging, and clearing the buffer.
     """
 
-    def __init__(self, delimiters: str = ""):
+    def __init__(self, *text: Any, separator: str = ""):
         """
         TextBuffer class represents a buffer for storing text.
         It provides methods for pushing, popping, merging, and clearing the buffer.
 
         Args:
-            delimiters (str, optional): A string of delimiters to be used for splitting the buffer. Defaults to "".
+            *text (str): The text to be stored in the buffer.
+            separator (str): The separator to be used between the text elements.
         """
         self._buffer: list[str] = []
-        self._delimiters = delimiters
+        self._separator = separator
+        if text:
+            self.append(*text)
+    
+    @property
+    def separator(self) -> str:
+        return self._separator
     
     def __bool__(self) -> bool:
         """Returns True if buffer contains any non-empty text (considering delimiters)."""
+
+        # If there is nothing,
+        # the delimiter output is empty even if there is one.
         if not self._buffer:
             return False
         
-        if self._delimiters and len(self._buffer) > 1:
+        # Cache results to speed up.
+        length = len(self._buffer)
+
+        # When the length is only 1,
+        # directly check the first block can be.
+        if length == 1:
+            return bool(self._buffer[0])
+        
+        # If the delimiter is not empty when all fragments are empty
+        # and the length is greater than 1,
+        # then the string is not empty in any way.
+        if self._separator and length > 1:
             return True
         
         return any(self._buffer)
@@ -32,8 +53,8 @@ class TextBuffer:
         Return the length of the buffer.
         """
         raw_length = sum(len(text) for text in self._buffer)
-        if self._delimiters:
-            return raw_length + len(self._delimiters) * (len(self._buffer) - 1)
+        if self._separator:
+            return raw_length + len(self._separator) * (len(self._buffer) - 1)
         else:
             return raw_length
     
@@ -41,13 +62,7 @@ class TextBuffer:
         """
         Return a string representation of the buffer.
         """
-        return self._delimiters.join(self._buffer)
-    
-    def __repr__(self) -> str:
-        """
-        Return a string representation of the buffer.
-        """
-        return f"<{self.__class__.__name__} length={len(self)}>"
+        return self._separator.join(self._buffer)
     
     @property
     def num_segments(self) -> int:
@@ -67,14 +82,21 @@ class TextBuffer:
         self._buffer = [text]
         return text
     
-    def push(self, text: str):
+    def append(self, *text: Any):
         """
         Push a string into the buffer.
 
         Args:
             text (str): The string to be pushed into the buffer
         """
-        self._buffer.append(text)
+        for t in text:
+            self._buffer.append(str(t))
+    
+    def push_empty(self):
+        """
+        Push an empty string into the buffer.
+        """
+        self._buffer.append("")
 
     def pop(self) -> str:
         """
@@ -92,7 +114,7 @@ class TextBuffer:
         """
         self._buffer.clear()
     
-    def copy(self) -> 'TextBuffer':
+    def copy(self) -> "TextBuffer":
         """
         Copy the buffer.
 
@@ -100,10 +122,9 @@ class TextBuffer:
             TextBuffer: The copied buffer
         """
         buffer = TextBuffer(
-            self._delimiters
+            *self._buffer,
+            separator = self._separator
         )
-        for text in self._buffer:
-            buffer.push(text)
         return buffer
     
     def __iter__(self) -> Generator[str, None, None]:
@@ -116,3 +137,73 @@ class TextBuffer:
         for text in self._buffer:
             for char in text:
                 yield char
+    
+    def __add__(self, other: str | "TextBuffer") -> "TextBuffer":
+        """
+        Add a string or another buffer to the buffer.
+
+        Args:
+            other (str | TextBuffer): The string or buffer to add
+
+        Returns:
+            TextBuffer: The resulting buffer
+        """
+        buffer = self.copy()
+        if isinstance(other, str):
+            buffer.append(other)
+            return buffer
+        elif isinstance(other, TextBuffer):
+            buffer._buffer.extend(other._buffer)
+            return buffer
+        else:
+            return NotImplemented
+        
+
+    def __iadd__(self, other: str | "TextBuffer") -> "TextBuffer":
+        """
+        Add a string or another buffer to the buffer in-place.
+
+        Args:
+            other (str | TextBuffer): The string or buffer to add
+
+        Returns:
+            TextBuffer: The resulting buffer
+        """
+        if isinstance(other, str):
+            self.append(other)
+            return self
+        elif isinstance(other, TextBuffer):
+            self._buffer.extend(other._buffer)
+            return self
+        else:
+            return NotImplemented
+    
+    def __radd__(self, other: str | "TextBuffer") -> "TextBuffer":
+        """
+        Add a string or another buffer to the buffer.
+
+        Args:
+            other (str | TextBuffer): The string or buffer to add
+
+        Returns:
+            TextBuffer: The resulting buffer
+        """
+        buffer = self.copy()
+        if isinstance(other, str):
+            buffer._buffer.insert(0, other)
+            return buffer
+        elif isinstance(other, TextBuffer):
+            buffer._buffer = other._buffer + buffer._buffer
+            return buffer
+        else:
+            return NotImplemented
+
+    def __repr__(self) -> str:
+        """
+        Return a string representation of the buffer.
+
+        Returns:
+            str: The string representation of the buffer
+        """
+        args = [repr(x) for x in self._buffer]
+        return f"{self.__class__.__name__}({', '.join(args)})"
