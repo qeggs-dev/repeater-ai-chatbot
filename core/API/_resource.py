@@ -1,7 +1,14 @@
 # ==== 标准库 ==== #
 from __future__ import annotations
+import inspect
 
-from typing import ClassVar, Sequence, Callable, Any
+from typing import (
+    ClassVar,
+    Sequence,
+    Callable,
+    Awaitable,
+    Any
+)
 
 # ==== 第三方库 ==== #
 import uvicorn
@@ -35,6 +42,7 @@ class Resource:
     )
     core: ClassVar[Core | None] = None
     server: ClassVar[uvicorn.Server | None] = None
+    keyboard_interrupt_callback: ClassVar[Callable[[], Awaitable[None] | None]] = None
     chat_task_pool: ClassVar[TaskPool] = TaskPool()
     admin_key_manager: ClassVar[AdminKeyManager | None] = None
     html_render_client: ClassVar[HTMLRenderClient | None] = None
@@ -129,14 +137,25 @@ class Resource:
                 host = host,
                 port = port,
                 workers = workers,
-                reload = reload
+                reload = reload,
+                log_config = None
             )
         )
 
     @classmethod
-    def run_server(
+    async def run_server(
         cls
     ) -> None:
         if not cls.inited():
             raise RuntimeError("API not initialized")
-        cls.server.run()
+        try:
+            await cls.server.serve()
+        except KeyboardInterrupt:
+            if cls.keyboard_interrupt_callback:
+                if inspect.iscoroutinefunction(cls.keyboard_interrupt_callback):
+                    await cls.keyboard_interrupt_callback()
+                else:
+                    cls.keyboard_interrupt_callback()
+            await cls.server.shutdown()
+        except Exception as e:
+            logger.error(f"Server error: {e}")
