@@ -2,7 +2,7 @@ import httpx
 
 from ._models import ModelAPIResponse, StaticModelAPIResponse, APIKeyResponse, ExceptionResponse
 from ._model_type import ModelType
-from ..SpecialException import HTTPException
+from ..special_exception import HTTPException
 from typing import Literal, overload
 
 class ModelsClient:

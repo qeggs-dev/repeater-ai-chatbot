@@ -4,8 +4,8 @@
 import os
 import aiofiles
 from yarl import URL
-from PathProcessors import sanitize_filename_with_dir
-from ..Static_Resources_Client import StaticResourcesClient
+from ..path_processors import sanitize_filename_with_dir
+from ..static_resources_client import StaticResourcesClient
 from loguru import logger
 
 class Styles:

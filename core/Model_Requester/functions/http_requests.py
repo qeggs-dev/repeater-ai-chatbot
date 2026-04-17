@@ -4,8 +4,8 @@ import httpx
 import socket
 import asyncio
 import ipaddress
-from ...Context_Manager import ToolCallPacakage, CallType
-from ...Global_Config_Manager import HTTPMethods, ConfigManager
+from ...context_manager import ToolCallPacakage, CallType
+from ...global_config_manager import HTTPMethods, ConfigManager
 from .._caller import ModelRequester
 from typing import Any, Self
 from pydantic import BaseModel, Field

@@ -1,8 +1,8 @@
 from .._requests import RenderRequest
-from .....Global_Config_Manager import ConfigManager
-from .....Markdown_Render import Styles
-from .....User_Config_Manager import UserConfigs
-from .....Static_Resources_Client import StaticResourcesClient
+from .....global_config_manager import ConfigManager
+from .....markdown_render import Styles
+from .....user_config_manager import UserConfigs
+from .....static_resources_client import StaticResourcesClient
 
 async def get_style(request: RenderRequest, user_configs: UserConfigs, static_resources_client: StaticResourcesClient):
     """

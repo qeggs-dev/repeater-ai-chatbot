@@ -1,4 +1,4 @@
-from ..Global_Config_Manager import LogLevel as ConfigLogLevel
+from ..global_config_manager import LogLevel as ConfigLogLevel
 from enum import IntEnum
 
 class LogLevel(IntEnum):

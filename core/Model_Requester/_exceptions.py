@@ -1,4 +1,4 @@
-from ..CallAPI.CompletionsAPI import Request
+from ..call_api.completions_api import Request
 
 class ModelRequesterException(Exception):
     """Base class for exceptions in this module."""

@@ -1,5 +1,5 @@
-from ......Global_Config_Manager import ConfigManager
-from ......Server import Server
+from ......global_config_manager import ConfigManager
+from ......server import Server
 from fastapi import (
     HTTPException,
     Header

@@ -1,6 +1,6 @@
 from enum import StrEnum
-from ....Server import Server
-from ....Data_Manager import UserDataManager
+from ....server import Server
+from ....data_manager import UserDataManager
 
 class UserDataType(StrEnum):
     CONTEXT = "context"

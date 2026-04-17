@@ -1,8 +1,8 @@
-from ......Server import Server
+from ......server import Server
 from fastapi.responses import (
     ORJSONResponse,
 )
-from ......User_Config_Manager import (
+from ......user_config_manager import (
     UserConfigs
 )
 from .._requests import (

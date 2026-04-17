@@ -6,15 +6,15 @@ from typing import Any, Type, Awaitable, Callable, TypeVar
 from pydantic import BaseModel, ValidationError
 from loguru import logger
 
-from TextProcessors import text_content_cutter
+from ....text_processors import text_content_cutter
 from .function import (
     Function
 )
 from .._function_calling_response import CallingRequest
 from .._content_unit import ContentUnit
 from .._content_role import ContentRole
-from ....User_Config_Manager import UserConfigs
-from ....Global_Config_Manager import ConfigManager
+from ....user_config_manager import UserConfigs
+from ....global_config_manager import ConfigManager
 from ._exceptions import JSONDecodeError, ArgumentError
 from ._choice import ToolChoice
 from ._tool_call_package import ToolCallPacakage

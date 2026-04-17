@@ -1,4 +1,4 @@
-from .....Assist_Struct import RequestUserInfo
+from .....assist_struct import RequestUserInfo
 from pydantic import BaseModel, Field
 from typing import Any
 

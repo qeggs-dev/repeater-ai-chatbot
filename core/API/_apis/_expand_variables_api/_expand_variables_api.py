@@ -1,10 +1,10 @@
 import asyncio
 
-from ....Server import Server
+from ....server import Server
 from fastapi.responses import PlainTextResponse
-from ....Text_Template_Processer import TemplateParser
-from ....Global_Config_Manager import ConfigManager as Global_Config_Manager
-from ....User_Config_Manager import ConfigManager
+from ....text_template_processer import TemplateParser
+from ....global_config_manager import ConfigManager as Global_Config_Manager
+from ....user_config_manager import ConfigManager
 from ._requests import ExpandVariableRequest
 from jinja2 import TemplateError
 

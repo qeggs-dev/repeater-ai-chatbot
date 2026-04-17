@@ -1,5 +1,5 @@
 import asyncio
-from .....Server import Server
+from .....server import Server
 from fastapi import (
     HTTPException,
     Header
@@ -8,7 +8,7 @@ from fastapi.responses import (
     ORJSONResponse
 )
 from loguru import logger
-from .....Global_Config_Manager import ConfigManager
+from .....global_config_manager import ConfigManager
 
 @Server.app.post("/admin/blacklist/reload")
 async def reload_blacklist_api(api_key: str = Header(..., alias="X-Admin-API-Key")):

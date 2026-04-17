@@ -1,4 +1,4 @@
-from ...Server import Server
+from ...server import Server
 from ..._info import __version__ as __core_version__
 from fastapi.responses import (
     ORJSONResponse,

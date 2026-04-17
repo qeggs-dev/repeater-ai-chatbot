@@ -1,9 +1,9 @@
 from fastapi.responses import ORJSONResponse
 from pydantic import BaseModel
 
-from .....Server import Server
+from .....server import Server
 from .._user_data_type import UserDataType, get_manager
-from .....Nexus_Client import InvalidUUIDError
+from .....nexus_client import InvalidUUIDError
 from ._upload_model import UploadRequest, UploadResponse
 
 @Server.app.post("/nexus/upload/{user_id}/single/{user_data_type}")

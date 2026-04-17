@@ -1,6 +1,6 @@
 from pydantic import BaseModel, Field
-from .....Context_Manager import ContentRole, ContentUnit
-from .....Assist_Struct import RequestUserInfo, CrossUserDataRouting, AdditionalData
+from .....context_manager import ContentRole, ContentUnit
+from .....assist_struct import RequestUserInfo, CrossUserDataRouting, AdditionalData
 from typing import Any
 
 class ChatRequest(BaseModel):

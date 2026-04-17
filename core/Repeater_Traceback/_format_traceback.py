@@ -8,8 +8,8 @@ from loguru import logger
 from datetime import datetime
 from fastapi.responses import ORJSONResponse
 
-from ..SpecialException import CriticalException, HTTPException
-from ..Global_Config_Manager import ConfigManager
+from ..special_exception import CriticalException, HTTPException
+from ..global_config_manager import ConfigManager
 from ._shutdown_server import shutdown_server
 from ._save_error_traceback import save_error_traceback
 from ._error_output_model import ErrorResponse

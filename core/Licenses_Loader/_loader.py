@@ -4,7 +4,7 @@ from loguru import logger
 from pathlib import Path
 from typing import Generator
 
-from ..Global_Config_Manager import LicensesConfig
+from ..global_config_manager import LicensesConfig
 
 class LicenseLoader:
     """

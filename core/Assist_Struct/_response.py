@@ -1,6 +1,6 @@
 from pydantic import BaseModel, ConfigDict
-from ..Context_Manager import ContentBlock, ContextObject
-from ..Request_Log import RequestLog
+from ..context_manager import ContentBlock, ContextObject
+from ..request_log import RequestLog
 
 class Response(BaseModel):
     model_config = ConfigDict(

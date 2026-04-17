@@ -5,7 +5,7 @@ from loguru import logger
 from datetime import datetime
 from pathlib import Path
 
-from ..Global_Config_Manager import ConfigManager
+from ..global_config_manager import ConfigManager
 from ._get_code import GetCode
 
 class WarningHandler:

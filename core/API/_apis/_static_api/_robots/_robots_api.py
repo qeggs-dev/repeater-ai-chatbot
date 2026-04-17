@@ -1,8 +1,8 @@
-from .....Server import Server
+from .....server import Server
 from fastapi.responses import FileResponse
 from pathlib import Path
 
-from .....Global_Config_Manager import ConfigManager
+from .....global_config_manager import ConfigManager
 
 @Server.app.get("/robots.txt")
 async def robots():

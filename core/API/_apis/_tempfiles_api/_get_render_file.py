@@ -1,10 +1,10 @@
-from ....Server import Server
-from PathProcessors import validate_path
+from ....server import Server
+from ....path_processors import validate_path
 from fastapi import HTTPException
 from fastapi.responses import FileResponse
 from pathlib import Path
 
-from ....Global_Config_Manager import ConfigManager
+from ....global_config_manager import ConfigManager
 
 @Server.app.get("/file/render/{file_uuid}.png", name = "render_file")
 async def get_render_file(file_uuid: str):

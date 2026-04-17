@@ -3,7 +3,7 @@ import logging
 from pathlib import Path
 from loguru import logger
 from ._intercept_handler import InterceptHandler
-from ..Global_Config_Manager import LoggerConfig
+from ..global_config_manager import LoggerConfig
 
 def logger_init(config: LoggerConfig):
     logging.root.handlers = [InterceptHandler()]

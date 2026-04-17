@@ -7,7 +7,7 @@ import datetime
 import numpy as np
 from pathlib import Path
 from loguru import logger
-from ..Global_Config_Manager import ConfigManager
+from ..global_config_manager import ConfigManager
 from typing import List, AsyncIterator, Generator, Iterable
 from ._request_log_object import RequestLog, CallAPILog
 from pydantic import ValidationError

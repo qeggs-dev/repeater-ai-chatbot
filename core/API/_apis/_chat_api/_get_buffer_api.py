@@ -1,8 +1,8 @@
 from fastapi.responses import (
     ORJSONResponse
 )
-from ....SpecialException import HTTPException
-from ....Server import Server
+from ....special_exception import HTTPException
+from ....server import Server
 
 @Server.app.get("/chat/buffer/{user_id}")
 async def get_chat_buffer_api(user_id: str):

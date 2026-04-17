@@ -9,14 +9,14 @@ from yarl import URL
 from httpx import HTTPStatusError
 
 # ==== 自定义库 ==== #
-from ..Assist_Struct import (
+from ..assist_struct import (
     AdditionalData
 )
-from ..Data_Manager import (
+from ..data_manager import (
     PromptManager,
     ContextManager
 )
-from ..User_Config_Manager import (
+from ..user_config_manager import (
     ConfigManager
 )
 from .objects import (
@@ -34,12 +34,12 @@ from .objects import (
     FileDataBlock,
 )
 from ._exceptions import *
-from ..Text_Template_Processer import (
+from ..text_template_processer import (
     TemplateParser
 )
-from PathProcessors import validate_path, sanitize_filename_with_dir
-from ..Global_Config_Manager import ConfigManager as GlobalConfigManager
-from ..Static_Resources_Client import StaticResourcesClient
+from ..path_processors import validate_path, sanitize_filename_with_dir
+from ..global_config_manager import ConfigManager as GlobalConfigManager
+from ..static_resources_client import StaticResourcesClient
 
 # ==== 本模块代码 ==== #
 class ContextLoader:

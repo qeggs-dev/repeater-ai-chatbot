@@ -16,8 +16,8 @@ from .._objects import (
     Request,
     Response,
 )
-from ....Pools.awaitable_pool import CoroutinePool
-from TimeParser import (
+from ....pools.awaitable_pool import CoroutinePool
+from ....time_parser import (
     format_deltatime,
     format_deltatime_ns,
     format_time_duration_ns
@@ -27,7 +27,7 @@ from .._caller import (
     StreamAPI
 )
 from .._exceptions import *
-from ....Status_Map import StatusMap
+from ....status_map import StatusMap
 
 class ClientBase(ABC):
     def __init__(self, max_concurrency: int = 1000):

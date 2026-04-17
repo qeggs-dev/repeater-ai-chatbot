@@ -1,6 +1,6 @@
 import asyncio
 
-from ..Context_Manager import (
+from ..context_manager import (
     Function,
     FunctionCaller,
     CallingRequest,
@@ -9,17 +9,17 @@ from ..Context_Manager import (
     ToolChoice,
     ToolCallPacakage
 )
-from ..CallAPI.CompletionsAPI import (
+from ..call_api.completions_api import (
     StreamClient,
     NoStreamClient,
     Request,
     Response,
     Delta
 )
-from ..TextBuffer import ContentBuffer
-from ..Status_Map import StatusMap
-from ..User_Config_Manager import UserConfigs
-from ..Global_Config_Manager import ConfigManager
+from ..text_buffer import ContentBuffer
+from ..status_map import StatusMap
+from ..user_config_manager import UserConfigs
+from ..global_config_manager import ConfigManager
 from typing import (
     AsyncGenerator,
     ClassVar,

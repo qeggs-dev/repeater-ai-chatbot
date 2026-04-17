@@ -2,9 +2,9 @@ from fastapi.responses import Response
 from fastapi import Request
 from typing import Callable, Awaitable
 
-from ...Server import Server
-from ...Global_Config_Manager import ConfigManager
-from ...Repeater_Traceback import WarningHandler, log_traceback
+from ...server import Server
+from ...global_config_manager import ConfigManager
+from ...repeater_traceback import WarningHandler, log_traceback
 
 # 初始化警告处理器
 warning_handler = WarningHandler()

@@ -1,12 +1,12 @@
 import aiofiles
 
-from ....Server import Server
+from ....server import Server
 from fastapi.responses import FileResponse, PlainTextResponse
 from fastapi import HTTPException, Query
-from PathProcessors import validate_path
+from ....path_processors import validate_path
 from pathlib import Path
 
-from ....Global_Config_Manager import ConfigManager
+from ....global_config_manager import ConfigManager
 
 @Server.app.get("/static/{path:path}")
 async def static_file(path: str, text_encoding: str | None = Query(None)):

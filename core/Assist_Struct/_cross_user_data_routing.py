@@ -1,9 +1,9 @@
 from pydantic import BaseModel, Field, ConfigDict
 from typing import TypeVar, Generic
-from ..User_Config_Manager import (
+from ..user_config_manager import (
     ConfigManager as UserConfigManager
 )
-from ..Global_Config_Manager import (
+from ..global_config_manager import (
     ConfigManager as GlobalConfigManager
 )
 from loguru import logger

@@ -18,7 +18,7 @@ from .._objects import (
 from ._translation_chunk import translation_chunk
 from ._call_api_base import CallStreamAPIBase
 from .._exceptions import *
-from ....Status_Map import StatusMap
+from ....status_map import StatusMap
 from ._client_info import ClientInfo
 
 class StreamAPI(CallStreamAPIBase):

@@ -1,4 +1,4 @@
-from ....Server import Server
+from ....server import Server
 import orjson
 from typing import AsyncIterator
 from fastapi.responses import ORJSONResponse, StreamingResponse

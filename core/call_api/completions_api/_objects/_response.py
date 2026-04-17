@@ -1,6 +1,6 @@
 from pydantic import BaseModel, ConfigDict, Field
-from ....Context_Manager import ContextObject
-from ....Request_Log import RequestLog, TimeStamp
+from ....context_manager import ContextObject
+from ....request_log import RequestLog, TimeStamp
 from ._tokens_count import TokensCount
 from ._finish_reason import FinishReason
 from ._logprob import Logprob

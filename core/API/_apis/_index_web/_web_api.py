@@ -1,8 +1,8 @@
-from ....Server import Server
-from ....Global_Config_Manager import ConfigManager
+from ....server import Server
+from ....global_config_manager import ConfigManager
 from fastapi.responses import FileResponse, ORJSONResponse
 from pathlib import Path
-from PathProcessors import validate_path
+from ....path_processors import validate_path
 
 @Server.app.get("/web/{file_name:path}")
 async def web_file(file_name: str):

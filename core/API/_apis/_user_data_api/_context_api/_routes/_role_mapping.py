@@ -1,5 +1,5 @@
-from ......Server import Server
-from ......Context_Manager import (
+from ......server import Server
+from ......context_manager import (
     ContentRole
 )
 from fastapi.responses import (

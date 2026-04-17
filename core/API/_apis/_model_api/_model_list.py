@@ -1,5 +1,5 @@
-from ....Server import Server
-from ....Model_API import ModelType, ModelsResponse, ExceptionResponse
+from ....server import Server
+from ....model_api import ModelType, ModelsResponse, ExceptionResponse
 from fastapi.responses import ORJSONResponse
 from fastapi import HTTPException
 from ._resources import MODEL_TYPES

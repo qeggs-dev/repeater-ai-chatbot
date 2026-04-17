@@ -1,8 +1,8 @@
 from fastapi.responses import ORJSONResponse
 
-from .....Server import Server
+from .....server import Server
 from .._user_data_type import UserDataType, get_manager
-from .....Nexus_Client import InvalidUUIDError
+from .....nexus_client import InvalidUUIDError
 from ._download_model import DownloadRequest, DownloadResponse
 
 @Server.app.post("/nexus/download/{user_id}/single/{user_data_type}")

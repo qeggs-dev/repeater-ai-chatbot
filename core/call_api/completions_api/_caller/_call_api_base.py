@@ -3,7 +3,7 @@ from typing import overload, Literal, AsyncIterator, TextIO, TypeVar
 from abc import ABC, abstractmethod
 from .._objects import Request, Response, Delta
 from .._exceptions import *
-from ....Status_Map import StatusMap
+from ....status_map import StatusMap
 from ._client_pool import ClientPool
 import openai
 

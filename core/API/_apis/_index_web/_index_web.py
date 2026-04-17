@@ -1,5 +1,5 @@
-from ....Server import Server
-from ....Global_Config_Manager import ConfigManager
+from ....server import Server
+from ....global_config_manager import ConfigManager
 from fastapi.responses import FileResponse, HTMLResponse
 from pathlib import Path
 from ._default_web import DEFAULT_WEB_HTML

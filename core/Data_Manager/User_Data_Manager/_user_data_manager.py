@@ -1,6 +1,6 @@
 
 from ._main_user_data_manager import UserDataManager as UserDataManager
-from ...Global_Config_Manager import ConfigManager, CacheDataConfig
+from ...global_config_manager import ConfigManager, CacheDataConfig
 
 class ContextManager(UserDataManager[list]):
     def __init__(self):

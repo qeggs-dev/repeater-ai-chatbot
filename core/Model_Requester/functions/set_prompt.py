@@ -1,5 +1,5 @@
-from ...Context_Manager import ToolCallPacakage
-from ...Data_Manager import PromptManager
+from ...context_manager import ToolCallPacakage
+from ...data_manager import PromptManager
 from .._caller import ModelRequester
 from pydantic import BaseModel
 

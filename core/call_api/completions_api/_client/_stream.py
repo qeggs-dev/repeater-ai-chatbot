@@ -20,8 +20,8 @@ from .._objects import (
 from .._caller import (
     StreamAPI
 )
-from ....TextBuffer import ContentBuffer
-from ....Status_Map import StatusMap
+from ....text_buffer import ContentBuffer
+from ....status_map import StatusMap
 from .._exceptions import *
 from .._caller import StreamingResponseGenerationLayer
 from ._client import ClientBase

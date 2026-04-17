@@ -4,4 +4,4 @@ from ._user_data_manager import (
     UserConfigManager
 )
 from ._main_user_data_manager import UserDataManager
-from .Sub_Manager import BranchInfo
+from .sub_manager import BranchInfo

@@ -5,8 +5,8 @@ from abc import ABC, abstractmethod
 from typing import ClassVar, TypeVar
 from pydantic import BaseModel, ValidationError
 from .function import CallType
-from ....User_Config_Manager import UserConfigs
-from ....Global_Config_Manager import GlobalConfigs
+from ....user_config_manager import UserConfigs
+from ....global_config_manager import GlobalConfigs
 from loguru import logger
 
 T = TypeVar("T")

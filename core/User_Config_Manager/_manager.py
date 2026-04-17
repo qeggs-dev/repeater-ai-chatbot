@@ -2,10 +2,10 @@ import asyncio
 from typing import Any
 from loguru import logger
 from pydantic import ValidationError
-from ..Data_Manager import UserConfigManager
+from ..data_manager import UserConfigManager
 from ._exceptions import *
 from ._object import UserConfigs
-from ..Global_Config_Manager import ConfigManager as GlobalConfigManager
+from ..global_config_manager import ConfigManager as GlobalConfigManager
 
 class ConfigManager(UserConfigManager):
     # 全局配置缓存

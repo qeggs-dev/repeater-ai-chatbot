@@ -5,18 +5,18 @@ import random
 import secrets
 import numpy as np
 
-from ..Global_Config_Manager import GlobalConfigs
-from ..User_Config_Manager import UserConfigs
-from ..Assist_Struct import RequestUserInfo
+from ..global_config_manager import GlobalConfigs
+from ..user_config_manager import UserConfigs
+from ..assist_struct import RequestUserInfo
 from .._info import __version__
-from ..Model_API import ModelAPI
+from ..model_api import ModelAPI
 from jinja2 import Template
-from TextProcessors import (
+from ..text_processors import (
     escape_string
 )
 from loguru import logger
 from datetime import datetime, timedelta, timezone
-from TimeParser import (
+from ..time_parser import (
     get_timezone_offset,
     calculation_date_countdown,
     format_time_duration,

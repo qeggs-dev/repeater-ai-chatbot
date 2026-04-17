@@ -1,6 +1,6 @@
 import base64
 
-from ...Global_Config_Manager import ConfigManager
+from ...global_config_manager import ConfigManager
     
 def fname_b64_encode(text: str) -> str:
     if ConfigManager.get_configs().user_data.b64_encode_path:

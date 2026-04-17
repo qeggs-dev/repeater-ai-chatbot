@@ -7,7 +7,7 @@ from ._get_code import GetCode
 from pathlib import Path
 from typing import Generator
 from pydantic import ValidationError
-from ..TextBuffer import TextBuffer, IndentedText
+from ..text_buffer import TextBuffer, IndentedText
 
 class TracebackHandler:
     @staticmethod

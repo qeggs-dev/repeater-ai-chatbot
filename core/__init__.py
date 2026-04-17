@@ -5,4 +5,4 @@ from ._info import (
     __license__,
     __copyright__,
 )
-from .Server import Server
+from .server import Server
