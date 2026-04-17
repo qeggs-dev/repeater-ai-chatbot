@@ -1,4 +1,4 @@
-from ..text_processors import format_carry_duration
+from ..text import format_carry_duration
 
 NS_TIME_LEVELS: list[tuple[str, str, int]] = [
     ("nanosecond", "ns", 1000),
