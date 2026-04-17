@@ -1,5 +1,4 @@
-from ..._server import Server
-from .._info import __version__ as __api_version__
+from ...Server import Server
 from ..._info import __version__ as __core_version__
 from fastapi.responses import (
     ORJSONResponse,
@@ -7,8 +6,7 @@ from fastapi.responses import (
 )
 
 versions = {
-    "core": __core_version__,
-    "api": __api_version__
+    "core": __core_version__
 }
 
 @Server.app.get("/version")

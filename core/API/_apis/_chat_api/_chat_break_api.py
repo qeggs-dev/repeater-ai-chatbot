@@ -1,7 +1,7 @@
 from fastapi.responses import (
     ORJSONResponse
 )
-from ...._server import Server
+from ....Server import Server
 
 @Server.app.post("/chat/break/{user_id}")
 async def chat_break_api(user_id: str):

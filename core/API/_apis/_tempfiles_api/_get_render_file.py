@@ -1,4 +1,4 @@
-from ...._server import Server
+from ....Server import Server
 from PathProcessors import validate_path
 from fastapi import HTTPException
 from fastapi.responses import FileResponse

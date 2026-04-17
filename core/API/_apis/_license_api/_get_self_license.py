@@ -1,4 +1,4 @@
-from ...._server import Server
+from ....Server import Server
 from fastapi.responses import ORJSONResponse
 
 @Server.app.get("/license/self")
