@@ -1,7 +1,7 @@
-from ._cache_data import Cache_Data_Config
+from ._cache_data import CacheDataConfig
 from ._user_data import UserDataConfig
 
 __all__ = [
-    "Cache_Data_Config",
+    "CacheDataConfig",
     "UserDataConfig",
 ]

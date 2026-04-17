@@ -8,7 +8,7 @@ from ._objects import (
     Request,
     TokensCount,
     Response,
-    Top_Logprob,
+    TopLogprob,
     FinishReason,
     Logprob,
     Delta
@@ -31,7 +31,7 @@ __all__ = [
     "Request",
     "TokensCount",
     "Response",
-    "Top_Logprob",
+    "TopLogprob",
     "FinishReason",
     "Logprob",
     "Delta",

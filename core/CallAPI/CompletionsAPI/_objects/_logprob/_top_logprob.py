@@ -1,6 +1,6 @@
 from pydantic import BaseModel, ConfigDict
 
-class Top_Logprob(BaseModel):
+class TopLogprob(BaseModel):
     model_config = ConfigDict(
         validate_assignment = True
     )

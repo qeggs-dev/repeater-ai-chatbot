@@ -1,6 +1,6 @@
 from pydantic import BaseModel, ConfigDict
 
-class Repeater_Traceback_Config(BaseModel):
+class RepeaterTracebackConfig(BaseModel):
     model_config = ConfigDict(case_sensitive=False)
 
     enable: bool = True

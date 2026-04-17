@@ -22,7 +22,7 @@ from .._requests import (
     RenderRequest
 )
 from .._responses import (
-    Render_Response,
+    RenderResponse,
     RenderTime
 )
 from .....SpecialException import HTTPException
@@ -151,7 +151,7 @@ async def render(
     end_of_render = time.perf_counter_ns()
 
     return ORJSONResponse(
-        Render_Response(
+        RenderResponse(
             image_url = fileurl,
             file_uuid = result.file_uuid,
             style = style_name,

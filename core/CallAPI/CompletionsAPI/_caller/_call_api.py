@@ -12,7 +12,7 @@ from .._objects import (
     Request,
     Response,
     ToolCall,
-    Top_Logprob,
+    TopLogprob,
     Logprob,
     TokensCount,
     FinishReason
@@ -180,7 +180,7 @@ class CallAPI(CallNstreamAPIBase):
                         if hasattr(token, "top_logprob"):
                             top_logprobs = []
                             for top_token in token.top_logprob:
-                                top_logprob = Top_Logprob()
+                                top_logprob = TopLogprob()
                                 if hasattr(top_token, "token"):
                                     top_logprob.token = top_token.token
                                 if hasattr(top_token, "logprob"):

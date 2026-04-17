@@ -1,12 +1,12 @@
 from pydantic import BaseModel, Field
 from .....Context_Manager import ContentRole, ContentUnit
-from .....Assist_Struct import Request_User_Info, CrossUserDataRouting, AdditionalData
+from .....Assist_Struct import RequestUserInfo, CrossUserDataRouting, AdditionalData
 from typing import Any
 
 class ChatRequest(BaseModel):
     message: str | None = ""
     history_messages: list[ContentUnit] | None = None
-    user_info: Request_User_Info = Field(default_factory=Request_User_Info)
+    user_info: RequestUserInfo = Field(default_factory=RequestUserInfo)
     role: ContentRole = ContentRole.USER
     assistant_role: ContentRole = ContentRole.ASSISTANT
     history_msg_role_map: dict[ContentRole, ContentRole | None] | None = None

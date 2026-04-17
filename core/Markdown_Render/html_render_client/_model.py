@@ -10,7 +10,7 @@ class RenderTime(BaseModel):
     render: int | None = None
 
 
-class Render_Response(BaseModel):
+class RenderResponse(BaseModel):
     model_config = ConfigDict(
         validate_assignment=True
     )

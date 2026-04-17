@@ -7,7 +7,7 @@ import numpy as np
 
 from ..Global_Config_Manager import GlobalConfigs
 from ..User_Config_Manager import UserConfigs
-from ..Assist_Struct import Request_User_Info
+from ..Assist_Struct import RequestUserInfo
 from .._info import __version__
 from ..Model_API import ModelAPI
 from jinja2 import Template
@@ -32,7 +32,7 @@ class TemplateParser:
     def __init__(
             self,
             model: ModelAPI = ModelAPI(),
-            user_info: Request_User_Info = Request_User_Info(),
+            user_info: RequestUserInfo = RequestUserInfo(),
             global_config: GlobalConfigs = GlobalConfigs(),
             user_config: UserConfigs = UserConfigs(),
         ):

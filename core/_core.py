@@ -47,7 +47,7 @@ from RegexChecker import RegexChecker
 from .Global_Config_Manager import ConfigManager
 from .Assist_Struct import (
     Response as RepeaterResponse,
-    Request_User_Info,
+    RequestUserInfo,
     CrossUserDataRouting,
     AdditionalData
 )
@@ -148,7 +148,7 @@ class Core:
     # endregion
     
     # region > nickname mapping
-    async def nickname_mapping(self, user_id: str, user_info: Request_User_Info) -> Request_User_Info:
+    async def nickname_mapping(self, user_id: str, user_info: RequestUserInfo) -> RequestUserInfo:
         """
         用户昵称映射
 
@@ -337,7 +337,7 @@ class Core:
             user_id: str,
             api: ModelAPI,
             user_input: ContentUnit | None,
-            user_info: Request_User_Info,
+            user_info: RequestUserInfo,
             role_name: str | None = None
         ) -> None:
         logger.info(
@@ -432,7 +432,7 @@ class Core:
             user_id: str,
             history_messages: list[ContentUnit] | None = None,
             history_msg_role_map: dict[ContentRole, ContentRole | None] | None = None,
-            user_info: Request_User_Info = Request_User_Info(),
+            user_info: RequestUserInfo = RequestUserInfo(),
             role: ContentRole = ContentRole.USER,
             assistant_role: ContentRole = ContentRole.ASSISTANT,
             role_name:  str = "",

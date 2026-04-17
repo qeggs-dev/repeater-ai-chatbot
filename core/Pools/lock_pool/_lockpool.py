@@ -17,7 +17,7 @@ class LockPool(Generic[T_KEY]):
                 logger.trace(f"LockPool: Get lock for {repr(key)}")
                 return self.locks[key]
             
-            class Packaged_Lock(threading.Lock):
+            class PackagedLock(threading.Lock):
                 def _increase_reference_counting(inner_self):
                     if key not in self._reference_count:
                         if key not in self.locks:
@@ -57,7 +57,7 @@ class LockPool(Generic[T_KEY]):
                         logger.warning(f"LockPool: Failed to release lock for {repr(key)}: {e}")
                         raise
             
-            lock = Packaged_Lock()
+            lock = PackagedLock()
             self.locks[key] = lock
             logger.trace(f"LockPool: Created lock for {repr(key)}")
             return lock

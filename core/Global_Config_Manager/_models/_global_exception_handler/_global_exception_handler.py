@@ -1,7 +1,7 @@
 from signal import Signals
 from pydantic import BaseModel, ConfigDict, Field, field_validator
-from ._code_reader import Code_Reader_Config
-from ._repeater_traceback import Repeater_Traceback_Config
+from ._code_reader import CodeReaderConfig
+from ._repeater_traceback import RepeaterTracebackConfig
 
 class GlobalExceptionHandlerConfig(BaseModel):
     model_config = ConfigDict(case_sensitive=False)
@@ -12,5 +12,5 @@ class GlobalExceptionHandlerConfig(BaseModel):
     traceback_save_to: str | None = None
     record_all_exceptions: bool = False
     error_output_include_traceback: bool = False
-    repeater_traceback: Repeater_Traceback_Config = Field(default_factory=Repeater_Traceback_Config)
-    code_reader: Code_Reader_Config = Field(default_factory=Code_Reader_Config)
+    repeater_traceback: RepeaterTracebackConfig = Field(default_factory=RepeaterTracebackConfig)
+    code_reader: CodeReaderConfig = Field(default_factory=CodeReaderConfig)

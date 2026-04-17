@@ -1,7 +1,7 @@
 from pydantic import BaseModel, ConfigDict, field_validator, Field
 from zoneinfo import ZoneInfo, available_timezones
 
-class Time_Config(BaseModel):
+class TimeConfig(BaseModel):
     model_config = ConfigDict(case_sensitive=False)
 
     timezone: str | float = "UTC"

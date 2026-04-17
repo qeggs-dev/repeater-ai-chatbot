@@ -1,5 +1,5 @@
 from pydantic import BaseModel, ConfigDict, Field
-from ._cache_data import Cache_Data_Config
+from ._cache_data import CacheDataConfig
 from ._metadata_fields import MetadataFields
 
 class UserDataConfig(BaseModel):
@@ -11,7 +11,7 @@ class UserDataConfig(BaseModel):
     b64_encode_path: bool = True
     snapshot_directory_name: str = "snapshots"
     metadata_file_name: str = "metadata.json"
-    cache_medadata: bool | Cache_Data_Config = False
-    cache_data: bool | Cache_Data_Config = False
+    cache_medadata: bool | CacheDataConfig = False
+    cache_data: bool | CacheDataConfig = False
     cross_user_data_access: bool = False
     metadata_fields:MetadataFields = Field(default_factory=MetadataFields)

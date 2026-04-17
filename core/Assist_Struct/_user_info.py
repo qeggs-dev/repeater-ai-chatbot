@@ -1,6 +1,6 @@
 from pydantic import BaseModel, ConfigDict
 
-class Request_User_Info(BaseModel):
+class RequestUserInfo(BaseModel):
     model_config = ConfigDict(
         validate_assignment=True,
     )

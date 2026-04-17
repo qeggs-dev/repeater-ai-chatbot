@@ -5,7 +5,7 @@ import signal
 import os
 
 from ..SpecialException import CriticalException
-from .._server import Server
+from ..Server import Server
 
 async def shutdown_server(exception: CriticalException | None = None) -> None:
     wait_time: float = 0.0

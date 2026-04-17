@@ -1,6 +1,6 @@
 from pydantic import BaseModel, ConfigDict, Field
 
-class Code_Reader_Config(BaseModel):
+class CodeReaderConfig(BaseModel):
     model_config = ConfigDict(case_sensitive=False)
 
     enable: bool = True

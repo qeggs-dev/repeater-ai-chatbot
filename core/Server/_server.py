@@ -51,7 +51,7 @@ class Server:
     licenses: ClassVar[LicenseLoader | None] = None
     _instance: ClassVar[Server | None] = None
 
-    class _Initializing_Timer:
+    class _InitializingTimer:
         def __init__(
             self,
             name: str,
@@ -105,7 +105,7 @@ class Server:
     
     @classmethod
     def init_core(cls):
-        with cls._Initializing_Timer("Core"):
+        with cls._InitializingTimer("Core"):
             cls.core = Core()
     
     @classmethod
@@ -118,19 +118,19 @@ class Server:
 
     @classmethod
     def init_admin_key_manager(cls):
-        with cls._Initializing_Timer("Admin Key Manager"):
+        with cls._InitializingTimer("Admin Key Manager"):
             # 生成或读取API Key
             cls.admin_key_manager = AdminKeyManager()
     
     @classmethod
     def init_licenses_data(cls):
-        with cls._Initializing_Timer("Licenses Data"):
+        with cls._InitializingTimer("Licenses Data"):
             cls.licenses = LicenseLoader(ConfigManager.get_configs().licenses)
             cls.licenses.scan_licenses()
     
     @classmethod
     def init_nexus_client(cls):
-        with cls._Initializing_Timer("Nexus Client"):
+        with cls._InitializingTimer("Nexus Client"):
             cls.nexus_client = NexusClient(
                 base_url = ConfigManager.get_configs().nexus.base_url,
                 request_timeout = ConfigManager.get_configs().nexus.api_timeout,
@@ -138,7 +138,7 @@ class Server:
 
     @classmethod
     def init_html_render_client(cls):
-        with cls._Initializing_Timer("HTML Render Client"):
+        with cls._InitializingTimer("HTML Render Client"):
             # 渲染配置
             render_config = ConfigManager.get_configs().render
             cls.html_render_client = HTMLRenderClient(

@@ -1,1 +1,1 @@
-from ._model import Render_Response, RenderTime
+from ._model import RenderResponse, RenderTime

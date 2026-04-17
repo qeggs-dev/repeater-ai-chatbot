@@ -1,6 +1,6 @@
 
 from ._main_user_data_manager import UserDataManager as UserDataManager
-from ...Global_Config_Manager import ConfigManager, Cache_Data_Config
+from ...Global_Config_Manager import ConfigManager, CacheDataConfig
 
 class ContextManager(UserDataManager[list]):
     def __init__(self):
@@ -8,12 +8,12 @@ class ContextManager(UserDataManager[list]):
             "Context_UserData",
             cache_metadata = (
                 ConfigManager.get_configs().user_data.cache_medadata.context
-                if isinstance(ConfigManager.get_configs().user_data.cache_medadata, Cache_Data_Config)
+                if isinstance(ConfigManager.get_configs().user_data.cache_medadata, CacheDataConfig)
                 else ConfigManager.get_configs().user_data.cache_medadata
             ),
             cache_data = (
                 ConfigManager.get_configs().user_data.cache_data.context
-                if isinstance(ConfigManager.get_configs().user_data.cache_data, Cache_Data_Config)
+                if isinstance(ConfigManager.get_configs().user_data.cache_data, CacheDataConfig)
                 else ConfigManager.get_configs().user_data.cache_data
             ),
             branches_dir_name = ConfigManager.get_configs().user_data.branches_dir_name,
@@ -26,12 +26,12 @@ class PromptManager(UserDataManager[str]):
             "Prompt_UserData",
             cache_metadata = (
                 ConfigManager.get_configs().user_data.cache_medadata.prompt
-                if isinstance(ConfigManager.get_configs().user_data.cache_medadata, Cache_Data_Config)
+                if isinstance(ConfigManager.get_configs().user_data.cache_medadata, CacheDataConfig)
                 else ConfigManager.get_configs().user_data.cache_medadata
             ),
             cache_data = (
                 ConfigManager.get_configs().user_data.cache_data.prompt
-                if isinstance(ConfigManager.get_configs().user_data.cache_data, Cache_Data_Config)
+                if isinstance(ConfigManager.get_configs().user_data.cache_data, CacheDataConfig)
                 else ConfigManager.get_configs().user_data.cache_data
             ),
             branches_dir_name = ConfigManager.get_configs().user_data.branches_dir_name,
@@ -44,12 +44,12 @@ class UserConfigManager(UserDataManager[dict]):
             "UserConfig_UserData",
             cache_metadata = (
                 ConfigManager.get_configs().user_data.cache_medadata.config
-                if isinstance(ConfigManager.get_configs().user_data.cache_medadata, Cache_Data_Config)
+                if isinstance(ConfigManager.get_configs().user_data.cache_medadata, CacheDataConfig)
                 else ConfigManager.get_configs().user_data.cache_medadata
             ),
             cache_data = (
                 ConfigManager.get_configs().user_data.cache_data.config
-                if isinstance(ConfigManager.get_configs().user_data.cache_data, Cache_Data_Config)
+                if isinstance(ConfigManager.get_configs().user_data.cache_data, CacheDataConfig)
                 else ConfigManager.get_configs().user_data.cache_data
             ),
             branches_dir_name = ConfigManager.get_configs().user_data.branches_dir_name,
