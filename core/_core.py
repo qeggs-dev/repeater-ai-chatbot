@@ -43,7 +43,7 @@ from .user_config_manager import (
 from .pools.lock_pool import AsyncLockPool
 from .pools.resource_pool import ResourcePool
 from .text_buffer import ContentBuffer
-from .regex_checker import RegexChecker
+from .auxiliary.regex_checker import RegexChecker
 from .global_config_manager import ConfigManager
 from .assist_struct import (
     Response as RepeaterResponse,

@@ -11,7 +11,7 @@ import orjson
 import aiofiles
 
 # ==== 项目库 ==== #
-from ....path_processors import validate_path, sanitize_filename
+from ....auxiliary.path import validate_path, sanitize_filename
 from ....pools.lock_pool import AsyncLockPool
 from .._fname_b64_encoder import fname_b64_encode, fname_b64_decode
 from ....global_config_manager import ConfigManager

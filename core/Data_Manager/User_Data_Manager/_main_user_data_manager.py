@@ -9,7 +9,7 @@ from loguru import logger
 
 # ==== 自定义库 ==== #
 from .sub_manager import SubManager, BranchInfo
-from ...path_processors import validate_path, sanitize_filename
+from ...auxiliary.path import validate_path, sanitize_filename
 from ._fname_b64_encoder import fname_b64_encode, fname_b64_decode
 from ...global_config_manager import ConfigManager
 

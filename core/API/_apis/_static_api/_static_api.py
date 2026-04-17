@@ -3,7 +3,7 @@ import aiofiles
 from ....server import Server
 from fastapi.responses import FileResponse, PlainTextResponse
 from fastapi import HTTPException, Query
-from ....path_processors import validate_path
+from ....auxiliary.path import validate_path
 from pathlib import Path
 
 from ....global_config_manager import ConfigManager

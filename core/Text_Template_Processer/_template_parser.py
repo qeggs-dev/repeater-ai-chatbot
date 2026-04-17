@@ -11,12 +11,12 @@ from ..assist_struct import RequestUserInfo
 from .._info import __version__
 from ..model_api import ModelAPI
 from jinja2 import Template
-from ..text_processors import (
+from ..auxiliary.text import (
     escape_string
 )
 from loguru import logger
 from datetime import datetime, timedelta, timezone
-from ..time_parser import (
+from ..auxiliary.time import (
     get_timezone_offset,
     calculation_date_countdown,
     format_time_duration,

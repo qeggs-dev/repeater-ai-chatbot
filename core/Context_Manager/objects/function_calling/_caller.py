@@ -6,7 +6,7 @@ from typing import Any, Type, Awaitable, Callable, TypeVar
 from pydantic import BaseModel, ValidationError
 from loguru import logger
 
-from ....text_processors import text_content_cutter
+from ....auxiliary.text import text_content_cutter
 from .function import (
     Function
 )

@@ -1,6 +1,6 @@
 from __future__ import annotations
 from pydantic import BaseModel, Field, ConfigDict
-from ...text_processors import text_content_cutter
+from ...auxiliary.text import text_content_cutter
 from .._exceptions import *
 from ._content_role import ContentRole
 from ._content_block import (

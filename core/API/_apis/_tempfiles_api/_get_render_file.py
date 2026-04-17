@@ -1,5 +1,5 @@
 from ....server import Server
-from ....path_processors import validate_path
+from ....auxiliary.path import validate_path
 from fastapi import HTTPException
 from fastapi.responses import FileResponse
 from pathlib import Path

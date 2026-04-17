@@ -18,7 +18,7 @@ from fastapi import FastAPI
 
 # ==== 自定义库 ==== #
 from ..admin_api_key_manager import AdminKeyManager
-from ..regex_checker import RegexChecker
+from ..auxiliary.regex_checker import RegexChecker
 from .._core import Core
 from ..global_config_manager import ConfigManager
 from ..pools.awaitable_pool import TaskPool

@@ -17,7 +17,7 @@ from .._objects import (
     Response,
 )
 from ....pools.awaitable_pool import CoroutinePool
-from ....time_parser import (
+from ....auxiliary.time import (
     format_deltatime,
     format_deltatime_ns,
     format_time_duration_ns
