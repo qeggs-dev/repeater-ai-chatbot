@@ -11,7 +11,7 @@ from ....special_exception import (
 )
 from ....server import Server
 from ....assist_struct import Response
-from ....callapi import CompletionsAPI
+from ....call_api.completions_api import Delta
 
 from ._requests import (
     ChatRequest
@@ -62,7 +62,7 @@ async def chat_endpoint(
             status_code=response.status
         )
     else:
-        async def generator_wrapper(context: AsyncIterator[CompletionsAPI.Delta]) -> AsyncIterator[bytes]:
+        async def generator_wrapper(context: AsyncIterator[Delta]) -> AsyncIterator[bytes]:
             async for chunk in context:
                 yield orjson.dumps(chunk.model_dump(exclude_none=True)) + b"\n"
 
