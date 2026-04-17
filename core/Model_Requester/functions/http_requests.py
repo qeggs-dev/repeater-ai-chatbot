@@ -1,14 +1,17 @@
+from __future__ import annotations
 import json
 import httpx
+import socket
+import asyncio
+import ipaddress
 from ...Context_Manager import ToolCallPacakage, CallType
-from ...Global_Config_Manager import HTTPMethods
+from ...Global_Config_Manager import HTTPMethods, ConfigManager
 from .._caller import ModelRequester
-from typing import Any
+from typing import Any, Self
 from pydantic import BaseModel, Field
 
 @ModelRequester.reg_global_package
 class HTTPRequests(ToolCallPacakage):
-    client = httpx.AsyncClient()
     class Params(BaseModel):
         method: HTTPMethods = Field(HTTPMethods.GET, description="The HTTP method to use for the request.")
         url: str = Field("", description="The target URL of the request.")
@@ -28,9 +31,78 @@ class HTTPRequests(ToolCallPacakage):
         cookies: dict | None = None
         data: Any = None
     
+    class PublicIPOnlyTransport(httpx.AsyncHTTPTransport):
+        class AddrInfo(BaseModel):
+            family: socket.AddressFamily
+            type: socket.SocketKind
+            proto: int
+            canonname: str
+            host: str
+            port: int
+            flowinfo: int = 0
+            scope_id: int = 0
+            
+            @classmethod
+            def from_addr(cls, addr: tuple) -> Self:
+                family, type, proto, canonname, sockaddr = addr
+                
+                data = {
+                    "family": family,
+                    "type": type,
+                    "proto": proto,
+                    "canonname": canonname,
+                    "host": sockaddr[0],
+                    "port": sockaddr[1],
+                }
+                
+                if len(sockaddr) == 4:
+                    data["flowinfo"] = sockaddr[2]
+                    data["scope_id"] = sockaddr[3]
+                
+                return cls(**data)
+            
+            def to_ip_address(self) -> ipaddress.IPv4Address | ipaddress.IPv6Address:
+                return ipaddress.ip_address(self.host)
+            
+            @property
+            def is_ipv6(self) -> bool:
+                return self.family == socket.AF_INET6
+            
+            @property
+            def address_tuple(self) -> tuple[str, int] | tuple[str, int, int, int]:
+                if self.is_ipv6:
+                    return (self.host, self.port, self.flowinfo, self.scope_id)
+                return (self.host, self.port)
+        
+        async def handle_async_request(self, request: httpx.Request) -> httpx.Response:
+            if not ConfigManager.get_configs().tool_calls.allow_private_network_requests:
+                host = request.url.host
+                port = request.url.port
+
+                try:
+                    ip = ipaddress.ip_address(host)
+                    if ip.is_private:
+                        raise httpx.TransportError("Private network requests are not allowed")
+                except ValueError:
+                    # is not an ip address
+                    # try to DNS resolve
+                    loop = asyncio.get_event_loop()
+                    addrs: list[tuple[socket.AddressFamily, socket.SocketKind, int, str, tuple[str, int] | tuple[str, int, int, int]]] = await loop.getaddrinfo(
+                        host,
+                        port,
+                        type = socket.SOCK_STREAM
+                    )
+                    for addr in addrs:
+                        addr_info = self.AddrInfo.from_addr(addr)
+                        if addr_info.to_ip_address().is_private:
+                            raise httpx.TransportError("Private network requests are not allowed")
+                
+            return await super().handle_async_request(request)
+    
     name = "http_requests"
     call_type = CallType.ASYNC
     json_result = True
+    client = httpx.AsyncClient(transport = PublicIPOnlyTransport())
 
     def document(self):
         return "send a any method HTTP request to a URL and return the response."
@@ -64,7 +136,7 @@ class HTTPRequests(ToolCallPacakage):
                 follow_redirects = args.follow_redirects,
                 timeout = args.timeout_seconds,
             )
-        except httpx.Timeout:
+        except httpx.TimeoutException as e:
             return self.Result(
                 reason = "Timeout",
             )
