@@ -1,4 +1,4 @@
-from .._server import Server
+from ..._server import Server
 from fastapi.responses import PlainTextResponse
 
 @Server.app.get("/alived")

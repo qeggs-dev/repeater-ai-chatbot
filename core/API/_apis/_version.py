@@ -1,4 +1,4 @@
-from .._server import Server
+from ..._server import Server
 from .._info import __version__ as __api_version__
 from ..._info import __version__ as __core_version__
 from fastapi.responses import (

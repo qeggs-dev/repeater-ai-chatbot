@@ -1,7 +1,7 @@
 from fastapi.responses import (
     ORJSONResponse
 )
-from ...._server import Server
+from ....._server import Server
 from ._models import TasksIDResponse, UserInfo
 
 @Server.app.get("/chat/alived_users")

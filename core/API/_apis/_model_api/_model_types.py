@@ -1,4 +1,4 @@
-from ..._server import Server
+from ...._server import Server
 from ....Model_API import ModelType
 from fastapi.responses import ORJSONResponse
 from ._resources import MODEL_TYPES

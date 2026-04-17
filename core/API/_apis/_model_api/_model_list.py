@@ -1,4 +1,4 @@
-from ..._server import Server
+from ...._server import Server
 from ....Model_API import ModelType, ModelsResponse, ExceptionResponse
 from fastapi.responses import ORJSONResponse
 from fastapi import HTTPException

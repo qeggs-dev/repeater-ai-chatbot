@@ -2,7 +2,7 @@ from fastapi.responses import Response
 from fastapi import Request
 from typing import Callable, Awaitable
 
-from .._server import Server
+from ..._server import Server
 from ...Global_Config_Manager import ConfigManager
 from ...Repeater_Traceback import WarningHandler, log_traceback
 

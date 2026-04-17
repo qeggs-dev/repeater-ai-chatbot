@@ -19,15 +19,15 @@ from fastapi import FastAPI
 # ==== 自定义库 ==== #
 from AdminApikeyManager import AdminKeyManager
 from RegexChecker import RegexChecker
-from .._core import Core
-from ..Global_Config_Manager import ConfigManager
-from ..Pools.awaitable_pool import TaskPool
-from ..Markdown_Render import HTMLRenderClient
-from ..Logger_Init import logger_init
-from ._lifespan import lifespan
-from ._info import __version__
-from ..Licenses_Loader import LicenseLoader
-from ..Nexus_Client import NexusClient
+from ._core import Core
+from .Global_Config_Manager import ConfigManager
+from .Pools.awaitable_pool import TaskPool
+from .Markdown_Render import HTMLRenderClient
+from .Logger_Init import logger_init
+from .API._lifespan import lifespan
+from .API._info import __version__
+from .Licenses_Loader import LicenseLoader
+from .Nexus_Client import NexusClient
 from loguru import logger
 
 class Server:

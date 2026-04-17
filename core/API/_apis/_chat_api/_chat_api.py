@@ -9,7 +9,7 @@ from fastapi.responses import (
 from ....SpecialException import (
     HTTPException
 )
-from ..._server import Server
+from ...._server import Server
 from ....Assist_Struct import Response
 from ....CallAPI import CompletionsAPI
 
