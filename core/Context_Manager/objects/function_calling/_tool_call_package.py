@@ -7,7 +7,6 @@ from pydantic import BaseModel, ValidationError
 from .function import CallType
 from ....User_Config_Manager import UserConfigs
 from ....Global_Config_Manager import GlobalConfigs
-from ....Repeater_Traceback import log_traceback
 from loguru import logger
 
 T = TypeVar("T")
@@ -49,7 +48,6 @@ class ToolCallPacakage(ABC):
         """
         This method is called when an error occurs during the execution of the tool.
         """
-        log_traceback(error)
         return f"Could not call tool {self.name}: {error}"
     
     async def on_args_validation_error(self, error: ValidationError) -> T | None:
