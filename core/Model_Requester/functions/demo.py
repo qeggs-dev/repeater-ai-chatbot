@@ -8,6 +8,7 @@ class Demo(ToolCallPacakage):
     class Params(BaseModel):
         name: str
         data: str
+        raise_error: bool = False
     
     name = "demo"
     enabled = False # Debug Only
@@ -16,4 +17,6 @@ class Demo(ToolCallPacakage):
         return "Demo Tool"
 
     def call(self, args: Params):
+        if args.raise_error:
+            raise ValueError("Demo Error")
         return f"Hello {args.name}, your data is {args.data}"
