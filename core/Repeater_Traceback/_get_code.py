@@ -1,8 +1,8 @@
 import aiofiles
 
 from os import PathLike, get_terminal_size
-from ...Global_Config_Manager import ConfigManager
-from ...TextBuffer import TextBuffer
+from ..Global_Config_Manager import ConfigManager
+from ..TextBuffer import TextBuffer
 
 class GetCode:
     def __init__(

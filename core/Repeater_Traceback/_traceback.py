@@ -3,13 +3,13 @@ import sys
 import json
 import traceback
 
-from .._get_code import GetCode
+from ._get_code import GetCode
 from pathlib import Path
 from typing import Generator
 from pydantic import ValidationError
-from ....TextBuffer import TextBuffer, IndentedText
+from ..TextBuffer import TextBuffer, IndentedText
 
-class RepeaterTraceback:
+class TracebackHandler:
     @staticmethod
     def is_library_code(filename: str | os.PathLike):
         if not filename:

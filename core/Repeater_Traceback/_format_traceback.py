@@ -8,14 +8,14 @@ from loguru import logger
 from datetime import datetime
 from fastapi.responses import ORJSONResponse
 
-from ....SpecialException import CriticalException, HTTPException
-from ....Global_Config_Manager import ConfigManager
-from .._shutdown_server import shutdown_server
-from .._save_error_traceback import save_error_traceback
-from .._error_output_model import ErrorResponse
-from ._traceback import RepeaterTraceback
+from ..SpecialException import CriticalException, HTTPException
+from ..Global_Config_Manager import ConfigManager
+from ._shutdown_server import shutdown_server
+from ._save_error_traceback import save_error_traceback
+from ._error_output_model import ErrorResponse
+from ._traceback import TracebackHandler
 
-async def exception_handler(error: BaseException) -> ORJSONResponse:
+async def log_traceback(error: BaseException) -> ORJSONResponse:
     error_time = time.time_ns()
 
     error_code = 500
@@ -23,20 +23,11 @@ async def exception_handler(error: BaseException) -> ORJSONResponse:
     extra_data = None
 
     # 判断是否为特殊Exception
-    if isinstance(error, CriticalException):
-        is_critical_exception: bool = True
-    else:
-        is_critical_exception: bool = False
-    
-    if isinstance(error, HTTPException):
-        error_code = error.status_code
-        extra_data = error.detail
-        is_http_exception: bool = True
-    else:
-        is_http_exception: bool = False
+    is_critical_exception: bool = isinstance(error, CriticalException)
+    is_http_exception: bool = isinstance(error, HTTPException)
 
     if ConfigManager.get_configs().global_exception_handler.repeater_traceback.enable:
-        repeater_traceback = RepeaterTraceback()
+        repeater_traceback = TracebackHandler()
         traceback_str = await repeater_traceback.format_traceback(
             time.strftime(
                 ConfigManager.get_configs().global_exception_handler.repeater_traceback.timeformat,
@@ -125,6 +116,6 @@ async def exception_handler(error: BaseException) -> ORJSONResponse:
         error_response.exception_traceback = traceback_str
 
     return ORJSONResponse(
-        status_code=error_response.error_code,
-        content=error_response.model_dump(exclude_none=True)
+        status_code = error_response.error_code,
+        content = error_response.model_dump(exclude_none=True)
     )

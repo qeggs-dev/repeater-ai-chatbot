@@ -2,7 +2,7 @@ import aiofiles
 from pathlib import Path
 from datetime import datetime
 
-from ...Global_Config_Manager import ConfigManager
+from ..Global_Config_Manager import ConfigManager
 
 async def save_error_traceback(time: datetime, traceback_str: str):
     """
