@@ -140,6 +140,12 @@ class ModelRequester:
             while True:
                 try:
                     generated_times += 1
+                    logger.info(
+                        "Generate Times: {now}/{max}",
+                        user_id = user_id,
+                        now = generated_times,
+                        max = max_generated_times
+                    )
                     if stream:
                         async def send_chunk(delta: Delta):
                             await self._stream_chunk_queue.put(delta)
