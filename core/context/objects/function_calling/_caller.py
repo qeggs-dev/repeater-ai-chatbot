@@ -73,6 +73,8 @@ class FunctionCaller:
     
     def register_packages(self, user_id: str, packages: list[Type[ToolCallPacakage]], user_configs: UserConfigs, *args, **kwargs):
         for package in packages:
+            if not issubclass(package, ToolCallPacakage):
+                raise ValueError("Package must be a subclass of ToolCallPacakage")
             package_instance = package(
                 user_id = user_id,
                 user_configs = user_configs,
