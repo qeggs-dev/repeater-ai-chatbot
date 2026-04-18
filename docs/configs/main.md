@@ -388,6 +388,9 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
         // 否则模型将无法找到它们
         "registed": [],
 
+        // 所有用户默认允许 Tool Calls
+        "allow_by_default": false,
+
         // Tool Calls 结果最大长度（用于日志）
         // 设置为 null 则不限制长度
         "result_max_length_for_logs": 100,
@@ -396,7 +399,11 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
         // 设置为 null 则所有方法不可用
         // 设置为 "ALL" 则所有方法可用
         // 可以指定仅能的方法，比如 ["GET", "POST"]
-        "allowed_http_methods": null
+        "allowed_http_methods": null,
+
+        // 是否允许对私有网络进行 HTTP 请求
+        // 包括局域网与回环
+        "allow_private_network_requests": false
     },
 
     // Prompt 配置
