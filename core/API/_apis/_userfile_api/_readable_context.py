@@ -1,8 +1,8 @@
 from ....context import (
-    ContextObject
+    Context
 )
 
-def readable_context(context: ContextObject) -> str:
+def readable_context(context: Context) -> str:
     text_buffer: list[str] = []
     text_buffer.append("======== Context  ========")
     for item in context.context_list:

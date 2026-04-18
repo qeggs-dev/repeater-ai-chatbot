@@ -1,6 +1,6 @@
 from ......server import Server
 from ......context import (
-    ContextObject
+    Context
 )
 from fastapi import Form
 from fastapi.responses import (
@@ -24,7 +24,7 @@ async def withdraw_context(user_id: str, context_pair_num: int = Form(1, gt=0), 
     # 从context_loader中加载用户ID为user_id的上下文
     context_loader = await Server.core.get_context_loader()
     context = await context_loader.load_context(user_id)
-    pop_items: list[ContextObject] = []
+    pop_items: list[Context] = []
 
     if paired:
         try:
@@ -35,7 +35,7 @@ async def withdraw_context(user_id: str, context_pair_num: int = Form(1, gt=0), 
         except (ValueError, IndexError) as e:
             raise HTTPException(400, str(e)) from e
         
-        pop_context = ContextObject()
+        pop_context = Context()
         for item in pop_items[::-1]:
             pop_context.context_list.extend(
                 item.context_list
@@ -53,8 +53,8 @@ async def withdraw_context(user_id: str, context_pair_num: int = Form(1, gt=0), 
         {
             "status": "success",
             "deleted": len(pop_context),
-            "deleted_context": pop_context.context,
+            "deleted_context": pop_context.to_context(),
             "delete_context_pair": len(pop_items),
-            "context": context.context,
+            "context": context.to_context(),
         }
     )

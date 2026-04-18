@@ -1,7 +1,7 @@
 import asyncio
 from ....server import Server
 from ....context import (
-    ContextObject
+    Context
 )
 from fastapi import (
     HTTPException

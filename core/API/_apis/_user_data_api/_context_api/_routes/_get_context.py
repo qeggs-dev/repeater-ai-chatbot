@@ -22,4 +22,4 @@ async def get_context(user_id: str):
     logger.info(f"Get Context", user_id = user_id)
 
     # 返回JSON格式的上下文
-    return ORJSONResponse(context.context)
+    return ORJSONResponse(context.to_context())

@@ -29,6 +29,6 @@ async def inject_context(user_id: str, request: ContentUnit):
     return ORJSONResponse(
         {
             "status": "success",
-            "context": context.context
+            "context": context.to_context()
         }
     )

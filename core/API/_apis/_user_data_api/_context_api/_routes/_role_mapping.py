@@ -28,6 +28,6 @@ async def role_mapping(user_id: str, role_map: dict[ContentRole, ContentRole | N
     return ORJSONResponse(
         {
             "status": "success",
-            "context": context.context
+            "context": context.to_context()
         }
     )
