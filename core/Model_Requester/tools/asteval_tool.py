@@ -10,9 +10,7 @@ class Asteval(ToolCallPacakage):
         expression: str
     
     name = "asteval"
-
-    def document(self):
-        return "Assist in the execution of mathematical calculations."
+    document = "Assist in the execution of mathematical calculations."
 
     def call(self, args: Params):
         aeval = Interpreter()

@@ -12,9 +12,7 @@ class Demo(ToolCallPacakage):
     
     name = "demo"
     enabled = False # Debug Only
-
-    def document(self):
-        return "Demo Tool"
+    document = "Demo Tool"
 
     def call(self, args: Params):
         if args.raise_error:

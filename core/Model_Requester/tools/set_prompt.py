@@ -10,9 +10,7 @@ class SetPrompt(ToolCallPacakage):
 
     prompt_manager: PromptManager = PromptManager()
     name = "set_prompt"
-
-    def document(self):
-        return "Overrides the current system prompt."
+    document = "Overrides the current system prompt."
 
     def call(self, args: Params):
         self.prompt_manager.save(args.prompt)

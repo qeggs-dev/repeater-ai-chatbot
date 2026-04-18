@@ -41,9 +41,7 @@ class Metaso(ToolCallPacakage):
             "Content-Type": "application/json"
         }
     )
-
-    def document(self):
-        return "AI Network Search API"
+    document = "AI Network Search API"
 
     async def call(self, args: Params):
         response = await self.client.post(

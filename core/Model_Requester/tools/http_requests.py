@@ -103,9 +103,7 @@ class HTTPRequests(ToolCallPacakage):
     call_type = CallType.ASYNC
     json_result = True
     client = httpx.AsyncClient(transport = PublicIPOnlyTransport())
-
-    def document(self):
-        return "send a any method HTTP request to a URL and return the response."
+    document = "send a any method HTTP request to a URL and return the response."
     
     def validation_method(self, method: HTTPMethods) -> bool:
         allowed_http_methods = self.global_configs.tool_calls.allowed_http_methods
