@@ -776,9 +776,12 @@ class Core:
                             request.stream = ConfigManager.get_configs().model.stream
                             request.stream_options.include_obfuscation = ConfigManager.get_configs().callapi.include_obfuscation
                             request.stream_options.include_usage = ConfigManager.get_configs().callapi.include_usage
+                            
                             allow_tool_calls = ConfigManager.get_configs().tool_calls.enabled
                             if allow_tool_calls:
                                 allow_tool_calls = configs.allow_tool_calls
+                                if allow_tool_calls is None:
+                                    allow_tool_calls = ConfigManager.get_configs().tool_calls.allow_by_default
                         # endregion
 
                         # region [Pre-filled output]
