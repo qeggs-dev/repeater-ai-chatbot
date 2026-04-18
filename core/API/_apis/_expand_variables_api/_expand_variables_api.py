@@ -2,7 +2,7 @@ import asyncio
 
 from ....server import Server
 from fastapi.responses import PlainTextResponse
-from ....text_template_processer import TemplateParser
+from ....template_render import TemplateParser
 from ....global_config_manager import ConfigManager as Global_Config_Manager
 from ....user_config_manager import ConfigManager
 from ._requests import ExpandVariableRequest
