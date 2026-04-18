@@ -2,6 +2,7 @@ import orjson
 import asyncio
 import inspect
 
+from datetime import datetime
 from typing import Any, Type, Awaitable, Callable, TypeVar
 from pydantic import BaseModel, ValidationError
 from loguru import logger
@@ -148,6 +149,14 @@ class FunctionCaller:
         
         return results_list
     
+    def _create_tool_content_unit(self, tool_call_id: str, content: str) -> ContentUnit:
+        return ContentUnit(
+            role = ContentRole.TOOL,
+            tool_call_id = tool_call_id,
+            created = datetime.now(),
+            content = content
+        )
+    
     async def call_function(self, user_id: str, calling_request: CallingRequest) -> ContentUnit:
         function = self._functions[calling_request.function.name]
         parameters = function.parameters
@@ -156,8 +165,7 @@ class FunctionCaller:
                 arguments = parameters(**orjson.loads(calling_request.function.arguments))
             except orjson.JSONDecodeError as error:
                 if function.on_args_json_decode_error:
-                    return ContentUnit(
-                        role = ContentRole.TOOL,
+                    return self._create_tool_content_unit(
                         tool_call_id = calling_request.id,
                         content = await self._any_call(
                             function.on_args_json_decode_error,
@@ -168,8 +176,7 @@ class FunctionCaller:
                     raise JSONDecodeError(f"Invalid JSON: {error}") from error
             except ValidationError as error:
                 if function.on_args_validation_error:
-                    return ContentUnit(
-                        role = ContentRole.TOOL,
+                    return self._create_tool_content_unit(
                         tool_call_id = calling_request.id,
                         content = await self._any_call(
                             function.on_args_validation_error,
@@ -235,8 +242,7 @@ class FunctionCaller:
             result = text_content_cutter(result, ConfigManager.get_configs().tool_calls.result_max_length_for_logs)
         )
         
-        return ContentUnit(
-            role = ContentRole.TOOL,
+        return self._create_tool_content_unit(
             tool_call_id = calling_request.id,
             content = result
         )

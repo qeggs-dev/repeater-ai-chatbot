@@ -1,6 +1,7 @@
 import sys
 import asyncio
 
+from datetime import datetime
 from typing import AsyncGenerator, Self, TextIO
 from ._objects import Request, Delta, ToolCall, Response
 from ...request_log import RequestLog
@@ -113,7 +114,9 @@ class StreamingResponseGenerationLayer:
         self.response.tool_calls = list(self.tool_calls.values())
 
         # 添加上下文
-        self.model_response_content_unit:ContentUnit = ContentUnit()
+        self.model_response_content_unit:ContentUnit = ContentUnit(
+            created = datetime.now(),
+        )
         self.model_response_content_unit.role = self.request.output_role
         if self._content_buffer.reasoning_buffer:
             self.model_response_content_unit.reasoning_content = str(self._content_buffer.reasoning_buffer)

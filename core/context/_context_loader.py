@@ -1,6 +1,7 @@
 # ==== 标准库 ==== #
 import asyncio
 import orjson
+from datetime import datetime
 from typing import Any
 
 # ==== 第三方库 ==== #
@@ -56,7 +57,9 @@ class ContextLoader:
     @property
     @staticmethod
     def empty_content() -> ContentUnit:
-        return ContentUnit()
+        return ContentUnit(
+            created = datetime.now(),
+        )
     
     async def load_prompt(
             self,
@@ -208,7 +211,9 @@ class ContextLoader:
         :param extra_template_fields: Fields to expand in the template
         :param template_parser: Template Parser
         """
-        content = ContentUnit()
+        content = ContentUnit(
+            created = datetime.now(),
+        )
         if template_parser is not None:
             if enable_user_input_template:
                 new_message = await self._expand_variables(

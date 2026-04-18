@@ -1,5 +1,5 @@
 # ==== 标准库 ==== #
-from typing import Literal
+from datetime import datetime
 
 # ==== 第三方库 ==== #
 import openai
@@ -103,7 +103,9 @@ class CallAPI(CallNstreamAPIBase):
 
         with status_map.enter(user_id, "Processing Response"):
             # 创建响应内容单元
-            model_response_content_unit:ContentUnit = ContentUnit()
+            model_response_content_unit:ContentUnit = ContentUnit(
+                created = datetime.now(),
+            )
             # 设置角色
             model_response_content_unit.role = request.output_role
             # chunk计数

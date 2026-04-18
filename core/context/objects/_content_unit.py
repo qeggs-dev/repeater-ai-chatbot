@@ -30,7 +30,7 @@ class ContentUnit(BaseModel):
     role: ContentRole = ContentRole.USER
     role_name: str |  None = None
     prefix: bool | None = None
-    created: datetime = Field(default_factory = datetime.now)
+    created: datetime | None = None
     tool_calls: list[CallingRequest] | None = None
     tool_call_id: str | None = None
 

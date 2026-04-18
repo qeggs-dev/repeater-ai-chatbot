@@ -1,10 +1,12 @@
 from __future__ import annotations
 from pydantic import BaseModel, Field, ConfigDict
+from datetime import datetime
 from typing import overload, Iterable, Any
 from copy import deepcopy
 from .._exceptions import *
 from ._content_role import ContentRole
 from ._content_unit import ContentUnit
+from ._content_block import ContentBlock
 
 
 class ContextObject(BaseModel):
@@ -305,9 +307,10 @@ class ContextObject(BaseModel):
     def append_content(
         self,
         reasoning_content:str = "",
-        content: str = "",
+        content: str | list[ContentBlock] = "",
         role: ContentRole = ContentRole.USER,
         role_name: str |  None = None,
+        created: datetime | None = None,
         is_prefix: bool | None = None,
         tool_call_id: str = "",
     ):
@@ -328,6 +331,7 @@ class ContextObject(BaseModel):
                 content = content,
                 role = role,
                 role_name = role_name,
+                created = created,
                 prefix = is_prefix,
                 tool_call_id = tool_call_id,
             )
