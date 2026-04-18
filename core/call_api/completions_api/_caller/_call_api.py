@@ -93,7 +93,10 @@ class CallAPI(CallNstreamAPIBase):
                 max_completion_tokens=request.max_completion_tokens,
                 stop = request.stop,
                 stream = False,
-                messages = request.context.to_full_context(remove_reasoning_prompt = request.remove_reasoning_prompt),
+                messages = request.context.to_context(
+                    with_prompt = True,
+                    remove_reasoning_prompt = request.remove_reasoning_prompt
+                ),
                 tools = request.tools,
                 tool_choice = request.tool_choice,
                 stream_options = request.stream_options.model_dump(),
@@ -103,9 +106,7 @@ class CallAPI(CallNstreamAPIBase):
 
         with status_map.enter(user_id, "Processing Response"):
             # 创建响应内容单元
-            model_response_content_unit:ContentUnit = ContentUnit(
-                created = datetime.now(),
-            )
+            model_response_content_unit:ContentUnit = ContentUnit()
             # 设置角色
             model_response_content_unit.role = request.output_role
             # chunk计数

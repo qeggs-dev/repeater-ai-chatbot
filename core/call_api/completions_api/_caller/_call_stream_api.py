@@ -75,7 +75,10 @@ class StreamAPI(CallStreamAPIBase):
                 max_completion_tokens=request.max_completion_tokens,
                 stop = request.stop,
                 stream = True,
-                messages = request.context.to_full_context(remove_reasoning_prompt = request.remove_reasoning_prompt),
+                messages = request.context.to_context(
+                    with_prompt = True,
+                    remove_reasoning_prompt = request.remove_reasoning_prompt,
+                ),
                 tools = request.tools,
                 tool_choice = request.tool_choice,
                 stream_options=request.stream_options.model_dump(),
