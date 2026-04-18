@@ -1,6 +1,6 @@
 from ._content_role import ContentRole
 from ._content_unit import ContentUnit
-from ._object import ContextObject
+from ._context import Context
 from ._content_block import (
     ContentBlockType,
     ContentBlock,

@@ -9,7 +9,7 @@ from ._content_unit import ContentUnit
 from ._content_block import ContentBlock
 
 
-class ContextObject(BaseModel):
+class Context(BaseModel):
     """
     上下文对象
     """
@@ -29,7 +29,7 @@ class ContextObject(BaseModel):
         ...
 
     @overload
-    def __getitem__(self, index: slice) -> ContextObject:
+    def __getitem__(self, index: slice) -> Context:
         ...
     
     def __getitem__(self, index: int | slice):
@@ -42,7 +42,7 @@ class ContextObject(BaseModel):
         if isinstance(index, int):
             return self.context_list[index]
         elif isinstance(index, slice):
-            return ContextObject(
+            return Context(
                 prompt=self.prompt,
                 context_list=self.context_list[index]
             )
@@ -142,19 +142,41 @@ class ContextObject(BaseModel):
             return 0
         return self.total_length / len(self)
 
-    def to_context(self, remove_reasoning_prompt: bool = False, reduce_to_text: bool = False) -> list[dict]:
+    def to_context(
+            self,
+            with_prompt: bool = False,
+            remove_reasoning_prompt: bool = False,
+            remove_created: bool = False,
+            reduce_to_text: bool = False,
+        ) -> list[dict]:
         """
         获取上下文
 
+        :param with_prompt: 是否包含提示词
         :param remove_reasoner_prompt: 是否移除reasoner提示词
+        :param remove_created: 是否移除创建时间戳
         :param reduce_to_text: 是否将上下文内容退化为纯文本
         """
         context_list = []
+        if with_prompt and self.prompt:
+            if reduce_to_text:
+                self.prompt.reduce_to_text()
+            context_list.append(
+                self.prompt.to_content(
+                    remove_reasoning_prompt = remove_reasoning_prompt,
+                    remove_created = remove_created
+                )
+            )
         if self.context_list:
             for content in self.context_list:
                 if reduce_to_text:
                     content.reduce_to_text()
-                context_list.append(content.to_content(remove_reasoning_prompt))
+                context_list.append(
+                    content.to_content(
+                        remove_reasoning_prompt,
+                        remove_created
+                    )
+                )
         return context_list
     
     @property
@@ -162,29 +184,12 @@ class ContextObject(BaseModel):
         """
         获取上下文
         """
-        return self.to_context(False, False)
-    
-    def to_full_context(self, remove_reasoning_prompt: bool = False, reduce_to_text: bool = False) -> list[dict]:
-        """
-        获取上下文，如果有提示词，则添加到最前面
-
-        :param remove_reasoner_prompt: 是否移除reasoner提示词
-        :param reduce_to_text: 是否将上下文内容退化为纯文本
-        """
-        context_list: list[dict[str, Any]] = []
-        if self.prompt:
-            if reduce_to_text:
-                self.prompt.reduce_to_text()
-            context_list.append(self.prompt.to_content(remove_reasoning_prompt))
-        context_list.extend(self.to_context(remove_reasoning_prompt, reduce_to_text))
-        return context_list
-    
-    @property
-    def full_context(self) -> list[dict]:
-        """
-        获取上下文，如果有提示词，则添加到最前面
-        """
-        return self.to_full_context(False, False)
+        return self.to_context(
+            with_prompt = False,
+            remove_reasoner_prompt = False,
+            remove_created = True,
+            reduce_to_text = False
+        )
     
     def withdraw(self, length: int | None = None):
         """
@@ -198,7 +203,7 @@ class ContextObject(BaseModel):
             
             # 安全检查
             if not self.context_list:
-                return ContextObject()
+                return Context()
             try:
                 # 第一步：pop 直到不是用户消息
                 while (self.context_list and 
@@ -217,7 +222,7 @@ class ContextObject(BaseModel):
             except IndexError:
                 pass
             
-            return ContextObject(
+            return Context(
                 prompt = None,
                 context_list = pop_items[::-1],
             )
@@ -293,11 +298,11 @@ class ContextObject(BaseModel):
         """
         self.context_list.append(content)
     
-    def extend(self, content: ContextObject | list[ContentUnit]) -> None:
+    def extend(self, content: Context | list[ContentUnit]) -> None:
         """
         扩展上下文单元
         """
-        if isinstance(content, ContextObject):
+        if isinstance(content, Context):
             self.context_list.extend(content.context_list)
         elif isinstance(content, list):
             self.context_list.extend(content)
@@ -419,28 +424,28 @@ class ContextObject(BaseModel):
             else:
                 raise IndexOutOfRangeError(f"Role {ensure_role_at_top} not found in context_list")
     
-    def copy(self) -> ContextObject:
+    def copy(self) -> Context:
         """
         复制对象
         :return: 复制后的对象
         """
-        return ContextObject(
+        return Context(
             prompt = self.prompt,
             context_list = self.context_list.copy(),
         )
     
-    def deepcopy(self) -> ContextObject:
+    def deepcopy(self) -> Context:
         """
         深度复制对象
         :return: 深度复制后的对象
         """
-        return ContextObject(
+        return Context(
             prompt = deepcopy(self.prompt),
             context_list = deepcopy(self.context_list),
         )
     
     @classmethod
-    def from_context(cls, context: list[dict[str, Any]]) -> ContextObject:
+    def from_context(cls, context: list[dict[str, Any]]) -> Context:
         """
         从上下文列表构建对象
         
@@ -459,7 +464,7 @@ class ContextObject(BaseModel):
             context_obj.context_list.append(ContentUnit(**content))
         return context_obj
     
-    def remove_reasoning_content(self) -> ContextObject:
+    def remove_reasoning_content(self) -> Context:
         """
         移除推理内容
         :return: 移除推理内容后的对象
@@ -473,7 +478,7 @@ class ContextObject(BaseModel):
             else:
                 context_list.append(content)
 
-        return ContextObject(
+        return Context(
             prompt = self.prompt,
             context_list = context_list,
         )

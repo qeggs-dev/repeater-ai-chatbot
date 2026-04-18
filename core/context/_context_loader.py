@@ -21,7 +21,7 @@ from ..user_config_manager import (
     ConfigManager
 )
 from .objects import (
-    ContextObject,
+    Context,
     ContentUnit,
     ContentRole,
     TextBlock,
@@ -57,9 +57,7 @@ class ContextLoader:
     @property
     @staticmethod
     def empty_content() -> ContentUnit:
-        return ContentUnit(
-            created = datetime.now(),
-        )
+        return ContentUnit()
     
     async def load_prompt(
             self,
@@ -132,7 +130,7 @@ class ContextLoader:
     async def load_context(
             self,
             user_id: str
-        ) -> ContextObject:
+        ) -> Context:
         """
         加载上下文
 
@@ -148,7 +146,7 @@ class ContextLoader:
         except orjson.JSONDecodeError:
             raise ContextLoadingSyntaxError(f"Context File Syntax Error: {user_id}")
         # 构建上下文对象
-        context = ContextObject.from_context(context_data)
+        context = Context.from_context(context_data)
 
         logger.info(f"Load Context: {len(context)}", user_id = user_id)
         return context
@@ -160,7 +158,7 @@ class ContextLoader:
             temporary_prompt: str | None = None,
             load_prompt: bool = True,
             template_parser: TemplateParser | None = None,
-        ) -> ContextObject:
+        ) -> Context:
         """
         加载整个上下文
 
@@ -179,7 +177,7 @@ class ContextLoader:
                 temporary_prompt = temporary_prompt
             )
         else:
-            prompt = ContextObject()
+            prompt = Context()
         
         context = await self.load_context(
             user_id=user_id
@@ -211,9 +209,7 @@ class ContextLoader:
         :param extra_template_fields: Fields to expand in the template
         :param template_parser: Template Parser
         """
-        content = ContentUnit(
-            created = datetime.now(),
-        )
+        content = ContentUnit()
         if template_parser is not None:
             if enable_user_input_template:
                 new_message = await self._expand_variables(
@@ -357,7 +353,7 @@ class ContextLoader:
     async def save(
             self,
             user_id: str,
-            context: ContextObject,
+            context: Context,
             reduce_to_text:bool = False
         ) -> None:
         """

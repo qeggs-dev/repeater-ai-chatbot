@@ -153,7 +153,6 @@ class FunctionCaller:
         return ContentUnit(
             role = ContentRole.TOOL,
             tool_call_id = tool_call_id,
-            created = datetime.now(),
             content = content
         )
     

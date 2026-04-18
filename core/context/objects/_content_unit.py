@@ -30,7 +30,7 @@ class ContentUnit(BaseModel):
     role: ContentRole = ContentRole.USER
     role_name: str |  None = None
     prefix: bool | None = None
-    created: datetime | None = None
+    created: datetime = Field(default_factory=datetime.now)
     tool_calls: list[CallingRequest] | None = None
     tool_call_id: str | None = None
 
@@ -79,9 +79,20 @@ class ContentUnit(BaseModel):
                     text_buffer.push(block.text)
             return str(text_buffer)
  
-    def to_content(self, remove_reasoning_prompt: bool = False) -> dict[str, Any]:
+    def to_content(
+            self,
+            remove_reasoning_prompt: bool = False,
+            remove_created: bool = False
+        ) -> dict[str, Any]:
+        exclude: set[str] = set()
+        
         if remove_reasoning_prompt:
-            return self.model_dump(exclude = {"reasoning_content"})
+            exclude.add("reasoning_content")
+        if remove_created:
+            exclude.add("created")
+        
+        if exclude:
+            return self.model_dump(exclude = exclude)
         return self.model_dump()
     
     def __bool__(self) -> bool:
