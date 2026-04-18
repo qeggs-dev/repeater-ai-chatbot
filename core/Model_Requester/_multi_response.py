@@ -1,11 +1,11 @@
 from typing import Generator
 from ..request_log import RequestLog
 from ..call_api.completions_api import Request, Response
-from ..context import ContextObject, ContentUnit
+from ..context import Context, ContentUnit
 from pydantic import BaseModel, Field
 
 class MultiResponse(BaseModel):
-    historical_context: ContextObject = Field(default_factory=ContextObject)
+    historical_context: Context = Field(default_factory=Context)
     responses: list[Response] = Field(default_factory=list)
     tool_requests: list[list[ContentUnit]] = Field(default_factory=list)
 
@@ -19,7 +19,7 @@ class MultiResponse(BaseModel):
         self.responses.append(response)
 
     def new_contexts(self):
-        context = ContextObject()
+        context = Context()
         for index, response in enumerate(self.responses):
             context.extend(response.new_context)
             if index < len(self.tool_requests):

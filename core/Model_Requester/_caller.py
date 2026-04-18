@@ -4,7 +4,7 @@ from ..context import (
     Function,
     FunctionCaller,
     CallingRequest,
-    ContextObject,
+    Context,
     ContentUnit,
     ToolChoice,
     ToolCallPacakage
@@ -108,7 +108,7 @@ class ModelRequester:
                 request.context.extend(response.new_context)
                 request.context.extend(results)
             else:
-                request.context = ContextObject(
+                request.context = Context(
                     context_list = results
                 )
             if request.thinking:
