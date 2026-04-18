@@ -36,6 +36,7 @@ class Request(BaseModel):
     echo: bool = False
     suffix: str | None = None
     remove_reasoning_prompt: bool = True
+    remove_created: bool = True
     logprobs: bool = False
     top_logprobs: int | None = None
     print_chunk: bool = True

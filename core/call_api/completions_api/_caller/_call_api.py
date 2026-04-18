@@ -95,7 +95,8 @@ class CallAPI(CallNstreamAPIBase):
                 stream = False,
                 messages = request.context.to_context(
                     with_prompt = True,
-                    remove_reasoning_prompt = request.remove_reasoning_prompt
+                    remove_reasoning_prompt = request.remove_reasoning_prompt,
+                    remove_created = request.remove_created,
                 ),
                 tools = request.tools,
                 tool_choice = request.tool_choice,
