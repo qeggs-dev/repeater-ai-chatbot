@@ -1,5 +1,5 @@
 from pydantic import BaseModel, ConfigDict
-from ..context import ContentBlock, ContextObject
+from ..context import ContentBlock, Context
 from ..request_log import RequestLog
 
 class Response(BaseModel):
@@ -7,7 +7,7 @@ class Response(BaseModel):
         validate_assignment=True
     )
 
-    context: ContextObject | None = None
+    context: Context | None = None
     user_raw_input: str | None = None
     user_input: str | list[ContentBlock] | None = None
     model_group: str | None = None
