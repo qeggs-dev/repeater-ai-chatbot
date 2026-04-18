@@ -82,6 +82,17 @@ class Context(BaseModel):
         for content in self.context_list:
             yield content
     
+    def __reversed__(self):
+        """
+        反向迭代上下文列表
+
+        :return: 上下文列表的反向迭代器
+        """
+        for content in reversed(self.context_list):
+            yield content
+        if self.prompt:
+            yield self.prompt
+    
     def update_from_context(self, context: list[dict]) -> None:
         """
         从上下文列表更新上下文
@@ -482,3 +493,15 @@ class Context(BaseModel):
             prompt = self.prompt,
             context_list = context_list,
         )
+    
+    def time_range(self, begin: int | float, end: int | float) -> Context:
+        context = Context()
+
+        if begin <= self.prompt.created.timestamp() <= end:
+            context.prompt = self.prompt
+        
+        for content in self.context_list:
+            if begin <= content.created.timestamp() <= end:
+                context.append(content)
+
+        return context
