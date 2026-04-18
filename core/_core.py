@@ -65,7 +65,7 @@ from .request_log import (
     TimeStamp,
     RequestLogManager
 )
-from .text_template_processer import (
+from .template_render import (
     TemplateParser
 )
 from .status_map import StatusMap
