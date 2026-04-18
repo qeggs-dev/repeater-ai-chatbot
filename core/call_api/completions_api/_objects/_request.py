@@ -7,7 +7,7 @@ from ....context import (
 )
 from ....context.objects.function_calling import FunctionCaller
 
-from ....context import ContextObject
+from ....context import Context
 
 class Request(BaseModel):
     """
@@ -31,7 +31,7 @@ class Request(BaseModel):
     stream: bool = False
     thinking: bool | None = None
     stop: list[str] | None = None
-    context: ContextObject | None = None
+    context: Context | None = None
     prompt: str | None = None
     echo: bool = False
     suffix: str | None = None

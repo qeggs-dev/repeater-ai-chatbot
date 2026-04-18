@@ -1,5 +1,5 @@
 from pydantic import BaseModel, ConfigDict, Field
-from ....context import ContextObject
+from ....context import Context
 from ....request_log import RequestLog, TimeStamp
 from ._tokens_count import TokensCount
 from ._finish_reason import FinishReason
@@ -16,8 +16,8 @@ class Response(BaseModel):
 
     id: str = ""
     user_id: str = ""
-    historical_context: ContextObject = Field(default_factory=ContextObject)
-    new_context: ContextObject = Field(default_factory=ContextObject)
+    historical_context: Context = Field(default_factory=Context)
+    new_context: Context = Field(default_factory=Context)
     created: int = 0
     model: str = ""
     token_usage: TokensCount | None = None
