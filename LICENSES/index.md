@@ -25,3 +25,4 @@ This project includes the following third-party software components, licensed un
 - [Tzdata](./tzdata/index.md)
 - [Yarl](./yarl/index.md)
 - [Bleach](./bleach/index.md)
+- [Asteval](./asteval/index.md)
