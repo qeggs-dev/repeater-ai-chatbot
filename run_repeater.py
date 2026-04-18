@@ -37,6 +37,9 @@ def main(run_server: bool | None = None):
         "Load Configs Time: {load_configs_time:.2f}ms",
         load_configs_time = (end_load_configs_time - start_load_configs_time) / 1e6
     )
+    
+    logger.info(f"Run With Python {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}")
+    logger.info(f"Core Version: {core_version}")
 
     start_init_resource_time = time.perf_counter_ns()
     Server.init_all()
@@ -81,9 +84,6 @@ def main(run_server: bool | None = None):
     
     if reload:
         logger.info("Server will reload on code change")
-    
-    logger.info(f"Run With Python {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}")
-    logger.info(f"Core Version: {core_version}")
     
     Server.init_server(
         host = host,
