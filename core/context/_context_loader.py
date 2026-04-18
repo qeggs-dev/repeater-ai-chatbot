@@ -35,7 +35,7 @@ from .objects import (
     FileDataBlock,
 )
 from ._exceptions import *
-from ..text_template_processer import (
+from ..template_render import (
     TemplateParser
 )
 from ..auxiliary.path import validate_path, sanitize_filename_with_dir

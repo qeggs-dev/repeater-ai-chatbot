@@ -88,7 +88,7 @@ class FunctionCaller:
                 parameters = package_instance.Params
             function = Function(
                 name = package_instance.name,
-                description = package_instance.document(),
+                description = package_instance.document_method(),
                 enabled = package_instance.enabled,
                 force_choice = package_instance.force_choice,
                 callable = package_instance.call,

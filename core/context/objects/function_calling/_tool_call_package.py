@@ -23,6 +23,7 @@ class ToolCallPacakage(ABC):
 
     name: ClassVar[str] = ""
     enabled: ClassVar[bool] = True
+    document: ClassVar[str] = ""
     force_choice: ClassVar[bool] = False
     json_result: ClassVar[bool] = False
     call_type: ClassVar[CallType] = CallType.SYNC
@@ -34,11 +35,11 @@ class ToolCallPacakage(ABC):
         self.extra_positional_args = args
         self.extra_keyword_args = kwargs
 
-    def document(self) -> str:
+    def document_method(self) -> str:
         """
         Override the method to customize more complex description rules.
         """
-        return self.__doc__
+        return self.document or self.__doc__
 
     @abstractmethod
     def call(self, args: Params) -> T:
