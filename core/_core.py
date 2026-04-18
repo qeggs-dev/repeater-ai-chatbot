@@ -32,7 +32,7 @@ from .data_manager import (
 from .context import (
     ContextLoader,
     ContentRole,
-    ContextObject,
+    Context,
     ContentUnit,
     TextBlock,
 )
@@ -218,7 +218,7 @@ class Core:
             load_prompt: bool = True,
             cross_user_data_routing: CrossUserDataRouting[str] | None = None,
             template_parser: TemplateParser | None = None
-        ) -> ContextObject:
+        ) -> Context:
         """
         获取上下文
 
@@ -239,11 +239,11 @@ class Core:
         prompt_load_source = cross_user_data_routing.prompt.load_from_user_id
         
         if history_messages is None:
-            context: ContextObject = await context_loader.load_context(
+            context: Context = await context_loader.load_context(
                 user_id = context_load_source
             )
         else:
-            context: ContextObject = ContextObject(
+            context: Context = Context(
                 context_list = history_messages,
             )
 
@@ -624,7 +624,7 @@ class Core:
                                     else:
                                         load_prompt = configs.load_prompt
                                 
-                                submit_context: ContextObject = await self.get_context(
+                                submit_context: Context = await self.get_context(
                                     context_loader = context_loader,
                                     history_messages = history_messages,
                                     temporary_prompt = temporary_prompt,
@@ -973,7 +973,7 @@ class Core:
                 # 保存上下文
                 if save_context:
                     if save_new_only:
-                        saved_context: ContextObject = ContextObject()
+                        saved_context: Context = Context()
                         if user_input is not None:
                             saved_context.append(user_input)
                         if new_context:
