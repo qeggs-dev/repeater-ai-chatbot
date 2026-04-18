@@ -5,6 +5,7 @@ from fastapi.responses import (
 from loguru import logger
 
 @Server.app.get("/userdata/prompt/get/{user_id}")
+@Server.app.get("/userdata/prompt/get/{user_id}.md")
 async def get_prompt(user_id: str):
     """
     Endpoint for setting prompt

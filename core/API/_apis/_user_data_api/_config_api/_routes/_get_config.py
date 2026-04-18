@@ -5,6 +5,7 @@ from fastapi.responses import (
 from loguru import logger
 
 @Server.app.get("/userdata/config/get/{user_id}")
+@Server.app.get("/userdata/config/get/{user_id}.json")
 async def get_config(user_id: str):
     """
     Endpoint for get config
