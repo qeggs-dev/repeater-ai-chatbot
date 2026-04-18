@@ -3,6 +3,7 @@
 从当前用户获取提示词内容
 
 - **`/userdata/prompt/get/{user_id:str}`**
+- **`/userdata/prompt/get/{user_id:str}.md`**
   - **Requset**
     - **method:** `GET`
   - **Response**
