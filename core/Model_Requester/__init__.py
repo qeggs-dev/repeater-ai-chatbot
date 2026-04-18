@@ -1,6 +1,6 @@
 from ._caller import ModelRequester
 from ._multi_response import MultiResponse
-from .functions import *
+from .tools import *
 
 __all__ = [
     "ModelRequester",
