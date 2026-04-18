@@ -4,7 +4,7 @@ import asyncio
 from typing import AsyncGenerator, Self, TextIO
 from ._objects import Request, Delta, ToolCall, Response
 from ...request_log import RequestLog
-from ...context_manager import ContentUnit, ContentRole
+from ...context import ContentUnit, ContentRole
 from ...request_log import TimeStamp
 from ...global_config_manager import ConfigManager
 from ...logger_init import config_to_log_level, LogLevel
@@ -209,10 +209,17 @@ class StreamingResponseGenerationLayer:
                 if self.request.print_chunk:
                     if not self._content_buffer.tool_calls_arguments_buffer:
                         self._print_file.write("\n\n")
-                    if self._print_chunk:
+                        if tool_call.name:
+                            self._print_file.write(f"\033[104m[Call Tool] {tool_call.name}:\n\033[0m")
+                    elif self._print_chunk:
                         self._print_file.write(f"\033[104m{tool_call.arguments}\033[0m")
                         self._print_file.flush()
-                    logger.trace("Received Tool_Call[{index}] chunk: {tool_call}", user_id = self.user_id, index = index, tool_call = repr(tool_call))
+                    logger.trace(
+                        "Received Tool_Call[{index}] chunk: {tool_call}",
+                        user_id = self.user_id,
+                        index = index,
+                        tool_call = repr(tool_call)
+                    )
                 if index not in self.tool_calls:
                     self.tool_calls[index] = ToolCall()
                 if tool_call.id:

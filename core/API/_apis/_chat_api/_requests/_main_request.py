@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from .....context_manager import ContentRole, ContentUnit
+from .....context import ContentRole, ContentUnit
 from .....assist_struct import RequestUserInfo, CrossUserDataRouting, AdditionalData
 from typing import Any
 

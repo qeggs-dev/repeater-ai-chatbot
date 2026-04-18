@@ -29,7 +29,7 @@ from .data_manager import (
     ContextManager,
     PromptManager
 )
-from .context_manager import (
+from .context import (
     ContextLoader,
     ContentRole,
     ContextObject,

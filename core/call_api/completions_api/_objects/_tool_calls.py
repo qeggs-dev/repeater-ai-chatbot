@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from ....context_manager import CallingRequest, SpecifiedFunction
+from ....context import CallingRequest, SpecifiedFunction
 
 class ToolCall(BaseModel):
     """

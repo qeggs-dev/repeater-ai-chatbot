@@ -4,7 +4,7 @@ import httpx
 import socket
 import asyncio
 import ipaddress
-from ...context_manager import ToolCallPacakage, CallType
+from ...context import ToolCallPacakage, CallType
 from ...global_config_manager import HTTPMethods, ConfigManager
 from .._caller import ModelRequester
 from typing import Any, Self

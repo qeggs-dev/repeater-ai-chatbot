@@ -17,7 +17,7 @@ from .._objects import (
     TokensCount,
     FinishReason
 )
-from ....context_manager import (
+from ....context import (
     ContentUnit,
     ContentRole
 )

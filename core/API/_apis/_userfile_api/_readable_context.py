@@ -1,4 +1,4 @@
-from ....context_manager import (
+from ....context import (
     ContextObject
 )
 

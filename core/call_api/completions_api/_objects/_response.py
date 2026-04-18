@@ -1,5 +1,5 @@
 from pydantic import BaseModel, ConfigDict, Field
-from ....context_manager import ContextObject
+from ....context import ContextObject
 from ....request_log import RequestLog, TimeStamp
 from ._tokens_count import TokensCount
 from ._finish_reason import FinishReason

@@ -123,9 +123,11 @@ class AdminKeyManager:
         """
         try:
             api_key = self._env.str("ADMIN_API_KEY")
+            if not api_key:
+                raise ValueError("API Key must not be empty")
             source = AdminKeySource.ENV
             logger.info("API Key Loaded from Environment Variables", user_id="[System]")
-        except environs.EnvError:
+        except (environs.EnvError, ValueError):
             api_key = self._generate_an_api_key()
             source = AdminKeySource.RANDOM
             logger.warning(f"API Key Not Found in Environment Variables, Generated Randomly(Only for Development): {api_key}", user_id="[System]")

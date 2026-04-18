@@ -1,6 +1,6 @@
 import asyncio
 
-from ..context_manager import (
+from ..context import (
     Function,
     FunctionCaller,
     CallingRequest,

@@ -123,7 +123,7 @@ class TracebackHandler:
         last_self_raiser = None
         for frame in reversed(frames):
             if not self.is_library_code(frame.filename):
-                last_self_raiser = frame
+                last_self_raiser = Path(frame.filename)
                 break
         line_start = last_frame.lineno
         line_end = last_frame.end_lineno

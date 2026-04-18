@@ -2,7 +2,7 @@ from typing import BinaryIO
 from ....user_config_manager import (
     UserConfigs
 )
-from ....context_manager import (
+from ....context import (
     ContextObject
 )
 import zipfile

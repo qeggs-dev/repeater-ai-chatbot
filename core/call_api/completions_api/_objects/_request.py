@@ -2,12 +2,12 @@ from pydantic import BaseModel, Field, ConfigDict
 from typing import Callable, Any
 from ._delta import Delta
 from ._stream_options import StreamOptions
-from ....context_manager import (
+from ....context import (
     ContentRole
 )
-from ....context_manager.objects.function_calling import FunctionCaller
+from ....context.objects.function_calling import FunctionCaller
 
-from ....context_manager import ContextObject
+from ....context import ContextObject
 
 class Request(BaseModel):
     """

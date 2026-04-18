@@ -1,5 +1,5 @@
 from pydantic import BaseModel, ConfigDict
-from ..context_manager import ContentBlock, ContextObject
+from ..context import ContentBlock, ContextObject
 from ..request_log import RequestLog
 
 class Response(BaseModel):

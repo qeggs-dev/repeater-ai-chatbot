@@ -1,5 +1,6 @@
 from __future__ import annotations
 from pydantic import BaseModel, Field, ConfigDict
+from datetime import datetime
 from ...auxiliary.text import text_content_cutter
 from .._exceptions import *
 from ._content_role import ContentRole
@@ -29,6 +30,7 @@ class ContentUnit(BaseModel):
     role: ContentRole = ContentRole.USER
     role_name: str |  None = None
     prefix: bool | None = None
+    created: datetime = Field(default_factory = datetime.now)
     tool_calls: list[CallingRequest] | None = None
     tool_call_id: str | None = None
 
