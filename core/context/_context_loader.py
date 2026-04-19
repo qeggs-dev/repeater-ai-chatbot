@@ -65,16 +65,23 @@ class ContextLoader:
             static_resources_client: StaticResourcesClient,
             temporary_prompt: str | None = None,
             template_parser: TemplateParser | None = None,
+            branch_id: str | None = None
         ) -> ContentUnit:
         """
         加载提示词
 
         :param user_id: 用户ID
+        :param static_resources_client: 静态资源客户端
         :param temporary_prompt: 临时提示词
-        :param prompt_vp: 变量展开处理器
+        :param template_parser: 模板解析器
+        :param branch_id: 分支ID
         :return: 提示词
         """
-        user_prompt:str = await self._prompt_manager.load(user_id=user_id, default="")
+        user_prompt:str = await self._prompt_manager.load(
+            user_id = user_id,
+            branch_id = branch_id,
+            default = ""
+        )
         logger.info("Load Prompt", user_id = user_id)
 
         if temporary_prompt is not None:
@@ -88,7 +95,9 @@ class ContextLoader:
             # 加载默认提示词
             default_prompt_base_path = URL(GlobalConfigManager.get_configs().prompt.base_path)
             # 如果存在默认提示词文件，则加载默认提示词文件
-            config = await self._config_manager.load(user_id)
+            config = await self._config_manager.load(
+                user_id = user_id,
+            )
             
             # 获取默认提示词文件名
             parset_prompt_name = config.preset_prompt_name or GlobalConfigManager.get_configs().prompt.preset_name
@@ -115,7 +124,7 @@ class ContextLoader:
         if template_parser is not None and prompt:
             prompt = await self._expand_variables(
                 user_id = user_id,
-                prompt = prompt,
+                template = prompt,
                 template_parser = template_parser
             )
         logger.debug("Prompt Content:\n{prompt}", user_id = user_id, prompt = prompt)
@@ -129,12 +138,14 @@ class ContextLoader:
     
     async def load_context(
             self,
-            user_id: str
+            user_id: str,
+            branch_id: str | None = None
         ) -> Context:
         """
         加载上下文
 
         :param user_id: 用户ID
+        :param branch_id: 分支ID
         :return: 上下文对象
         """
         logger.info(
@@ -142,7 +153,11 @@ class ContextLoader:
             user_id = user_id,
         )
         try:
-            context_data = await self._context_manager.load(user_id=user_id, default=[])
+            context_data = await self._context_manager.load(
+                user_id = user_id,
+                branch_id = branch_id,
+                default = []
+            )
         except orjson.JSONDecodeError:
             raise ContextLoadingSyntaxError(f"Context File Syntax Error: {user_id}")
         # 构建上下文对象
@@ -158,14 +173,17 @@ class ContextLoader:
             temporary_prompt: str | None = None,
             load_prompt: bool = True,
             template_parser: TemplateParser | None = None,
+            branch_id: str | None = None,
         ) -> Context:
         """
         加载整个上下文
 
         :param user_id: 用户ID
+        :param static_resources_client: 静态资源客户端
         :param temporary_prompt: 临时提示词
         :param load_prompt: 是否加载提示词
         :param template_parser: 模板解析器
+        :param branch_id: 分支ID
         :return: 上下文对象
         """
         # 如果允许添加提示词，就加载提示词，否则使用空上下文对象
@@ -174,13 +192,15 @@ class ContextLoader:
                 user_id = user_id,
                 static_resources_client = static_resources_client,
                 template_parser = template_parser,
-                temporary_prompt = temporary_prompt
+                temporary_prompt = temporary_prompt,
+                branch_id = branch_id,
             )
         else:
             prompt = Context()
         
         context = await self.load_context(
-            user_id=user_id
+            user_id = user_id,
+            branch_id = branch_id
         )
         
         context.prompt = prompt
@@ -214,7 +234,7 @@ class ContextLoader:
             if enable_user_input_template:
                 new_message = await self._expand_variables(
                     user_id = user_id,
-                    prompt = new_message,
+                    template = new_message,
                     template_parser = template_parser,
                     extra_template_fields = extra_template_fields
                 )
@@ -329,15 +349,15 @@ class ContextLoader:
     async def _expand_variables(
             self,
             user_id: str,
-            prompt: str,
+            template: str,
             template_parser: TemplateParser,
             extra_template_fields: dict[str, Any] | None = None,
         ) -> str:
         """
         展开变量
 
-        :param prompt: 提示词
         :param user_id: 用户ID
+        :param template: 模板
         :param template_parser: 模板解析器
         :param extra_template_fields: 拓展模板字段
         """
@@ -345,7 +365,7 @@ class ContextLoader:
             extra_template_fields = {}
         return await asyncio.to_thread(
             template_parser.render_ex,
-            text = prompt,
+            text = template,
             user_id = user_id,
             **extra_template_fields
         )
@@ -354,7 +374,8 @@ class ContextLoader:
             self,
             user_id: str,
             context: Context,
-            reduce_to_text:bool = False
+            reduce_to_text:bool = False,
+            branch_id: str | None = None,
         ) -> None:
         """
         保存上下文
@@ -363,5 +384,17 @@ class ContextLoader:
         :param context: 上下文对象
         :param reduce_to_text: 是否将上下文对象转换为纯文本
         """
-        await self._context_manager.save(user_id, context.to_context(reduce_to_text = reduce_to_text))
+        await self._context_manager.save(
+            user_id = user_id,
+            data = context.to_context(reduce_to_text = reduce_to_text),
+            branch_id = branch_id
+        )
         logger.info(f"Save Context: {context.context_item_length}", user_id = user_id)
+    
+    async def get_context_branchs(self, user_id: str) -> list[str]:
+        """
+        获取上下文分支列表
+
+        :param user_id: 用户ID
+        """
+        return await self._context_manager.get_all_branch_id(user_id)
