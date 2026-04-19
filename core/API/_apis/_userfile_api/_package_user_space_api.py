@@ -5,38 +5,35 @@ from fastapi.responses import (
 )
 from loguru import logger
 from io import BytesIO
-from ._make_user_file import (
-    make_user_file
-)
+from ._package_user_space import package_user_space
 
 
-@Server.app.get("/userdata/file/{user_id}.zip")
+@Server.app.get("/userdata/package_space/{user_id}.zip")
 async def get_userdata_file(user_id: str):
     """
-    Endpoint for getting userdata file
+    Endpoint for package user space to zip file
 
     Args:
         user_id (str): User ID
 
     Returns:
-        Response: File Response
+        Response: File stream
     """
     # 创建虚拟文件缓冲区
     buffer = BytesIO()
     context_loader = await Server.core.get_context_loader()
-    context = await context_loader.load_context(user_id = user_id)
-    prompt = await Server.core.prompt_manager.load(user_id = user_id, default = "")
-    config = await Server.core.user_config_manager.load(user_id = user_id)
+    prompt_manager = Server.core.prompt_manager
+    config_manager = Server.core.user_config_manager
     
-    await asyncio.to_thread(
-        make_user_file,
-        file = buffer,
-        context = context,
-        prompt = prompt,
-        user_configs = config
+    await package_user_space(
+        user_id = user_id,
+        context_loader = context_loader,
+        prompt_manager = prompt_manager,
+        config_manager = config_manager,
+        file = buffer
     )
 
-    logger.info(f"Downloaded userdata file", user_id = user_id)
+    logger.info(f"User {user_id} package space", user_id = user_id)
 
     # 获取文件大小
     buffer.seek(0, 2)
