@@ -62,8 +62,11 @@ async def translation_chunk(
             # 你这里是明明 Literal["stop", "length", "tool_calls", "content_filter", "function_call"]
             # 为什么会出现 None 呢
             # 你害的我这个 Enum 炸了
-            # 所以我这里加了一个 if
-            # 注入怨念.jpg
+            # 所以我要这里加了一个 if
+            # 下次记得 Union 上一个 None 吧求了
+            # 
+            # 2026 前来考古
+            # 这里配了个 Any 上去...
             if choice.finish_reason is not None:
                 delta_data.finish_reason = FinishReason(choice.finish_reason)
             
