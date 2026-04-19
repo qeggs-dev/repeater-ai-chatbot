@@ -1,19 +1,43 @@
-from ._module_unit import ModuleUnit
+import importlib.metadata
+
+from packaging import version
+from ._requirements_loader import load_requirements
+from ._modules_list import name_map
 from loguru import logger
 
-def check_package_list(packages: list[ModuleUnit]):
-    for package in packages:
-        logger.info(
-            "Use package: {package_name}: {package_version}",
-            package_name=package.name,
-            package_version=package.version,
-        )
-        if not package.check_version():
-            logger.warning(
-                "Package {package_name} expected version {expected_package_version}, but found {package_version}",
-                package_name = package.name,
-                package_version = package.version,
-                expected_package_version = package.expected_version,
+def check_package_list():
+    requirements_file = load_requirements()
+    for requirement in requirements_file.requirements:
+        specifier = requirement.specifier
+        try:
+            module = name_map[requirement.name]
+        except KeyError:
+            logger.error(
+                "Package {package_name} is not founded.",
+                package_name = requirement.name
             )
+            continue
 
+        if hasattr(module, "__version__"):
+            module_version = module.__version__
+        else:
+            module_version = importlib.metadata.version(requirement.name)
         
+        if version.parse(module_version) in specifier:
+            logger.info(
+                "Package {package_name}: {module_version} is ready.",
+                package_name = requirement.name,
+                module_version = module_version
+            )
+        else:
+            logger.warning(
+                "The version of Package {package_name} may not be what you want.",
+                package_name = requirement.name
+            )
+            logger.warning(
+                "{package_name}: {module_version} -> {specifier}",
+                package_name = requirement.name,
+                module_version = module_version,
+                specifier = requirement.specifier
+            )
+    
