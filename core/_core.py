@@ -193,7 +193,7 @@ class Core:
         :param user_id: 用户ID
         :return: 用户配置
         """
-        config: UserConfigs = await self.user_config_manager.load(user_id=user_id)
+        config: UserConfigs = await self.user_config_manager.load(user_id = user_id)
         return config
     # endregion
 
