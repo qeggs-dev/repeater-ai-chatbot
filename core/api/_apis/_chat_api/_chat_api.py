@@ -39,11 +39,11 @@ async def chat_endpoint(
         additional_data = request.additional_data,
         model_uid = request.model_uid,
         thinking = request.thinking,
-        print_chunk = True,
         load_prompt = request.load_prompt,
         save_context = request.save_context,
         save_new_only = request.save_new_only,
         cross_user_data_routing = request.cross_user_data_routing,
+        allow_tool_calls = request.allow_tool_calls,
         stream = request.stream
     )
     try:
