@@ -45,9 +45,18 @@ async def download_env_from_nexus(user_id: str, request: DownloadRequest):
         )
     
     env_data = EnvironmentModel(**data.data)
-    await context_manager.save(user_id, env_data.context)
-    await prompt_manager.save(user_id, env_data.prompt)
-    await config_manager.save(user_id, env_data.config)
+    await context_manager.save(
+        user_id = user_id,
+        data = env_data.context
+    )
+    await prompt_manager.save(
+        user_id = user_id,
+        data = env_data.prompt
+    )
+    await config_manager.save(
+        user_id = user_id,
+        data = env_data.config
+    )
 
     return ORJSONResponse(
         content = DownloadResponse(

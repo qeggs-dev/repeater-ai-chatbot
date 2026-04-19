@@ -56,7 +56,7 @@ async def render(
         raise HTTPException(status_code=400, message="custom html_template is not allowed")
     
     # 获取用户配置
-    config = await Server.core.user_config_manager.load(user_id)
+    config = await Server.core.user_config_manager.load(user_id = user_id)
         
     style_name, css = await get_style(
         request = request,

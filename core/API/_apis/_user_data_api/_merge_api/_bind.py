@@ -18,7 +18,10 @@ async def bind_branch(user_data_type: UserDataType, user_id: str, dst_branch_id:
         dst_branch_id (str): Destination branch ID
     """
     manager = get_manager(user_data_type)
-    await manager.bind(user_id, dst_branch_id)
+    await manager.bind(
+        user_id = user_id,
+        dst_branch_id = dst_branch_id
+    )
 
     logger.info(
         "Bind {user_data_type} branch from active branch to {branch_id}",
@@ -40,7 +43,11 @@ async def bind_branch_from(user_data_type: UserDataType, user_id: str, src_branc
         src_branch_id (str): Source branch ID
     """
     manager = get_manager(user_data_type)
-    await manager.bind_from(user_id, src_branch_id)
+    await manager.bind(
+        user_id = user_id,
+        src_branch_id = src_branch_id,
+        dst_branch_id = await manager.get_active_branch_id(user_id),
+    )
 
     logger.info(
         "Bind {user_data_type} branch from {branch_id} to active branch",

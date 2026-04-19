@@ -19,7 +19,9 @@ async def delete_branch(user_data_type: UserDataType, user_id: str):
     manager = get_manager(user_data_type)
 
     # 删除用户ID为user_id的提示词
-    await manager.delete(user_id)
+    await manager.delete(
+        user_id = user_id
+    )
 
     logger.info(
         "Delete {user_data_type} active branch",

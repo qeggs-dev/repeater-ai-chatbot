@@ -50,7 +50,7 @@ async def delete_config_field(user_id: str, key: str = Form(...)):
         raise HTTPException(500, "The default value is not one of the valid values for this field and can not be assigned.")
 
     # 保存配置
-    await Server.core.user_config_manager.save(user_id=user_id, configs=config)
+    await Server.core.user_config_manager.save(user_id=user_id, data=config)
 
     logger.info("Delete user config field: {key}", user_id = user_id, key = key)
 

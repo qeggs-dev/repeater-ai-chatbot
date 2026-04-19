@@ -13,9 +13,9 @@ async def upload_env_to_nexus(user_id: str, request: UploadRequest):
     config_manager = get_manager(UserDataType.CONFIG)
 
     data = EnvironmentModel(
-        context = await context_manager.load(user_id),
-        prompt = await prompt_manager.load(user_id),
-        config = await config_manager.load(user_id)
+        context = await context_manager.load(user_id = user_id),
+        prompt = await prompt_manager.load(user_id = user_id),
+        config = await config_manager.load(user_id = user_id)
     )
     try:
         response = await Server.nexus_client.submit(

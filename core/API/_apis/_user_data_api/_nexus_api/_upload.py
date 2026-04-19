@@ -9,7 +9,7 @@ from ._upload_model import UploadRequest, UploadResponse
 @Server.app.post("/nexus/upload/{user_id}/single/{user_data_type}")
 async def upload_to_nexus(user_id: str, user_data_type: UserDataType, request: UploadRequest):
     manager = get_manager(user_data_type)
-    data = await manager.load(user_id)
+    data = await manager.load(user_id = user_id)
     if isinstance(data, BaseModel):
         data = data.model_dump(exclude_none = True)
     try:

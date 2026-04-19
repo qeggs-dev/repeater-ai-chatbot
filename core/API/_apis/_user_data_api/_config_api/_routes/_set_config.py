@@ -28,7 +28,7 @@ async def set_config(user_id: str, request: UserConfigs):
     Returns:
         ORJSONResponse: User Config Data
     """
-    await Server.core.user_config_manager.force_write(user_id=user_id, configs=request)
+    await Server.core.user_config_manager.save(user_id=user_id, data=request)
     logger.info(
         "Set user config: \n{config}",
         user_id = user_id,
@@ -93,8 +93,7 @@ async def set_config_field(user_id: str, key: str, request: SetConfigRequest):
         raise HTTPException(400, "Invalid config key")
 
     # 保存配置
-    # await chat.user_config_manager.save(user_id=user_id, configs=config)
-    await Server.core.user_config_manager.force_write(user_id=user_id, configs=config)
+    await Server.core.user_config_manager.save(user_id=user_id, data=config)
     
     logger.info(
         "Set user config {key}={value}(type:{value_type})",
