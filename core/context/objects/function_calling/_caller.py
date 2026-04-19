@@ -1,3 +1,4 @@
+import json
 import orjson
 import asyncio
 import inspect
@@ -208,13 +209,13 @@ class FunctionCaller:
         logger.info(
             "Use Arguments:\n{arguments}",
             user_id = user_id,
-            arguments = arguments.model_dump_json(indent=4, ensure_ascii=False)
+            arguments = json.dumps(arguments.model_dump(), indent = 4, ensure_ascii = False)
         )
 
         raw_result = await function.call(arguments)
 
         if isinstance(raw_result, BaseModel):
-            result = raw_result.model_dump_json()
+            result = json.dumps(raw_result.model_dump())
         elif function.json_result:
             try:
                 bin_result = orjson.dumps(raw_result)

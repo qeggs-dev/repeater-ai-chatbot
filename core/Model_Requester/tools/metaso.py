@@ -8,19 +8,20 @@ from .._caller import ModelRequester
 from enum import StrEnum
 from pydantic import BaseModel, Field
 
+class Scope(StrEnum):
+    WEBPAGE = "webpage"
+    DOCUMENT = "document"
+    SCHOLAR = "scholar"
+    IMAGE = "image"
+    VIDEO = "video"
+    PODCAST = "podcast"
+
 @ModelRequester.reg_global_package
 class Metaso(ToolCallPacakage):
-    class Scope(StrEnum):
-        WEBPAGE = "webpage"
-        DOCUMENT = "document"
-        SCHOLAR = "scholar"
-        IMAGE = "image"
-        VIDEO = "video"
-        PODCAST = "podcast"
 
     class Params(BaseModel):
         q: str = Field(..., description="The query to search for")
-        scope: str = Field(..., description="The scope to search in")
+        scope: Scope = Field(Scope.WEBPAGE, description="The scope to search in")
         includeSummary: bool = Field(False, description="Whether to include a summary of the results")
         size: str = Field("10", description="The number of results to return")
         includeRawContent: bool = Field(False, description="Whether to include the raw content of the results")
