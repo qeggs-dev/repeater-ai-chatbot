@@ -71,7 +71,7 @@ class UserDataManager(Generic[T]):
         else:
             raise ValueError("Get default value failed.")
     
-    async def load(self, user_id: str, branch_id: str, default: T | None = None) -> T:
+    async def load(self, *, user_id: str, branch_id: str | None = None, default: T | None = None) -> T:
         """
         Load a user's data from file system.
 
@@ -85,6 +85,8 @@ class UserDataManager(Generic[T]):
         """
         manager = self._get_sub_manager(user_id)
         default_value = self._get_default_value(default)
+        if branch_id is None:
+            branch_id = await self.get_active_branch_id(user_id)
 
         logger.info(
             "Loading [Branch:{base_name}/{encoded_user_id}/{src_branch_id}]",
@@ -96,7 +98,7 @@ class UserDataManager(Generic[T]):
         
         return await manager.load(branch_id, default_value)
     
-    async def save(self, user_id: str, branch_id: str, data: T) -> None:
+    async def save(self, *, user_id: str, branch_id: str | None = None, data: T) -> None:
         """
         Save a user's data to file system.
 
@@ -106,6 +108,8 @@ class UserDataManager(Generic[T]):
             data (Any): The user's data.
         """
         manager = self._get_sub_manager(user_id)
+        if branch_id is None:
+            branch_id = await self.get_active_branch_id(user_id)
 
         logger.info(
             "Saving [Branch:{base_name}/{encoded_user_id}/{dst_branch_id}]",
@@ -117,7 +121,7 @@ class UserDataManager(Generic[T]):
 
         await manager.save(branch_id, data)
     
-    async def delete(self, user_id: str, branch_id: str) -> None:
+    async def delete(self, *, user_id: str, branch_id: str | None = None) -> None:
         """
         Delete a user's data from file system.
 
@@ -126,6 +130,8 @@ class UserDataManager(Generic[T]):
             branch_id (str): The branch ID.
         """
         manager = self._get_sub_manager(user_id)
+        if branch_id is None:
+            branch_id = await self.get_active_branch_id(user_id)
 
         logger.info(
             "Deleting [Branch:{base_name}/{encoded_user_id}/{dst_branch_id}]",
@@ -137,7 +143,7 @@ class UserDataManager(Generic[T]):
 
         await manager.delete(branch_id)
     
-    async def clone(self, user_id: str, branch_id: str, dst_branch_id: str, default: T | None = None) -> None:
+    async def clone(self, *, user_id: str, branch_id: str | None = None, dst_branch_id: str, default: T | None = None) -> None:
         """
         Clone a user's data to a new branch.
 
@@ -149,6 +155,8 @@ class UserDataManager(Generic[T]):
         """
         manager = self._get_sub_manager(user_id)
         default_value = self._get_default_value(default)
+        if branch_id is None:
+            branch_id = await self.get_active_branch_id(user_id)
 
         logger.info(
             "Cloning [Branch:{base_name}/{encoded_user_id}/{src_branch_id}] to [Branch:{base_name}/{encoded_user_id}/{dst_branch_id}]",
@@ -162,7 +170,7 @@ class UserDataManager(Generic[T]):
         loaded_data = await manager.load(branch_id, default_value)
         await manager.save(dst_branch_id, loaded_data)
     
-    async def bind(self, user_id: str, branch_id: str, dst_branch_id: str, default: T | None = None) -> None:
+    async def bind(self, *, user_id: str, branch_id: str | None = None, dst_branch_id: str, default: T | None = None) -> None:
         """
         Bind now active branch to an another branch.
 
@@ -173,6 +181,8 @@ class UserDataManager(Generic[T]):
         """
         manager = self._get_sub_manager(user_id)
         default_value = self._get_default_value(default)
+        if branch_id is None:
+            branch_id = await self.get_active_branch_id(user_id)
 
         logger.info(
             "Binding [Branch:{base_name}/{encoded_user_id}/{src_branch_id}] to [Branch:{base_name}/{encoded_user_id}/{dst_branch_id}]",
@@ -281,7 +291,7 @@ class UserDataManager(Generic[T]):
         """
         return [fname_b64_decode(f.name) for f in (self.base_path).iterdir() if f.is_dir()]
 
-    async def get_all_branch_id(self, user_id: str) -> list:
+    async def get_all_branch_id(self, user_id: str) -> list[str]:
         """
         Get all branch IDs for a given user ID.
 
@@ -291,4 +301,11 @@ class UserDataManager(Generic[T]):
         Returns:
             list: A list of branch IDs.
         """
-        return [fname_b64_decode(f.stem) for f in (self.base_path / fname_b64_encode(user_id) / self._sub_dir_name).iterdir() if f.is_file()]
+        if not (self.base_path / fname_b64_encode(user_id)).exists():
+            return []
+        branch_ids: list[str] = []
+        base_path = self.base_path / fname_b64_encode(user_id) / self._sub_dir_name
+        for branch_id in base_path.iterdir():
+            if branch_id.exists() and branch_id.is_file():
+                branch_ids.append(fname_b64_decode(branch_id.name))
+        return branch_ids
