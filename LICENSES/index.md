@@ -26,3 +26,4 @@ This project includes the following third-party software components, licensed un
 - [Yarl](./yarl/index.md)
 - [Bleach](./bleach/index.md)
 - [Asteval](./asteval/index.md)
+- [Pip-requirements-parser](./pip-requirements-parser/index.md)
