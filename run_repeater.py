@@ -30,8 +30,8 @@ def main(run_server: bool | None = None):
     Server.init_logger()
 
     logger.info(
-        "Import Packages Time: {import_packages_time:.2f}s",
-        import_packages_time = (end_import_time - start_import_time) / 1e9
+        "Import Packages Time: {import_packages_time:.2f}ms",
+        import_packages_time = (end_import_time - start_import_time) / 1e6
     )
 
     logger.info(
@@ -57,8 +57,8 @@ def main(run_server: bool | None = None):
     end_init_resource_time = time.perf_counter_ns()
 
     logger.info(
-        "Init Server Time: {init_resource_time:.2f}s",
-        init_resource_time = (end_init_resource_time - start_init_resource_time) / 1e9
+        "Init Server Time: {init_resource_time:.2f}ms",
+        init_resource_time = (end_init_resource_time - start_init_resource_time) / 1e6
     )   
 
     host = "0.0.0.0" # 默认监听所有地址
