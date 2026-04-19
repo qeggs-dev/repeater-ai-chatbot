@@ -7,7 +7,8 @@ from environs import Env
 from core import (
     global_config_manager,
     Server,
-    __version__ as core_version
+    __version__ as core_version,
+    requirements_version_checker
 )
 from loguru import logger
 end_import_time = time.perf_counter_ns()
@@ -40,6 +41,17 @@ def main(run_server: bool | None = None):
     
     logger.info(f"Run With Python {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}")
     logger.info(f"Core Version: {core_version}")
+
+    logger.info("Checking Packages...")
+    start_check_packages_time = time.perf_counter_ns()
+    requirements_version_checker.check_package_list(
+        requirements_version_checker.modules_list
+    )
+    end_check_packages_time = time.perf_counter_ns()
+    logger.info(
+        "Check Packages Time: {check_packages_time:.2f}ms",
+        check_packages_time = (end_check_packages_time - start_check_packages_time) / 1e6
+    )
 
     start_init_resource_time = time.perf_counter_ns()
     Server.init_all()
