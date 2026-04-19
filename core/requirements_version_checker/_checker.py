@@ -2,14 +2,12 @@ import sys
 import importlib.metadata
 
 from packaging import version
-from ..global_config_manager import ConfigManager
 from ._requirements_loader import load_requirements
 from ._modules_list import name_map
 from loguru import logger
 
-def check_package_list():
+def check_package_list(strict_mode: bool = False):
     requirements_file = load_requirements()
-    strict_mode = ConfigManager.get_configs().requirements.strict_mode
     for requirement in requirements_file.requirements:
         specifier = requirement.specifier
         try:

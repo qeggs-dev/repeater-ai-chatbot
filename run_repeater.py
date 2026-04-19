@@ -45,7 +45,9 @@ def main(run_server: bool | None = None):
     if global_config_manager.ConfigManager.get_configs().requirements.enable_check:
         logger.info("Checking Packages...")
         start_check_packages_time = time.perf_counter_ns()
-        requirements_version_checker.check_package_list()
+        requirements_version_checker.check_package_list(
+            strict_mode = global_config_manager.ConfigManager.get_configs().requirements.strict_mode
+        )
         end_check_packages_time = time.perf_counter_ns()
         logger.info(
             "Check Packages Time: {check_packages_time:.2f}ms",
