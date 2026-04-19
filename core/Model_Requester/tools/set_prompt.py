@@ -13,5 +13,8 @@ class SetPrompt(ToolCallPacakage):
     document = "Overrides the current system prompt."
 
     def call(self, args: Params):
-        self.prompt_manager.save(args.prompt)
+        self.prompt_manager.save(
+            user_id = self.user_id,
+            data = args.prompt
+        )
         return "Prompt seted."
