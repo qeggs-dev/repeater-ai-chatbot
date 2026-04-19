@@ -63,6 +63,7 @@
 | yarl              | 1.23.0   | MIT License                          | [MIT](https://github.com/aio-libs/yarl/blob/master/LICENSE)                         | *Entire Project*                    | URL parsing                           |
 | bleach            | 6.3.0    | Apache-2.0                           | [Apache-2.0](https://github.com/mozilla/bleach/blob/main/LICENSE)                   | `core.markdown_render`              | Clean HTML                            |
 | asteval           | 1.0.8    | MIT License                          | [MIT](https://github.com/newville/asteval/blob/main/LICENSE)                        | `core.model_requester.tools`        | Assist AI in performing mathematical calculations. |
+| pip-requirements-parser | 32.0.1 | MIT License                      | [MIT](https://github.com/jazzband/pip-requirements-parser/blob/main/LICENSE)        | `core.requirements_version_checker` | Parse requirements.txt files.         |
 
 具体依赖的License请查看[LICENSES](./LICENSES/index.md)
 
