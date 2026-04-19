@@ -1,12 +1,15 @@
+import sys
 import importlib.metadata
 
 from packaging import version
+from ..global_config_manager import ConfigManager
 from ._requirements_loader import load_requirements
 from ._modules_list import name_map
 from loguru import logger
 
 def check_package_list():
     requirements_file = load_requirements()
+    strict_mode = ConfigManager.get_configs().requirements.strict_mode
     for requirement in requirements_file.requirements:
         specifier = requirement.specifier
         try:
@@ -30,14 +33,23 @@ def check_package_list():
                 module_version = module_version
             )
         else:
-            logger.warning(
-                "The version of Package {package_name} may not be what you want.",
-                package_name = requirement.name
-            )
-            logger.warning(
-                "{package_name}: {module_version} -> {specifier}",
-                package_name = requirement.name,
-                module_version = module_version,
-                specifier = requirement.specifier
-            )
+            if strict_mode:
+                logger.error(
+                    "Package {package_name}: {module_version} is not compatible with {requirements}.",
+                    package_name = requirement.name,
+                    module_version = module_version,
+                    requirements = specifier
+                )
+                sys.exit(1)
+            else:
+                logger.warning(
+                    "The version of Package {package_name} may not be what you want.",
+                    package_name = requirement.name
+                )
+                logger.warning(
+                    "{package_name}: {module_version} -/-> {specifier}",
+                    package_name = requirement.name,
+                    module_version = module_version,
+                    specifier = requirement.specifier
+                )
     
