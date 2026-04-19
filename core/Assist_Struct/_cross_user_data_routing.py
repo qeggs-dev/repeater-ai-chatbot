@@ -45,7 +45,7 @@ class DataRoutingField(BaseModel, Generic[T]):
         Removes a target user that is not allowed access.
         """
         if self.load_from_user_id != user_id:
-            user_config = await user_config_manager.load(self.load_from_user_id)
+            user_config = await user_config_manager.load(user_id = self.load_from_user_id)
             if user_config.cross_user_data_access is None:
                 if not GlobalConfigManager.get_configs().user_data.cross_user_data_access:
                     logger.warning(
@@ -62,7 +62,7 @@ class DataRoutingField(BaseModel, Generic[T]):
                     )
                     self.load_from_user_id = user_id
         if self.save_to_user_id != user_id:
-            user_config = await user_config_manager.load(self.save_to_user_id)
+            user_config = await user_config_manager.load(user_id = self.save_to_user_id)
             if user_config.cross_user_data_access is None:
                 if not GlobalConfigManager.get_configs().user_data.cross_user_data_access:
                     logger.warning(
