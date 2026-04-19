@@ -6,5 +6,5 @@
   - **method**: `GET`
   - **Response**
     - **type:** `JSON`
-    - **Response Body**
+    - **Content:**
       - [*\*License Dict*](./license_dict.md)

@@ -6,5 +6,5 @@
   - **method**: `GET`
   - **Response**
     - **type:** `JSON`
-    - **Response Body**
+    - **Content:**
       *[\*模型类型](../../model_type.md)列表*

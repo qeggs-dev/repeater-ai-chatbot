@@ -7,7 +7,7 @@
   - **Requset**
     - **method:** `POST`
     - **type:** `JSON`
-    - **Request Body**:
+    - **Content:**
       - `message` (str | null): 用户发送的消息，允许为空，但这时模型的行为可能是未定义的
       - `history_messages` (list[dict]): 历史消息，如果填写则使用此处提供的上下文，否则使用用户保存的，格式为 `[{"role": "user", "content": "..."}, {"role": "assistant", "content": "..."}]`
       - `user_info` 用户信息，全部可选
@@ -44,10 +44,11 @@
       - `stream` (bool): 是否流式返回（设置该值为 `true` 需要保证在配置中启用了流式处理器，否则会返回`503`错误码）
   - **Response**
     - **type:** `JSON` | `JSONL STREAM`
-    - **Response Body**:
+    - **Content:**
       - `JSON`:
         - `reasoning_content` (str): CoT回复内容，即使模型没有返回CoT它仍然存在，注意判断逻辑应为非null和非空字符串
-        - `content` (str): AI回复内容
+        - `context`
+          - `context_list` (list[ContentUnit]): 上下文列表，包含所有新生成的上下文内容
         - `user_raw_input` (str): 用户发送的原始消息
         - `user_input` (str | list[ContentBlock]): 用户发送的消息经过格式化后处理后的内容，使用[OpenAI Chat Completion User Message Content](https://platform.openai.com/docs/api-reference/chat/create#chat_create-messages-user_message-content)格式
         - `model_group` (str): 模型组，由[API_Info文件](../configs/api_info.md)决定
@@ -61,29 +62,32 @@
         - `status` (int): 状态码，这里和http状态码一致，只是为了报告而写，通常你应该优先选择检查http报告的状态码而不是这个字段
       - `JSON STREAM`:
         - *\*每一行*
-          - `id` (str): 请求ID
-          - `reasoning_content` (str): CoT回复内容，即使模型没有返回CoT它仍然存在，注意判断逻辑应为非null和非空字符串
-          - `content` (str): AI回复内容
-          - `function_id` (str): 函数ID，如果模型没有返回函数ID，则该字段为空字符串
-          - `function_type` (str): 函数类型，如果模型没有返回函数ID，则该字段为空字符串
-          - `function_name` (str): 函数名称，如果模型没有返回函数ID，则该字段为空字符串
-          - `function_arguments` (str): 函数参数，通常是JSON格式，如果模型没有返回函数ID，则该字段为空字符串
-          - `token_usage`
-            - `prompt_tokens` (int): 输入的token数量
-            - `completion_tokens` (int): 输出的token数量
-            - `total_tokens` (int): 总的token数量
-            - `prompt_cache_hit_tokens` (int): 输入的token中缓存命中的数量
-            - `prompt_cache_miss_tokens` (int): 输入的token中缓存未命中的数量
-          - `finish_reason` (str): 模型结束生成的原因，由API厂商提供
-          - `created` (int): 请求创建时间，时间戳，单位为秒
-          - `model` (str): 模型名称
-          - `system_fingerprint` (str): 系统指纹，由API厂商提供
-          - `logprobs`
-            - `token` (str): token内容
-            - `logprob` (float): token的概率
-            - `top_logprobs`
+          - **Delta**:
+            - `id` (str): 请求ID
+            - `reasoning_content` (str): CoT回复内容，即使模型没有返回CoT它仍然存在，注意判断逻辑应为非null和非空字符串
+            - `content` (str): AI回复内容
+            - `function_id` (str): 函数ID，如果模型没有返回函数ID，则该字段为空字符串
+            - `function_type` (str): 函数类型，如果模型没有返回函数ID，则该字段为空字符串
+            - `function_name` (str): 函数名称，如果模型没有返回函数ID，则该字段为空字符串
+            - `function_arguments` (str): 函数参数，通常是JSON格式，如果模型没有返回函数ID，则该字段为空字符串
+            - `token_usage`
+              - `prompt_tokens` (int): 输入的token数量
+              - `completion_tokens` (int): 输出的token数量
+              - `total_tokens` (int): 总的token数量
+              - `prompt_cache_hit_tokens` (int): 输入的token中缓存命中的数量
+              - `prompt_cache_miss_tokens` (int): 输入的token中缓存未命中的数量
+            - `finish_reason` (str): 模型结束生成的原因，由API厂商提供
+            - `created` (int): 请求创建时间，时间戳，单位为秒
+            - `model` (str): 模型名称
+            - `system_fingerprint` (str): 系统指纹，由API厂商提供
+            - `logprobs`
               - `token` (str): token内容
               - `logprob` (float): token的概率
+              - `top_logprobs`
+                - `token` (str): token内容
+                - `logprob` (float): token的概率
+          - **ContentUnit**:
+            - *\*ContentUnit* (ContentUnit): 请求内容单元 (通常是 Tool 的响应)
 
 注：该API有**RUL(Request User Lock)**
 在 `user_id` 相同且上一个请求**未完成**时
@@ -109,7 +113,7 @@
 那么它将会在这里出现
 
 你可以在 `message` 中编写模板
-参考 [模板展开器](./../template_expansion_engine/main.md)
+参考 [模板展开器](./../template_engine/main.md)
 同时模型返回的数据也会被模板展开器处理并保存下来
 (仅限非流式输出，流式输出时客户端无法收到展开的数据
 但是它们仍然会在保存时展开一次，以确保数据正确)

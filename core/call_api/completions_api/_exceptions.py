@@ -1,0 +1,38 @@
+class CallAPIException(Exception):
+    """Base class for exceptions in this module."""
+    pass
+
+class BadRequestError(CallAPIException):
+    """Exception raised when the request is bad."""
+    pass
+
+class ModelNotFoundError(BadRequestError):
+    """Exception raised when a model is not found.
+
+    Attributes:
+        model_name -- name of the model that was not found
+    """
+
+    def __init__(self, model_name: str):
+        self.model_name = model_name
+        self.message = f"Model \"{model_name}\" not found"
+        super().__init__(self.message)
+    
+    def __str__(self):
+        return self.message
+
+class APIConnectionError(CallAPIException):
+    """Exception raised when the API connection fails."""
+    pass
+
+class APITimeoutError(CallAPIException):
+    """Exception raised when the API request times out."""
+    pass
+
+class StreamNotAvailable(CallAPIException):
+    """Exception raised when the stream is not available."""
+    pass
+
+class APIServerError(CallAPIException):
+    """Exception raised when the API server returns an error."""
+    pass

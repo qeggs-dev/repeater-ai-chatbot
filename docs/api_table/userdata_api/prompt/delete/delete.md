@@ -7,5 +7,5 @@
     - **method:** `DELETE`
   - **Response**
     - **type:** `Text`
-    - **Response Body**:
+    - **Content:**
       - "Prompt deleted"

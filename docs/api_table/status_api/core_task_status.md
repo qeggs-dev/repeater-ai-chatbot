@@ -7,7 +7,7 @@
     - **method**: `GET`
   - **Response**
     - **type**: `JSON List`
-    - **Response Body**
+    - **Content:**
       - *\*当前执行阶段的任务栈列表*
 
 目前任务结构树如下:

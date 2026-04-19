@@ -7,5 +7,5 @@
     - **method:** `GET`
   - **Response**
     - **type:** `JSON列表`
-    - **Response Body**:
+    - **Content:**
       - *\*所有已经保存的`branch_id`*

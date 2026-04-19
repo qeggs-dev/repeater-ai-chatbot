@@ -8,5 +8,5 @@
     - **method:** `GET`
   - **Response**
     - **type:** `JSON列表`
-    - **Response Body**:
+    - **Content:**
       - *\*所有已经保存有Prompt数据的`user_id`*

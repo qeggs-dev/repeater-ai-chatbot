@@ -6,11 +6,11 @@
   - **Requset**
     - **method:** `PUT`
     - **type:** `FORM`
-    - **Request Body**:
+    - **Content:**
       - `prompt` (str): 提示词内容
   - **Response**
     - **type:** `Text`
-    - **Response Body**:
+    - **Content:**
       - "Prompt seted"
 
 该提示词会在该用户对话时生效

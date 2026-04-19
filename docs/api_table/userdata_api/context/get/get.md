@@ -3,12 +3,13 @@
 从当前用户获取上下文信息
 
 - **`/userdata/context/get/{user_id:str}`**
+- **`/userdata/context/get/{user_id:str}.json`**
   - **Requset**
     - **method:** `GET`
   - **Response**
     - **type:** `JSON列表`
-    - **Response Body**:
-      - *\*参考[OpenAI Context](https://platform.openai.com/docs/api-reference/chat/create#chat_create-messages)*
+    - **Content:**
+      - *\*参考[Context](./../../user_data_type.md#context)*
 
 获取当前用户所有上下文信息
 注：这里头部并不会存放 `System Prompt`

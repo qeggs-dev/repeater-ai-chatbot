@@ -8,7 +8,7 @@
     - `X-Admin-API-Key` (str): API 密钥
   - **Response**
     - **type:** `Text`
-    - **Response Body**
+    - **Content:**
       - "Apiinfo reloaded"
 
 注：新生成的管理密钥是临时密钥，

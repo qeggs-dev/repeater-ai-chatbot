@@ -1,14 +1,14 @@
 # Variable Expand API
 
-使用[变量展开引擎](../template_expansion_engine/main.md)
+使用[变量展开引擎](../template_engine/main.md)
 对用户数据进行变量展开
-具体变量请参考[变量列表](../template_expansion_engine/variables.md)
+具体变量请参考[变量列表](../template_engine/variables.md)
 
 - **`/variable_expand/{user_id:str}`**
   - **Requset**
     - **method:** `POST`
     - **type:** `JSON`
-    - **Request Body**:
+    - **Content:**
       - `user_info`
         - `username` (str): 用户名
         - `nickname` (str): 昵称
@@ -18,7 +18,7 @@
       - `extra_fields` (dict[str, Any]): 自定义扩展字段
   - **Response**
     - **type:** `Text`
-    - **Response Body**:
+    - **Content:**
       - *\*处理后的文本*
 
 注：使用该API时

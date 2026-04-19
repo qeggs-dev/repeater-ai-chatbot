@@ -6,12 +6,12 @@
   - **Requset**
     - **method:** `POST`
     - **type:** `FORM`
-    - **Request Body**:
-      - `context_pair_num` (int): 删除的组数
+    - **Content:**
+      - `context_pair_num` (int): 删除的数量
       - `paired` (bool): 是否以成对模式删除上下文单元 (默认为 `true`)
   - **Response**
     - **type:** `JSON`
-    - **Response Body**:
+    - **Content:**
       - `status` (str): 状态码，如果 `http code` 为 `200` 则必为`success`
       - `deleted` (int): 删除的上下文单元数量
       - `deleted_context` (Context): 删除的上下文内容

@@ -6,12 +6,12 @@
   - **Requset**
     - **method:** `PUT`
     - **type:** `JSON`
-    - **Request Body**:
+    - **Content:**
       - `type` (str):  配置类型
       - `value` (Any):  配置字段值
   - **Response**
     - **type:** `Text`
-    - **Response Body**:
+    - **Content:**
       - *\*Config 内容*
 
 配置类型列表如下：

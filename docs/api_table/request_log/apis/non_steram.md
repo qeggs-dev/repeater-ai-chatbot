@@ -6,5 +6,5 @@
     - **method**: `GET`
   - **Response**
     - **type**: `JSON列表`
-    - **Response Body**
+    - **Content:**
       - *\*[Request Log Object](../request_log_object.md)列表*

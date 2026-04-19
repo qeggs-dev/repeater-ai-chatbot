@@ -128,7 +128,7 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
         "remove_reasoning_prompt": true,
 
         // 非文本数据在日志中的最大显示长度
-        // 默认为 null，表示不限制
+        // 设置为 null 则不进行截断
         "max_log_length_for_non_text_content": 25
     },
 
@@ -142,6 +142,12 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
 
         // 在遇到关键错误时，是否让服务器关闭
         "crash_exit": true,
+
+        // 在遇到关键错误时，发送的信号
+        // 可以填写信号名称，如 SIGINT
+        // 也可以填写信号编号，如 2
+        // 默认为 SIGINT
+        "crash_exit_signal": "SIGINT",
 
         // 遇到问题时，保存 traceback 的目录
         // 如果该值为 null 则程序会跳过这一步骤
@@ -350,6 +356,9 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
         // 请求日志模板
         // 用于在请求返回时自定义统计内容信息的格式
         "request_statistics_template": "Total Tokens: {{request_log.total_tokens}} | Input: {{request_log.prompt_tokens}} | Output: {{request_log.completion_tokens}}",
+
+        // 允许模板中使用 HTTP 请求
+        "allow_http": false,
         
         // 模板展开器启用控制
         "enable": {
@@ -365,6 +374,36 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
             // 是否启用 request_statistics_template
             "request_statistics_template": false
         }
+    },
+
+    // Tool Calls 配置
+    "tool_calls": {
+        // 是否启用 Tool Calls
+        "enabled": false,
+
+        // 注册的 Tool Calls
+        // 即使是内置 Tool
+        // 也需要在此注册
+        // 你需要在此处填写它们的注册名
+        // 否则模型将无法找到它们
+        "registed": [],
+
+        // 所有用户默认允许 Tool Calls
+        "allow_by_default": false,
+
+        // Tool Calls 结果最大长度（用于日志）
+        // 设置为 null 则不限制长度
+        "result_max_length_for_logs": 100,
+
+        // 允许的 HTTP 方法
+        // 设置为 null 则所有方法不可用
+        // 设置为 "ALL" 则所有方法可用
+        // 可以指定仅能的方法，比如 ["GET", "POST"]
+        "allowed_http_methods": null,
+
+        // 是否允许对私有网络进行 HTTP 请求
+        // 包括局域网与回环
+        "allow_private_network_requests": false
     },
 
     // Prompt 配置
@@ -529,15 +568,6 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
 
         // 静态资源服务器的超时时间
         "timeout": 10.0
-    },
-
-    // 用户配置缓存配置
-    "user_config_cache": {
-        // 读取配置后等待多少秒后从缓存删除
-        "downgrade_wait_time": 600.0,
-
-        // 保存配置到缓存后等待多少秒后从关闭缓存并写入
-        "debounce_save_wait_time": 1000.0
     },
 
     // 用户数据配置

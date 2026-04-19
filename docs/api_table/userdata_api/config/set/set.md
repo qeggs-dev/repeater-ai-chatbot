@@ -6,10 +6,10 @@
   - **Requset**
     - **method:** `PUT`
     - **type:** `JSON`
-    - **Request Body**:
+    - **Content:**
       - *\*Config 内容*
   - **Response**
     - **type:** `Text`
-    - **Response Body**:
+    - **Content:**
       - *\*Config 内容*
 

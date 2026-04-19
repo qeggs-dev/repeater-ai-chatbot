@@ -17,6 +17,6 @@
 | `raw_text` | `string` | 传入的原始内容 |
 | `document_bottom_comment` | `string` | 用户配置或传入的文档末尾注释 |
 
-这些内容使用了 [模板展开器](../template_expansion_engine/main.md) 来进行展开
-模板变量的展开规则和 [模板展开器](../template_expansion_engine/main.md) 一致
-但并未使用到 [模板变量](../template_expansion_engine/variables.md) 中的内容
+这些内容使用了 [模板展开器](../template_engine/main.md) 来进行展开
+模板变量的展开规则和 [模板展开器](../template_engine/main.md) 一致
+但并未使用到 [模板变量](../template_engine/variables.md) 中的内容

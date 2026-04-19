@@ -9,7 +9,7 @@
     - `X-Admin-API-Key` (str): API 密钥
   - **Request**
     - **type**: `JSON`
-    - **Request Body**
+    - **Content:**
       - `type` (str): 抛出的异常名称
       - `args` (list): 抛出异常时传递的参数
       - `kwargs` (dict): 抛出异常时传递的关键字参数

@@ -7,5 +7,5 @@
     - **method:** `GET`
   - **Response**
     - **type:** `Text`
-    - **Response Body**:
+    - **Content:**
       - *\*当前`branch_id`*

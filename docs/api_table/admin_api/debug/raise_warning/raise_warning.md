@@ -9,7 +9,7 @@
     - `X-Admin-API-Key` (str): API 密钥
   - **Request**
     - **type**: `JSON`
-    - **Request Body**
+    - **Content:**
       - `type` (str): 抛出的警告名称
       - `message` (str): 抛出警告时使用的消息
   - **Response**

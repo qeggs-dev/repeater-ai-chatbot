@@ -8,5 +8,5 @@
     - `X-Admin-API-Key` (str): API 密钥
   - **Response**
     - type: `JSON`
-    - **Response Body**
+    - **Content:**
       - [Main Configs](../../../../configs/main.md)

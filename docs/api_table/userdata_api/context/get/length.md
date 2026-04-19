@@ -7,7 +7,7 @@
     - **method:** `GET`
   - **Response**
     - **type:** `JSON`
-    - **Response Body**
+    - **Content:**
       - `total_context_length` (int): 上下文字符数量
       - `context_length` (int): 上下文对话条目数量
       - `average_content_length` (float): 平均上下文长度
