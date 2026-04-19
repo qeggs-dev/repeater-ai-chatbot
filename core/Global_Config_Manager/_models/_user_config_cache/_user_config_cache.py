@@ -1,7 +1,0 @@
-from pydantic import BaseModel, ConfigDict
-
-class UserConfigCacheConfig(BaseModel):
-    model_config = ConfigDict(case_sensitive=False)
-
-    downgrade_wait_time: float = 600.0
-    debounce_save_wait_time: float = 1000.0
