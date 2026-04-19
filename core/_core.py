@@ -445,11 +445,11 @@ class Core:
             additional_data: AdditionalData | None = None,
             model_uid: str | None = None,
             thinking: bool | None = None,
-            print_chunk: bool = True,
             load_prompt: bool | None = None,
             save_context: bool | None = None,
             save_new_only: bool | None = None,
             cross_user_data_routing: CrossUserDataRouting[str | None] | None = None,
+            allow_tool_calls: bool | None = None,
             stream: bool = False,
         ) -> Response | AsyncIterator[dict[str, Any]]:
         """
@@ -458,7 +458,7 @@ class Core:
         :param message: 用户输入的消息
         :param user_id: 用户ID
         :param history_messages: 历史消息
-        :param hisorole_msg_role_map: 历史消息角色映射
+        :param history_msg_role_map: 历史消息角色映射
         :param user_info: 用户信息
         :param role: 角色
         :param role_name: 角色名
@@ -467,11 +467,11 @@ class Core:
         :param additional_data: 额外数据
         :param model_uid: 模型UID
         :param thinking: 使用思考模式
-        :param print_chunk: 是否打印片段
         :param load_prompt: 是否加载提示
         :param save_context: 是否保存上下文
         :param save_new_only: 是否只保存最新的内容
         :param cross_user_data_operations: 跨用户数据流
+        :param allow_tool_calls: 是否允许工具调用
         :param stream: 是否流式输出
         :return: 返回对话结果
         """
@@ -777,11 +777,12 @@ class Core:
                             request.stream_options.include_obfuscation = ConfigManager.get_configs().callapi.include_obfuscation
                             request.stream_options.include_usage = ConfigManager.get_configs().callapi.include_usage
                             
-                            allow_tool_calls = ConfigManager.get_configs().tool_calls.enabled
-                            if allow_tool_calls:
-                                allow_tool_calls = configs.allow_tool_calls
+                            if ConfigManager.get_configs().tool_calls.enabled:
                                 if allow_tool_calls is None:
-                                    allow_tool_calls = ConfigManager.get_configs().tool_calls.allow_by_default
+                                    if configs.allow_tool_calls is not None:
+                                        allow_tool_calls = configs.allow_tool_calls
+                                    else:
+                                        allow_tool_calls = ConfigManager.get_configs().tool_calls.allow_by_default
                         # endregion
 
                         # region [Pre-filled output]
