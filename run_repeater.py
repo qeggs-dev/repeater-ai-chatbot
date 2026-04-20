@@ -127,6 +127,9 @@ def main(run_server: bool | None = None):
     if run_server is None:
         run_server = global_config_manager.ConfigManager.get_configs().server.run_server
     
+    repeater_main.init_all()
+    repeater_main.init_server()
+    
     if run_server:
         repeater_main.run()
 
