@@ -1,3 +1,4 @@
+import time
 import json
 import orjson
 import asyncio
@@ -212,7 +213,17 @@ class FunctionCaller:
             arguments = json.dumps(arguments.model_dump(), indent = 4, ensure_ascii = False)
         )
 
-        raw_result = await function.call(arguments)
+        start_time = time.perf_counter_ns()
+        try:
+            raw_result = await function.call(arguments)
+        finally:
+            end_time = time.perf_counter_ns()
+            logger.info(
+                "Call Tool Time: {time:.3f}ms",
+                user_id = user_id,
+                time = (end_time - start_time) / 1e6
+            )
+
 
         if isinstance(raw_result, BaseModel):
             result = json.dumps(raw_result.model_dump())
