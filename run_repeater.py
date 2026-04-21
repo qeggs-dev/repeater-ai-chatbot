@@ -51,9 +51,6 @@ class RepeaterMain:
         reload: bool | None = global_config_manager.ConfigManager.get_configs().server.reload
         if reload is None:
             reload: bool = env_config_reload
-        
-        if run_server is None:
-            run_server: bool = global_config_manager.ConfigManager.get_configs().server.run_server
 
         logger.info(f"Starting server at {host}:{port}")
 
