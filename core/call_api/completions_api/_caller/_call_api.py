@@ -78,6 +78,10 @@ class CallAPI(CallNstreamAPIBase):
                         extra_body["thinking"] = {
                             "type": "disabled"
                         }
+            
+            with status_map.enter(user_id, "reasoning_effort"):
+                if request.reasoning_effort is not None:
+                    extra_body["reasoning_effort"] = request.reasoning_effort.value
         
         # 发送请求
         with status_map.enter(user_id, "Send Request"):

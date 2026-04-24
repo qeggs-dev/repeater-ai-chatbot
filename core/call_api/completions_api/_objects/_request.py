@@ -5,7 +5,7 @@ from ._stream_options import StreamOptions
 from ....context import (
     ContentRole
 )
-from ....context.objects.function_calling import FunctionCaller
+from ....global_config_manager import ReasoningEffort
 
 from ....context import Context
 
@@ -35,6 +35,7 @@ class Request(BaseModel):
     prompt: str | None = None
     echo: bool = False
     suffix: str | None = None
+    reasoning_effort: ReasoningEffort | None = None
     remove_reasoning_prompt: bool = True
     remove_created: bool = True
     logprobs: bool = False
