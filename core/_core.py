@@ -773,6 +773,11 @@ class Core:
                             else:
                                 request.thinking = ConfigManager.get_configs().model.default_thinking
                             
+                            if configs.reasoning_effort is not None:
+                                request.reasoning_effort = configs.reasoning_effort
+                            else:
+                                request.reasoning_effort = ConfigManager.get_configs().model.default_reasoning_effort
+                            
                             request.stream = ConfigManager.get_configs().model.stream
                             request.stream_options.include_obfuscation = ConfigManager.get_configs().callapi.include_obfuscation
                             request.stream_options.include_usage = ConfigManager.get_configs().callapi.include_usage
