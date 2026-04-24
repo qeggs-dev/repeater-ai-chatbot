@@ -70,6 +70,16 @@
     // Repeater会以一对消息为单位去删除过多的部分。
     "context_shrink_limit": null,
 
+    // (str) 控制模型的推理强度
+    // 允许的值有：
+    // - "low"
+    // - "medium"
+    // - "high"
+    // - "xhigh"
+    // - "max"
+    // - null
+    "reasoning_effort": null,
+
     // (bool) 删除上下文里的推理内容
     // 大部分 API 会拒绝我们回传推理内容
     // 你可以设置为 false 来关闭此功能
