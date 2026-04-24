@@ -1,4 +1,5 @@
 from pydantic import BaseModel, ConfigDict, Field
+from ._reasoning_effort import ReasoningEffort
 
 class ModelConfig(BaseModel):
     model_config = ConfigDict(case_sensitive=False)
@@ -12,4 +13,5 @@ class ModelConfig(BaseModel):
     default_presence_penalty: float = Field(0.0, ge = -2.0, le = 2.0)
     default_stop: list[str] = Field(default_factory = list)
     default_thinking: bool | None = None
+    default_reasoning_effort: ReasoningEffort | None = None
     stream: bool = True
