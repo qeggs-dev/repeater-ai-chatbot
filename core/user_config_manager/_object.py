@@ -1,4 +1,5 @@
 from pydantic import BaseModel, ConfigDict, field_validator, Field
+from ..global_config_manager import ReasoningEffort
 from zoneinfo import ZoneInfo, available_timezones
 from typing import Any
 
@@ -22,6 +23,7 @@ class UserConfigs(BaseModel):
     model_timeout: int | float | None = None
     frequency_penalty: float | None = Field(None, ge=-2.0, le=2.0)
     presence_penalty: float | None = Field(None, ge=-2.0, le=2.0)
+    reasoning_effort: ReasoningEffort | None = None
     context_shrink_limit: int | None = None
     remove_reasoning_prompt: bool | None = None
     request_statistics_template: str | None = None
