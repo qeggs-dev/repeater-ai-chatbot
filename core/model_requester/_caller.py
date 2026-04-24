@@ -94,8 +94,13 @@ class ModelRequester:
                 break
             yield delta
     
-    async def _parse_response(self, request: Request, response: Response) -> Response:
-        if response.tool_calls:
+    async def _parse_response(
+            self,
+            request: Request,
+            response: Response,
+            allow_tool_calls: bool = True,
+        ) -> Response:
+        if allow_tool_calls and response.tool_calls:
             calling_requests: list[CallingRequest] = []
             for tool_call in response.tool_calls:
                 calling_requests.append(tool_call.to_calling_request())
@@ -170,7 +175,8 @@ class ModelRequester:
                     responses.tool_requests = self._tool_responses
                     await self._parse_response(
                         request = request,
-                        response = response
+                        response = response,
+                        allow_tool_calls = allow_tool_calls,
                     )
                     raise GenerateFinished
                 except Regenerate as e:
