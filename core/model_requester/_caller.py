@@ -131,7 +131,8 @@ class ModelRequester:
         max_generated_times: int = ConfigManager.get_configs().callapi.max_regenerate_times
         responses: MultiResponse = MultiResponse()
         responses.historical_context = request.context
-        submit_context = request.context.remove_reasoning_content()
+        if request.remove_reasoning_prompt:
+            submit_context = request.context.remove_reasoning_content()
         request.context = submit_context
         if allow_tool_calls and max_generated_times > 1:
             request.tools = self._tools_caller.to_request()
