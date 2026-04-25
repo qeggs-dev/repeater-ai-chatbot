@@ -25,6 +25,7 @@
       - `image_url` (str): 图片渲染输出文件URL
       - `file_uuid` (str): 图片渲染输出文件的UUID
       - `style` (str): 渲染风格，如果使用了自定义CSS则返回`custom`
+      - `html_template` (str): HTML模板
       - `status` (str): 渲染处理器的状态，只有`success`,`failed`和`pending`三种状态
       - `browser_used` (str): 渲染使用的浏览器
       - `url_expiry_time` (float): 图片链接有效时长
