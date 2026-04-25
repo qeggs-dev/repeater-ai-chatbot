@@ -155,6 +155,7 @@ async def render(
             image_url = fileurl,
             file_uuid = result.file_uuid,
             style = style_name,
+            html_template = html_template_name,
             url_expiry_time = render_url_expiry_time,
             text = request.text,
             created = created,
