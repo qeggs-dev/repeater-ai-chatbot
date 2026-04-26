@@ -14,11 +14,11 @@ class ModelsClient:
         )
     
     @overload
-    async def get_models(self, model_type: ModelType, with_api_key: Literal[True] = True) -> StaticModelAPIResponse | ExceptionResponse:
+    async def get_models(self, model_type: ModelType, with_api_key: Literal[False] = False) -> ModelAPIResponse | ExceptionResponse:
         ...
     
     @overload
-    async def get_models(self, model_type: ModelType, with_api_key: Literal[False] = False) -> ModelAPIResponse | ExceptionResponse:
+    async def get_models(self, model_type: ModelType, with_api_key: Literal[True] = True) -> StaticModelAPIResponse | ExceptionResponse:
         ...
     
     async def get_models(self, model_type: ModelType, with_api_key: bool = False) -> ModelAPIResponse | StaticModelAPIResponse | ExceptionResponse:
@@ -47,11 +47,11 @@ class ModelsClient:
             )
     
     @overload
-    async def get_model(self, model_type: ModelType, model_uid: str, with_api_key: Literal[True] = True) -> StaticModelAPIResponse | ExceptionResponse:
+    async def get_model(self, model_type: ModelType, model_uid: str, with_api_key: Literal[False] = False) -> ModelAPIResponse | ExceptionResponse:
         ...
     
     @overload
-    async def get_model(self, model_type: ModelType, model_uid: str, with_api_key: Literal[False] = False) -> ModelAPIResponse | ExceptionResponse:
+    async def get_model(self, model_type: ModelType, model_uid: str, with_api_key: Literal[True] = True) -> StaticModelAPIResponse | ExceptionResponse:
         ...
     
     async def get_model(self, model_type: ModelType, model_uid: str, with_api_key: bool = False) -> ModelAPIResponse | StaticModelAPIResponse | ExceptionResponse:
