@@ -5,6 +5,7 @@ from .._user_data_type import UserDataType, get_manager
 from .....nexus_client import InvalidUUIDError
 from ._environment_model import EnvironmentModel
 from ._upload_model import UploadRequest, UploadResponse
+from .....runtime_container import RuntimeContainer
 
 @Server.app.post("/nexus/upload/{user_id}/environment")
 async def upload_env_to_nexus(user_id: str, request: UploadRequest):
@@ -18,7 +19,7 @@ async def upload_env_to_nexus(user_id: str, request: UploadRequest):
         config = await config_manager.load(user_id = user_id)
     )
     try:
-        response = await Server.nexus_client.submit(
+        response = await RuntimeContainer.get_runtime().nexus_client.submit(
             "repeater.environment",
             content = {
                 "metadata": {

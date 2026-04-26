@@ -4,12 +4,13 @@ from .....server import Server
 from .._user_data_type import UserDataType, get_manager
 from .....nexus_client import InvalidUUIDError
 from ._download_model import DownloadRequest, DownloadResponse
+from .....runtime_container import RuntimeContainer
 
 @Server.app.post("/nexus/download/{user_id}/single/{user_data_type}")
 async def download_from_nexus(user_id: str, user_data_type: UserDataType, request: DownloadRequest):
     manager = get_manager(user_data_type)
     try:
-        response = await Server.nexus_client.download(f"repeater.{user_data_type.value}", request.id, "content")
+        response = await RuntimeContainer.get_runtime().nexus_client.download(f"repeater.{user_data_type.value}", request.id, "content")
     except InvalidUUIDError as e:
         return ORJSONResponse(
             content = DownloadResponse(

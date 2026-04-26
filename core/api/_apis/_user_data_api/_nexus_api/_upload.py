@@ -5,6 +5,7 @@ from .....server import Server
 from .._user_data_type import UserDataType, get_manager
 from .....nexus_client import InvalidUUIDError
 from ._upload_model import UploadRequest, UploadResponse
+from .....runtime_container import RuntimeContainer
 
 @Server.app.post("/nexus/upload/{user_id}/single/{user_data_type}")
 async def upload_to_nexus(user_id: str, user_data_type: UserDataType, request: UploadRequest):
@@ -13,7 +14,7 @@ async def upload_to_nexus(user_id: str, user_data_type: UserDataType, request: U
     if isinstance(data, BaseModel):
         data = data.model_dump(exclude_none = True)
     try:
-        response = await Server.nexus_client.submit(
+        response = await RuntimeContainer.get_runtime().nexus_client.submit(
             f"repeater.{user_data_type.value}",
             content = {
                 "metadata": {
