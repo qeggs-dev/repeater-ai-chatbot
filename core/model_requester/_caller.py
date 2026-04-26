@@ -14,6 +14,7 @@ from ..call_api.completions_api import (
     NoStreamClient,
     Request,
     Response,
+    Runtime,
     Delta
 )
 from ..text_buffer import ContentBuffer
@@ -126,8 +127,7 @@ class ModelRequester:
         self,
         user_id:str,
         request: Request,
-        content_buffer: ContentBuffer,
-        status_map: StatusMap[str, str],
+        runtime: Runtime,
         allow_tool_calls: bool = True,
         tool_choice_model: ToolChoice = ToolChoice.AUTO,
         stream: bool = False,
@@ -160,16 +160,13 @@ class ModelRequester:
                         response = await self._stream_api_client.submit_request(
                             user_id = user_id,
                             request = request,
-                            content_buffer = content_buffer,
-                            status_map = status_map,
-                            chunk_callback = send_chunk
+                            runtime = runtime,
                         )
                     else:
                         response = await self._api_client.submit_request(
                             user_id = user_id,
                             request = request,
-                            content_buffer = content_buffer,
-                            status_map = status_map
+                            runtime = runtime
                         )
                     responses.add(response)
                     responses.tool_requests = self._tool_responses
@@ -185,7 +182,7 @@ class ModelRequester:
                         user_id = user_id,
                     )
                     request = e.request
-                    content_buffer.clear()
+                    runtime.content_buffer.clear()
                     if generated_times >= max_generated_times:
                         raise GenerateFinished
                     elif (generated_times + 1) >= max_generated_times:
@@ -200,6 +197,6 @@ class ModelRequester:
                 "GenerateFinished",
                 user_id = user_id,
             )
-            content_buffer.clear()
+            runtime.content_buffer.clear()
             return responses
                 
