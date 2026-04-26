@@ -38,7 +38,7 @@ class CallAPI(CallNstreamAPIBase):
 
         with runtime.status_map.enter(user_id, "Init objects"):
             # 创建模型响应对象
-            model_response = Response()
+            model_response = runtime.response
             # 设置 user_id
             model_response.user_id = user_id
             # 创建调用日志对象

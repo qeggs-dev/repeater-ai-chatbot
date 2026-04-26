@@ -16,7 +16,7 @@ class BaseCallAPI(ABC):
     def __init__(self, print_file: TextIO = sys.stdout):
         self._print_file = print_file
 
-    def call(self, user_id: str, request: Request, runtime: Runtime) -> T:
+    async def call(self, user_id: str, request: Request, runtime: Runtime) -> T:
         """
         调用API
 
@@ -32,7 +32,7 @@ class BaseCallAPI(ABC):
             raise TypeError("runtime must be Runtime")
         
         try:
-            return self._call(user_id, request, runtime)
+            return await self._call(user_id, request, runtime)
         except openai.APITimeoutError as e:
             raise APITimeoutError(str(e)) from e
         except openai.BadRequestError as e:
@@ -45,7 +45,7 @@ class BaseCallAPI(ABC):
             raise CallAPIException(str(e)) from e
     
     @abstractmethod
-    def _call(self, user_id: str, request: Request, runtime: Runtime) -> T:
+    async def _call(self, user_id: str, request: Request, runtime: Runtime) -> T:
         pass
 
     @property

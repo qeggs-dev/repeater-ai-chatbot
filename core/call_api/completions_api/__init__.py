@@ -12,7 +12,8 @@ from ._objects import (
     TopLogprob,
     FinishReason,
     Logprob,
-    Delta
+    Delta,
+    StreamOptions
 )
 from ._exceptions import (
     CallAPIException,
@@ -37,6 +38,7 @@ __all__ = [
     "FinishReason",
     "Logprob",
     "Delta",
+    "StreamOptions",
     "CallAPIException",
     "BadRequestError",
     "ModelNotFoundError",

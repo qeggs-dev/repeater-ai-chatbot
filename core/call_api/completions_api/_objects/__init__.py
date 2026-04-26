@@ -5,6 +5,7 @@ from ._request import Request
 from ._runtime import Runtime
 from ._response import Response
 from ._tokens_count import TokensCount
+from ._stream_options import StreamOptions
 
 __all__ = [
     "Delta",
@@ -16,4 +17,5 @@ __all__ = [
     "Runtime",
     "Response",
     "TokensCount",
+    "StreamOptions",
 ]

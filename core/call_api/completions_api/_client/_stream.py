@@ -63,7 +63,7 @@ class StreamClient(ClientBase):
                 client = StreamAPI()
             else:
                 raise StreamNotAvailable("When request.stream == True, the stream is not available.")
-            generator = client.call(
+            generator = await client.call(
                 user_id = user_id,
                 request = request,
                 runtime = runtime

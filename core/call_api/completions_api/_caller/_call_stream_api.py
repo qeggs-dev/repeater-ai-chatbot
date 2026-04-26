@@ -93,8 +93,11 @@ class StreamAPI(CallStreamAPIBase):
             )
         
         with runtime.status_map.enter(user_id, "Streaming"):
-            logger.info("Start Streaming", user_id = user_id)
-            async for chunk in response:
-                # 翻译chunk
-                delta_data = await translation_chunk(chunk)
-                yield delta_data
+            async def translation_chunks(response: AsyncStream[ChatCompletionChunk]):
+                logger.info("Start Streaming", user_id = user_id)
+                async for chunk in response:
+                    # 翻译chunk
+                    delta_data = await translation_chunk(chunk)
+                    yield delta_data
+            
+            return translation_chunks(response)

@@ -41,7 +41,7 @@ class NoStreamClient(ClientBase):
                 generator = StreamingResponseGenerationLayer(
                     user_id = user_id,
                     request = request,
-                    content_buffer = runtime.content_buffer,
+                    runtime = runtime,
                     response_iterator = response
                 )
                 async for chunk in generator:
@@ -63,7 +63,7 @@ class NoStreamClient(ClientBase):
         try:
             if request.stream:
                 client = StreamAPI()
-                call = client.call(
+                call = await client.call(
                     user_id = user_id,
                     request = request,
                     runtime = runtime
@@ -78,11 +78,23 @@ class NoStreamClient(ClientBase):
             return call
         except openai.BadRequestError as e:
             if e.code in range(400, 500):
-                logger.error(f"BadRequestError: {e}", user_id = user_id)
+                logger.error(
+                    "BadRequestError: {error}",
+                    user_id = user_id,
+                    error = str(e)
+                )
                 raise BadRequestError(e.message)
             elif e.code in range(500, 600):
-                logger.error(f"API Server Error: {e}", user_id = user_id)
+                logger.error(
+                    "API Server Error: {error}",
+                    user_id = user_id,
+                    error = str(e)
+                )
                 raise APIServerError(e.message)
         except Exception as e:
-            logger.error(f"Error: {e}", user_id = user_id)
+            logger.error(
+                "Error: {error}",
+                user_id = user_id,
+                error = str(e)
+            )
             raise CallAPIException(e) from e

@@ -32,7 +32,7 @@ class Request(BaseModel):
     stop: list[str] | None = None
     context: Context | None = None
     prompt: str | None = None
-    echo: bool = False
+    echo: bool | None = None
     suffix: str | None = None
     reasoning_effort: ReasoningEffort | None = None
     remove_reasoning_prompt: bool = True
@@ -43,5 +43,4 @@ class Request(BaseModel):
     output_role: ContentRole = ContentRole.ASSISTANT
     tools: list[dict[str, Any]] | None = None
     tool_choice: str | dict[str, dict[str, str]] | None = None
-    continue_processing_callback_function: Callable[[str, Delta], bool] | None = None
     stream_options: StreamOptions = Field(default_factory=StreamOptions)
