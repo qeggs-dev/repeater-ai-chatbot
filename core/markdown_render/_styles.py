@@ -13,9 +13,13 @@ class Styles:
         self._static_resources_client = static_resources_client
         self._style_base_path = URL(style_base_path)
     
-    async def get_style(self, style_name: str, use_base: bool = True, encoding: str = "utf-8") -> str:
+    def get_style_url(self, style_name: str) -> URL:
         style_name = sanitize_filename_with_dir(style_name)
         style_file_path: URL = self._style_base_path / f"{style_name}.css"
+        return style_file_path
+    
+    async def get_style(self, style_name: str, encoding: str = "utf-8") -> str:
+        style_file_path: URL = self.get_style_url(style_name)
         
         try:
             return await self._static_resources_client.get_text(style_file_path, text_encoding = encoding)
