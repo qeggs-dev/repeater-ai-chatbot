@@ -20,5 +20,5 @@ class ChatRequest(BaseModel):
     extra_template_fields: dict[str, Any] | None = None
     additional_data: AdditionalData | None = None
     cross_user_data_routing: CrossUserDataRouting[str | None] | None = None
-    allow_tool_calls: bool | None = None
+    allowed_tool_calls: set[str] | None = None
     stream: bool = False

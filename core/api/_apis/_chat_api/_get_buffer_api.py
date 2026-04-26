@@ -6,7 +6,7 @@ from ....server import Server
 
 @Server.app.get("/chat/buffer/{user_id}")
 async def get_chat_buffer_api(user_id: str):
-    if user_id not in Server.core.content_buffers_pool:
+    if user_id not in Server.core.runtime.content_buffers_pool:
         raise HTTPException(
             status_code = 404,
             message = "This user does not have a task currently being generated."

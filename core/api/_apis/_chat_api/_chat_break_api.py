@@ -5,7 +5,7 @@ from ....server import Server
 
 @Server.app.post("/chat/break/{user_id}")
 async def chat_break_api(user_id: str):
-    cancel_count = await Server.chat_task_pool.cancel_tasks(user_id)
+    cancel_count = await Server.core.runtime.chat_task_pool.cancel_tasks(user_id)
     return ORJSONResponse(
         {
             "code": 200,
