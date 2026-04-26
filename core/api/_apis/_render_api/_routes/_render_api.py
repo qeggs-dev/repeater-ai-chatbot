@@ -58,7 +58,7 @@ async def render(
     # 获取用户配置
     config = await Server.core.user_config_manager.load(user_id = user_id)
         
-    style_name, css, style_url = await get_style(
+    style_name, style_url = await get_style(
         request = request,
         user_configs = config,
         static_resources_client = Server.core.static_resources_client,
@@ -91,8 +91,6 @@ async def render(
         document_bottom_comment = config.render_document_bottom_comment if config.render_document_bottom_comment is not None else global_configs.render.markdown.document_bottom_comment
     environment = global_configs.text_template.sandbox.get_jinja_env()
 
-    base_url = global_configs.render.to_image.base_url
-
     no_pre_labels = global_configs.render.markdown.no_pre_labels
     if no_pre_labels is None:
         no_pre_labels = request.no_pre_labels
@@ -105,14 +103,14 @@ async def render(
 
     # 读取HTML模板
     if request.html_template is not None:
-        html_template_file = None
-        html_template = request.html_template
-    else:
-        html_template_file = html_template_dir / f"{html_template_name}{html_template_suffix}"
-        html_template = await Server.core.static_resources_client.get_text(
-            html_template_file,
-            text_encoding = html_template_encoding
-        )
+        html_template_name = request.html_template
+
+    html_template_file = html_template_dir / f"{html_template_name}{html_template_suffix}"
+    html_template = await Server.core.static_resources_client.get_text(
+        html_template_file,
+        text_encoding = html_template_encoding
+    )
+    html_template_url = Server.core.static_resources_client.base_url.join(html_template_file)
     
     end_of_preprocessing = time.perf_counter_ns()
 
@@ -123,10 +121,9 @@ async def render(
         environment = environment,
         width = width,
         title = title,
-        css = css,
         style_name = style_name,
         css_url = style_url,
-        html_url = html_template_file,
+        html_url = html_template_url,
         direct_output = request.direct_output,
         markdown_extensions = markdown_extensions,
         allowed_tags = allowed_tags,
