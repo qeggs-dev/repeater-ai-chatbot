@@ -6,3 +6,5 @@
 1. [HTTP Requests Tool](./built-in/http_requests.md)
 2. [Set Prompt Tool](./built-in/set_prompt.md)
 3. [Demo Tool](./built-in/demo.md)
+4. [Get Models](./built-in/get_models.md)
+5. [Call Model](./built-in/call_model.md)
