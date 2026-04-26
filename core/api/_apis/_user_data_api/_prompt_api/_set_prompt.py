@@ -19,7 +19,7 @@ async def set_prompt(user_id: str, prompt: str = Form(...)):
         PlainTextResponse: Success message
     """
     # 设置用户ID为user_id的提示词为prompt
-    await Server.core.prompt_manager.save(
+    await Server.core.runtime.prompt_manager.save(
         user_id = user_id,
         data = prompt
     )

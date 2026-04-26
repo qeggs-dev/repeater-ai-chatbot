@@ -13,7 +13,7 @@ async def get_prompt_userlist():
         ORJSONResponse: User ID list
     """
     # 获取所有用户ID
-    userid_list = await Server.core.prompt_manager.get_all_user_id()
+    userid_list = await Server.core.runtime.prompt_manager.get_all_user_id()
 
     logger.info("Get prompt user list")
 

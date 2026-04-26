@@ -11,7 +11,7 @@ async def model_info(model_type: str, model_uid: str):
             status_code=400,
             detail="Invalid model type."
         )
-    model_info = await Server.core.model_api_manager.get_model(
+    model_info = await Server.core.runtime.model_api_manager.get_model(
         ModelType(model_type),
         model_uid
     )

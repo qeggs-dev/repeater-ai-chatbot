@@ -11,7 +11,7 @@ async def get_chat_buffer_api(user_id: str):
             status_code = 404,
             message = "This user does not have a task currently being generated."
         )
-    buffers = await Server.core.content_buffers_pool.get(user_id)
+    buffers = await Server.core.runtime.content_buffers_pool.get(user_id)
 
     return ORJSONResponse(
         content = {

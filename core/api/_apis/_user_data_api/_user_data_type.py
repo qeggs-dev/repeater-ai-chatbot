@@ -10,10 +10,10 @@ class UserDataType(StrEnum):
 def get_manager(data_type: UserDataType) -> UserDataManager:
     match data_type:
         case UserDataType.CONTEXT:
-            return Server.core.context_manager
+            return Server.core.runtime.context_manager
         case UserDataType.PROMPT:
-            return Server.core.prompt_manager
+            return Server.core.runtime.prompt_manager
         case UserDataType.CONFIG:
-            return Server.core.user_config_manager
+            return Server.core.runtime.user_config_manager
     
     raise ValueError(f"Invalid data type: {data_type}")

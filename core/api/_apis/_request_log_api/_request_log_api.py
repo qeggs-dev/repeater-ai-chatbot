@@ -15,7 +15,7 @@ async def get_request_log():
     Returns:
         ORJSONResponse: Filtered log object dictionary
     """
-    logs = await Server.core.request_log.read_request_log()
+    logs = await Server.core.runtime.request_log.read_request_log()
     return ORJSONResponse([log.model_dump() for log in logs])
 
 @Server.app.get("/request_log/stream")
@@ -31,7 +31,7 @@ async def stream_request_log():
     """
     async def generate_jsonl() -> AsyncIterator[bytes]:
         """生成JSONL格式的字节流"""
-        async for log in Server.core.request_log.read_stream_request_log():
+        async for log in Server.core.runtime.request_log.read_stream_request_log():
             yield orjson.dumps(log.model_dump()) + b"\n"
 
     return StreamingResponse(

@@ -5,7 +5,6 @@ from .._user_data_type import UserDataType, get_manager
 from .....nexus_client import InvalidUUIDError
 from ._download_model import DownloadRequest, DownloadResponse
 from ._environment_model import EnvironmentModel
-from .....runtime_container import RuntimeContainer
 
 @Server.app.post("/nexus/download/{user_id}/environment")
 async def download_env_from_nexus(user_id: str, request: DownloadRequest):
@@ -14,7 +13,7 @@ async def download_env_from_nexus(user_id: str, request: DownloadRequest):
     config_manager = get_manager(UserDataType.CONFIG)
     
     try:
-        response = await RuntimeContainer.get_runtime().nexus_client.download("repeater.environment", user_id, "content")
+        response = await Server.core.runtime.nexus_client.download("repeater.environment", user_id, "content")
     except InvalidUUIDError as e:
         return ORJSONResponse(
             content = DownloadResponse(
