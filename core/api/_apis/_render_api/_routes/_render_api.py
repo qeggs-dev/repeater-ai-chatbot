@@ -26,6 +26,7 @@ from .._responses import (
     RenderTime
 )
 from .....special_exception import HTTPException
+from .....runtime_container import RuntimeContainer
 
 delayed_tasks_pool = DelayedTasksPool()
 ExitHandler.add_function(delayed_tasks_pool.cancel_all())
@@ -138,7 +139,7 @@ async def render(
     end_of_md_to_html = time.perf_counter_ns()
 
     # 生成图片
-    response = await Server.html_render_client.render(html)
+    response = await RuntimeContainer.get_runtime().html_render_client.render(html)
     result = response.get_data()
     if result is None:
         raise HTTPException(status_code=500, message="The response data could not be obtained correctly.")
