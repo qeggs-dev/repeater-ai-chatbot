@@ -17,17 +17,13 @@ from loguru import logger
 # ==== 自定义库 ==== #
 from .call_api.completions_api import (
     Request,
+    Runtime as RequestRuntime,
     Response,
-    Delta,
     CallAPIException
 )
 from .model_requester import (
     ModelRequester,
     MultiResponse
-)
-from .data_manager import (
-    ContextManager,
-    PromptManager
 )
 from .context import (
     ContextLoader,
@@ -37,13 +33,10 @@ from .context import (
     TextBlock,
 )
 from .user_config_manager import (
-    ConfigManager as UserConfigManager,
     UserConfigs
 )
 from .pools.lock_pool import AsyncLockPool
-from .pools.resource_pool import ResourcePool
 from .text_buffer import ContentBuffer
-from .auxiliary.regex_checker import RegexChecker
 from .global_config_manager import ConfigManager
 from .assist_struct import (
     Response as RepeaterResponse,
@@ -52,78 +45,33 @@ from .assist_struct import (
     AdditionalData
 )
 from .model_api import (
-    ModelsClient,
     ExceptionResponse as ModelAPIExceptionResponse,
     ModelType,
     ModelAPI,
     StaticModelAPI,
 )
 from .special_exception import HTTPException
-from .static_resources_client import StaticResourcesClient
 from .request_log import (
-    RequestLog,
-    TimeStamp,
-    RequestLogManager
+    TimeStamp
 )
 from .template_render import (
     TemplateParser
 )
-from .status_map import StatusMap
-
-# ==== 本模块代码 ==== #
+from .runtime_container import RepeaterRuntime
 
 class Core:
     # region > init
-    def __init__(self, max_concurrency: int | None = None):
+    def __init__(self, runtime: RepeaterRuntime, max_concurrency: int | None = None):
         # 配置最大并发数
         self._max_concurrency = max_concurrency
 
         # 全局锁(用于获取会话锁)
         self.lock = asyncio.Lock()
 
-        # 初始化用户数据管理器
-        self.context_manager = ContextManager()
-        self.prompt_manager = PromptManager()
-        self.user_config_manager: UserConfigManager = UserConfigManager()
-
-        # 初始化 Model 管理器
-        self.model_api_manager = ModelsClient(
-            ConfigManager.get_configs().model_api.base_url,
-            ConfigManager.get_configs().model_api.timeout
-        )
-
-        # 初始化静态资源客户端
-        self.static_resources_client = StaticResourcesClient(
-            ConfigManager.get_configs().static_resources_server.base_url,
-            ConfigManager.get_configs().static_resources_server.timeout
-        )
-
         # 初始化锁池
         self.namespace_locks: AsyncLockPool = AsyncLockPool()
 
-        # 初始化内容缓冲池
-        self.content_buffers_pool: ResourcePool[ContentBuffer] = ResourcePool()
-
-        # 初始化调用日志管理器
-        self.request_log = RequestLogManager(
-            ConfigManager.get_configs().request_log.dir,
-            auto_save = ConfigManager.get_configs().request_log.auto_save,
-        )
-
-        # 黑名单
-        self.blacklist: RegexChecker = RegexChecker()
-        blacklist_file_path = Path(ConfigManager.get_configs().blacklist.file_path)
-        try:
-            with open(blacklist_file_path, "r", encoding="utf-8") as f:
-                self.blacklist.load_strstream(f)
-        except ValueError:
-            logger.error("Invalid blacklist file")
-        except FileNotFoundError:
-            logger.error(f"Blacklist file not found: {blacklist_file_path}")
-        self.blacklist_match_timeout: int | None = ConfigManager.get_configs().blacklist.match_timeout
-
-        # Task 状态表
-        self.task_status_map: StatusMap[str, str] = StatusMap()
+        self.runtime = runtime
 
         # 添加退出函数
         def _exit():
@@ -132,7 +80,7 @@ class Core:
             """
             # 保存调用日志
             if ConfigManager.get_configs().request_log.auto_save:
-                self.request_log.save_request_log()
+                self.runtime.request_log.save_request_log()
             logger.info("Exiting...")
         
         # 注册退出函数
@@ -193,7 +141,7 @@ class Core:
         :param user_id: 用户ID
         :return: 用户配置
         """
-        config: UserConfigs = await self.user_config_manager.load(user_id = user_id)
+        config: UserConfigs = await self.runtime.user_config_manager.load(user_id = user_id)
         return config
     # endregion
 
@@ -204,9 +152,9 @@ class Core:
         :return: 上下文加载器
         """
         context_loader = ContextLoader(
-            config=self.user_config_manager,
-            prompt=self.prompt_manager,
-            context=self.context_manager,
+            config=self.runtime.user_config_manager,
+            prompt=self.runtime.prompt_manager,
+            context=self.runtime.context_manager,
         )
         return context_loader
     
@@ -250,7 +198,7 @@ class Core:
         if load_prompt:
             prompt: ContentUnit = await context_loader.load_prompt(
                 user_id = prompt_load_source,
-                static_resources_client = self.static_resources_client,
+                static_resources_client = self.runtime.static_resources_client,
                 temporary_prompt = temporary_prompt,
                 template_parser = template_parser
             )
@@ -303,10 +251,10 @@ class Core:
             blacklist_file_path = Path(path)
         
         if blacklist_file_path.exists():
-            self.blacklist.clear()
+            self.runtime.blacklist.clear()
             async with aiofiles.open(blacklist_file_path, "r") as f:
                 try:
-                    self.blacklist.load(await f.read())
+                    self.runtime.blacklist.load(await f.read())
                 except ValueError as e:
                     logger.warning(f"load blacklist failed: {e}")
     # endregion
@@ -321,12 +269,12 @@ class Core:
         """
         async def _match_blacklist(user_id: str, timeout: int | None) -> bool:
             if timeout is not None:
-                return bool(await asyncio.wait_for(asyncio.to_thread(self.blacklist.check, user_id), timeout = timeout))
+                return bool(await asyncio.wait_for(asyncio.to_thread(self.runtime.blacklist.check, user_id), timeout = timeout))
             else:
-                return bool(await asyncio.to_thread(self.blacklist.check, user_id))
+                return bool(await asyncio.to_thread(self.runtime.blacklist.check, user_id))
         
         try:
-            if await _match_blacklist(user_id, self.blacklist_match_timeout):
+            if await _match_blacklist(user_id, self.runtime.blacklist_match_timeout):
                 logger.info("User in blacklist", user_id = user_id)
                 return True
         except asyncio.exceptions.TimeoutError:
@@ -424,7 +372,7 @@ class Core:
             cross_user_data_routing.fill_missing(user_id = user_id)
         await cross_user_data_routing.removal_not_allowed_user(
             user_id = user_id,
-            user_config_manager = self.user_config_manager
+            user_config_manager = self.runtime.user_config_manager
         )
         return cross_user_data_routing
     # endregion
@@ -486,15 +434,15 @@ class Core:
             async with lock:
 
                 # 进入状态
-                with self.task_status_map.enter(user_id, "Tasking"):
+                with self.runtime.task_status_map.enter(user_id, "Tasking"):
                 
-                    with self.task_status_map.enter(user_id, "Prepareing"):
+                    with self.runtime.task_status_map.enter(user_id, "Prepareing"):
                         prepare_start_time = TimeStamp()
                         logger.info("====================================", user_id = user_id)
                         logger.info("Start Task", user_id = user_id)
 
                         # region [Checking Blacklist]
-                        with self.task_status_map.enter(user_id, "Checking Blacklist"):
+                        with self.runtime.task_status_map.enter(user_id, "Checking Blacklist"):
                             # 判断用户是否在黑名单中
                             if await self.in_blacklist(user_id):
                                 raise HTTPException(
@@ -510,12 +458,12 @@ class Core:
                         # endregion
 
                         # region [Getting Config]
-                        with self.task_status_map.enter(user_id, "Getting Config"):
+                        with self.runtime.task_status_map.enter(user_id, "Getting Config"):
                             configs = await self.get_config(user_id)
                         # endregion
                         
                         # region [Processing Cross User Data Access]
-                        with self.task_status_map.enter(user_id, "Processing Cross User Data Access"):
+                        with self.runtime.task_status_map.enter(user_id, "Processing Cross User Data Access"):
                             if not configs.cross_user_data_access:
                                 logger.warning("Cross user data routing is not allowed.", user_id = user_id)
                                 cross_user_data_routing = None
@@ -530,7 +478,7 @@ class Core:
                         # endregion
                         
                         # region [Getting model]
-                        with self.task_status_map.enter(user_id, "Getting model"):
+                        with self.runtime.task_status_map.enter(user_id, "Getting model"):
                             # 获取默认模型uid
                             model_uid = configs.model_uid
                             if not model_uid:
@@ -556,7 +504,7 @@ class Core:
                                 )
                             
                             # 获取API信息
-                            model_info = await self.model_api_manager.get_model(
+                            model_info = await self.runtime.model_api_manager.get_model(
                                 model_type = ModelType.CHAT,
                                 model_uid = model_uid_str,
                                 with_api_key = True
@@ -596,13 +544,13 @@ class Core:
                         # endregion
 
                         # region [Getting model info]
-                        with self.task_status_map.enter(user_id, "Mapping user name"):
+                        with self.runtime.task_status_map.enter(user_id, "Mapping user name"):
                             # 进行用户名映射
                             user_info = await self.nickname_mapping(user_id, user_info)
                         # endregion
 
                         # region [Getting template parser]
-                        with self.task_status_map.enter(user_id, "Getting template parser"):
+                        with self.runtime.task_status_map.enter(user_id, "Getting template parser"):
                             # 获取变量展开器以展开变量内容
                             template_parser = TemplateParser(
                                 model = model,
@@ -613,11 +561,11 @@ class Core:
                         # endregion
 
                         # region [Getting context]
-                        with self.task_status_map.enter(user_id, "Processing context"):
+                        with self.runtime.task_status_map.enter(user_id, "Processing context"):
                             # 获取上下文加载器
                             context_loader = await self.get_context_loader()
 
-                            with self.task_status_map.enter(user_id, "Getting history context"):
+                            with self.runtime.task_status_map.enter(user_id, "Getting history context"):
                                 if load_prompt is None:
                                     if configs.load_prompt is None:
                                         load_prompt = ConfigManager.get_configs().prompt.load_prompt
@@ -634,19 +582,19 @@ class Core:
                                 )
                             
                             if history_msg_role_map is not None:
-                                with self.task_status_map.enter(user_id, "Role mapping"):
+                                with self.runtime.task_status_map.enter(user_id, "Role mapping"):
                                     logger.info(
                                         "Role mapping:\n{role_map}",
                                         role_map = "\n".join(f"{raw_role} -> {new_role}" for raw_role, new_role in history_msg_role_map.items()),
                                     )
                                     submit_context.role_map(history_msg_role_map)
 
-                            with self.task_status_map.enter(user_id, "Checking request contains only text"):
+                            with self.runtime.task_status_map.enter(user_id, "Checking request contains only text"):
                                 new_requests_text_only = configs.new_requests_text_only
                                 if new_requests_text_only is None:
                                     new_requests_text_only = ConfigManager.get_configs().context.new_requests_text_only
                             
-                            with self.task_status_map.enter(user_id, "Splicing user input"):
+                            with self.runtime.task_status_map.enter(user_id, "Splicing user input"):
                                 if message is not None:
                                     user_input: ContentUnit = await self.make_user_content(
                                         context_loader = context_loader,
@@ -664,7 +612,7 @@ class Core:
                                 else:
                                     user_input = None
                             
-                            with self.task_status_map.enter(user_id, "Shrinking context"):
+                            with self.runtime.task_status_map.enter(user_id, "Shrinking context"):
                                 # 如果上下文需要收缩，则进行收缩(为零或类型不对则不进行操作)
                                 if len(submit_context.context_list) > 0:
                                     max_context_length = configs.context_shrink_limit or ConfigManager.get_configs().context.context_shrink_limit
@@ -689,7 +637,7 @@ class Core:
                         # endregion
                         
                         # region [Make Request Object]
-                        with self.task_status_map.enter(user_id, "Make Request Object"):
+                        with self.runtime.task_status_map.enter(user_id, "Make Request Object"):
                             # 创建请求对象
                             request = Request()
                             # 设置上下文
@@ -722,7 +670,7 @@ class Core:
                             
                             # 创建内容缓冲区
                             content_buffer = ContentBuffer()
-                            await self.content_buffers_pool.add(user_id, content_buffer)
+                            await self.runtime.content_buffers_pool.add(user_id, content_buffer)
 
                             # 设置请求对象的参数信息
                             request.user_name = user_info.nickname
@@ -789,9 +737,18 @@ class Core:
                                     else:
                                         allow_tool_calls = ConfigManager.get_configs().tool_calls.allow_by_default
                         # endregion
+                        
+                        # region [Make Request Object]
+                        with self.runtime.task_status_map.enter(user_id, "Make Request Runtime Object"):
+                            request_runtime = RequestRuntime(
+                                client_pool = self.runtime.openai_pool,
+                                status_map = self.runtime.task_status_map,
+                                content_buffer = content_buffer
+                            )
+                        # endregion
 
                         # region [Pre-filled output]
-                        with self.task_status_map.enter(user_id, "Pre-filled output"):
+                        with self.runtime.task_status_map.enter(user_id, "Pre-filled output"):
                             # 输出 (为了自动填充输出内容)
                             output = RepeaterResponse()
                             output.model_group = model.parent
@@ -833,7 +790,7 @@ class Core:
                     prepare_end_time = TimeStamp()
 
                     # region [Requesting]
-                    with self.task_status_map.enter(user_id, "Requesting"):
+                    with self.runtime.task_status_map.enter(user_id, "Requesting"):
                         # 初始化 Client 并设置并发大小
                         model_caller = ModelRequester(
                             user_id = user_id,
@@ -843,7 +800,7 @@ class Core:
                                 if self._max_concurrency is None else self._max_concurrency
                             ),
                             context_loader = context_loader,
-                            static_resources_client = self.static_resources_client
+                            static_resources_client = self.runtime.static_resources_client
                         )
                         try:
                             model_responses: MultiResponse | None = None
@@ -853,13 +810,12 @@ class Core:
                                 model_responses = await model_caller.submit(
                                     user_id = user_id,
                                     request = request,
+                                    runtime = request_runtime,
                                     allow_tool_calls = allow_tool_calls,
-                                    content_buffer = content_buffer,
-                                    status_map = self.task_status_map,
                                     stream = stream
                                 )
                                 
-                                await self.content_buffers_pool.remove(user_id)
+                                await self.runtime.content_buffers_pool.remove(user_id)
                                 output = await self._post_treatment(
                                     user_id = user_id,
                                     output = output,
@@ -924,7 +880,7 @@ class Core:
         save_only_text: bool = False,
         save_new_only: bool = False,
     ) -> Response:
-        with self.task_status_map.enter(user_id, "PostProcessing"):
+        with self.runtime.task_status_map.enter(user_id, "PostProcessing"):
             # 补充调用日志的时间信息
             for response in responses:
                 response.request_log.task_start_time = task_start_time
@@ -969,10 +925,10 @@ class Core:
             
             # 通过合并频繁的同步操作，减少创建 Thread 带来的开销
             if enable_assistant_template:
-                with self.task_status_map.enter(user_id, "Template Expanding"):
+                with self.runtime.task_status_map.enter(user_id, "Template Expanding"):
                     await asyncio.to_thread(expand_variables)
             
-            with self.task_status_map.enter(user_id, "Saving Context"):
+            with self.runtime.task_status_map.enter(user_id, "Saving Context"):
                 if cross_user_data_routing.context.save_to_user_id == user_id:
                     historical_context = responses.historical_context
                 else:
@@ -1012,14 +968,14 @@ class Core:
                 response.request_log.task_end_time = TimeStamp()
 
             # 记录调用日志
-            with self.task_status_map.enter(user_id, "Recording request log"):
-                await self.request_log.add_multi_request_log(responses.request_logs())
+            with self.runtime.task_status_map.enter(user_id, "Recording request log"):
+                await self.runtime.request_log.add_multi_request_log(responses.request_logs())
 
             # 记录API调用成功
             logger.success(f"Task Finished!", user_id = saved_user_id)
 
             # 返回模型输出内容
-            with self.task_status_map.enter(user_id, "Returning response"):
+            with self.runtime.task_status_map.enter(user_id, "Returning response"):
                 output.context = new_context
                 output.create_time = responses[0].created
                 output.id = responses[0].id
