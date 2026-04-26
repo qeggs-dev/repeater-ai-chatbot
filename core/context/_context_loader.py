@@ -214,6 +214,7 @@ class ContextLoader:
             role_name: str | None = None,
             enable_user_input_template: bool = False,
             additional_data: AdditionalData | None = None,
+            make_multimodal_message: bool = True,
             extra_template_fields: dict[str, Any] | None = None,
             template_parser: TemplateParser | None = None
         ) -> ContentUnit:
@@ -238,110 +239,115 @@ class ContextLoader:
                     template_parser = template_parser,
                     extra_template_fields = extra_template_fields
                 )
-        if additional_data is not None:
-            if not isinstance(content.content, list):
-                content.content = []
-            if additional_data.image_url is not None:
-                if isinstance(additional_data.image_url, str):
-                    content.content.append(
-                        TextBlock(
-                            text = new_message,
-                        )
-                    )
-                    content.content.append(
-                        ImageBlock(
-                            image_url = ImageUrlBlock(
-                                url = additional_data.image_url,
+        if make_multimodal_message:
+            if additional_data is not None:
+                if not isinstance(content.content, list):
+                    content.content = []
+                if additional_data.image_url:
+                    if isinstance(additional_data.image_url, str):
+                        content.content.append(
+                            TextBlock(
+                                text = new_message,
                             )
                         )
-                    )
-                elif isinstance(additional_data.image_url, list):
-                    for url in additional_data.image_url:
                         content.content.append(
                             ImageBlock(
                                 image_url = ImageUrlBlock(
-                                    url = url,
+                                    url = additional_data.image_url,
                                 )
                             )
                         )
-                else:
-                    raise TypeError(
-                        "Invalid content type, must be one of the following: str, list[str], list[ImageUrlBlock]"
-                    )
-            if additional_data.video_url:
-                if isinstance(additional_data.video_url, str):
-                    content.content.append(
-                        VideoBlock(
-                            video_url = VideoUrlBlock(
-                                url = additional_data.video_url,
+                    elif isinstance(additional_data.image_url, list):
+                        for url in additional_data.image_url:
+                            content.content.append(
+                                ImageBlock(
+                                    image_url = ImageUrlBlock(
+                                        url = url,
+                                    )
+                                )
                             )
+                    else:
+                        raise TypeError(
+                            "Invalid content type, must be one of the following: str, list[str], list[ImageUrlBlock]"
                         )
-                    )
-                elif isinstance(additional_data.video_url, list):
-                    for url in additional_data.video_url:
+                if additional_data.video_url:
+                    if isinstance(additional_data.video_url, str):
                         content.content.append(
                             VideoBlock(
                                 video_url = VideoUrlBlock(
-                                    url = url,
+                                    url = additional_data.video_url,
                                 )
                             )
-                        ) 
-                else:
-                    raise TypeError(
-                        "Invalid content type, must be one of the following: str, list[str], list[VideoUrlBlock]"
-                    )
-            if additional_data.audio_url:
-                if isinstance(additional_data.audio_url, str):
-                    content.content.append(
-                        AudioBlock(
-                            audio_url = AudioDataBlock(
-                                data = additional_data.audio_url,
-                            )
                         )
-                    )
-                elif isinstance(additional_data.audio_url, list):
-                    for url in additional_data.audio_url:
+                    elif isinstance(additional_data.video_url, list):
+                        for url in additional_data.video_url:
+                            content.content.append(
+                                VideoBlock(
+                                    video_url = VideoUrlBlock(
+                                        url = url,
+                                    )
+                                )
+                            ) 
+                    else:
+                        raise TypeError(
+                            "Invalid content type, must be one of the following: str, list[str], list[VideoUrlBlock]"
+                        )
+                if additional_data.audio_url:
+                    if isinstance(additional_data.audio_url, str):
                         content.content.append(
                             AudioBlock(
                                 audio_url = AudioDataBlock(
-                                    data = url,
+                                    data = additional_data.audio_url,
                                 )
                             )
                         )
-                else:
-                    raise TypeError(
-                        "Invalid content type, must be one of the following: str, list[str], list[VideoUrlBlock]"
-                    )
-            if additional_data.file_url:
-                if isinstance(additional_data.file_url, str):
-                    content.content.append(
-                        FileBlock(
-                            file_url = FileDataBlock(
-                                data = additional_data.file_url,
+                    elif isinstance(additional_data.audio_url, list):
+                        for url in additional_data.audio_url:
+                            content.content.append(
+                                AudioBlock(
+                                    audio_url = AudioDataBlock(
+                                        data = url,
+                                    )
+                                )
                             )
+                    else:
+                        raise TypeError(
+                            "Invalid content type, must be one of the following: str, list[str], list[VideoUrlBlock]"
                         )
-                    )
-                elif isinstance(additional_data.file_url, list):
-                    for url in additional_data.file_url:
+                if additional_data.file_url:
+                    if isinstance(additional_data.file_url, str):
                         content.content.append(
                             FileBlock(
                                 file_url = FileDataBlock(
-                                    data = url,
+                                    data = additional_data.file_url,
                                 )
                             )
                         )
-                else:
-                    raise TypeError(
-                        "Invalid content type, must be one of the following: str, list[str]"
+                    elif isinstance(additional_data.file_url, list):
+                        for url in additional_data.file_url:
+                            content.content.append(
+                                FileBlock(
+                                    file_url = FileDataBlock(
+                                        data = url,
+                                    )
+                                )
+                            )
+                    else:
+                        raise TypeError(
+                            "Invalid content type, must be one of the following: str, list[str]"
+                        )
+                if new_message:
+                    content.content.append(
+                        TextBlock(
+                            text = new_message
+                        )
                     )
-            if new_message:
-                content.content.append(
-                    TextBlock(
-                        text = new_message
-                    )
-                )
+            else:
+                content.content = new_message
         else:
             content.content = new_message
+            if additional_data:
+                content.content += f"\n[Additional Data Begin]\n{additional_data.model_dump_json(indent = 4, ensure_ascii = False)}\n[Additional Data End]"
         content.role = role
         content.role_name = role_name
         return content
