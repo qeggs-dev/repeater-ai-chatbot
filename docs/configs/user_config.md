@@ -150,8 +150,9 @@
     // 且对方该值为false, 则请求将会自动回退到当前用户的上下文中
     "cross_user_data_access": null,
 
-    // (bool) 是否忽略新请求中的非文本数据
-    "new_requests_text_only": null,
+    // (bool) 是否构建多模态请求
+    // 如果为 false 则多模态内容将以文本的形式发送
+    "make_multimodal_message": null,
 
     // (list[str]) 允许调用的工具列表
     "allowed_tool_calls": null,
