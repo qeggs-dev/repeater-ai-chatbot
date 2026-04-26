@@ -1,0 +1,166 @@
+import random
+
+from ...call_api.completions_api import (
+    Request,
+    Runtime,
+    StreamOptions
+)
+from ...context import ToolCallPacakage, CallType, Context, ContentRole
+from ...model_api import ModelType, StaticModelAPIResponse
+from ...global_config_manager import ReasoningEffort, ConfigManager
+from ...data_manager import PromptManager
+from .._caller import ModelRequester
+from ...runtime_container import RuntimeContainer
+from ...text_buffer import ContentBuffer
+from pydantic import BaseModel, Field
+
+@ModelRequester.reg_global_package
+class CallModel(ToolCallPacakage):
+    prompt_manager: PromptManager = PromptManager()
+    name = "call_model"
+    document = "Send a request to an available model and get the generated results."
+    call_type = CallType.ASYNC
+    
+    class Params(BaseModel):
+        model_uid: str = Field(
+            "", 
+            description="Unique identifier used to locate and load the target model."
+        )
+        user_name: str = Field(
+            "", 
+            description="Name of the user making the request, used for logging and personalization."
+        )
+        temperature: float = Field(
+            1.0, 
+            ge=0.0, 
+            le=2.0, 
+            description="Controls randomness in output. Lower values (e.g., 0.2) make output more deterministic; higher values (e.g., 1.5) increase diversity. Must be between 0 and 2."
+        )
+        top_p: float = Field(
+            1.0, 
+            ge=0.0, 
+            le=1.0, 
+            description="Nucleus sampling threshold. The model considers only the smallest set of tokens whose cumulative probability >= top_p. Must be between 0 and 1."
+        )
+        presence_penalty: float = Field(
+            0.0, 
+            ge=-2.0, 
+            le=2.0, 
+            description="Penalizes tokens that have appeared at all in the text so far, encouraging the model to talk about new topics. Positive values discourage repetition. Range: -2.0 to 2.0."
+        )
+        frequency_penalty: float = Field(
+            0.0, 
+            ge=-2.0, 
+            le=2.0, 
+            description="Penalizes tokens proportionally to how often they have appeared, reducing verbatim repetition. Positive values discourage frequent tokens. Range: -2.0 to 2.0."
+        )
+        max_tokens: int = Field(
+            4096, 
+            gt=0, 
+            description="The maximum number of tokens the model can generate in the response."
+        )
+        max_completion_tokens: int = Field(
+            4096, 
+            gt=0, 
+            description="Alias for max_tokens. The maximum number of tokens allowed in the completion output."
+        )
+        thinking: bool | None = Field(
+            None, 
+            description="When enabled, the model allocates tokens for internal reasoning before producing the final answer. Useful for complex, multi-step problems."
+        )
+        stop: list[str] | None = Field(
+            None, 
+            description="List of strings where the model stops generating further tokens when encountered."
+        )
+        context: Context | None = Field(
+            None, 
+            description="Predefined conversation history or system context to guide the model's behavior."
+        )
+        reasoning_effort: ReasoningEffort | None = Field(
+            None, 
+            description="Controls how many tokens the model spends on internal reasoning (e.g., 'low', 'medium', 'high')."
+        )
+        remove_reasoning_prompt: bool = Field(
+            False, 
+            description="If True, strips the internal reasoning prompt from the output, returning only the final answer."
+        )
+        output_role: ContentRole = Field(
+            ContentRole.ASSISTANT, 
+            description="Role assigned to the generated content in the conversation structure (e.g., 'assistant')."
+        )
+        timeout: int | float | None = Field(
+            None, 
+            gt=0, 
+            description="Maximum time in seconds to wait for a response before the request is cancelled."
+        )
+    
+    class Result(BaseModel):
+        context: Context = Field(..., description="The generated conversation context.")
+
+    async def call(self, args: Params):
+        runtime = RuntimeContainer.get_runtime()
+        
+        model_info = await runtime.model_api_manager.get_model(
+            model_type = ModelType.CHAT,
+            model_uid = args.model_uid,
+            with_api_key = True
+        )
+
+        if not isinstance(model_info, StaticModelAPIResponse):
+            raise ValueError("Model data is not valid")
+        
+        if not model_info.models:
+            raise ValueError("Model not found")
+        
+        if len(model_info.models) == 1:
+            model = model_info.models[0]
+        else:
+            model = random.choice(model_info.models)
+
+        request = Request(
+            url = model.url,
+            key = model.api_key,
+            timeout = args.timeout if args.timeout is not None else model.timeout,
+            model = model.id,
+            user_name = args.user_name,
+            temperature = args.temperature,
+            top_p = args.top_p,
+            presence_penalty = args.presence_penalty,
+            frequency_penalty = args.frequency_penalty,
+            max_tokens = args.max_tokens,
+            max_completion_tokens = args.max_completion_tokens,
+            thinking = args.thinking,
+            stop = args.stop,
+            context = args.context,
+            reasoning_effort = args.reasoning_effort,
+            remove_reasoning_prompt = args.remove_reasoning_prompt,
+            remove_created = True,
+            stream = ConfigManager.get_configs().model.stream,
+            stream_options = StreamOptions(
+                include_obfuscation = ConfigManager.get_configs().callapi.include_obfuscation,
+                include_usage = ConfigManager.get_configs().callapi.include_usage
+            )
+        )
+        
+        request_runtime = Runtime(
+            client_pool = runtime.openai_pool,
+            status_map = runtime.task_status_map,
+            content_buffer = ContentBuffer()
+        )
+        requestser = ModelRequester(
+            user_id = self.user_id,
+            user_configs = self.user_configs,
+            max_concurrency = ConfigManager.get_configs().callapi.max_concurrency
+        )
+
+        responses = await requestser.submit(
+            user_id = self.user_id,
+            request = request,
+            runtime = request_runtime,
+            stream = False
+        )
+
+        context = responses.new_contexts()
+        return self.Result(
+            context = context
+        )
