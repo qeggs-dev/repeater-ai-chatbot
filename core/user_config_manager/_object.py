@@ -47,7 +47,7 @@ class UserConfigs(BaseModel):
     cross_user_data_access: bool | None = None
     new_requests_text_only: bool | None = None
 
-    allow_tool_calls: bool | None = None
+    allowed_tool_calls: set[str] | None = None
     additional_user_data: dict[str, Any] = Field(default_factory=dict)
 
     @field_validator("timezone")
