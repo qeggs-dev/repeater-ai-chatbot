@@ -2,7 +2,7 @@ from ._client_info import ClientInfo
 from openai import AsyncOpenAI
 from loguru import logger
 
-class ClientPool:
+class OpenaiPool:
     def __init__(self):
         self._client_info: dict[ClientInfo, AsyncOpenAI] = {}
     
