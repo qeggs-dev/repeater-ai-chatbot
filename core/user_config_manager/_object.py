@@ -37,6 +37,7 @@ class UserConfigs(BaseModel):
     save_context: bool | None = None
     save_new_only: bool | None = None
     save_text_only: bool | None = None
+    make_multimodal_message: bool | None = None
 
     user_name: str | None = None
     user_profile: str | None = None
@@ -45,7 +46,6 @@ class UserConfigs(BaseModel):
 
     timezone: float | str | None = None
     cross_user_data_access: bool | None = None
-    new_requests_text_only: bool | None = None
 
     allowed_tool_calls: set[str] | None = None
     additional_user_data: dict[str, Any] = Field(default_factory=dict)
