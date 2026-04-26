@@ -58,7 +58,7 @@ async def render(
     # 获取用户配置
     config = await Server.core.user_config_manager.load(user_id = user_id)
         
-    style_name, css = await get_style(
+    style_name, css, style_url = await get_style(
         request = request,
         user_configs = config,
         static_resources_client = Server.core.static_resources_client,
@@ -105,6 +105,7 @@ async def render(
 
     # 读取HTML模板
     if request.html_template is not None:
+        html_template_file = None
         html_template = request.html_template
     else:
         html_template_file = html_template_dir / f"{html_template_name}{html_template_suffix}"
@@ -124,6 +125,8 @@ async def render(
         title = title,
         css = css,
         style_name = style_name,
+        css_url = style_url,
+        html_url = html_template_file,
         direct_output = request.direct_output,
         markdown_extensions = markdown_extensions,
         allowed_tags = allowed_tags,
