@@ -15,7 +15,6 @@ async def markdown_to_html(
     input_text: str,
     html_template: str,
     environment: Environment,
-    css: str,
     style_name: str,
     css_url: URL | None = None,
     html_url: URL | None = None,
@@ -87,7 +86,7 @@ async def markdown_to_html(
             clean_html = clean_html.replace(key, value)
     
     # 5. 添加自适应宽度
-    css += f"\nbody {{ width: {max(width, 60) - 60}px; }}"
+    adaptive_width_css = f"body {{ width: {max(width, 60) - 60}px; }}"
 
     template: Template = environment.from_string(html_template)
 
@@ -97,8 +96,8 @@ async def markdown_to_html(
         raw_text = input_text,
         html_content = clean_html,
         css_url = css_url,
+        adaptive_width_css = adaptive_width_css,
         html_template_url = html_url,
-        css = css,
         style_name = html.escape(style_name),
         document_bottom_comment = document_bottom_comment,
         title = html.escape(title)
