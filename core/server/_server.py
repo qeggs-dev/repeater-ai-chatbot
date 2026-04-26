@@ -13,22 +13,18 @@ from typing import (
 
 # ==== 第三方库 ==== #
 import uvicorn
-
 from fastapi import FastAPI
+from loguru import logger
 
 # ==== 自定义库 ==== #
+from ..auxiliary.time import print_init_runtime
 from ..admin_api_key_manager import AdminKeyManager
-from ..auxiliary.regex_checker import RegexChecker
 from .._core import Core
 from ..global_config_manager import ConfigManager
-from ..pools.awaitable_pool import TaskPool
-from ..markdown_render import HTMLRenderClient
 from ..logger_init import logger_init
 from ._lifespan import lifespan
 from .._info import __version__
-from ..licenses_loader import LicenseLoader
-from ..nexus_client import NexusClient
-from loguru import logger
+from ..runtime_container import RuntimeContainer
 
 class Server:
     startup: ClassVar[Sequence[Callable[[], Any]] | None] = None
@@ -44,33 +40,9 @@ class Server:
     core: ClassVar[Core | None] = None
     server: ClassVar[uvicorn.Server | None] = None
     keyboard_interrupt_callback: ClassVar[Callable[[], Awaitable[None] | None]] = None
-    chat_task_pool: ClassVar[TaskPool] = TaskPool()
     admin_key_manager: ClassVar[AdminKeyManager | None] = None
-    html_render_client: ClassVar[HTMLRenderClient | None] = None
-    nexus_client: ClassVar[NexusClient | None] = None
-    licenses: ClassVar[LicenseLoader | None] = None
     _logger_inited: ClassVar[bool] = False
     _instance: ClassVar[Server | None] = None
-
-    def print_task_runtime(task_name: str):
-        def decorator(func: Callable[..., Any]) -> Callable[..., Any]:
-            def wrapper(*args: Any, **kwargs: Any) -> Any:
-                logger.info(
-                    "Initializing {name}...",
-                    name = task_name
-                )
-                start_time = time.perf_counter_ns()
-                result = func(*args, **kwargs)
-                end_time = time.perf_counter_ns()
-                logger.info(
-                    "Initialized {name} in {initialize_time:.3f} ms.",
-                    name = task_name,
-                    initialize_time = (end_time - start_time) / 1e6
-                )
-                return result
-            wrapper.raw_func = func
-            return wrapper
-        return decorator
 
     def __new__(cls):
         if cls._instance is None:
@@ -89,9 +61,6 @@ class Server:
             cls.core,
             cls.server,
             cls.admin_key_manager,
-            cls.html_render_client,
-            cls.nexus_client,
-            cls.licenses,
         ]
         for item in check_list:
             if item is None:
@@ -100,11 +69,9 @@ class Server:
 
     @classmethod
     def init_all(cls):
+        cls.init_runtime()
         cls.init_core()
-        cls.init_nexus_client()
-        cls.init_licenses_data()
         cls.init_admin_key_manager()
-        cls.init_html_render_client()
     
     @classmethod
     def init_logger(cls):
@@ -116,42 +83,23 @@ class Server:
         cls._logger_inited = True
     
     @classmethod
-    @print_task_runtime("Core")
+    @print_init_runtime("Runtime")
+    def init_runtime(cls):
+        RuntimeContainer.init_runtime()
+    
+    @classmethod
+    @print_init_runtime("Core")
     def init_core(cls):
-        cls.core = Core()
+        cls.core = Core(runtime = RuntimeContainer.get_runtime())
 
     @classmethod
-    @print_task_runtime("Admin Key Manager")
+    @print_init_runtime("Admin Key Manager")
     def init_admin_key_manager(cls):
         # 生成或读取API Key
         cls.admin_key_manager = AdminKeyManager()
     
     @classmethod
-    @print_task_runtime("License Data")
-    def init_licenses_data(cls):
-        cls.licenses = LicenseLoader(ConfigManager.get_configs().licenses)
-        cls.licenses.scan_licenses()
-    
-    @classmethod
-    @print_task_runtime("Nexus Client")
-    def init_nexus_client(cls):
-        cls.nexus_client = NexusClient(
-            base_url = ConfigManager.get_configs().nexus.base_url,
-            request_timeout = ConfigManager.get_configs().nexus.api_timeout,
-        )
-
-    @classmethod
-    @print_task_runtime("HTML Render Client")
-    def init_html_render_client(cls):
-        # 渲染配置
-        render_config = ConfigManager.get_configs().render
-        cls.html_render_client = HTMLRenderClient(
-            base_url = render_config.to_image.base_url,
-            timeout = render_config.to_image.timeout
-        )
-    
-    @classmethod
-    @print_task_runtime("Server")
+    @print_init_runtime("Server")
     def init_server(
         cls,
         host: str,
@@ -188,5 +136,3 @@ class Server:
             await cls.server.shutdown()
         except Exception as e:
             logger.error(f"Server error: {e}")
-    
-    print_task_runtime = staticmethod(print_task_runtime)
