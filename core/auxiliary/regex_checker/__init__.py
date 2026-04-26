@@ -4,3 +4,10 @@ from ._obj import (
     LoaderDetailsData,
     CheckerMode
 )
+
+__all__ = [
+    "RegexChecker",
+    "CheckDetailsData",
+    "LoaderDetailsData",
+    "CheckerMode"
+]
