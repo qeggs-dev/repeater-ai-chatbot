@@ -1,4 +1,10 @@
-from pydantic import BaseModel, ConfigDict, field_validator, Field
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    field_validator,
+    field_serializer,
+    Field,
+)
 from ..global_config_manager import ReasoningEffort
 from zoneinfo import ZoneInfo, available_timezones
 from typing import Any
@@ -65,3 +71,7 @@ class UserConfigs(BaseModel):
         else:
             raise ValueError("Invalid time offset type")
         return v
+    
+    @field_serializer("allowed_tool_calls")
+    def allowed_tool_calls_serializer(self, value: set[str]) -> list[str]:
+        return list(value)
