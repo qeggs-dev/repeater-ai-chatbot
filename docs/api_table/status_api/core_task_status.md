@@ -24,11 +24,13 @@
     - `Processing context`
       - `Getting history context`
       - `Role mapping`
-      - `Checking request contains only text`
+      - `Check Multimodal Message`
       - `Splicing user input`
       - `Shrinking context`
     - `Make Request Object`
+    - `Make Request Runtime Object`
     - `Pre-filled output`
+    - `Pre-filled Model Response`
   - `Requesting`
     - `Init objects`
     - `Create OpenAI Client`
@@ -58,11 +60,13 @@
     - `Processing context`
       - `Getting history context`
       - `Role mapping`
-      - `Checking request contains only text`
+      - `Check Multimodal Message`
       - `Splicing user input`
       - `Shrinking context`
     - `Make Request Object`
+    - `Make Request Runtime Object`
     - `Pre-filled output`
+    - `Pre-filled Model Response`
   - `Requesting`
     - `Create OpenAI Client`
     - `Write calling log base data`
