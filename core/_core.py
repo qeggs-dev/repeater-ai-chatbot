@@ -18,7 +18,7 @@ from loguru import logger
 from .call_api.completions_api import (
     Request,
     Runtime as RequestRuntime,
-    Response,
+    Response as ModelResponse,
     CallAPIException
 )
 from .model_requester import (
@@ -39,7 +39,7 @@ from .pools.lock_pool import AsyncLockPool
 from .text_buffer import ContentBuffer
 from .global_config_manager import ConfigManager
 from .assist_struct import (
-    Response as RepeaterResponse,
+    Response,
     RequestUserInfo,
     CrossUserDataRouting,
     AdditionalData
@@ -397,7 +397,7 @@ class Core:
             save_context: bool | None = None,
             save_new_only: bool | None = None,
             cross_user_data_routing: CrossUserDataRouting[str | None] | None = None,
-            allow_tool_calls: bool | None = None,
+            allowed_tool_calls: set[str] | None = None,
             stream: bool = False,
         ) -> Response | AsyncIterator[dict[str, Any]]:
         """
@@ -731,11 +731,17 @@ class Core:
                             request.stream_options.include_usage = ConfigManager.get_configs().callapi.include_usage
                             
                             if ConfigManager.get_configs().tool_calls.enabled:
-                                if allow_tool_calls is None:
-                                    if configs.allow_tool_calls is not None:
-                                        allow_tool_calls = configs.allow_tool_calls
-                                    else:
-                                        allow_tool_calls = ConfigManager.get_configs().tool_calls.allow_by_default
+                                server_registed_tools = ConfigManager.get_configs().tool_calls.registed
+                                if allowed_tool_calls:
+                                    user_registed_tools = allowed_tool_calls
+                                elif configs.allowed_tool_calls:
+                                    user_registed_tools = configs.allowed_tool_calls
+                                else:
+                                    user_registed_tools = set()
+
+                                available_tool_calls = server_registed_tools.intersection(user_registed_tools)
+                            else:
+                                available_tool_calls = set()
                         # endregion
                         
                         # region [Make Request Object]
@@ -750,7 +756,7 @@ class Core:
                         # region [Pre-filled output]
                         with self.runtime.task_status_map.enter(user_id, "Pre-filled output"):
                             # 输出 (为了自动填充输出内容)
-                            output = RepeaterResponse()
+                            output = Response()
                             output.model_group = model.parent
                             output.model_name = model.name
                             output.model_type = model.type.value
@@ -785,9 +791,19 @@ class Core:
                             if request_statistics_template is None:
                                 request_statistics_template = ConfigManager.get_configs().text_template.request_statistics_template
                         # endregion
+
+                        # region [Pre-filled Model Response]
+                        with self.runtime.task_status_map.enter(user_id, "Pre-filled Model Response"):
+                            model_response = ModelResponse()
+                            model_response.request_log.user_id = user_id
+                            model_response.request_log.task_start_time = task_start_time
+                            model_response.request_log.prepare_start_time = prepare_start_time
                     
                     # 记录预处理结束时间
                     prepare_end_time = TimeStamp()
+
+                    model_response.request_log.prepare_end_time = prepare_end_time
+                    request_runtime.response = model_response
 
                     # region [Requesting]
                     with self.runtime.task_status_map.enter(user_id, "Requesting"):
@@ -811,7 +827,7 @@ class Core:
                                     user_id = user_id,
                                     request = request,
                                     runtime = request_runtime,
-                                    allow_tool_calls = allow_tool_calls,
+                                    available_tool_calls = available_tool_calls,
                                     stream = stream
                                 )
                                 
@@ -825,12 +841,9 @@ class Core:
                                     save_context = save_context,
                                     save_new_only = save_new_only,
                                     context_loader = context_loader,
-                                    task_start_time = task_start_time,
                                     cross_user_data_routing = cross_user_data_routing,
                                     enable_assistant_template = enable_assistant_template,
                                     request_statistics_template = request_statistics_template,
-                                    prepare_end_time = prepare_end_time,
-                                    prepare_start_time = prepare_start_time,
                                     save_only_text = save_only_text,
                                 )
                             
@@ -866,27 +879,19 @@ class Core:
         user_id: str,
         template_parser: TemplateParser,
         responses: MultiResponse,
-        task_start_time: TimeStamp,
         context_loader: ContextLoader,
-        prepare_end_time: TimeStamp,
         enable_assistant_template: bool,
-        prepare_start_time: TimeStamp,
         cross_user_data_routing: CrossUserDataRouting[str],
         extra_template_fields: dict[str, Any] | None = None,
         request_statistics_template: str = "",
         user_input: ContentUnit | None = None,
-        output: RepeaterResponse = RepeaterResponse(),
+        output: Response = Response(),
         save_context: bool | None = None,
         save_only_text: bool = False,
         save_new_only: bool = False,
     ) -> Response:
         with self.runtime.task_status_map.enter(user_id, "PostProcessing"):
             # 补充调用日志的时间信息
-            for response in responses:
-                response.request_log.task_start_time = task_start_time
-                response.request_log.prepare_start_time = prepare_start_time
-                response.request_log.prepare_end_time = prepare_end_time
-                response.request_log.created_time = response.created
             saved_user_id = cross_user_data_routing.context.save_to_user_id
             if extra_template_fields is None:
                 extra_template_fields = {}
