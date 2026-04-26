@@ -3,6 +3,7 @@ import bleach
 import asyncio
 import markdown
 
+from yarl import URL
 from ._extensions import (
     BrExtension,
     CodeBlockExtension,
@@ -16,6 +17,8 @@ async def markdown_to_html(
     environment: Environment,
     css: str,
     style_name: str,
+    css_url: URL | None = None,
+    html_url: URL | None = None,
     title: str = "Markdown Render",
     width: int = 800,
     markdown_extensions: list[str | markdown.Extension] | None = None,
@@ -93,6 +96,8 @@ async def markdown_to_html(
         markdown = html.escape(input_text),
         raw_text = input_text,
         html_content = clean_html,
+        css_url = css_url,
+        html_template_url = html_url,
         css = css,
         style_name = html.escape(style_name),
         document_bottom_comment = document_bottom_comment,
