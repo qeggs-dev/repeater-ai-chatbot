@@ -17,8 +17,6 @@ from ..call_api.completions_api import (
     Runtime,
     Delta
 )
-from ..text_buffer import ContentBuffer
-from ..status_map import StatusMap
 from ..user_config_manager import UserConfigs
 from ..global_config_manager import ConfigManager
 from typing import (
@@ -99,26 +97,25 @@ class ModelRequester:
             self,
             request: Request,
             response: Response,
-            allow_tool_calls: bool = True,
+            available_tool_calls: set[str] | None = None,
         ) -> Response:
-        if allow_tool_calls and response.tool_calls:
+        if available_tool_calls and response.tool_calls:
             calling_requests: list[CallingRequest] = []
             for tool_call in response.tool_calls:
                 calling_requests.append(tool_call.to_calling_request())
             results = await self._tools_caller.call_functions(
                 response.user_id,
-                calling_requests = calling_requests
+                calling_requests = calling_requests,
+                available_tool_calls = available_tool_calls,
             )
             self._tool_responses.append(results)
             for tool_response in results:
                 await self._stream_chunk_queue.put(tool_response)
             if request.context:
                 request.context.extend(response.new_context)
-                request.context.extend(results)
             else:
-                request.context = Context(
-                    context_list = results
-                )
+                request.context = response.new_context
+            request.context.extend(results)
             if request.thinking:
                 request.remove_reasoning_prompt = False
             raise Regenerate(request)
@@ -128,21 +125,21 @@ class ModelRequester:
         user_id:str,
         request: Request,
         runtime: Runtime,
-        allow_tool_calls: bool = True,
+        available_tool_calls: set[str] | None = None,
         tool_choice_model: ToolChoice = ToolChoice.AUTO,
         stream: bool = False,
     ) -> MultiResponse:
         generated_times: int = 0
         max_generated_times: int = ConfigManager.get_configs().callapi.max_regenerate_times
         responses: MultiResponse = MultiResponse()
-        responses.historical_context = request.context
+        responses.historical_context = request.context.copy()
         if request.remove_reasoning_prompt:
             submit_context = request.context.remove_reasoning_content()
         else:
             submit_context = request.context
         request.context = submit_context
-        if allow_tool_calls and max_generated_times > 1:
-            request.tools = self._tools_caller.to_request()
+        if available_tool_calls and max_generated_times > 1:
+            request.tools = self._tools_caller.to_request(available_tool_calls)
             request.tool_choice = self._tools_caller.to_choice(tool_choice_model)
         try:
             while True:
@@ -161,6 +158,7 @@ class ModelRequester:
                             user_id = user_id,
                             request = request,
                             runtime = runtime,
+                            chunk_callback = send_chunk
                         )
                     else:
                         response = await self._api_client.submit_request(
@@ -173,7 +171,7 @@ class ModelRequester:
                     await self._parse_response(
                         request = request,
                         response = response,
-                        allow_tool_calls = allow_tool_calls,
+                        available_tool_calls = available_tool_calls,
                     )
                     raise GenerateFinished
                 except Regenerate as e:
@@ -182,6 +180,7 @@ class ModelRequester:
                         user_id = user_id,
                     )
                     request = e.request
+                    response.new_context.clear()
                     runtime.content_buffer.clear()
                     if generated_times >= max_generated_times:
                         raise GenerateFinished
