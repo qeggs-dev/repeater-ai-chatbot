@@ -11,7 +11,7 @@
 | 变量名 | 类型 | 描述 |
 | --- | --- | --- |
 | `html_content` | `string` | Markdown 渲染后的 HTML 内容 |
-| `css` | `string` | 用户选择或传入的 CSS 内容 |
+| `adaptive_width_css` | `string` | 自适应宽度的 CSS 样式 |
 | `title` | `string` | 一个自定义的标题<br/>由 用户配置`render_title` 和<br/>全局配置`render.markdown.title` 定义<br/>通常被放在页面顶部 |
 | `css_url` | `string or null` | 用户选择或传入的 CSS 文件 URL |
 | `html_template_url` | `string or null` | 用户选择或传入的 HTML 模板文件 URL |
