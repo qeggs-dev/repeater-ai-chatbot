@@ -93,6 +93,14 @@ class Context(BaseModel):
         if self.prompt:
             yield self.prompt
     
+    def clear(self, clear_prompt: bool = False) -> None:
+        """
+        清空上下文列表
+        """
+        if clear_prompt and self.prompt is not None:
+            self.prompt = None
+        self.context_list.clear()
+    
     def update_from_context(self, context: list[dict]) -> None:
         """
         从上下文列表更新上下文

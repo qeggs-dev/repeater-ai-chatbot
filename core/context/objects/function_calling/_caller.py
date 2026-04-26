@@ -29,12 +29,11 @@ class FunctionCaller:
         self._functions: dict[str, Function] = {}
         self._already_force_function: bool = False
     
-    def to_request(self) -> list[dict[str, Any]]:
+    def to_request(self, available_tool_calls: set[str]) -> list[dict[str, Any]]:
         request: list[dict[str, Any]] = []
-        allow_register = ConfigManager.get_configs().tool_calls.registed
-        for name in allow_register:
+        for name in self._functions:
             function = self._functions.get(name)
-            if function is not None and function.enabled:
+            if function.name in available_tool_calls:
                 request.append(function.struct().model_dump(exclude_none=True))
         return request
     
@@ -122,27 +121,33 @@ class FunctionCaller:
         else:
             return None
     
-    async def call_functions(self, user_id: str, calling_requests: list[CallingRequest], max_concurrent: int = 10) -> list[ContentUnit]:
+    async def call_functions(self, user_id: str, calling_requests: list[CallingRequest], available_tool_calls: set[str], max_concurrent: int = 10) -> list[ContentUnit]:
         results: asyncio.Queue = asyncio.Queue()
         tasks: set[asyncio.Task] = set()
         semaphore = asyncio.Semaphore(max_concurrent)
-        async def _call_function(user_id: str, calling_request: CallingRequest):
+        
+        async def _call_function(user_id: str, calling_request: CallingRequest, available_tool_calls: set[str]):
             async with semaphore:
                 result = await self.call_function(
                     user_id = user_id,
-                    calling_request = calling_request
+                    calling_request = calling_request,
+                    available_tool_calls = available_tool_calls
                 )
                 await results.put(result)
+        
         for request in calling_requests:
             tasks.add(
                 asyncio.create_task(
                     _call_function(
                         user_id = user_id,
-                        calling_request = request
+                        calling_request = request,
+                        available_tool_calls = available_tool_calls
                     )
                 )
             )
-        await asyncio.gather(*tasks)
+        
+        if tasks:
+            await asyncio.gather(*tasks)
         
         results_list: list[ContentUnit] = []
         while not results.empty():
@@ -160,8 +165,19 @@ class FunctionCaller:
             content = content
         )
     
-    async def call_function(self, user_id: str, calling_request: CallingRequest) -> ContentUnit:
-        function = self._functions[calling_request.function.name]
+    async def call_function(self, user_id: str, calling_request: CallingRequest, available_tool_calls: set[str]) -> ContentUnit:
+        if calling_request.function.name not in available_tool_calls:
+            return self._create_tool_content_unit(
+                tool_call_id = calling_request.id,
+                content = "Error: Function not available."
+            )
+        try:
+            function = self._functions[calling_request.function.name]
+        except KeyError:
+            return self._create_tool_content_unit(
+                tool_call_id = calling_request.id,
+                content = "Error: Function not found."
+            )
         parameters = function.parameters
         if parameters is not None:
             try:
@@ -210,7 +226,7 @@ class FunctionCaller:
         logger.info(
             "Use Arguments:\n{arguments}",
             user_id = user_id,
-            arguments = json.dumps(arguments.model_dump(), indent = 4, ensure_ascii = False)
+            arguments = orjson.dumps(arguments.model_dump(), option=orjson.OPT_INDENT_2).decode("utf-8")
         )
 
         start_time = time.perf_counter_ns()
@@ -226,7 +242,7 @@ class FunctionCaller:
 
 
         if isinstance(raw_result, BaseModel):
-            result = json.dumps(raw_result.model_dump())
+            result = orjson.dumps(raw_result.model_dump()).decode("utf-8")
         elif function.json_result:
             try:
                 bin_result = orjson.dumps(raw_result)
