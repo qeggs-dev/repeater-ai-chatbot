@@ -153,8 +153,8 @@
     // (bool) 是否忽略新请求中的非文本数据
     "new_requests_text_only": null,
 
-    // (bool) 是否允许工具调用
-    "allow_tool_calls": null,
+    // (list[str]) 允许调用的工具列表
+    "allowed_tool_calls": null,
 
     // (dict[str, Any]) 用户附加配置数据
     // 用于存储某些与用户相关的数据
