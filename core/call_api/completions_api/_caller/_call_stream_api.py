@@ -14,15 +14,16 @@ from loguru import logger
 from .._objects import (
     Request,
     Delta,
+    Runtime
 )
 from ._translation_chunk import translation_chunk
 from ._call_api_base import CallStreamAPIBase
 from .._exceptions import *
 from ....status_map import StatusMap
-from ._client_info import ClientInfo
+from ....runtime_container import ClientInfo, RuntimeContainer
 
 class StreamAPI(CallStreamAPIBase):
-    async def _call(self, user_id: str, request: Request, status_map: StatusMap[str, str]) -> AsyncIterator[Delta]:
+    async def _call(self, user_id: str, request: Request, runtime: Runtime) -> AsyncIterator[Delta]:
         """
         调用流式API
 
@@ -32,8 +33,9 @@ class StreamAPI(CallStreamAPIBase):
         """
         assert isinstance(user_id, str), "user_id must be a string"
         assert isinstance(request, Request), "request must be a Request object"
+        assert isinstance(runtime, Runtime), "runtime must be a Runtime object"
 
-        with status_map.enter(user_id, "Create OpenAI Client"):
+        with runtime.status_map.enter(user_id, "Create OpenAI Client"):
             # 创建OpenAI Client
             logger.info(f"Created OpenAI Client", user_id = user_id)
             client_info = ClientInfo(
@@ -41,17 +43,17 @@ class StreamAPI(CallStreamAPIBase):
                 key = request.key,
                 timeout = request.timeout
             )
-            client = self.clients.get_client(client_info)
+            client = RuntimeContainer.get_runtime().openai_pool.get_client(client_info)
 
-        with status_map.enter(user_id, "Check context"):
+        with runtime.status_map.enter(user_id, "Check context"):
             # 如果context为空，则抛出异常
             if not request.context:
                 raise ValueError("context is required")
         
-        with status_map.enter(user_id, "Make extra body"):
+        with runtime.status_map.enter(user_id, "Make extra body"):
             extra_body = {}
 
-            with status_map.enter(user_id, "thinking"):
+            with runtime.status_map.enter(user_id, "thinking"):
                 if request.thinking is not None:
                     if request.thinking:
                         extra_body["thinking"] = {
@@ -62,12 +64,12 @@ class StreamAPI(CallStreamAPIBase):
                             "type": "disabled"
                         }
             
-            with status_map.enter(user_id, "reasoning_effort"):
+            with runtime.status_map.enter(user_id, "reasoning_effort"):
                 if request.reasoning_effort is not None:
                     extra_body["reasoning_effort"] = request.reasoning_effort.value
         
         # 请求流式连接
-        with status_map.enter(user_id, "Send Request"):
+        with runtime.status_map.enter(user_id, "Send Request"):
             logger.info(f"Start Connecting to the API", user_id = user_id)
             response: AsyncStream[ChatCompletionChunk] = await client.chat.completions.create(
                 model = request.model,
@@ -90,7 +92,7 @@ class StreamAPI(CallStreamAPIBase):
                 extra_body = extra_body
             )
         
-        with status_map.enter(user_id, "Streaming"):
+        with runtime.status_map.enter(user_id, "Streaming"):
             logger.info("Start Streaming", user_id = user_id)
             async for chunk in response:
                 # 翻译chunk

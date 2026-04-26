@@ -15,13 +15,12 @@ from loguru import logger
 from .._objects import (
     Request,
     Response,
-    Delta
+    Delta,
+    Runtime
 )
 from .._caller import (
     StreamAPI
 )
-from ....text_buffer import ContentBuffer
-from ....status_map import StatusMap
 from .._exceptions import *
 from .._caller import StreamingResponseGenerationLayer
 from ._client import ClientBase
@@ -33,24 +32,23 @@ class StreamClient(ClientBase):
             self,
             user_id:str,
             request: Request,
-            content_buffer: ContentBuffer,
-            status_map: StatusMap[str, str],
+            runtime: Runtime,
             chunk_callback: Callable[[Delta], Awaitable[None]] | None = None
         ) -> Response:
         """提交请求，并等待API返回结果"""
         try:
-            generator: AsyncIterator[Delta] = self._submit_task(user_id, request, status_map)
+            generator: AsyncIterator[Delta] = self._submit_task(user_id, request, runtime)
             warping_generator = StreamingResponseGenerationLayer(
                 user_id = user_id,
                 request = request,
-                content_buffer = content_buffer,
+                content_buffer = runtime.content_buffer,
                 response_iterator = generator
             )
             async for delta in warping_generator:
                 if chunk_callback is not None:
                     await chunk_callback(delta)
 
-            await self._preprocess_response(user_id, request, warping_generator.response, status_map)
+            await self._preprocess_response(user_id, request, warping_generator.response, runtime)
             
             return warping_generator.response
                 
@@ -59,7 +57,7 @@ class StreamClient(ClientBase):
         except openai.APIConnectionError:
             raise APIConnectionError(f"{request.url} Connection Failed")
     
-    async def _submit_task(self, user_id: str, request: Request, status_map: StatusMap[str, str]) -> AsyncIterator[Delta]:
+    async def _submit_task(self, user_id: str, request: Request, runtime: Runtime) -> AsyncIterator[Delta]:
         try:
             if request.stream:
                 client = StreamAPI()
@@ -68,7 +66,7 @@ class StreamClient(ClientBase):
             generator = client.call(
                 user_id = user_id,
                 request = request,
-                status_map = status_map
+                runtime = runtime
             )
 
             async for delta in generator:

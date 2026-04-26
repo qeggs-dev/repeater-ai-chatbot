@@ -14,14 +14,13 @@ from loguru import logger
 from .._objects import (
     Request,
     Response,
-    Delta
+    Delta,
+    Runtime
 )
 from .._caller import (
     CallAPI,
     StreamAPI
 )
-from ....text_buffer import ContentBuffer
-from ....status_map import StatusMap
 from .._exceptions import *
 from .._caller import StreamingResponseGenerationLayer
 from ._client import ClientBase
@@ -33,16 +32,16 @@ class NoStreamClient(ClientBase):
             self,
             user_id:str,
             request: Request,
-            content_buffer: ContentBuffer,
-            status_map: StatusMap[str, str]) -> Response:
+            runtime: Runtime,
+        ) -> Response:
         """提交请求，并等待API返回结果"""
         try:
-            response = await self._submit_task(user_id, request, status_map)
+            response = await self._submit_task(user_id, request, runtime)
             if not isinstance(response, Response):
                 generator = StreamingResponseGenerationLayer(
                     user_id = user_id,
                     request = request,
-                    content_buffer = content_buffer,
+                    content_buffer = runtime.content_buffer,
                     response_iterator = response
                 )
                 async for chunk in generator:
@@ -51,7 +50,7 @@ class NoStreamClient(ClientBase):
             else:
                 output = response
 
-            await self._preprocess_response(user_id, request, output, status_map)
+            await self._preprocess_response(user_id, request, output, runtime)
 
         except openai.NotFoundError:
             raise ModelNotFoundError(request.model)
@@ -60,21 +59,21 @@ class NoStreamClient(ClientBase):
         
         return output
     
-    async def _submit_task(self, user_id: str, request: Request, status_map: StatusMap[str, str]) -> AsyncIterator[Delta] | Response:
+    async def _submit_task(self, user_id: str, request: Request, runtime: Runtime) -> AsyncIterator[Delta] | Response:
         try:
             if request.stream:
                 client = StreamAPI()
                 call = client.call(
                     user_id = user_id,
                     request = request,
-                    status_map = status_map
+                    runtime = runtime
                 )
             else:
                 client = CallAPI()
                 call = await client.call(
                     user_id = user_id,
                     request = request,
-                    status_map = status_map
+                    runtime = runtime
                 )
             return call
         except openai.BadRequestError as e:

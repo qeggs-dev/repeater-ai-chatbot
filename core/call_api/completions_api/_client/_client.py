@@ -15,11 +15,10 @@ import numpy as np
 from .._objects import (
     Request,
     Response,
+    Runtime
 )
 from ....pools.awaitable_pool import CoroutinePool
 from ....auxiliary.time import (
-    format_deltatime,
-    format_deltatime_ns,
     format_time_duration_ns
 )
 from .._caller import (
@@ -27,7 +26,6 @@ from .._caller import (
     StreamAPI
 )
 from .._exceptions import *
-from ....status_map import StatusMap
 
 class ClientBase(ABC):
     def __init__(self, max_concurrency: int = 1000):
@@ -41,18 +39,18 @@ class ClientBase(ABC):
 
     # region 提交任务
     @abstractmethod
-    async def submit_request(self, user_id:str, request: Request, status_map: StatusMap[str, str]) -> Response:
+    async def submit_request(self, user_id:str, request: Request, runtime: Runtime) -> Response:
         """提交请求，并等待API返回结果"""
         pass
     # endregion
 
     # region 预处理响应数据
-    async def _preprocess_response(self, user_id: str, request: Request, response: Response, status_map: StatusMap[str, str]):
+    async def _preprocess_response(self, user_id: str, request: Request, response: Response, runtime: Runtime):
         assert isinstance(user_id, str)
         assert isinstance(request, Request)
         assert isinstance(response, Response)
 
-        with status_map.enter(user_id, "Logging Response Content"):
+        with runtime.status_map.enter(user_id, "Logging Response Content"):
             if response.new_context.last_content.reasoning_content:
                 logger.info(
                     "Reasoning_Content: \n\n{reasoning_content}\n",
@@ -68,7 +66,7 @@ class ClientBase(ABC):
                     donot_send_console = True
                 )
         
-        with status_map.enter(user_id, "Fast Statistics"):
+        with runtime.status_map.enter(user_id, "Fast Statistics"):
             await self._print_fast_statistics(
                 user_id = user_id,
                 request = request,

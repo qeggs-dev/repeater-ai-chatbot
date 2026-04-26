@@ -6,7 +6,6 @@ from ....context import (
     ContentRole
 )
 from ....global_config_manager import ReasoningEffort
-
 from ....context import Context
 
 class Request(BaseModel):
