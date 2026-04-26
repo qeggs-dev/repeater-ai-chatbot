@@ -22,8 +22,10 @@ async def get_style(request: RenderRequest, user_configs: UserConfigs, static_re
     if request.css:
         style_name = "custom"
         css = request.css
+        style_url = None
     elif request.style:
         style_name = request.style
+        style_url = styles.get_style_url(style_name)
         css = await styles.get_style(
             style_name,
             encoding = style_file_encoding
@@ -35,9 +37,10 @@ async def get_style(request: RenderRequest, user_configs: UserConfigs, static_re
         else:
             style_name = ConfigManager.get_configs().render.markdown.default_style
         
+        style_url = styles.get_style_url(style_name)
         css = await styles.get_style(
             style_name,
             encoding = style_file_encoding
         )
     
-    return style_name, css
+    return style_name, css, style_url
