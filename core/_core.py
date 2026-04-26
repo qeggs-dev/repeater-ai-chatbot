@@ -207,37 +207,6 @@ class Core:
         return context
     # endregion
 
-    # region > make user content
-    async def make_user_content(
-        self,
-        context_loader: ContextLoader,
-        user_id: str,
-        message: str,
-        role: ContentRole = ContentRole.USER,
-        role_name: str | None = None,
-        additional_data: AdditionalData | None = None,
-        template_parser: str | None = None,
-        enable_user_input_template: bool = False,
-        extra_template_fields: dict[str, Any] | None = None,
-        new_requests_text_only: bool = False,
-    ):
-        if new_requests_text_only:
-            logger.warning("Removed Additional Data", user_id=user_id)
-            additional_data = None
-        
-        user_input: ContentUnit = await context_loader.make_user_content(
-            user_id = user_id,
-            new_message = message,
-            role = role,
-            role_name = role_name,
-            additional_data = additional_data,
-            extra_template_fields = extra_template_fields,
-            enable_user_input_template = enable_user_input_template,
-            template_parser = template_parser
-        )
-        return user_input
-    # endregion
-
     # region > load blacklist
     async def load_blacklist(self, path: str | Path | None = None) -> None:
         """
@@ -589,24 +558,23 @@ class Core:
                                     )
                                     submit_context.role_map(history_msg_role_map)
 
-                            with self.runtime.task_status_map.enter(user_id, "Checking request contains only text"):
-                                new_requests_text_only = configs.new_requests_text_only
-                                if new_requests_text_only is None:
-                                    new_requests_text_only = ConfigManager.get_configs().context.new_requests_text_only
+                            with self.runtime.task_status_map.enter(user_id, "Check Multimodal Message"):
+                                make_multimodal_message = configs.make_multimodal_message
+                                if make_multimodal_message is None:
+                                    make_multimodal_message = ConfigManager.get_configs().context.make_multimodal_message
                             
                             with self.runtime.task_status_map.enter(user_id, "Splicing user input"):
                                 if message is not None:
-                                    user_input: ContentUnit = await self.make_user_content(
-                                        context_loader = context_loader,
+                                    user_input: ContentUnit = await context_loader.make_user_content(
                                         user_id = user_id,
-                                        message = message,
+                                        new_message = message,
                                         role = role,
                                         role_name = role_name,
                                         additional_data = additional_data,
-                                        template_parser = template_parser,
-                                        enable_user_input_template = ConfigManager.get_configs().text_template.enable.user_input_template,
+                                        make_multimodal_message = make_multimodal_message,
                                         extra_template_fields = extra_template_fields,
-                                        new_requests_text_only = new_requests_text_only,
+                                        enable_user_input_template = ConfigManager.get_configs().text_template.enable.user_input_template,
+                                        template_parser = template_parser
                                     )
                                     submit_context.append(user_input)
                                 else:
