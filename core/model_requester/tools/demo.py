@@ -4,7 +4,6 @@ from pydantic import BaseModel
 
 @ModelRequester.reg_global_package
 class Demo(ToolCallPacakage):
-    
     class Params(BaseModel):
         name: str
         data: str

@@ -1,8 +1,7 @@
-from __future__ import annotations
 from ...context import ToolCallPacakage, CallType
 from ...data_manager import PromptManager
 from .._caller import ModelRequester
-from ...server import Server
+from ...runtime_container import RuntimeContainer
 from ...model_api import ModelType
 from pydantic import BaseModel
 
@@ -17,5 +16,8 @@ class GetModels(ToolCallPacakage):
         model_type: ModelType = ModelType.CHAT
 
     async def call(self, args: Params):
-        response = await Server.core.runtime.model_api_manager.get_models(args.model_type)
+        response = await RuntimeContainer.get_runtime().model_api_manager.get_models(
+            args.model_type,
+            with_api_key = False
+        )
         return response.model_dump()
