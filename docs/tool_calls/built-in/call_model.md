@@ -23,6 +23,7 @@
   "remove_reasoning_prompt": null, // If True, strips the internal reasoning prompt from the output, returning only the final answer.
   "output_role": "assistant", // Role assigned to the generated content in the conversation structure (e.g., 'assistant').
   "timeout": null, // Maximum time in seconds to wait for a response before the request is cancelled.
+  "output_format": "text" // Format of the output data returned by the API (e.g., 'text').
 }
 ```
 
