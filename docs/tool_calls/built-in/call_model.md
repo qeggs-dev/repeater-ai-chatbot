@@ -2,7 +2,7 @@
 
 调用模型接口
 
-注册名：`get_models`
+注册名：`call_model`
 
 接受一个参数
 ``` json
