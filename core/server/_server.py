@@ -22,7 +22,7 @@ from ..admin_api_key_manager import AdminKeyManager
 from .._core import Core
 from ..global_config_manager import ConfigManager
 from ..logger_init import logger_init
-from ._lifespan import lifespan
+from ._lifespan import Lifespan
 from .._info import __version__
 from ..runtime_container import RuntimeContainer
 
@@ -32,7 +32,7 @@ class Server:
     
     app: ClassVar[FastAPI] = FastAPI(
         title = "RepeaterChatBackend",
-        lifespan = lifespan,
+        lifespan = Lifespan,
         on_startup = startup,
         on_shutdown = shutdown,
         version = __version__
