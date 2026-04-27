@@ -1,16 +1,17 @@
 from pydantic import BaseModel
-from openai import AsyncOpenAI
-from loguru import logger
+from httpx import AsyncClient
 
 class ClientInfo(BaseModel, frozen=True):
     url: str
-    key: str
-    timeout: int | float | None = 600.0
+    proxy: str | None = None
+    timeout: int | float = 5.0
+    encoding: str = "utf-8"
 
-    def to_openai_client(self) -> AsyncOpenAI:
-        client = AsyncOpenAI(
+    def to_client(self) -> AsyncClient:
+        client = AsyncClient(
             base_url = self.url,
-            api_key = self.key,
+            proxy = self.proxy,
             timeout = self.timeout,
+            default_encoding = self.encoding
         )
         return client
