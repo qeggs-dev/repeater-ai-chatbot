@@ -38,12 +38,10 @@ class StreamAPI(CallStreamAPIBase):
         with runtime.status_map.enter(user_id, "Create OpenAI Client"):
             # 创建OpenAI Client
             logger.info(f"Created OpenAI Client", user_id = user_id)
-            client_info = ClientInfo(
-                url = request.url,
-                key = request.key,
-                timeout = request.timeout
+            client = self.get_client(
+                request = request,
+                runtime = runtime
             )
-            client = RuntimeContainer.get_runtime().openai_pool.get_client(client_info)
 
         with runtime.status_map.enter(user_id, "Check context"):
             # 如果context为空，则抛出异常

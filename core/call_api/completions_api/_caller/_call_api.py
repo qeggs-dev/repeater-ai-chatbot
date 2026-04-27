@@ -19,14 +19,11 @@ from .._objects import (
     Runtime
 )
 from ....context import (
-    ContentUnit,
-    ContentRole
+    ContentUnit
 )
 from ....request_log import RequestLog, TimeStamp
 from ._call_api_base import CallNstreamAPIBase
-from ....status_map import StatusMap
 from .._exceptions import *
-from ....runtime_container import ClientInfo, RuntimeContainer
 
 class CallAPI(CallNstreamAPIBase):
     async def _call(self, user_id:str, request: Request, runtime: Runtime) -> Response:
@@ -47,12 +44,10 @@ class CallAPI(CallNstreamAPIBase):
         with runtime.status_map.enter(user_id, "Create OpenAI Client"):
             # 创建OpenAI Client
             logger.info(f"Created OpenAI Client", user_id = user_id)
-            client_info = ClientInfo(
-                url = request.url,
-                key = request.key,
-                timeout = request.timeout
+            client = self.get_client(
+                request = request,
+                runtime = runtime
             )
-            client = RuntimeContainer.get_runtime().openai_pool.get_client(client_info)
         
         with runtime.status_map.enter(user_id, "Write calling log base data"):
             # 写入调用日志基础数据
