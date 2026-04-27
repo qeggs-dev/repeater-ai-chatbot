@@ -17,6 +17,9 @@ class Request(BaseModel):
     )
 
     url: str = ""
+    proxy: str | None = None
+    encoding: str = "utf-8"
+
     key: str = ""
     model: str = ""
     user_name: str | None = None
@@ -26,7 +29,7 @@ class Request(BaseModel):
     frequency_penalty: float = 0.0
     max_tokens: int = 0
     max_completion_tokens: int = 0
-    timeout: float = 600.0
+    timeout: int | float = 600.0
     stream: bool = False
     thinking: bool | None = None
     stop: list[str] | None = None
