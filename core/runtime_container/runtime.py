@@ -32,7 +32,7 @@ from ..request_log import (
 )
 from ..status_map import StatusMap
 from ..pools.awaitable_pool import TaskPool
-from ..pools.client_pool._client_pool import OpenaiPool
+from ..pools.openai_pool import OpenAIPool
 
 class RepeaterRuntime:
     def __init__(self):
@@ -105,7 +105,7 @@ class RepeaterRuntime:
     @print_init_runtime("Openai Pool")
     def init_openai_pool(self):
         # 初始化客户端池
-        self.openai_pool: OpenaiPool = OpenaiPool()
+        self.openai_pool: OpenAIPool = OpenAIPool()
 
     @print_init_runtime("HTML Render Client")
     def init_html_render_client(self):
