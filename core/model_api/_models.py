@@ -4,6 +4,7 @@ from ._model_type import ModelType
 class StaticModelAPI(BaseModel):
     name: str = ""
     url: str = ""
+    proxy: str | None = None
     id: str = ""
     api_key: str = ""
     parent: str = ""
@@ -18,6 +19,7 @@ class ModelAPI(BaseModel):
 
     name: str = ""
     url: str = ""
+    proxy: str | None = None
     id: str = ""
     parent: str = ""
     uid: str = ""
