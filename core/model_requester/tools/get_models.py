@@ -2,7 +2,7 @@ from ...context import ToolCallPacakage, CallType
 from ...data_manager import PromptManager
 from .._caller import ModelRequester
 from ...runtime_container import RuntimeContainer
-from ...model_api import ModelType
+from ...model_api import ModelType, ModelAPIResponse, ExceptionResponse
 from pydantic import BaseModel
 
 @ModelRequester.reg_global_package
@@ -20,4 +20,16 @@ class GetModels(ToolCallPacakage):
             args.model_type,
             with_api_key = False
         )
-        return response.model_dump()
+        if isinstance(response, ModelAPIResponse):
+            model_list = [
+                {
+                    "uid": model.uid,
+                    "name": model.name,
+                    "parent": model.parent
+                } for model in response.models
+            ]
+            return model_list
+        elif isinstance(response, ExceptionResponse):
+            return f"Error: Get Model list failed: {response.message}"
+        else:
+            return f"Error: Get Model list failed: Unknown response type: {type(response)}"
