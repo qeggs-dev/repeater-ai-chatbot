@@ -86,22 +86,22 @@ class CallAPI(CallNstreamAPIBase):
             request_start_time = TimeStamp()
             response: ChatCompletion = await client.chat.completions.create(
                 model = request.model,
-                temperature = request.temperature,
-                top_p = request.top_p,
-                frequency_penalty = request.frequency_penalty,
-                presence_penalty = request.presence_penalty,
-                max_tokens = request.max_tokens,
-                max_completion_tokens=request.max_completion_tokens,
-                stop = request.stop,
+                temperature = self.none_to_omit(request.temperature),
+                top_p = self.none_to_omit(request.top_p),
+                frequency_penalty = self.none_to_omit(request.frequency_penalty),
+                presence_penalty = self.none_to_omit(request.presence_penalty),
+                max_tokens = self.none_to_omit(request.max_tokens),
+                max_completion_tokens = self.none_to_omit(request.max_completion_tokens),
+                stop = self.none_to_omit(request.stop),
                 stream = False,
                 messages = request.context.to_context(
                     with_prompt = True,
                     remove_reasoning_prompt = request.remove_reasoning_prompt,
                     remove_created = request.remove_created,
                 ),
-                tools = request.tools,
-                tool_choice = request.tool_choice,
-                stream_options = request.stream_options.model_dump(),
+                tools = self.none_to_omit(request.tools),
+                tool_choice = self.none_to_omit(request.tool_choice),
+                stream_options = self.none_to_omit(request.stream_options.model_dump()),
                 extra_body = extra_body
             )
             request_end_time = TimeStamp()

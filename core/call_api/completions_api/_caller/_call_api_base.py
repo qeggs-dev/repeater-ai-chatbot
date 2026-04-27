@@ -1,12 +1,11 @@
 import sys
 import openai
 
-from typing import overload, Literal, AsyncIterator, TextIO, TypeVar
+from typing import Literal, AsyncIterator, TextIO, TypeVar, Any
 from abc import ABC, abstractmethod
 from .._objects import Request, Response, Delta, Runtime
 from .._exceptions import *
 from ....pools.client_pool import ClientInfo
-from loguru import logger
 
 T = TypeVar("T")
 
@@ -17,7 +16,8 @@ class BaseCallAPI(ABC):
     def __init__(self, print_file: TextIO = sys.stdout):
         self._print_file = print_file
     
-    def get_client(self, request: Request, runtime: Runtime) -> openai.AsyncClient:
+    @staticmethod
+    def get_client(request: Request, runtime: Runtime) -> openai.AsyncClient:
         client_info = ClientInfo(
             url = request.url,
             proxy = request.proxy,
@@ -29,6 +29,12 @@ class BaseCallAPI(ABC):
             api_key = request.key
         )
         return client
+    
+    @staticmethod
+    def none_to_omit(value: Any) -> Any:
+        if value is None:
+            return openai.omit
+        return value
 
     async def call(self, user_id: str, request: Request, runtime: Runtime) -> T:
         """
