@@ -157,6 +157,7 @@ class CallModel(ToolCallPacakage):
             user_id = self.user_id,
             request = request,
             runtime = request_runtime,
+            available_tool_calls = None,
             stream = False
         )
 
