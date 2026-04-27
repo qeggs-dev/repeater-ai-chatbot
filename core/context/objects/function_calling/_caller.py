@@ -240,8 +240,9 @@ class FunctionCaller:
                 time = (end_time - start_time) / 1e6
             )
 
-
-        if isinstance(raw_result, BaseModel):
+        if isinstance(raw_result, str):
+            result = raw_result
+        elif isinstance(raw_result, BaseModel):
             result = orjson.dumps(raw_result.model_dump()).decode("utf-8")
         elif function.json_result:
             try:
