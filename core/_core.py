@@ -704,6 +704,8 @@ class Core:
                                     user_registed_tools = allowed_tool_calls
                                 elif configs.allowed_tool_calls:
                                     user_registed_tools = configs.allowed_tool_calls
+                                elif ConfigManager.get_configs().tool_calls.allowed_by_default:
+                                    user_registed_tools = ConfigManager.get_configs().tool_calls.allowed_by_default
                                 else:
                                     user_registed_tools = set()
 
