@@ -11,7 +11,7 @@ from ...global_config_manager import ReasoningEffort, ConfigManager
 from ...data_manager import PromptManager
 from .._caller import ModelRequester
 from ...runtime_container import RuntimeContainer
-from ...text_buffer import ContentBuffer
+from ...text_buffer import ContentBuffer, TextBuffer
 from pydantic import BaseModel, Field
 
 @ModelRequester.reg_global_package
@@ -93,9 +93,6 @@ class CallModel(ToolCallPacakage):
             gt=0, 
             description="Maximum time in seconds to wait for a response before the request is cancelled."
         )
-    
-    class Result(BaseModel):
-        context: Context = Field(..., description="The generated conversation context.")
 
     async def call(self, args: Params):
         runtime = RuntimeContainer.get_runtime()
@@ -162,6 +159,15 @@ class CallModel(ToolCallPacakage):
         )
 
         context = responses.new_contexts()
-        return self.Result(
-            context = context
-        )
+        buffer = TextBuffer(separator = "\n\n")
+        def response_parser(context: Context):
+            for index, content in enumerate(context):
+                if content.reasoning_content:
+                    yield f"<content index=\"{index}\" role=\"{content.role}\">"
+                    if content.reasoning_content:
+                        yield f"<reasoning>\n{content.reasoning_content}\n</reasoning>"
+                    if content.content:
+                        yield f"<content>\n{content.content}\n</content>"
+                    yield f"</content>"
+        buffer.consume_iterable_no_conversion(response_parser(context))
+        return str(buffer)
