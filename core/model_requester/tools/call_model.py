@@ -13,6 +13,15 @@ from .._caller import ModelRequester
 from ...runtime_container import RuntimeContainer
 from ...text_buffer import ContentBuffer, TextBuffer
 from pydantic import BaseModel, Field
+from enum import StrEnum
+
+class OutputFormat(StrEnum):
+    TEXT = "text"
+    JSON = "json"
+    CONTENT_ONLY = "content_only"
+    REASONING_ONLY = "reasoning_only"
+    NEW_CONTENT_ONLY = "new_content_only"
+    NEW_REASONING_ONLY = "new_reasoning_only"
 
 @ModelRequester.reg_global_package
 class CallModel(ToolCallPacakage):
@@ -93,6 +102,29 @@ class CallModel(ToolCallPacakage):
             gt=0, 
             description="Maximum time in seconds to wait for a response before the request is cancelled."
         )
+        output_format: OutputFormat = Field(
+            OutputFormat.TEXT, 
+            description="Format of the output data returned by the API (e.g., 'text')."
+        )
+    
+    class Result(BaseModel):
+        context: Context = Field(description="The context used for the API call.")
+    
+    @staticmethod
+    def response_parser(
+        context: Context,
+        include_reasoning: bool = True,
+        include_content: bool = True,
+    ):
+        for index, content in enumerate(context):
+            yield f"<content index: \"{index}\" role: \"{content.role}\">"
+            if include_reasoning and content.reasoning_content:
+                yield "<think>"
+                yield content.reasoning_content
+                yield "</think>"
+            if include_content and content.content:
+                yield content.content_to_string()
+            yield "</content>"
 
     async def call(self, args: Params):
         runtime = RuntimeContainer.get_runtime()
@@ -159,15 +191,36 @@ class CallModel(ToolCallPacakage):
         )
 
         context = responses.new_contexts()
-        buffer = TextBuffer(separator = "\n\n")
-        def response_parser(context: Context):
-            for index, content in enumerate(context):
-                if content.reasoning_content:
-                    yield f"<content index=\"{index}\" role=\"{content.role}\">"
-                    if content.reasoning_content:
-                        yield f"<reasoning>\n{content.reasoning_content}\n</reasoning>"
-                    if content.content:
-                        yield f"<content>\n{content.content}\n</content>"
-                    yield f"</content>"
-        buffer.consume_iterable_no_conversion(response_parser(context))
-        return str(buffer)
+        match args.output_format:
+            case OutputFormat.TEXT:
+                buffer = TextBuffer(separator = "\n")
+                buffer.consume_iterable_no_conversion(self.response_parser(context))
+                return str(buffer)
+            case OutputFormat.JSON:
+                return self.Result(
+                    content = context,
+                )
+            case OutputFormat.CONTENT_ONLY:
+                buffer = TextBuffer(separator = "\n")
+                buffer.consume_iterable_no_conversion(
+                    self.response_parser(
+                        context,
+                        include_content = True,
+                        include_reasoning = False,
+                    )
+                )
+                return str(buffer)
+            case OutputFormat.REASONING_ONLY:
+                buffer = TextBuffer(separator = "\n")
+                buffer.consume_iterable_no_conversion(
+                    self.response_parser(
+                        context,
+                        include_content = False,
+                        include_reasoning = True,
+                    )
+                )
+                return str(buffer)
+            case OutputFormat.NEW_CONTENT_ONLY:
+                return context.last_content.content_to_string()
+            case OutputFormat.NEW_REASONING_ONLY:
+                return context.last_content.reasoning_content
