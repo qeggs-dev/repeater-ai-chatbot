@@ -699,13 +699,14 @@ class Core:
                             request.stream_options.include_usage = ConfigManager.get_configs().callapi.include_usage
                             
                             if ConfigManager.get_configs().tool_calls.enabled:
-                                server_registed_tools = ConfigManager.get_configs().tool_calls.registed
+                                tool_calls_configs = ConfigManager.get_configs().tool_calls
+                                server_registed_tools = tool_calls_configs.registed
                                 if allowed_tool_calls:
                                     user_registed_tools = allowed_tool_calls
                                 elif configs.allowed_tool_calls:
                                     user_registed_tools = configs.allowed_tool_calls
-                                elif ConfigManager.get_configs().tool_calls.allowed_by_default:
-                                    user_registed_tools = ConfigManager.get_configs().tool_calls.allowed_by_default
+                                elif tool_calls_configs.allowed_by_default:
+                                    user_registed_tools = tool_calls_configs.allowed_by_default
                                 else:
                                     user_registed_tools = set()
 
