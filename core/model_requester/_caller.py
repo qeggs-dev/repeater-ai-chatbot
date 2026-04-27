@@ -166,7 +166,7 @@ class ModelRequester:
                             request = request,
                             runtime = runtime
                         )
-                    responses.add(response)
+                    responses.add_copy(response)
                     responses.tool_requests = self._tool_responses
                     await self._parse_response(
                         request = request,
