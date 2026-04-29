@@ -73,5 +73,7 @@ class UserConfigs(BaseModel):
         return v
     
     @field_serializer("allowed_tool_calls")
-    def allowed_tool_calls_serializer(self, value: set[str]) -> list[str]:
+    def allowed_tool_calls_serializer(self, value: set[str] | None) -> list[str] | None:
+        if value is None:
+            return None
         return list(value)
