@@ -4,7 +4,7 @@ from ....special_exception import HTTPException
 from ._response import ResponseModel
 
 @Server.app.get("/models")
-async def model_list(model_type: str):
+async def model_list():
     response = await Server.core.runtime.model_api_manager.get_all_models()
     if response.code == 200:
         model_info = response.get_data()
