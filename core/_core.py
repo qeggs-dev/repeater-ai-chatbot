@@ -44,11 +44,11 @@ from .assist_struct import (
     CrossUserDataRouting,
     AdditionalData
 )
-from .model_api import (
+from .model_info import (
     ExceptionResponse as ModelAPIExceptionResponse,
     ModelType,
     ModelAPI,
-    StaticModelAPI,
+    ModelInfo,
 )
 from .special_exception import HTTPException
 from .request_log import (
@@ -416,13 +416,13 @@ class Core:
                             if await self.in_blacklist(user_id):
                                 raise HTTPException(
                                     status_code = 403,
-                                    message = "Error: Sorry, you are in blacklist.",
+                                    detail = "Error: Sorry, you are in blacklist.",
                                 )
                             
                             if not ConfigManager.get_configs().model.stream and stream:
                                 raise HTTPException(
                                     status_code = 403,
-                                    message = "Error: The streaming response feature is turned off in the server configuration.",
+                                    detail = "Error: The streaming response feature is turned off in the server configuration.",
                                 )
                         # endregion
 
@@ -462,54 +462,38 @@ class Core:
                                 else:
                                     raise HTTPException(
                                         status_code = 500,
-                                        message = "Error: No model uid is specified.",
+                                        detail = "Error: No model uid is specified.",
                                     )
                             elif isinstance(model_uid, str):
                                 model_uid_str = model_uid
                             else:
                                 raise HTTPException(
                                     status_code = 500,
-                                    message = "Error: Model uid must be a string or a list of strings.",
+                                    detail = "Error: Model uid must be a string or a list of strings.",
                                 )
                             
                             # 获取API信息
-                            model_info = await self.runtime.model_api_manager.get_model(
-                                model_type = ModelType.CHAT,
-                                model_uid = model_uid_str,
-                                with_api_key = True
-                            )
-                            if isinstance(model_info, ModelAPIExceptionResponse):
-                                logger.error(
-                                    "Model API Server Error: {message}",
-                                    user_id = user_id,
-                                    message = model_info.message
-                                )
+                            model_info_response = await self.runtime.model_api_manager.get_models(model_uid_str)
+                            if model_info_response.code != 200:
                                 raise HTTPException(
-                                    status_code = 500,
-                                    message = f"Model API Server Error: {model_info.message}",
+                                    status_code = model_info_response.code,
+                                    detail = f"Model Info Server Error: {model_info_response.text}",
                                 )
-
-                            # 取第一个API
-                            if len(model_info.models) == 0:
-                                logger.error(
-                                    "Model API not found: {model_uid}",
-                                    user_id = user_id,
-                                    model_uid = model_uid_str
-                                )
+                            model_info = model_info_response.get_data()
+                            if not model_info:
                                 raise HTTPException(
                                     status_code = 404,
-                                    message = f"Model API not found: {model_uid_str}",
+                                    detail = "Error: Model Info Server Response is Empty.",
                                 )
-                            elif len(model_info.models) > 1:
-                                model = random.choice(model_info.models)
-                                logger.warning(
-                                    "Multiple API found: {length}, choice randomly: {model_uid}",
-                                    user_id = user_id,
-                                    length = len(model_info.models),
-                                    model_uid = model.uid
+                            
+                            models = model_info.models
+                            if not models:
+                                raise HTTPException(
+                                    status_code = 404,
+                                    detail = "Error: Model is Not Found.",
                                 )
-                            else:
-                                model = model_info.models[0]
+                            
+                            model = random.choice(models)
                         # endregion
 
                         # region [Getting model info]
@@ -593,7 +577,7 @@ class Core:
                                                 logger.error(f"Failed to shrink context: {e}", user_id = user_id)
                                                 raise HTTPException(
                                                     status_code = 400,
-                                                    message = (
+                                                    detail = (
                                                         "Sorry, I failed to shrink the context.\n"
                                                         "This can be caused by an incorrect parameter input.\n"
                                                         "Please check that the context field is working properly in your configuration.\n"
@@ -619,12 +603,12 @@ class Core:
                             else:
                                 request.timeout = configs.model_timeout
                             request.output_role = assistant_role
-                            if isinstance(model, StaticModelAPI):
+                            if isinstance(model, ModelInfo):
                                 api_key = model.api_key
                             else:
                                 raise HTTPException(
                                     status_code = 503,
-                                    message = "Error: Model API key not found",
+                                    detail = "Error: Model API key not found",
                                 )
                             request.key = api_key
                             
@@ -730,7 +714,6 @@ class Core:
                             output = Response()
                             output.model_group = model.parent
                             output.model_name = model.name
-                            output.model_type = model.type.value
                             output.model_uid = model.uid
                             output.user_raw_input = message
 
@@ -835,7 +818,7 @@ class Core:
                             
                             raise HTTPException(
                                 status_code = 500,
-                                message = f"API Error: {e}"
+                                detail = f"API Error: {e}"
                             )
                     # endregion
         except Exception as e:
