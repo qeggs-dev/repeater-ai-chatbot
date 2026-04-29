@@ -6,7 +6,6 @@ from ...call_api.completions_api import (
     StreamOptions
 )
 from ...context import ToolCallPacakage, CallType, Context, ContentRole
-from ...model_info import ModelType, StaticModelAPIResponse
 from ...global_config_manager import ReasoningEffort, ConfigManager
 from ...data_manager import PromptManager
 from .._caller import ModelRequester
