@@ -5,6 +5,7 @@ class SafeModelInfo(BaseModel):
     name: str = ""
     uid: str = ""
     parent: str = ""
+    parent_id: str = ""
     timeout: float = 600.0
     detailed: ModelAPIData | None = None
 
@@ -16,6 +17,7 @@ class ModelInfo(BaseModel):
     uid: str = ""
     api_key: str | None = None
     parent: str = ""
+    parent_id: str = ""
     detailed: ModelAPIData = Field(default_factory=ModelAPIData)
     timeout: float = 600.0
 
@@ -24,6 +26,7 @@ class ModelInfo(BaseModel):
             name = self.name,
             uid = self.uid,
             parent = self.parent,
+            parent_id = self.parent_id,
             timeout = self.timeout,
             detailed = self.detailed if detailed_info else None
         )
