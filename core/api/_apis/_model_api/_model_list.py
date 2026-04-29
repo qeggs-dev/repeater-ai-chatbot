@@ -19,7 +19,7 @@ async def model_list(model_type: str):
             content = ResponseModel(
                 message = model_info.message,
                 models = models
-            ).model_dump()
+            ).model_dump(exclude_none=True)
         )
     else:
         raise HTTPException(
