@@ -12,7 +12,6 @@ class Response(BaseModel):
     user_input: str | list[ContentBlock] | None = None
     model_group: str | None = None
     model_name: str | None = None
-    model_type: str | None = None
     model_uid: str | None = None
     create_time: int | None = None
     id: str | None = None
