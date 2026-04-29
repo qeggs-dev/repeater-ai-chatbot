@@ -218,9 +218,10 @@ class FunctionCaller:
         )
 
         logger.info(
-            "Call Tool Name: {name}",
+            "Call Tool Name: {name}(Call Type: {call_type})",
             user_id = user_id,
-            name = function.name
+            name = function.name,
+            call_type = function.call_type.name
         )
 
         logger.info(
