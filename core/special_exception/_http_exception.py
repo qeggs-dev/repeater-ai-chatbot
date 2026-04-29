@@ -7,13 +7,13 @@ class HTTPErrorDetail(BaseModel):
     extra_data: Any = None
 
 class HTTPException(Exception):
-    def __init__(self, message: str = "Internal Server Error", status_code: int = 500, extra_data: Any = None):
+    def __init__(self, detail: str = "Internal Server Error", status_code: int = 500, extra_data: Any = None):
         self.detail = HTTPErrorDetail(
-            message=message,
-            status_code=status_code,
-            extra_data=extra_data
+            message = detail,
+            status_code = status_code,
+            extra_data = extra_data
         )
-        super().__init__(message)
+        super().__init__(detail)
     
     @property
     def status_code(self):

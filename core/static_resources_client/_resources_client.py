@@ -37,7 +37,7 @@ class StaticResourcesClient:
                 self.str_or_url(path)
             )
         except httpx.RequestError as e:
-            raise HTTPException(message = f"Get Static Resource Failed: {e}") from e
+            raise HTTPException(detail = f"Get Static Resource Failed: {e}") from e
         
         response.raise_for_status()
         return response.content
@@ -52,7 +52,7 @@ class StaticResourcesClient:
                 }
             )
         except httpx.RequestError as e:
-            raise HTTPException(message = f"Get Static Resource Failed: {e}") from e
+            raise HTTPException(detail = f"Get Static Resource Failed: {e}") from e
     
         response.raise_for_status()
         return response.text
