@@ -26,7 +26,7 @@ class OutputFormat(StrEnum):
 class CallModel(ToolCallPacakage):
     prompt_manager: PromptManager = PromptManager()
     name = "call_model"
-    document = "Send a request to an available model and get the generated results."
+    document = "Send a request to an llm and get the generated results."
     call_type = CallType.ASYNC
     
     class Params(BaseModel):
