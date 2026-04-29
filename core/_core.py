@@ -45,9 +45,6 @@ from .assist_struct import (
     AdditionalData
 )
 from .model_info import (
-    ExceptionResponse as ModelAPIExceptionResponse,
-    ModelType,
-    ModelAPI,
     ModelInfo,
 )
 from .special_exception import HTTPException
@@ -256,7 +253,7 @@ class Core:
     def _print_request_info(
             self,
             user_id: str,
-            api: ModelAPI,
+            api: ModelInfo,
             user_input: ContentUnit | None,
             user_info: RequestUserInfo,
             role_name: str | None = None
