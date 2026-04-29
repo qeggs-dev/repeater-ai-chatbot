@@ -25,8 +25,12 @@ class Response(Generic[T]):
         return self._response.status_code
     
     @property
-    def content(self) -> str:
+    def text(self) -> str:
         return self._response.text
+    
+    @property
+    def content(self) -> bytes:
+        return self._response.content
     
     def json(self) -> Any:
         return self._response.json()
