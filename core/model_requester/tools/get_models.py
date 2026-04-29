@@ -1,9 +1,9 @@
+from pydantic import BaseModel, Field
 from ...context import ToolCallPacakage, CallType
 from ...data_manager import PromptManager
 from .._caller import ModelRequester
 from ...runtime_container import RuntimeContainer
-from ...model_api import ModelType, ModelAPIResponse, ExceptionResponse
-from pydantic import BaseModel
+from ...model_info import ModelAPIResponse, SafeModelInfo
 
 @ModelRequester.reg_global_package
 class GetModels(ToolCallPacakage):
@@ -13,23 +13,24 @@ class GetModels(ToolCallPacakage):
     call_type = CallType.ASYNC
 
     class Params(BaseModel):
-        model_type: ModelType = ModelType.CHAT
+        model_id: str | None = None
+    
+    class Result(BaseModel):
+        models: list[SafeModelInfo] = Field(default_factory=list)
 
     async def call(self, args: Params):
-        response = await RuntimeContainer.get_runtime().model_api_manager.get_models(
-            args.model_type,
-            with_api_key = False
-        )
-        if isinstance(response, ModelAPIResponse):
-            model_list = [
-                {
-                    "uid": model.uid,
-                    "name": model.name,
-                    "parent": model.parent
-                } for model in response.models
-            ]
-            return model_list
-        elif isinstance(response, ExceptionResponse):
-            return f"Error: Get Model list failed: {response.message}"
+        runtime = RuntimeContainer.get_runtime()
+        if args.model_id is None:
+            response = await runtime.model_api_manager.get_all_models()
         else:
-            return f"Error: Get Model list failed: Unknown response type: {type(response)}"
+            response = await runtime.model_api_manager.get_models(model_uid = args.model_id)
+        
+        if response.code == 200:
+            model_info = response.get_data()
+            if model_info is None:
+                raise ValueError("Model info is None")
+            return self.Result(
+                models = [model.to_safe() for model in model_info.models]
+            )
+        else:
+            raise ValueError(f"Failed to get models: {response.text}")

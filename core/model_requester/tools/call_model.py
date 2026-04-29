@@ -6,7 +6,7 @@ from ...call_api.completions_api import (
     StreamOptions
 )
 from ...context import ToolCallPacakage, CallType, Context, ContentRole
-from ...model_api import ModelType, StaticModelAPIResponse
+from ...model_info import ModelType, StaticModelAPIResponse
 from ...global_config_manager import ReasoningEffort, ConfigManager
 from ...data_manager import PromptManager
 from .._caller import ModelRequester
@@ -129,22 +129,20 @@ class CallModel(ToolCallPacakage):
     async def call(self, args: Params):
         runtime = RuntimeContainer.get_runtime()
         
-        model_info = await runtime.model_api_manager.get_model(
-            model_type = ModelType.CHAT,
-            model_uid = args.model_uid,
-            with_api_key = True
+        response = await runtime.model_api_manager.get_models(
+            model_uid = args.model_uid
         )
-
-        if not isinstance(model_info, StaticModelAPIResponse):
-            raise ValueError("Model data is not valid")
+        if response.code != 200:
+            raise ValueError(f"Error: {response.text}")
+        
+        model_info = response.get_data()
+        if model_info is None:
+            raise ValueError("Error: Model Info Server response is empty.")
         
         if not model_info.models:
-            raise ValueError("Model not found")
-        
-        if len(model_info.models) == 1:
-            model = model_info.models[0]
-        else:
-            model = random.choice(model_info.models)
+            raise ValueError("Error: No model found.")
+
+        model = random.choice(model_info.models)
 
         request = Request(
             url = model.url,

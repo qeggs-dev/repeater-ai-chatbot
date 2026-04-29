@@ -19,7 +19,7 @@ from ..pools.resource_pool import ResourcePool
 from ..text_buffer import ContentBuffer
 from ..auxiliary.regex_checker import RegexChecker
 from ..global_config_manager import ConfigManager
-from ..model_api import (
+from ..model_info import (
     ModelsClient
 )
 from ..nexus_client import NexusClient
