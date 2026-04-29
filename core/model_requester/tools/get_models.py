@@ -31,6 +31,6 @@ class GetModels(ToolCallPacakage):
                 raise ValueError("Model info is None")
             return self.Result(
                 models = [model.to_safe() for model in model_info.models]
-            )
+            ).model_dump(exclude_none = True)
         else:
             raise ValueError(f"Failed to get models: {response.text}")
