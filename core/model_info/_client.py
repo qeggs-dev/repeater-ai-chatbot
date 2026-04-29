@@ -22,7 +22,7 @@ class ModelsClient:
             raise HTTPException(detail = f"Get Models API Failed: {e}") from e
         
         response = Response(
-            http_response = http_response,
+            response = http_response,
             model = ModelInfoResponse
         )
 
@@ -37,7 +37,7 @@ class ModelsClient:
             raise HTTPException(detail = f"Get All Models API Failed: {e}") from e
 
         response = Response(
-            http_response = http_response,
+            response = http_response,
             model = ModelInfoResponse
         )
 
