@@ -2,7 +2,8 @@ import aiofiles
 
 from ....server import Server
 from fastapi.responses import FileResponse, PlainTextResponse
-from fastapi import HTTPException, Query
+from fastapi import Query
+from ....special_exception import HTTPException
 from ....auxiliary.path import validate_path
 from pathlib import Path
 

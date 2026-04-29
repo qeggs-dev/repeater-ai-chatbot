@@ -1,3 +1,4 @@
+from ......special_exception import HTTPException
 from ......server import Server
 from ......context import (
     Context
@@ -6,7 +7,6 @@ from fastapi import Form
 from fastapi.responses import (
     ORJSONResponse
 )
-from fastapi import HTTPException
 from loguru import logger
 
 @Server.app.post("/userdata/context/withdraw/{user_id}")

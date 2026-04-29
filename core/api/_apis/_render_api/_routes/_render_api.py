@@ -44,16 +44,16 @@ async def render(
 
     # 检查请求是否合法
     if not request.text:
-        raise HTTPException(status_code=400, message="text is required")
+        raise HTTPException(status_code=400, detail="text is required")
     
     if request.direct_output and not global_configs.render.markdown.allow_direct_output:
-        raise HTTPException(status_code=400, message="direct_output is not allowed")
+        raise HTTPException(status_code=400, detail="direct_output is not allowed")
     
     if request.style and not global_configs.render.markdown.allow_custom_styles:
-        raise HTTPException(status_code=400, message="custom style is not allowed")
+        raise HTTPException(status_code=400, detail="custom style is not allowed")
     
     if request.html_template and not global_configs.render.markdown.allow_custom_html_templates: 
-        raise HTTPException(status_code=400, message="custom html_template is not allowed")
+        raise HTTPException(status_code=400, detail="custom html_template is not allowed")
     
     # 获取用户配置
     config = await Server.core.runtime.user_config_manager.load(user_id = user_id)
@@ -141,7 +141,7 @@ async def render(
     response = await Server.core.runtime.html_render_client.render(html)
     result = response.get_data()
     if result is None:
-        raise HTTPException(status_code=500, message="The response data could not be obtained correctly.")
+        raise HTTPException(status_code=500, detail="The response data could not be obtained correctly.")
     
     fileurl = result.image_url
 

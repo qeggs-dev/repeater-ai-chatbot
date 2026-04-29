@@ -5,12 +5,10 @@ from fastapi.responses import (
 from ......user_config_manager import (
     UserConfigs
 )
+from ......special_exception import HTTPException
 from .._requests import (
     SetConfigRequest,
     FieldType
-)
-from fastapi import (
-    HTTPException
 )
 from loguru import logger
 

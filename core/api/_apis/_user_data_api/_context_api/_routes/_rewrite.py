@@ -2,7 +2,7 @@ from ......server import Server
 from fastapi.responses import (
     ORJSONResponse
 )
-from fastapi import HTTPException
+from ......special_exception import HTTPException
 from loguru import logger
 
 from .._requests import (

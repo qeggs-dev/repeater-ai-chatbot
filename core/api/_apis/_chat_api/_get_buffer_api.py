@@ -9,7 +9,7 @@ async def get_chat_buffer_api(user_id: str):
     if user_id not in Server.core.runtime.content_buffers_pool:
         raise HTTPException(
             status_code = 404,
-            message = "This user does not have a task currently being generated."
+            detail = "This user does not have a task currently being generated."
         )
     buffers = await Server.core.runtime.content_buffers_pool.get(user_id)
 

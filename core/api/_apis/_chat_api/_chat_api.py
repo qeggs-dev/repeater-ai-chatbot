@@ -50,7 +50,7 @@ async def chat_endpoint(
         response = await Server.core.runtime.chat_task_pool.run_task(user_id, chat_coroutine)
     except asyncio.CancelledError:
         raise HTTPException(
-            message = "Chat Completion Task Cancelled or System Abnormal Shutdown.",
+            detail = "Chat Completion Task Cancelled or System Abnormal Shutdown.",
             status_code = 409 # Conflict
         )
         

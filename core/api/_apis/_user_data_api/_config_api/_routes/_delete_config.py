@@ -7,11 +7,11 @@ from fastapi.responses import (
 from ......user_config_manager import (
     UserConfigs
 )
+from ......special_exception import (
+    HTTPException
+)
 from .._requests import (
     SetConfigRequest
-)
-from fastapi import (
-    HTTPException
 )
 from fastapi import (
     Form
