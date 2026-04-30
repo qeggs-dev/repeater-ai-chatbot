@@ -97,6 +97,10 @@ async def log_traceback(error: BaseException) -> ORJSONResponse:
                 user_id = "[Global Exception Recorder]",
             )
     
+    # 写入 HTTP 状态码
+    if is_http_exception:
+        error_code = error.status_code
+    
     error_response = ErrorResponse(
         error_code = error_code,
         timestamp_ns = error_time,
