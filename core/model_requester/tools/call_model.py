@@ -11,6 +11,7 @@ from ...data_manager import PromptManager
 from .._caller import ModelRequester
 from ...runtime_container import RuntimeContainer
 from ...text_buffer import ContentBuffer, TextBuffer
+from ...model_info import ModelInfo, SafeModelInfo
 from pydantic import BaseModel, Field
 from enum import StrEnum
 
@@ -107,16 +108,18 @@ class CallModel(ToolCallPacakage):
         )
     
     class Result(BaseModel):
+        model: SafeModelInfo = Field(description="The model used for the API call.")
         context: Context = Field(description="The context used for the API call.")
     
     @staticmethod
     def response_parser(
+        model: ModelInfo,
         context: Context,
         include_reasoning: bool = True,
         include_content: bool = True,
     ):
         for index, content in enumerate(context):
-            yield f"<content index: \"{index}\" role: \"{content.role}\">"
+            yield f"<content index: \"{index}\" role: \"{content.role}\" model: \"{model.name}\">"
             if include_reasoning and content.reasoning_content:
                 yield "<think>"
                 yield content.reasoning_content
@@ -191,16 +194,23 @@ class CallModel(ToolCallPacakage):
         match args.output_format:
             case OutputFormat.TEXT:
                 buffer = TextBuffer(separator = "\n")
-                buffer.consume_iterable_no_conversion(self.response_parser(context))
+                buffer.consume_iterable_no_conversion(
+                    self.response_parser(
+                        model,
+                        context
+                    )
+                )
                 return str(buffer)
             case OutputFormat.JSON:
                 return self.Result(
+                    model = model.to_safe(),
                     content = context,
                 )
             case OutputFormat.CONTENT_ONLY:
                 buffer = TextBuffer(separator = "\n")
                 buffer.consume_iterable_no_conversion(
                     self.response_parser(
+                        model,
                         context,
                         include_content = True,
                         include_reasoning = False,
@@ -211,6 +221,7 @@ class CallModel(ToolCallPacakage):
                 buffer = TextBuffer(separator = "\n")
                 buffer.consume_iterable_no_conversion(
                     self.response_parser(
+                        model,
                         context,
                         include_content = False,
                         include_reasoning = True,
