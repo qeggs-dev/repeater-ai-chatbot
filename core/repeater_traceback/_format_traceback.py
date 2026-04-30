@@ -1,9 +1,7 @@
-import sys
 import time
 import asyncio
 import traceback
 
-from pathlib import Path
 from loguru import logger
 from datetime import datetime
 from fastapi.responses import ORJSONResponse
