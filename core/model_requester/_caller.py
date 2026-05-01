@@ -102,7 +102,9 @@ class ModelRequester:
         if available_tool_calls and response.tool_calls:
             calling_requests: list[CallingRequest] = []
             for tool_call in response.tool_calls:
-                calling_requests.append(tool_call.to_calling_request())
+                calling_requests.append(
+                    tool_call.to_calling_request()
+                )
             results = await self._tools_caller.call_functions(
                 response.user_id,
                 calling_requests = calling_requests,

@@ -121,7 +121,13 @@ class FunctionCaller:
         else:
             return None
     
-    async def call_functions(self, user_id: str, calling_requests: list[CallingRequest], available_tool_calls: set[str], max_concurrent: int = 10) -> list[ContentUnit]:
+    async def call_functions(
+            self,
+            user_id: str,
+            calling_requests: list[CallingRequest],
+            available_tool_calls: set[str],
+            max_concurrent: int = 10
+        ) -> list[ContentUnit]:
         results: asyncio.Queue = asyncio.Queue()
         tasks: set[asyncio.Task] = set()
         semaphore = asyncio.Semaphore(max_concurrent)
@@ -165,7 +171,12 @@ class FunctionCaller:
             content = content
         )
     
-    async def call_function(self, user_id: str, calling_request: CallingRequest, available_tool_calls: set[str]) -> ContentUnit:
+    async def call_function(
+            self,
+            user_id: str,
+            calling_request: CallingRequest,
+            available_tool_calls: set[str]
+        ) -> ContentUnit:
         if calling_request.function.name not in available_tool_calls:
             return self._create_tool_content_unit(
                 tool_call_id = calling_request.id,
