@@ -1,4 +1,5 @@
 from pydantic import BaseModel, ConfigDict, Field
+from ..auxiliary.http import ClientLimits, ClientTimeout
 from .models import ModelAPIData
 
 class SafeModelInfo(BaseModel):
@@ -10,9 +11,12 @@ class SafeModelInfo(BaseModel):
     detailed: ModelAPIData | None = None
 
 class ModelInfo(BaseModel):
-    name: str = ""
     url: str = ""
     proxy: str | None = None
+    limits: ClientLimits = Field(default_factory=ClientLimits)
+    timeout: ClientTimeout = Field(default_factory=ClientTimeout)
+    
+    name: str = ""
     id: str = ""
     uid: str = ""
     api_key: str | None = None
