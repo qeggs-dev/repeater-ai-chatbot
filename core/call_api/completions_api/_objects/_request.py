@@ -7,6 +7,10 @@ from ....context import (
 )
 from ....global_config_manager import ReasoningEffort
 from ....context import Context
+from ....auxiliary.http import (
+    ClientLimits,
+    ClientTimeout
+)
 
 class Request(BaseModel):
     """
@@ -18,8 +22,9 @@ class Request(BaseModel):
 
     url: str = ""
     proxy: str | None = None
+    limits: ClientLimits = Field(default_factory=ClientLimits)
     encoding: str = "utf-8"
-    timeout: int | float = 600.0
+    timeout: int | float | ClientTimeout = 600.0
 
     key: str = ""
     model: str = ""
