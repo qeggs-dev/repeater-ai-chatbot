@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 # ==== 标准库 ==== #
+import ssl
 from pathlib import Path
 
 # ==== 第三方库 ==== #
@@ -41,6 +42,10 @@ class RepeaterRuntime:
             if obj.startswith("init_") and hasattr(self, obj):
                 func = getattr(self, obj)
                 func()
+    
+    @print_init_runtime("SSL Context")
+    def init_ssl_context(self):
+        self.ssl_context = ssl.create_default_context()
 
     @print_init_runtime("Data Manager")
     def init_data_manager(self):
@@ -62,7 +67,8 @@ class RepeaterRuntime:
         # 初始化静态资源客户端
         self.static_resources_client = StaticResourcesClient(
             ConfigManager.get_configs().static_resources_server.base_url,
-            ConfigManager.get_configs().static_resources_server.timeout
+            ConfigManager.get_configs().static_resources_server.timeout,
+            self.ssl_context
         )
 
     @print_init_runtime("Content Buffers Pool")
@@ -112,14 +118,17 @@ class RepeaterRuntime:
         render_config = ConfigManager.get_configs().render
         self.html_render_client = HTMLRenderClient(
             base_url = render_config.to_image.base_url,
-            timeout = render_config.to_image.timeout
+            timeout = render_config.to_image.timeout,
+            verify = self.ssl_context
         )
     
     @print_init_runtime("Nexus Client")
     def init_nexus_client(self):
+        nexus_config = ConfigManager.get_configs().nexus
         self.nexus_client: NexusClient = NexusClient(
-            base_url = ConfigManager.get_configs().nexus.base_url,
-            request_timeout = ConfigManager.get_configs().nexus.api_timeout,
+            base_url = nexus_config.base_url,
+            request_timeout = nexus_config.api_timeout,
+            verify = self.ssl_context
         )
     
     @print_init_runtime("License Loader")

@@ -1,4 +1,6 @@
 from __future__ import annotations
+
+import ssl
 from typing import ClassVar
 from .runtime import RepeaterRuntime
 
@@ -23,3 +25,7 @@ class RuntimeContainer:
             else:
                 raise RuntimeError("GlobalObjects not initialized")
         return cls._objects
+
+    @classmethod
+    def get_ssl_context(cls) -> ssl.SSLContext:
+        return cls.get_runtime().ssl_context
