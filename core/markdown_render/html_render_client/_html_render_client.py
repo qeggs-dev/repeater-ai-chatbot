@@ -10,7 +10,7 @@ class HTMLRenderClient:
         self._client = httpx.AsyncClient(
             base_url = base_url,
             timeout = timeout,
-            verify = ssl_verify
+            verify = verify
         )
     
     async def render(self, text: str) -> Response[RenderResponse]:
