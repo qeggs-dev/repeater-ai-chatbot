@@ -148,6 +148,7 @@ class CallModel(ToolCallPacakage):
 
         request = Request(
             url = model.url,
+            limits = model.limits,
             key = model.api_key,
             timeout = args.timeout if args.timeout is not None else model.timeout,
             model = model.id,

@@ -7,7 +7,7 @@ import ipaddress
 from ...context import ToolCallPacakage, CallType
 from ...global_config_manager import HTTPMethods, ConfigManager
 from .._caller import ModelRequester
-from ...runtime_container import get_ssl_context
+from ...auxiliary.http import get_ssl_context
 from typing import Any, Self
 from pydantic import BaseModel, Field
 

@@ -3,7 +3,7 @@ import json
 import httpx
 from environs import Env
 from ...context import ToolCallPacakage, CallType
-from ...runtime_container import get_ssl_context
+from ...auxiliary.http import get_ssl_context
 from .._caller import ModelRequester
 from enum import StrEnum
 from pydantic import BaseModel, Field
