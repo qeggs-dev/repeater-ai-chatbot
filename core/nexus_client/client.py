@@ -1,3 +1,4 @@
+import ssl
 import orjson
 
 from typing import (
@@ -17,11 +18,13 @@ class NexusClient:
     def __init__(
             self,
             base_url: str,
-            request_timeout: int = 60
+            request_timeout: int = 60,
+            verify: ssl.SSLContext | str | bool = True
         ) -> None:
         self._client = AsyncClient(
             base_url = base_url,
-            timeout = request_timeout
+            timeout = request_timeout,
+            verify = verify
         )
     
     async def close(self) -> None:

@@ -1,3 +1,4 @@
+import ssl
 import httpx
 
 from urllib.parse import quote
@@ -6,11 +7,12 @@ from ..special_exception import HTTPException
 from ..http_response import Response
 
 class ModelsClient:
-    def __init__(self, base_url: str, timeout: int | None = None):
+    def __init__(self, base_url: str, timeout: int | None = None, verify: ssl.SSLContext | str | bool = True):
         self._base_url = base_url
         self._client = httpx.AsyncClient(
             base_url = self._base_url,
-            timeout = timeout
+            timeout = timeout,
+            verify = verify
         )
     
     async def get_models(self, model_uid: str) -> Response[ModelInfoResponse]:
