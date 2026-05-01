@@ -2,7 +2,7 @@
 
 用于打断当前所有提交的 Chat 任务
 
-- **`/chat/break/{user_id:str}`**
+- **`/generate/chat/break/{user_id:str}`**
   - **Request**
     - ***method:** `POST`
   - **Response**

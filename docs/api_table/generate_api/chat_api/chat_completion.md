@@ -3,7 +3,7 @@
 负责与 AI 进行对话
 服务器会自动管理对话状态文件
 
-- **`/chat/completion/{user_id:str}`**
+- **`/generate/chat/completion/{user_id:str}`**
   - **Requset**
     - **method:** `POST`
     - **type:** `JSON`

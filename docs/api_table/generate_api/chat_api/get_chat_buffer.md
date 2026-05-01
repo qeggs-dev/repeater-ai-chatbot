@@ -2,7 +2,7 @@
 
 查看当前生成任务的缓冲区内容
 
-- **`/chat/buffer/{user_id:str}`**
+- **`/generate/chat/buffer/{user_id:str}`**
   - **Request**
     - ***method:** `GET`
   - **Response**
