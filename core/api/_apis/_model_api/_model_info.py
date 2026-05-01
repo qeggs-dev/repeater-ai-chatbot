@@ -1,27 +1,28 @@
 from ....server import Server
-from ....model_api import ModelType, ModelsResponse, ExceptionResponse
 from fastapi.responses import ORJSONResponse
-from fastapi import HTTPException
-from ._resources import MODEL_TYPES
+from ....special_exception import HTTPException
+from ._response import ResponseModel
 
-@Server.app.get("/model/info/{model_type}/{model_uid}")
-async def model_info(model_type: str, model_uid: str):
-    if model_type not in MODEL_TYPES:
-        raise HTTPException(
-            status_code=400,
-            detail="Invalid model type."
-        )
-    model_info = await Server.core.model_api_manager.get_model(
-        ModelType(model_type),
-        model_uid
-    )
-    
-    if isinstance(model_info, ExceptionResponse):
+@Server.app.get("/models/{model_uid:path}")
+async def model_info(model_uid: str):
+    response = await Server.core.runtime.model_api_manager.get_models(model_uid)
+    if response.code == 200:
+        model_info = response.get_data()
+        if model_info is None:
+            raise HTTPException(
+                status_code = 500,
+                detail = "Model INFO Server Response is invalid."
+            )
+        models = [model.to_safe() for model in model_info.models]
         return ORJSONResponse(
-            status_code = 503,
-            content = model_info.model_dump()
+            status_code = 200,
+            content = ResponseModel(
+                message = model_info.message,
+                models = models
+            ).model_dump(exclude_none=True)
         )
-    return ORJSONResponse(
-        status_code = 200,
-        content = model_info.model_dump()
-    )
+    else:
+        raise HTTPException(
+            status_code = 500,
+            detail = response.text
+        )

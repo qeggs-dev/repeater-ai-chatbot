@@ -22,8 +22,8 @@ async def get_userdata_file(user_id: str):
     # 创建虚拟文件缓冲区
     buffer = BytesIO()
     context_loader = await Server.core.get_context_loader()
-    prompt_manager = Server.core.prompt_manager
-    config_manager = Server.core.user_config_manager
+    prompt_manager = Server.core.runtime.prompt_manager
+    config_manager = Server.core.runtime.user_config_manager
     
     await package_user_space(
         user_id = user_id,

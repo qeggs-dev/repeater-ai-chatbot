@@ -17,17 +17,10 @@ async def get_style(request: RenderRequest, user_configs: UserConfigs, static_re
         static_resources_client = static_resources_client,
         style_base_path = style_path
     )
-    style_file_encoding = ConfigManager.get_configs().render.markdown.style_file_encoding
-
-    if request.css:
-        style_name = "custom"
-        css = request.css
-    elif request.style:
+    
+    if request.style:
         style_name = request.style
-        css = await styles.get_style(
-            style_name,
-            encoding = style_file_encoding
-        )
+        style_url = styles.get_style_full_url(style_name)
     else:
         # 获取配置中的默认图片渲染风格
         if user_configs.render_style:
@@ -35,9 +28,6 @@ async def get_style(request: RenderRequest, user_configs: UserConfigs, static_re
         else:
             style_name = ConfigManager.get_configs().render.markdown.default_style
         
-        css = await styles.get_style(
-            style_name,
-            encoding = style_file_encoding
-        )
+        style_url = styles.get_style_full_url(style_name)
     
-    return style_name, css
+    return style_name, style_url

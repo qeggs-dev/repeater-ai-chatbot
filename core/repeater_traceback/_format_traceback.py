@@ -1,9 +1,7 @@
-import sys
 import time
 import asyncio
 import traceback
 
-from pathlib import Path
 from loguru import logger
 from datetime import datetime
 from fastapi.responses import ORJSONResponse
@@ -96,6 +94,10 @@ async def log_traceback(error: BaseException) -> ORJSONResponse:
                 "A critical error has occurred on the server, but the server has not been allowed to go down!",
                 user_id = "[Global Exception Recorder]",
             )
+    
+    # 写入 HTTP 状态码
+    if is_http_exception:
+        error_code = error.status_code
     
     error_response = ErrorResponse(
         error_code = error_code,

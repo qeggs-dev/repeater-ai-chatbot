@@ -7,8 +7,7 @@ Repeater 会首先从 `CONFIG_DIR` 环境变量
 进行合并处理
 排名在后的会覆盖在前面的配置项。
 
-PS: 配置读取时键名不区分大小写，但建议使用小写格式
-配置管理器会递归扫描环境变量`CONFIG_DIR`下的所有json/yaml文件
+PS: 配置管理器会递归扫描环境变量`CONFIG_DIR`下的所有json/yaml文件
 并按照路径的字符串顺序排列，后加载配置中的字段会覆盖之前的配置
 你也可以使用环境变量`CONFIG_FORCE_LOAD_LIST`来强制按照指定的顺序加载配置
 
@@ -119,8 +118,9 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
         // 设为 true 则只保存新消息，而不是追加到历史消息中
         "save_new_only": false,
 
-        // 是否忽略新请求中的非文本数据
-        "new_requests_text_only": false,
+        // 是否构建多模态消息
+        // 如果禁用，则附加数据会以 JSON 的方式传入
+        "make_multimodal_message": true,
 
         // 是否移除上下文中的推理内容
         // 通常建议设置为 true
@@ -143,12 +143,6 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
         // 在遇到关键错误时，是否让服务器关闭
         "crash_exit": true,
 
-        // 在遇到关键错误时，发送的信号
-        // 可以填写信号名称，如 SIGINT
-        // 也可以填写信号编号，如 2
-        // 默认为 SIGINT
-        "crash_exit_signal": "SIGINT",
-
         // 遇到问题时，保存 traceback 的目录
         // 如果该值为 null 则程序会跳过这一步骤
         // 但日志中的错误追踪不受影响
@@ -166,7 +160,12 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
             // 读取代码文件时使用的编码
             "code_encoding": "utf-8",
 
-            // 读取代码文件从错误发生行开始向两边扩展的行数
+            // 读取代码文件时
+            // 从错误发生行开始
+            // 向上下扩展读取的行数
+            // 比如：错误发生在第 10 行
+            // 且 "code_line_dilation" 设置为 3
+            // 则会读取 7-13 行
             "code_line_dilation": 3,
 
             // 读取时是否添加行数标记
@@ -178,6 +177,7 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
             // 举例：
             // |    1| def foo():
             // |>   2|     raise Exception("Error")
+            // └─────┴─────────────────────────────
             "reserve_space": 5,
 
             // 行数标记填充字符
@@ -192,7 +192,7 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
             // 当值为 null 时，将使用终端宽度减去行数标记所占的长度
             "bottom_border_limit": null
         },
-
+        
         // 使用 Repeater 自己的 Traceback 格式化函数
         "repeater_traceback": {
             // 是否启用
@@ -284,6 +284,23 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
         // 默认模型停止符
         // 当模型输出到停止符内容时，停止生成
         "default_stop": [],
+        
+        // 开启混合推理模型的思考模式
+        // 如果这里为 null，则使用默认
+        // 如果为 true 则强制开启
+        // 如果为 false 则强制关闭
+        "default_thinking": null,
+
+
+        // 控制模型的推理强度
+        // 允许的值有：
+        // - "low"
+        // - "medium"
+        // - "high"
+        // - "xhigh"
+        // - "max"
+        // - null
+        "default_reasoning_effort": null,
 
         // 默认模型是否流式输出
         // 注意：这里只是在告诉 Repeater 应该使用什么方式调用模型接口
@@ -438,9 +455,6 @@ PS: 配置读取时键名不区分大小写，但建议使用小写格式
 
             // 样式文件目录
             "styles_base_path": "/configs/styles",
-
-            // 样式文件应该用什么编码打开
-            "style_file_encoding": "utf-8",
 
             // HTML 模板文件目录
             "html_template_base_path": "/configs/html_templates",

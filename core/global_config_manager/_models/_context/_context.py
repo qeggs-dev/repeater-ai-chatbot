@@ -8,6 +8,6 @@ class ContextConfig(BaseModel):
     save_text_only: bool = False
     save_new_only: bool = False
     remove_reasoning_prompt: bool = False
-    new_requests_text_only: bool = False
+    make_multimodal_message: bool = True
 
     max_log_length_for_non_text_content: int | None = 25

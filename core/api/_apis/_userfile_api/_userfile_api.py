@@ -25,8 +25,8 @@ async def get_userdata_file(user_id: str):
     buffer = BytesIO()
     context_loader = await Server.core.get_context_loader()
     context = await context_loader.load_context(user_id = user_id)
-    prompt = await Server.core.prompt_manager.load(user_id = user_id, default = "")
-    config = await Server.core.user_config_manager.load(user_id = user_id)
+    prompt = await Server.core.runtime.prompt_manager.load(user_id = user_id, default = "")
+    config = await Server.core.runtime.user_config_manager.load(user_id = user_id)
     
     await asyncio.to_thread(
         make_user_file,

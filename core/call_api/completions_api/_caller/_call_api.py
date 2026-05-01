@@ -15,44 +15,41 @@ from .._objects import (
     TopLogprob,
     Logprob,
     TokensCount,
-    FinishReason
+    FinishReason,
+    Runtime
 )
 from ....context import (
-    ContentUnit,
-    ContentRole
+    ContentUnit
 )
 from ....request_log import RequestLog, TimeStamp
 from ._call_api_base import CallNstreamAPIBase
-from ....status_map import StatusMap
 from .._exceptions import *
-from ._client_info import ClientInfo
 
 class CallAPI(CallNstreamAPIBase):
-    async def _call(self, user_id:str, request: Request, status_map: StatusMap[str, str]) -> Response:
+    async def _call(self, user_id:str, request: Request, runtime: Runtime) -> Response:
         """调用API"""
         # 检查参数
         assert isinstance(user_id, str), "user_id must be str"
         assert isinstance(request, Request), "request must be Request"
+        assert isinstance(runtime, Runtime), "runtime must be Runtime"
 
-        with status_map.enter(user_id, "Init objects"):
+        with runtime.status_map.enter(user_id, "Init objects"):
             # 创建模型响应对象
-            model_response = Response()
+            model_response = runtime.response
             # 设置 user_id
             model_response.user_id = user_id
             # 创建调用日志对象
             model_response.request_log = RequestLog()
 
-        with status_map.enter(user_id, "Create OpenAI Client"):
+        with runtime.status_map.enter(user_id, "Create OpenAI Client"):
             # 创建OpenAI Client
             logger.info(f"Created OpenAI Client", user_id = user_id)
-            client_info = ClientInfo(
-                url = request.url,
-                key = request.key,
-                timeout = request.timeout
+            client = self.get_client(
+                request = request,
+                runtime = runtime
             )
-            client = self.clients.get_client(client_info)
         
-        with status_map.enter(user_id, "Write calling log base data"):
+        with runtime.status_map.enter(user_id, "Write calling log base data"):
             # 写入调用日志基础数据
             model_response.request_log.url = request.url
             model_response.request_log.user_id = user_id
@@ -61,14 +58,14 @@ class CallAPI(CallNstreamAPIBase):
             model_response.request_log.stream = request.stream
 
         # 如果上下文为空，则抛出异常
-        with status_map.enter(user_id, "Check context"):
+        with runtime.status_map.enter(user_id, "Check context"):
             if not request.context:
                 raise ValueError("context is required")
         
-        with status_map.enter(user_id, "Make extra body"):
+        with runtime.status_map.enter(user_id, "Make extra body"):
             extra_body = {}
 
-            with status_map.enter(user_id, "thinking"):
+            with runtime.status_map.enter(user_id, "thinking"):
                 if request.thinking is not None:
                     if request.thinking:
                         extra_body["thinking"] = {
@@ -78,34 +75,38 @@ class CallAPI(CallNstreamAPIBase):
                         extra_body["thinking"] = {
                             "type": "disabled"
                         }
+            
+            with runtime.status_map.enter(user_id, "reasoning_effort"):
+                if request.reasoning_effort is not None:
+                    extra_body["reasoning_effort"] = request.reasoning_effort.value
         
         # 发送请求
-        with status_map.enter(user_id, "Send Request"):
+        with runtime.status_map.enter(user_id, "Send Request"):
             logger.info(f"Send Request", user_id = user_id)
             request_start_time = TimeStamp()
             response: ChatCompletion = await client.chat.completions.create(
                 model = request.model,
-                temperature = request.temperature,
-                top_p = request.top_p,
-                frequency_penalty = request.frequency_penalty,
-                presence_penalty = request.presence_penalty,
-                max_tokens = request.max_tokens,
-                max_completion_tokens=request.max_completion_tokens,
-                stop = request.stop,
+                temperature = self.none_to_omit(request.temperature),
+                top_p = self.none_to_omit(request.top_p),
+                frequency_penalty = self.none_to_omit(request.frequency_penalty),
+                presence_penalty = self.none_to_omit(request.presence_penalty),
+                max_tokens = self.none_to_omit(request.max_tokens),
+                max_completion_tokens = self.none_to_omit(request.max_completion_tokens),
+                stop = self.none_to_omit(request.stop),
                 stream = False,
                 messages = request.context.to_context(
                     with_prompt = True,
                     remove_reasoning_prompt = request.remove_reasoning_prompt,
                     remove_created = request.remove_created,
                 ),
-                tools = request.tools,
-                tool_choice = request.tool_choice,
-                stream_options = request.stream_options.model_dump(),
+                tools = self.none_to_omit(request.tools),
+                tool_choice = self.none_to_omit(request.tool_choice),
+                stream_options = self.none_to_omit(request.stream_options.model_dump()),
                 extra_body = extra_body
             )
             request_end_time = TimeStamp()
 
-        with status_map.enter(user_id, "Processing Response"):
+        with runtime.status_map.enter(user_id, "Processing Response"):
             # 创建响应内容单元
             model_response_content_unit:ContentUnit = ContentUnit()
             # 设置角色

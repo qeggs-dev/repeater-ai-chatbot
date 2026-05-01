@@ -7,16 +7,20 @@ class StaticResourcesClient:
     def __init__(self, base_url: str, timeout: int | float | None = None):
         if isinstance(base_url, str):
             if base_url:
-                self.base_url = base_url
+                self._base_url = URL(base_url)
             else:
                 raise ValueError("base_url cannot be empty")
         else:
             raise TypeError("base_url must be a string")
         
         self.client = httpx.AsyncClient(
-            base_url = self.base_url,
+            base_url = str(self._base_url),
             timeout = timeout,
         )
+    
+    @property
+    def base_url(self) -> URL:
+        return self._base_url
     
     def str_or_url(self, path: str | URL) -> str:
         if isinstance(path, str):
@@ -33,7 +37,7 @@ class StaticResourcesClient:
                 self.str_or_url(path)
             )
         except httpx.RequestError as e:
-            raise HTTPException(message = f"Get Static Resource Failed: {e}") from e
+            raise HTTPException(detail = f"Get Static Resource Failed: {e}") from e
         
         response.raise_for_status()
         return response.content
@@ -48,7 +52,7 @@ class StaticResourcesClient:
                 }
             )
         except httpx.RequestError as e:
-            raise HTTPException(message = f"Get Static Resource Failed: {e}") from e
+            raise HTTPException(detail = f"Get Static Resource Failed: {e}") from e
     
         response.raise_for_status()
         return response.text

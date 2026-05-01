@@ -13,7 +13,6 @@ This project includes the following third-party software components, licensed un
 - [FastAPI](./fastapi/index.md)
 - [Httpx](./httpx/index.md)
 - [Jinja2](./jinja2/index.md)
-- [Playwright](./playwright/index.md)
 - [Loguru](./loguru/index.md)
 - [Orjson](./orjson/index.md)
 - [OpenAI](./openai/index.md)

@@ -3,9 +3,9 @@ import asyncio
 
 from datetime import datetime
 from typing import AsyncGenerator, Self, TextIO
-from ._objects import Request, Delta, ToolCall, Response
+from ._objects import Request, Delta, ToolCall, Response, Runtime
 from ...request_log import RequestLog
-from ...context import ContentUnit, ContentRole
+from ...context import ContentUnit
 from ...request_log import TimeStamp
 from ...global_config_manager import ConfigManager
 from ...logger_init import config_to_log_level, LogLevel
@@ -29,7 +29,7 @@ class StreamingResponseGenerationLayer:
             self,
             user_id: str,
             request: Request,
-            content_buffer: ContentBuffer,
+            runtime: Runtime,
             response_iterator: AsyncGenerator[Delta, None],
             print_file: TextIO = sys.stdout
         ) -> None:
@@ -42,7 +42,8 @@ class StreamingResponseGenerationLayer:
         # ==== Initialize the response object ==== #
         
         # 创建响应对象
-        self.response = Response()
+        self.response = runtime.response
+
         # 创建调用日志
         self.response.request_log = RequestLog()
 
@@ -84,7 +85,7 @@ class StreamingResponseGenerationLayer:
         self._chunk_queue: asyncio.Queue[Delta | Exception | None] = asyncio.Queue()
 
         # 文本缓冲区
-        self._content_buffer = content_buffer
+        self._content_buffer = runtime.content_buffer
 
         self._print_chunk = config_to_log_level(ConfigManager.get_configs().logger.level) > LogLevel.TRACE
     
@@ -98,6 +99,7 @@ class StreamingResponseGenerationLayer:
         self.response.request_log.empty_chunk = self.empty_chunk_count
         self.response.request_log.request_start_time = self.request_start_time
         self.response.request_log.request_end_time = self.request_end_time
+        self.response.request_log.created_time = self.response.created
         self.response.request_log.chunk_times = self.chunk_times
         self.response.request_log.chunk_generated_times = self.chunk_generated_times
         self.response.request_log.total_tokens = self.response.token_usage.total_tokens

@@ -13,7 +13,7 @@ async def upload_to_nexus(user_id: str, user_data_type: UserDataType, request: U
     if isinstance(data, BaseModel):
         data = data.model_dump(exclude_none = True)
     try:
-        response = await Server.nexus_client.submit(
+        response = await Server.core.runtime.nexus_client.submit(
             f"repeater.{user_data_type.value}",
             content = {
                 "metadata": {

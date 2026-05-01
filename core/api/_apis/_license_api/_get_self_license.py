@@ -7,5 +7,5 @@ async def get_license():
     Get license information
     """
     return ORJSONResponse(
-        await Server.licenses.get_self_license(),
+        await Server.core.runtime.licenses.get_self_license(),
     )

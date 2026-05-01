@@ -19,6 +19,7 @@ class RenderResponse(BaseModel):
     image_url: str | None = None
     file_uuid: str | None = None
     style: str | None = None
+    html_template: str | None = None
     status: RenderStatus | None = None
     browser_used: str | None = None
     url_expiry_time: float | None = None

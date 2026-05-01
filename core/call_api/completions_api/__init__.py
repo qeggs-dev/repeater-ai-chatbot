@@ -6,12 +6,14 @@ from ._client import (
 from ._caller import StreamingResponseGenerationLayer
 from ._objects import (
     Request,
-    TokensCount,
+    Runtime,
     Response,
+    TokensCount,
     TopLogprob,
     FinishReason,
     Logprob,
-    Delta
+    Delta,
+    StreamOptions
 )
 from ._exceptions import (
     CallAPIException,
@@ -29,12 +31,14 @@ __all__ = [
     "StreamClient",
     "StreamingResponseGenerationLayer",
     "Request",
-    "TokensCount",
+    "Runtime",
     "Response",
+    "TokensCount",
     "TopLogprob",
     "FinishReason",
     "Logprob",
     "Delta",
+    "StreamOptions",
     "CallAPIException",
     "BadRequestError",
     "ModelNotFoundError",

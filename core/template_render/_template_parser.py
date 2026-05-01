@@ -9,7 +9,7 @@ from ..global_config_manager import GlobalConfigs
 from ..user_config_manager import UserConfigs
 from ..assist_struct import RequestUserInfo
 from .._info import __version__
-from ..model_api import ModelAPI
+from ..model_info import ModelInfo
 from jinja2 import Template
 from ..auxiliary.text import (
     escape_string
@@ -31,7 +31,7 @@ from typing import Any
 class TemplateParser:
     def __init__(
             self,
-            model: ModelAPI = ModelAPI(),
+            model: ModelInfo = ModelInfo(),
             user_info: RequestUserInfo = RequestUserInfo(),
             global_config: GlobalConfigs = GlobalConfigs(),
             user_config: UserConfigs = UserConfigs(),
@@ -146,7 +146,7 @@ class TemplateParser:
             model_uid = self._model.uid,
             model_name = self._model.name,
             model_id = self._model.id,
-            model_type = self._model.type.value,
+            model_detailed = self._model.detailed,
             model_group = self._model.parent,
             user_name = self._user_info.username,
             nick_name = self._user_info.nickname,

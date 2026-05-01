@@ -9,7 +9,7 @@ from ._download_model import DownloadRequest, DownloadResponse
 async def download_from_nexus(user_id: str, user_data_type: UserDataType, request: DownloadRequest):
     manager = get_manager(user_data_type)
     try:
-        response = await Server.nexus_client.download(f"repeater.{user_data_type.value}", request.id, "content")
+        response = await Server.core.runtime.nexus_client.download(f"repeater.{user_data_type.value}", request.id, "content")
     except InvalidUUIDError as e:
         return ORJSONResponse(
             content = DownloadResponse(

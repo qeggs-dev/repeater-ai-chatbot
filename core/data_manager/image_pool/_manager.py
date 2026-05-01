@@ -63,7 +63,7 @@ class ImagePoolManager:
             image_obj.path.unlink()  # 删除文件
             self._cache.pop(file_id, None)  # 清除缓存
             return True
-        except (FileNotFoundError, Exception):
+        except Exception:
             return False
     
     def list_images(self) -> list[str]:

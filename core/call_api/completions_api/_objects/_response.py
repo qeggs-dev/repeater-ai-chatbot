@@ -16,20 +16,22 @@ class Response(BaseModel):
 
     id: str = ""
     user_id: str = ""
+
     historical_context: Context = Field(default_factory=Context)
     new_context: Context = Field(default_factory=Context)
-    created: int = 0
+    
     model: str = ""
+    created: int = 0
     token_usage: TokensCount | None = None
     stream: bool = False
     tool_calls: list[ToolCall] | None = None
+    finish_reason: FinishReason = FinishReason.STOP
+    system_fingerprint: str = ""
+    logprobs: list[Logprob] | None = None
 
     stream_processing_start_time_ns:TimeStamp = Field(default_factory=TimeStamp)
     stream_processing_end_time_ns:TimeStamp = Field(default_factory=TimeStamp)
     chunk_times: list[TimeStamp] = Field(default_factory=list)
-    finish_reason: FinishReason = FinishReason.STOP
-    system_fingerprint: str = ""
-    logprobs: list[Logprob] | None = None
     request_log: RequestLog = Field(default_factory=RequestLog)
 
     @property

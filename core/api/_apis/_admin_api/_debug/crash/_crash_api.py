@@ -1,8 +1,7 @@
-from ......special_exception import CriticalException
+from ......special_exception import CriticalException, HTTPException
 import asyncio
 from ......server import Server
 from fastapi import (
-    HTTPException,
     Header
 )
 from fastapi.responses import (

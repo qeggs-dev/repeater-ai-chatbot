@@ -307,5 +307,5 @@ class UserDataManager(Generic[T]):
         base_path = self.base_path / fname_b64_encode(user_id) / self._sub_dir_name
         for branch_id in base_path.iterdir():
             if branch_id.exists() and branch_id.is_file():
-                branch_ids.append(fname_b64_decode(branch_id.name))
+                branch_ids.append(fname_b64_decode(branch_id.stem))
         return branch_ids

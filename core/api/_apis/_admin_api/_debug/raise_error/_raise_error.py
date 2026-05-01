@@ -1,7 +1,7 @@
 from typing import NoReturn
 from ......server import Server
+from ......special_exception import HTTPException
 from fastapi import (
-    HTTPException,
     Header
 )
 from ._errors import ERRORS

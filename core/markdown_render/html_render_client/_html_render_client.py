@@ -1,6 +1,6 @@
 import httpx
 from ._model import RenderResponse
-from ...repeater_response import Response
+from ...http_response import Response
 
 class HTMLRenderClient:
     def __init__(self, base_url: str, timeout: int):

@@ -17,6 +17,12 @@ class MultiResponse(BaseModel):
 
     def add(self, response: Response):
         self.responses.append(response)
+    
+    def add_copy(self, response: Response):
+        response_copy = response.model_copy()
+        response_copy.historical_context = response.historical_context.copy()
+        response_copy.new_context = response.new_context.copy()
+        self.add(response_copy)
 
     def new_contexts(self):
         context = Context()

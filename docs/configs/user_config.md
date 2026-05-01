@@ -70,6 +70,16 @@
     // Repeater会以一对消息为单位去删除过多的部分。
     "context_shrink_limit": null,
 
+    // (str) 控制模型的推理强度
+    // 允许的值有：
+    // - "low"
+    // - "medium"
+    // - "high"
+    // - "xhigh"
+    // - "max"
+    // - null
+    "reasoning_effort": null,
+
     // (bool) 删除上下文里的推理内容
     // 大部分 API 会拒绝我们回传推理内容
     // 你可以设置为 false 来关闭此功能
@@ -140,11 +150,12 @@
     // 且对方该值为false, 则请求将会自动回退到当前用户的上下文中
     "cross_user_data_access": null,
 
-    // (bool) 是否忽略新请求中的非文本数据
-    "new_requests_text_only": null,
+    // (bool) 是否构建多模态请求
+    // 如果为 false 则多模态内容将以文本的形式发送
+    "make_multimodal_message": null,
 
-    // (bool) 是否允许工具调用
-    "allow_tool_calls": null,
+    // (list[str]) 允许调用的工具列表
+    "allowed_tool_calls": null,
 
     // (dict[str, Any]) 用户附加配置数据
     // 用于存储某些与用户相关的数据

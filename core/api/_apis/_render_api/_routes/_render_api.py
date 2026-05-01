@@ -44,24 +44,24 @@ async def render(
 
     # 检查请求是否合法
     if not request.text:
-        raise HTTPException(status_code=400, message="text is required")
+        raise HTTPException(status_code=400, detail="text is required")
     
     if request.direct_output and not global_configs.render.markdown.allow_direct_output:
-        raise HTTPException(status_code=400, message="direct_output is not allowed")
+        raise HTTPException(status_code=400, detail="direct_output is not allowed")
     
     if request.style and not global_configs.render.markdown.allow_custom_styles:
-        raise HTTPException(status_code=400, message="custom style is not allowed")
+        raise HTTPException(status_code=400, detail="custom style is not allowed")
     
     if request.html_template and not global_configs.render.markdown.allow_custom_html_templates: 
-        raise HTTPException(status_code=400, message="custom html_template is not allowed")
+        raise HTTPException(status_code=400, detail="custom html_template is not allowed")
     
     # 获取用户配置
-    config = await Server.core.user_config_manager.load(user_id = user_id)
+    config = await Server.core.runtime.user_config_manager.load(user_id = user_id)
         
-    style_name, css = await get_style(
+    style_name, style_url = await get_style(
         request = request,
         user_configs = config,
-        static_resources_client = Server.core.static_resources_client,
+        static_resources_client = Server.core.runtime.static_resources_client,
     )
     
     if not request.image_expiry_time:
@@ -91,8 +91,6 @@ async def render(
         document_bottom_comment = config.render_document_bottom_comment if config.render_document_bottom_comment is not None else global_configs.render.markdown.document_bottom_comment
     environment = global_configs.text_template.sandbox.get_jinja_env()
 
-    base_url = global_configs.render.to_image.base_url
-
     no_pre_labels = global_configs.render.markdown.no_pre_labels
     if no_pre_labels is None:
         no_pre_labels = request.no_pre_labels
@@ -105,13 +103,14 @@ async def render(
 
     # 读取HTML模板
     if request.html_template is not None:
-        html_template = request.html_template
-    else:
-        html_template_file = html_template_dir / f"{html_template_name}{html_template_suffix}"
-        html_template = await Server.core.static_resources_client.get_text(
-            html_template_file,
-            text_encoding = html_template_encoding
-        )
+        html_template_name = request.html_template
+
+    html_template_file = html_template_dir / f"{html_template_name}{html_template_suffix}"
+    html_template = await Server.core.runtime.static_resources_client.get_text(
+        html_template_file,
+        text_encoding = html_template_encoding
+    )
+    html_template_url = Server.core.runtime.static_resources_client.base_url.join(html_template_file)
     
     end_of_preprocessing = time.perf_counter_ns()
 
@@ -122,8 +121,9 @@ async def render(
         environment = environment,
         width = width,
         title = title,
-        css = css,
         style_name = style_name,
+        css_url = style_url,
+        html_url = html_template_url,
         direct_output = request.direct_output,
         markdown_extensions = markdown_extensions,
         allowed_tags = allowed_tags,
@@ -138,10 +138,10 @@ async def render(
     end_of_md_to_html = time.perf_counter_ns()
 
     # 生成图片
-    response = await Server.html_render_client.render(html)
+    response = await Server.core.runtime.html_render_client.render(html)
     result = response.get_data()
     if result is None:
-        raise HTTPException(status_code=500, message="The response data could not be obtained correctly.")
+        raise HTTPException(status_code=500, detail="The response data could not be obtained correctly.")
     
     fileurl = result.image_url
 
@@ -155,6 +155,7 @@ async def render(
             image_url = fileurl,
             file_uuid = result.file_uuid,
             style = style_name,
+            html_template = html_template_name,
             url_expiry_time = render_url_expiry_time,
             text = request.text,
             created = created,

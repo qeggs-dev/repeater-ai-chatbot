@@ -18,7 +18,7 @@ async def upload_env_to_nexus(user_id: str, request: UploadRequest):
         config = await config_manager.load(user_id = user_id)
     )
     try:
-        response = await Server.nexus_client.submit(
+        response = await Server.core.runtime.nexus_client.submit(
             "repeater.environment",
             content = {
                 "metadata": {

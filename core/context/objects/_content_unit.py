@@ -107,30 +107,33 @@ class ContentUnit(BaseModel):
             self.content = str(buffer)
     
     def content_to_string(self, non_text_length_limit: int | None = 10) -> str:
-        message_texts: TextBuffer = TextBuffer()
-        for block in self.content:
-            if isinstance(block, TextBlock):
-                message_texts.push(block.text)
-            elif isinstance(block, ImageBlock):
-                message_texts.push(
-                    f"[Image: {text_content_cutter(block.image_url.url, non_text_length_limit)}]"
-                )
-            elif isinstance(block, VideoBlock):
-                message_texts.push(
-                    f"[Video: {text_content_cutter(block.video_url.url, non_text_length_limit)}]"
-                )
-            elif isinstance(block, AudioBlock):
-                message_texts.push(
-                    f"[Audio: {text_content_cutter(block.input_audio.data, non_text_length_limit)}]"
-                )
-            elif isinstance(block, FileBlock):
-                message_texts.push(
-                    f"[File: {text_content_cutter(block.file.filename, non_text_length_limit)}]"
-                )
-            else:
-                message_texts.push(f"[Unknown Block: {block}]")
-    
-        return "\n".join(message_texts)
+        if isinstance(self.content, str):
+            return self.content
+        else:
+            message_texts: TextBuffer = TextBuffer()
+            for block in self.content:
+                if isinstance(block, TextBlock):
+                    message_texts.push(block.text)
+                elif isinstance(block, ImageBlock):
+                    message_texts.push(
+                        f"[Image: {text_content_cutter(block.image_url.url, non_text_length_limit)}]"
+                    )
+                elif isinstance(block, VideoBlock):
+                    message_texts.push(
+                        f"[Video: {text_content_cutter(block.video_url.url, non_text_length_limit)}]"
+                    )
+                elif isinstance(block, AudioBlock):
+                    message_texts.push(
+                        f"[Audio: {text_content_cutter(block.input_audio.data, non_text_length_limit)}]"
+                    )
+                elif isinstance(block, FileBlock):
+                    message_texts.push(
+                        f"[File: {text_content_cutter(block.file.filename, non_text_length_limit)}]"
+                    )
+                else:
+                    message_texts.push(f"[Unknown Block: {block}]")
+        
+            return "\n".join(message_texts)
 
     def __str__(self) -> str:
         text_buffer: TextBuffer = TextBuffer()

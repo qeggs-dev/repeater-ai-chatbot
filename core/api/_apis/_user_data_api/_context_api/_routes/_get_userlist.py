@@ -13,7 +13,7 @@ async def get_context_userlist():
         ORJSONResponse: A ORJSONResponse containing a list of user IDs
     """
     # 从chat.context_manager中获取所有用户ID
-    userid_list = await Server.core.context_manager.get_all_user_id()
+    userid_list = await Server.core.runtime.context_manager.get_all_user_id()
 
     logger.info(f"Get Context userlist")
 

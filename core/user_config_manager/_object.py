@@ -1,4 +1,11 @@
-from pydantic import BaseModel, ConfigDict, field_validator, Field
+from pydantic import (
+    BaseModel,
+    ConfigDict,
+    field_validator,
+    field_serializer,
+    Field,
+)
+from ..global_config_manager import ReasoningEffort
 from zoneinfo import ZoneInfo, available_timezones
 from typing import Any
 
@@ -22,6 +29,7 @@ class UserConfigs(BaseModel):
     model_timeout: int | float | None = None
     frequency_penalty: float | None = Field(None, ge=-2.0, le=2.0)
     presence_penalty: float | None = Field(None, ge=-2.0, le=2.0)
+    reasoning_effort: ReasoningEffort | None = None
     context_shrink_limit: int | None = None
     remove_reasoning_prompt: bool | None = None
     request_statistics_template: str | None = None
@@ -35,6 +43,7 @@ class UserConfigs(BaseModel):
     save_context: bool | None = None
     save_new_only: bool | None = None
     save_text_only: bool | None = None
+    make_multimodal_message: bool | None = None
 
     user_name: str | None = None
     user_profile: str | None = None
@@ -43,9 +52,8 @@ class UserConfigs(BaseModel):
 
     timezone: float | str | None = None
     cross_user_data_access: bool | None = None
-    new_requests_text_only: bool | None = None
 
-    allow_tool_calls: bool | None = None
+    allowed_tool_calls: set[str] | None = None
     additional_user_data: dict[str, Any] = Field(default_factory=dict)
 
     @field_validator("timezone")
@@ -63,3 +71,9 @@ class UserConfigs(BaseModel):
         else:
             raise ValueError("Invalid time offset type")
         return v
+    
+    @field_serializer("allowed_tool_calls")
+    def allowed_tool_calls_serializer(self, value: set[str] | None) -> list[str] | None:
+        if value is None:
+            return None
+        return list(value)

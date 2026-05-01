@@ -7,5 +7,5 @@ async def get_requirement_list():
     Get license information
     """
     return ORJSONResponse(
-        Server.licenses.get_requirements_list(),
+        Server.core.runtime.licenses.get_requirements_list(),
     )

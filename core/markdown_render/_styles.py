@@ -1,24 +1,16 @@
-# _styles.py
-# Markdown 渲染样式预设 - 纯色主题
-
-import os
-import aiofiles
 from yarl import URL
 from ..auxiliary.path import sanitize_filename_with_dir
 from ..static_resources_client import StaticResourcesClient
-from loguru import logger
 
 class Styles:
     def __init__(self, static_resources_client: StaticResourcesClient, style_base_path: str | URL):
         self._static_resources_client = static_resources_client
         self._style_base_path = URL(style_base_path)
     
-    async def get_style(self, style_name: str, use_base: bool = True, encoding: str = "utf-8") -> str:
+    def get_style_full_url(self, style_name: str) -> URL:
+        return self._static_resources_client.base_url.join(self.get_style_url(style_name))
+    
+    def get_style_url(self, style_name: str) -> URL:
         style_name = sanitize_filename_with_dir(style_name)
         style_file_path: URL = self._style_base_path / f"{style_name}.css"
-        
-        try:
-            return await self._static_resources_client.get_text(style_file_path, text_encoding = encoding)
-        except (FileNotFoundError, ValueError):
-            logger.error(f"Style file not found: {style_file_path}")
-            raise ValueError(f"Style file not found: {style_file_path}")
+        return style_file_path
