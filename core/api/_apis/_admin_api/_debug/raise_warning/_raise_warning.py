@@ -7,18 +7,15 @@ from fastapi import (
 from fastapi.responses import ORJSONResponse
 from ._warnings import WARNINGS
 from ._request import RaiseWarningRequest
+from ..._admin_router import admin_router
 
-@Server.app.post("/admin/debug/raise_warning")
+@admin_router.post("/debug/raise_warning")
 async def raise_warning_api(
-        request: RaiseWarningRequest,
-        api_key: str = Header(..., alias="X-Admin-API-Key")
-    ):
+    request: RaiseWarningRequest,
+):
     """
     This API is used to collapse the server.
     """
-    if not Server.admin_key_manager.validate_key(api_key):
-        raise HTTPException(detail="Invalid API key", status_code=401)
-    
     if request.type not in WARNINGS:
         raise HTTPException(detail="Invalid warning type", status_code=400)
     

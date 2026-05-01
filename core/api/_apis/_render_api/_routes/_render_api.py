@@ -1,19 +1,17 @@
 import time
-import aiofiles
 
+from loguru import logger
+from yarl import URL
 from .....server import Server
 from .....markdown_render import (
     markdown_to_html,
 )
 from fastapi.responses import ORJSONResponse
-from loguru import logger
-from uuid import uuid4
-from pathlib import Path
-from yarl import URL
 from .....global_config_manager import ConfigManager
 from .....lifespan import (
     ExitHandler
 )
+from .....special_exception import HTTPException
 from .....pools.delayed_tasks_pool import DelayedTasksPool
 from .._assists import (
     get_style
@@ -25,12 +23,12 @@ from .._responses import (
     RenderResponse,
     RenderTime
 )
-from .....special_exception import HTTPException
+from .._router import render_router
 
 delayed_tasks_pool = DelayedTasksPool()
 ExitHandler.add_function(delayed_tasks_pool.cancel_all())
 
-@Server.app.post("/render/{user_id}")
+@render_router.post("/{user_id}")
 async def render(
     user_id: str,
     request:RenderRequest

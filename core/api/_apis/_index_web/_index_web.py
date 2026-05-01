@@ -1,11 +1,11 @@
-from ....server import Server
+from ._router import web_router
 from ....global_config_manager import ConfigManager
 from fastapi.responses import FileResponse, HTMLResponse
 from pathlib import Path
 from ._default_web import DEFAULT_WEB_HTML
 
-@Server.app.get("/")
-@Server.app.get("/index.html")
+@web_router.get("/")
+@web_router.get("/index.html")
 async def index_web():
     if ConfigManager.get_configs().web.index_web_file:
         index_web_file = Path(ConfigManager.get_configs().web.index_web_file)

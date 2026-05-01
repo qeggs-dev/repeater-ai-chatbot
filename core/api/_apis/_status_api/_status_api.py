@@ -1,7 +1,8 @@
 from ....server import Server
+from ._router import status_router
 from fastapi.responses import ORJSONResponse
 
-@Server.app.get("/status/core/task/{user_id}")
+@status_router.get("/core/task/{user_id}")
 def get_core_task_status(user_id: str):
     if Server.core.runtime.task_status_map.contains(user_id):
         return ORJSONResponse(

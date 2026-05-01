@@ -1,11 +1,12 @@
 from ......server import Server
+from .._router import config_router
 from fastapi.responses import (
     ORJSONResponse
 )
 from loguru import logger
 
-@Server.app.get("/userdata/config/get/{user_id}")
-@Server.app.get("/userdata/config/get/{user_id}.json")
+@config_router.get("/get/{user_id}")
+@config_router.get("/get/{user_id}.json")
 async def get_config(user_id: str):
     """
     Endpoint for get config

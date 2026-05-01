@@ -1,4 +1,3 @@
-from typing import NoReturn
 from ......server import Server
 from ......special_exception import HTTPException
 from fastapi import (
@@ -6,18 +5,15 @@ from fastapi import (
 )
 from ._errors import ERRORS
 from ._request import RaiseErrorRequest
+from ..._admin_router import admin_router
 
-@Server.app.post("/admin/debug/raise_error")
+@admin_router.post("/debug/raise_error")
 async def raise_error_api(
-        request: RaiseErrorRequest,
-        api_key: str = Header(..., alias="X-Admin-API-Key")
-    ):
+    request: RaiseErrorRequest
+):
     """
     This API is used to collapse the server.
     """
-    if not Server.admin_key_manager.validate_key(api_key):
-        raise HTTPException(detail="Invalid API key", status_code=401)
-    
     if request.type not in ERRORS:
         raise HTTPException(detail="Invalid error type", status_code=400)
     

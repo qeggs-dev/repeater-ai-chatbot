@@ -1,4 +1,5 @@
 from ......server import Server
+from .._router import context_router
 from ......context import (
     ContentRole
 )
@@ -8,7 +9,7 @@ from fastapi.responses import (
 from loguru import logger
 from .._responses import RoleStructureCheckerResponse
 
-@Server.app.get("/userdata/context/structure_check/role/{user_id}")
+@context_router.get("/structure_check/role/{user_id}")
 async def check_role_structure(user_id: str):
     """
     Endpoint to check the role structure error of a user's context.

@@ -1,10 +1,11 @@
 from ....server import Server
+from ._router import request_log_router
 import orjson
 from typing import AsyncIterator
 from fastapi.responses import ORJSONResponse, StreamingResponse
 
-@Server.app.get("/request_log")
-@Server.app.get("/request_log/list")
+@request_log_router.get("/")
+@request_log_router.get("/list")
 async def get_request_log():
     """
     Endpoint for getting request log
@@ -18,7 +19,7 @@ async def get_request_log():
     logs = await Server.core.runtime.request_log.read_request_log()
     return ORJSONResponse([log.model_dump() for log in logs])
 
-@Server.app.get("/request_log/stream")
+@request_log_router.get("/stream")
 async def stream_request_log():
     """
     Endpoint for getting request log

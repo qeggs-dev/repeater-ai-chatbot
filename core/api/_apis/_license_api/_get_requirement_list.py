@@ -1,7 +1,8 @@
 from ....server import Server
+from ._router import license_router
 from fastapi.responses import ORJSONResponse, PlainTextResponse
 
-@Server.app.get("/license/requirement_list")
+@license_router.get("/requirement_list")
 async def get_requirement_list():
     """
     Get license information

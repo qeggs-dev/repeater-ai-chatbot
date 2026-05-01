@@ -1,5 +1,6 @@
 from ......special_exception import HTTPException
 from ......server import Server
+from .._router import context_router
 from ......context import (
     Context
 )
@@ -9,7 +10,7 @@ from fastapi.responses import (
 )
 from loguru import logger
 
-@Server.app.post("/userdata/context/withdraw/{user_id}")
+@context_router.post("/withdraw/{user_id}")
 async def withdraw_context(user_id: str, context_pair_num: int = Form(1, gt=0), paired: bool = Form(True)):
     """
     Endpoint for withdrawing context

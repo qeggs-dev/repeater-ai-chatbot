@@ -5,16 +5,13 @@ from fastapi import (
     Header
 )
 from fastapi.responses import ORJSONResponse
+from ..._admin_router import admin_router
 
-@Server.app.get("/admin/debug/get_configs")
-async def get_configs(
-        api_key: str = Header(..., alias="X-Admin-API-Key")
-    ):
+@admin_router.get("/debug/get_configs")
+async def get_configs():
     """
     This API is used to collapse the server.
     """
-    if not Server.admin_key_manager.validate_key(api_key):
-        raise HTTPException(detail="Invalid API key", status_code=401)
     
     return ORJSONResponse(
         ConfigManager.get_configs().model_dump()

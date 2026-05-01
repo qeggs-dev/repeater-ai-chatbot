@@ -6,16 +6,13 @@ from fastapi import (
 )
 from fastapi.responses import ORJSONResponse
 from .....runtime_container import RuntimeContainer
+from .._admin_router import admin_router
 
-@Server.app.get("/admin/clear/model_client_pool")
-async def get_configs(
-        api_key: str = Header(..., alias="X-Admin-API-Key")
-    ):
+@admin_router.get("/clear/model_client_pool")
+async def get_configs():
     """
     This API is used to collapse the server.
     """
-    if not Server.admin_key_manager.validate_key(api_key):
-        raise HTTPException(detail="Invalid API key", status_code=401)
     RuntimeContainer.get_runtime().openai_pool.clear()
     RuntimeContainer.get_runtime().openai_pool.reset_cache_stats()
     return ORJSONResponse(

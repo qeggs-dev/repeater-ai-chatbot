@@ -12,9 +12,9 @@ from fastapi.responses import (
 )
 from .....auxiliary.http import update_ssl_context
 from loguru import logger
-from .....global_config_manager import ConfigManager
+from .._admin_router import admin_router
 
-@Server.app.post("/admin/configs/ssl")
+@admin_router.post("/configs/ssl")
 async def reload_configs_api(api_key: str = Header(..., alias="X-Admin-API-Key")):
     """
     Reload Project SSL configuration
@@ -23,8 +23,6 @@ async def reload_configs_api(api_key: str = Header(..., alias="X-Admin-API-Key")
 
     :param api_key: Admin API key
     """
-    if not Server.admin_key_manager.validate_key(api_key):
-        raise HTTPException(detail="Invalid API key", status_code=401)
     logger.info("Reloading SSL", user_id="[Admin API]")
     await asyncio.to_thread(update_ssl_context)
     return ORJSONResponse({"detail": "Configs reloaded"})

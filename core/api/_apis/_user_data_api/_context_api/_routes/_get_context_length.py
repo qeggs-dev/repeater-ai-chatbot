@@ -1,10 +1,11 @@
 from ......server import Server
+from .._router import context_router
 from fastapi.responses import (
     ORJSONResponse
 )
 from loguru import logger
 
-@Server.app.get("/userdata/context/length/{user_id}")
+@context_router.get("/length/{user_id}")
 async def get_context_length(user_id: str):
     """
     Endpoint for getting context

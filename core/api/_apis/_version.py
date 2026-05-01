@@ -1,4 +1,5 @@
 from ...server import Server
+from fastapi import APIRouter
 from ..._info import __version__ as __core_version__
 from fastapi.responses import (
     ORJSONResponse,
@@ -9,14 +10,16 @@ versions = {
     "core": __core_version__
 }
 
-@Server.app.get("/version")
+version_router = APIRouter(prefix="/version", tags=["version"])
+
+@version_router.get("/")
 async def version():
     """
     Return the version of the API and the core
     """
     return ORJSONResponse(versions)
 
-@Server.app.get("/version/{module}")
+@version_router.get("/{module}")
 async def module_version(module: str):
     """
     Return the version of the specified module
@@ -28,3 +31,5 @@ async def module_version(module: str):
             "Module not found",
             status_code = 404
         )
+
+Server.app.include_router(version_router)

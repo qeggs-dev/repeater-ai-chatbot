@@ -1,4 +1,5 @@
 from ......server import Server
+from .._router import context_router
 from ......context import (
     ContentRole
 )
@@ -7,7 +8,7 @@ from fastapi.responses import (
 )
 from loguru import logger
 
-@Server.app.post("/userdata/context/role_mapping/{user_id}")
+@context_router.post("/role_mapping/{user_id}")
 async def role_mapping(user_id: str, role_map: dict[ContentRole, ContentRole | None]):
     """
     Context role mapping endpoint.
