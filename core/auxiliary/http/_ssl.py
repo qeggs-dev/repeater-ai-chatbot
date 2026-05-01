@@ -8,3 +8,7 @@ def get_ssl_context():
 def set_ssl_context(ssl_context: ssl.SSLContext):
     global SSL_CONTEXT
     SSL_CONTEXT = ssl_context
+
+def update_ssl_context():
+    global SSL_CONTEXT
+    SSL_CONTEXT = get_ssl_context()
