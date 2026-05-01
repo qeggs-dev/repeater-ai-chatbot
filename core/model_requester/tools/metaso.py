@@ -3,7 +3,7 @@ import json
 import httpx
 from environs import Env
 from ...context import ToolCallPacakage, CallType
-from ...global_config_manager import HTTPMethods, ConfigManager
+from ...runtime_container import get_ssl_context
 from .._caller import ModelRequester
 from enum import StrEnum
 from pydantic import BaseModel, Field
@@ -35,21 +35,23 @@ class Metaso(ToolCallPacakage):
     call_type = CallType.ASYNC
     json_result = True
     _env = Env()
-    client = httpx.AsyncClient(
-        base_url = "https://metaso.cn/api/v1",
-        headers = {
-            "Accept": "application/json",
-            "Content-Type": "application/json"
-        }
-    )
+    client: httpx.AsyncClient | None = None
     document = "AI Network Search API"
 
     async def call(self, args: Params):
+        if self.client is None:
+            self.client = httpx.AsyncClient(
+                base_url = "https://metaso.cn/api/v1",
+                headers = {
+                    "Accept": "application/json",
+                    "Content-Type": "application/json",
+                    "Authorization": f"Bearer {self._env.str('METASO_API_KEY')}"
+                },
+                verify = get_ssl_context()
+            )
+        
         response = await self.client.post(
             "/search",
-            headers = {
-                "Authorization": f"Bearer {self._env.str('METASO_API_KEY')}"
-            },
             json = args.model_dump()
         )
         return self.Result(
