@@ -69,7 +69,7 @@
 
 ## 多模态输入
 
-在 `/chat/completion` 端点下面
+在 `/generate/chat/completion` 端点下面
 传入 `additional_data` 即可让后端构造多模态请求
 但需要保证目标模型支持你请求的模态输入
 目前图像视觉模态的支持会更多一些
