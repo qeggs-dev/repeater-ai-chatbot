@@ -22,8 +22,14 @@ class SandboxConfig(BaseModel):
         """Get Jinja2 environment based on sandbox mode."""
         match self.sandbox_mode:
             case SandboxMode.SANDBOXED:
-                return SandboxedEnvironment()
+                return SandboxedEnvironment(
+                    enable_async = True,
+                )
             case SandboxMode.IMMUTABLE_SANDBOXED:
-                return ImmutableSandboxedEnvironment()
+                return ImmutableSandboxedEnvironment(
+                    enable_async = True,
+                )
             case SandboxMode.NONE:
-                return Environment()
+                return Environment(
+                    enable_async = True,
+                )
