@@ -38,7 +38,6 @@ from ..request_log import (
 )
 
 async def post_treatment(
-    self,
     user_id: str,
     template_parser: TemplateParser,
     responses: MultiResponse,
