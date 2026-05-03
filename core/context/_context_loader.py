@@ -40,7 +40,7 @@ from ..template_render import (
 )
 from ..auxiliary.path import validate_path, sanitize_filename_with_dir
 from ..global_config_manager import ConfigManager as GlobalConfigManager
-from ..static_resources_client import StaticResourcesClient
+from ..clients.static_resources_client import StaticResourcesClient
 
 # ==== 本模块代码 ==== #
 class ContextLoader:
