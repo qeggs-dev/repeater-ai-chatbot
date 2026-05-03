@@ -14,28 +14,40 @@ class MarkdownToHTMLConfig(BaseModel):
     allow_custom_styles: bool = False
     allow_custom_html_templates: bool = False
     allow_direct_output: bool = False
-    extensions: list[str] = [
-        "extra",
-        "sane_lists",
-        "admonition",
-        "codehilite",
-        "nl2br"
-    ]
-    allowed_tags: list[str] = [
-        "p", "br", "strong", "em", "u", "del", "ins",
-        "h1", "h2", "h3", "h4", "h5", "h6",
-        "ul", "ol", "li",
-        "a", "img",
-        "code", "pre", "blockquote",
-        "table", "thead", "tbody", "tr", "th", "td",
-    ]
-    allowed_attrs: dict[str, list[str]] = {
-        "a": ["href", "title", "rel"],
-        "img": ["src", "alt", "title"],
-        "code": ["class"],
-        "pre": ["class"],
-    }
-    allowed_protocols: list[str] = ["http", "https", "mailto"]
+    extensions: list[str] = Field(
+        default_factory = lambda: [
+            "extra",
+            "sane_lists",
+            "admonition",
+            "codehilite",
+            "nl2br"
+        ]
+    )
+    allowed_tags: list[str] = Field(
+        default_factory = lambda: [
+            "p", "br", "strong", "em", "u", "del", "ins",
+            "h1", "h2", "h3", "h4", "h5", "h6",
+            "ul", "ol", "li",
+            "a", "img",
+            "code", "pre", "blockquote",
+            "table", "thead", "tbody", "tr", "th", "td",
+        ]
+    )
+    allowed_attrs: dict[str, list[str]] = Field(
+        default_factory = lambda: {
+            "a": ["href", "title", "rel"],
+            "img": ["src", "alt", "title"],
+            "code": ["class"],
+            "pre": ["class"],
+        }
+    )
+    allowed_protocols: list[str] = Field(
+        default_factory = lambda: [
+            "http",
+            "https",
+            "mailto"
+        ]
+    )
     no_pre_labels: bool | None = False
     preprocess_map: PreprocessMapConfig = Field(default_factory=PreprocessMapConfig)
     title: str = "Repeater Image Generator"
