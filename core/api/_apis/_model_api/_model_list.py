@@ -6,7 +6,7 @@ from ._response import ResponseModel
 
 @models_router.get("/")
 async def model_list():
-    response = await Server.core.runtime.model_api_manager.get_all_models()
+    response = await Server.core.runtime.model_info_client.get_all_models()
     if response.code == 200:
         model_info = response.get_data()
         if model_info is None:

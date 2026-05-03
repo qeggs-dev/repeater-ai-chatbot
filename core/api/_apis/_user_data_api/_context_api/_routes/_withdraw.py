@@ -23,7 +23,7 @@ async def withdraw_context(user_id: str, context_pair_num: int = Form(1, gt=0), 
         ORJSONResponse: New context
     """
     # 从context_loader中加载用户ID为user_id的上下文
-    context_loader = await Server.core.get_context_loader()
+    context_loader = Server.core.get_context_loader()
     context = await context_loader.load_context(user_id)
     pop_items: list[Context] = []
 

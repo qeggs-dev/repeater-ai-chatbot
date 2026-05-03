@@ -22,7 +22,7 @@ async def get_userdata_file(user_id: str):
     """
     # 创建虚拟文件缓冲区
     buffer = BytesIO()
-    context_loader = await Server.core.get_context_loader()
+    context_loader = Server.core.get_context_loader()
     prompt_manager = Server.core.runtime.prompt_manager
     config_manager = Server.core.runtime.user_config_manager
     

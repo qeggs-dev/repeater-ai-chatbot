@@ -1,5 +1,5 @@
 from pydantic import BaseModel, ConfigDict, Field
-from .....markdown_render.html_render_client import RenderStatus
+from .....clients.html_render_client import RenderStatus
 
 class RenderTime(BaseModel):
     model_config = ConfigDict(

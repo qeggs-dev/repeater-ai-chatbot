@@ -17,7 +17,7 @@ async def get_context_length(user_id: str):
         ORJSONResponse: The JSON response containing the context length
     """
     # 从chat.context_manager中加载用户ID为user_id的上下文
-    context_loader = await Server.core.get_context_loader()
+    context_loader = Server.core.get_context_loader()
     context = await context_loader.load_context(user_id)
     
     logger.info(f"Get Context length", user_id = user_id)
