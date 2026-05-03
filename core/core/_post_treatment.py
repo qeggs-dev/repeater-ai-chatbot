@@ -1,0 +1,166 @@
+# ==== 标准库 ==== #
+import asyncio
+from typing import (
+    Any,
+)
+
+# ==== 第三方库 ==== #
+from loguru import logger
+
+# ==== 自定义库 ==== #
+from ..model_requester import (
+    MultiResponse
+)
+from ..context import (
+    ContextLoader,
+    Context,
+    ContentUnit,
+    TextBlock,
+)
+from ..global_config_manager import ConfigManager
+from ..assist_struct import (
+    Response,
+    CrossUserDataRouting
+)
+from ..special_exception import HTTPException
+from ..request_log import (
+    TimeStamp
+)
+from ..template_render import (
+    TemplateParser
+)
+from ..runtime_container import RepeaterRuntime
+from ..status_map import (
+    StatusMap
+)
+from ..request_log import (
+    RequestLogManager
+)
+
+async def post_treatment(
+    self,
+    user_id: str,
+    template_parser: TemplateParser,
+    responses: MultiResponse,
+    context_loader: ContextLoader,
+    enable_assistant_template: bool,
+    cross_user_data_routing: CrossUserDataRouting[str],
+    task_status_map: StatusMap[str, str],
+    request_log_manager: RequestLogManager,
+    extra_template_fields: dict[str, Any] | None = None,
+    request_statistics_template: str = "",
+    user_input: ContentUnit | None = None,
+    output: Response = Response(),
+    save_context: bool | None = None,
+    save_only_text: bool = False,
+    save_new_only: bool = False,
+) -> Response:
+    with task_status_map.enter(user_id, "PostProcessing"):
+        # 补充调用日志的时间信息
+        saved_user_id = cross_user_data_routing.context.save_to_user_id
+        if extra_template_fields is None:
+            extra_template_fields = {}
+        
+        new_context = responses.new_contexts()
+
+        # 展开模型输出内容中的变量
+        def expand_variables():
+            content_unit = new_context.last_content
+            content = content_unit.content
+            if isinstance(content, str):
+                content = template_parser.render_ex(
+                    content,
+                    user_id,
+                    **extra_template_fields
+                )
+                content_unit.content = content
+            else:
+                content = content_unit.to_plaintext_content()
+                content = template_parser.render_ex(
+                    content,
+                    user_id,
+                    **extra_template_fields
+                )
+                content_unit.remove_context_block(TextBlock)
+                content_unit.content.append(
+                    TextBlock(content)
+                )
+            if content_unit.reasoning_content:
+                content_unit.reasoning_content = template_parser.render_ex(
+                    content_unit.reasoning_content,
+                    user_id,
+                    **extra_template_fields
+                )
+            new_context.last_content = content_unit
+        
+        # 通过合并频繁的同步操作，减少创建 Thread 带来的开销
+        if enable_assistant_template:
+            with task_status_map.enter(user_id, "Template Expanding"):
+                await asyncio.to_thread(expand_variables)
+        
+        with task_status_map.enter(user_id, "Saving Context"):
+            if cross_user_data_routing.context.save_to_user_id == user_id:
+                historical_context = responses.historical_context
+            else:
+                historical_context = await context_loader.load_context(saved_user_id)
+                historical_context.append(user_input)
+
+            # 保存上下文
+            if save_context:
+                if save_new_only:
+                    saved_context: Context = Context()
+                    if user_input is not None:
+                        saved_context.append(user_input)
+                    if new_context:
+                        saved_context.extend(new_context)
+                    logger.info(
+                        "Saving new context...",
+                        user_id = saved_user_id,
+                    )
+                else:
+                    saved_context = historical_context
+                    if new_context:
+                        saved_context.extend(new_context)
+                    logger.info(
+                        "Saving context...",
+                        user_id = saved_user_id,
+                    )
+                await context_loader.save(
+                    user_id = saved_user_id,
+                    context = saved_context,
+                    reduce_to_text = save_only_text,
+                )
+            else:
+                logger.warning("Context not saved", user_id = saved_user_id)
+
+        # 记录任务结束时间
+        for response in responses:
+            response.request_log.task_end_time = TimeStamp()
+
+        # 记录调用日志
+        with task_status_map.enter(user_id, "Recording request log"):
+            await request_log_manager.add_multi_request_log(responses.request_logs())
+
+        # 记录API调用成功
+        logger.success(f"Task Finished!", user_id = saved_user_id)
+
+        # 返回模型输出内容
+        with task_status_map.enter(user_id, "Returning response"):
+            output.context = new_context
+            output.create_time = responses[0].created
+            output.id = responses[0].id
+
+            output.finish_reason_cause = responses[-1].finish_reason_cause
+            output.finish_reason_code = responses[-1].finish_reason.value
+            output.request_log = responses.request_logs()
+
+            if ConfigManager.get_configs().text_template.enable.request_statistics_template:
+                output.request_statistics = await asyncio.to_thread(
+                    template_parser.render_ex,
+                    request_statistics_template,
+                    user_id,
+                    request_log = responses[-1].request_log,
+                    **extra_template_fields
+                )
+
+            return output

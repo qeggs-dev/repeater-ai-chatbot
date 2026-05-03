@@ -1,0 +1,526 @@
+# ==== 标准库 ==== #
+import atexit
+import asyncio
+import traceback
+from pathlib import Path
+from typing import (
+    AsyncIterator,
+    Any,
+)
+
+# ==== 第三方库 ==== #
+import orjson
+import aiofiles
+from loguru import logger
+
+# ==== 自定义库 ==== #
+from ..call_api.completions_api import (
+    Runtime as RequestRuntime,
+    Response as ModelResponse,
+    CallAPIException
+)
+from ..model_requester import (
+    ModelRequester,
+    MultiResponse
+)
+from ..context import (
+    ContextLoader,
+    ContentRole,
+    ContentUnit,
+)
+from ..user_config_manager import (
+    UserConfigs
+)
+from ..pools.lock_pool import AsyncLockPool
+from ..text_buffer import ContentBuffer
+from ..global_config_manager import ConfigManager
+from ..assist_struct import (
+    Response,
+    RequestUserInfo,
+    CrossUserDataRouting,
+    AdditionalData
+)
+from ..special_exception import HTTPException
+from ..request_log import (
+    TimeStamp
+)
+from ..template_render import (
+    TemplateParser
+)
+from ..runtime_container import RepeaterRuntime
+from ._make_request import make_request
+from ._make_context import make_context
+from ._post_treatment import post_treatment
+from ._get_model import get_model
+
+class Core:
+    # region > init
+    def __init__(self, runtime: RepeaterRuntime, max_concurrency: int | None = None):
+        # 配置最大并发数
+        self._max_concurrency = max_concurrency
+
+        # 全局锁(用于获取会话锁)
+        self.lock = asyncio.Lock()
+
+        # 初始化锁池
+        self.namespace_locks: AsyncLockPool = AsyncLockPool()
+
+        self.runtime = runtime
+
+        # 添加退出函数
+        def _exit():
+            """
+            退出时执行的任务
+            """
+            # 保存调用日志
+            if ConfigManager.get_configs().request_log.auto_save:
+                self.runtime.request_log.save_request_log()
+            logger.info("Exiting...")
+        
+        # 注册退出函数
+        atexit.register(_exit)
+    # endregion
+
+    # region > get namespace lock
+    async def _get_namespace_lock(self, user_id: str) -> asyncio.Lock:
+        """
+        获取指定用户的命名空间锁
+
+        :param user_id: 用户ID
+        :return:该命名空间的锁
+        """
+        
+        return await self.namespace_locks.get_lock(user_id)
+    # endregion
+    
+    # region > nickname mapping
+    async def nickname_mapping(self, user_id: str, user_info: RequestUserInfo) -> RequestUserInfo:
+        """
+        用户昵称映射
+
+        :param user_id: 用户ID
+        :param user_info: 用户信息
+        :return: 昵称
+        """
+        user_nickname_mapping_file_path = Path(ConfigManager.get_configs().user_nickname_mapping.file_path)
+        if not user_nickname_mapping_file_path.exists():
+            return user_info
+        async with aiofiles.open(user_nickname_mapping_file_path, "rb") as f:
+            fdata = await f.read()
+            try:
+                nickname_mapping = orjson.loads(fdata)
+            except orjson.JSONDecodeError:
+                logger.warning(f"Failed to decode nickname mapping file [{user_nickname_mapping_file_path}]", user_id=user_id)
+                nickname_mapping = {}
+        
+        output = user_info
+        if user_info.nickname in nickname_mapping:
+            logger.info("User Name [{user_name}] -> [{to_nickname}]", user_id=user_id, user_name = user_info.nickname, to_nickname = nickname_mapping[user_info.nickname])
+            output.nickname = nickname_mapping[user_info.nickname]
+        elif user_info.username in nickname_mapping:
+            logger.info("User Name [{user_name}] -> [{to_nickname}]", user_id=user_id, user_name = user_info.username, to_nickname = nickname_mapping[user_info.username])
+            output.username  = nickname_mapping[user_info.username]
+        elif user_id in nickname_mapping:
+            logger.info("User Name [{user_id}](ID) -> [{to_nickname}]", user_id=user_id, to_nickname = nickname_mapping[user_id])
+            output.username = nickname_mapping[user_id]
+        
+        return output
+    # endregion
+
+    # region > get config
+    async def get_config(self, user_id: str) -> UserConfigs:
+        """
+        加载用户配置
+
+        :param user_id: 用户ID
+        :return: 用户配置
+        """
+        config: UserConfigs = await self.runtime.user_config_manager.load(user_id = user_id)
+        return config
+    # endregion
+
+    # region > get context
+    def get_context_loader(self) -> ContextLoader:
+        """
+        加载上下文
+        :return: 上下文加载器
+        """
+        context_loader = ContextLoader(
+            config=self.runtime.user_config_manager,
+            prompt=self.runtime.prompt_manager,
+            context=self.runtime.context_manager,
+        )
+        return context_loader
+    # endregion
+
+    # region > load blacklist
+    async def load_blacklist(self, path: str | Path | None = None) -> None:
+        """
+        加载黑名单
+
+        :param path: 黑名单文件路径
+        """
+        if not path:
+            blacklist_file_path = Path(ConfigManager.get_configs().blacklist.file_path)
+        else:
+            blacklist_file_path = Path(path)
+        
+        if blacklist_file_path.exists():
+            self.runtime.blacklist.clear()
+            async with aiofiles.open(blacklist_file_path, "r") as f:
+                try:
+                    self.runtime.blacklist.load(await f.read())
+                except ValueError as e:
+                    logger.warning(f"load blacklist failed: {e}")
+    # endregion
+
+    # region > in blacklist
+    async def in_blacklist(self, user_id: str) -> bool:
+        """
+        判断用户是否在黑名单中
+
+        :param user_id: 用户ID
+        :return: 是否在黑名单中
+        """
+        async def _match_blacklist(user_id: str, timeout: int | None) -> bool:
+            if timeout is not None:
+                return bool(await asyncio.wait_for(asyncio.to_thread(self.runtime.blacklist.check, user_id), timeout = timeout))
+            else:
+                return bool(await asyncio.to_thread(self.runtime.blacklist.check, user_id))
+        
+        try:
+            if await _match_blacklist(user_id, self.runtime.blacklist_match_timeout):
+                logger.info("User in blacklist", user_id = user_id)
+                return True
+        except asyncio.exceptions.TimeoutError:
+            logger.warning("Blacklist match timeout", user_id = user_id)
+            return False
+        return False
+    # endregion
+    
+    # region > fill missing cross user data routing
+    async def fill_missing_cross_user_data_routing(self, user_id: str, cross_user_data_routing: CrossUserDataRouting[str | None] | None = None) -> CrossUserDataRouting[str]:
+        if cross_user_data_routing is None:
+            cross_user_data_routing = CrossUserDataRouting()
+        if not cross_user_data_routing.is_all_defined():
+            cross_user_data_routing.fill_missing(user_id = user_id)
+        await cross_user_data_routing.removal_not_allowed_user(
+            user_id = user_id,
+            user_config_manager = self.runtime.user_config_manager
+        )
+        return cross_user_data_routing
+    # endregion
+
+    # region > Chat
+    async def chat(
+            self,
+            message: str | None,
+            user_id: str,
+            history_messages: list[ContentUnit] | None = None,
+            history_msg_role_map: dict[ContentRole, ContentRole | None] | None = None,
+            user_info: RequestUserInfo = RequestUserInfo(),
+            role: ContentRole = ContentRole.USER,
+            assistant_role: ContentRole = ContentRole.ASSISTANT,
+            role_name:  str = "",
+            extra_template_fields: dict[str, Any] | None = None,
+            temporary_prompt: str | None = None,
+            additional_data: AdditionalData | None = None,
+            model_uid: str | None = None,
+            thinking: bool | None = None,
+            load_prompt: bool | None = None,
+            save_context: bool | None = None,
+            save_new_only: bool | None = None,
+            cross_user_data_routing: CrossUserDataRouting[str | None] | None = None,
+            allowed_tool_calls: set[str] | None = None,
+            stream: bool = False,
+        ) -> Response | AsyncIterator[dict[str, Any]]:
+        """
+        与模型对话
+
+        :param message: 用户输入的消息
+        :param user_id: 用户ID
+        :param history_messages: 历史消息
+        :param history_msg_role_map: 历史消息角色映射
+        :param user_info: 用户信息
+        :param role: 角色
+        :param role_name: 角色名
+        :param extra_template_fields: 模板字段扩展
+        :param temporary_prompt: 临时提示词
+        :param additional_data: 额外数据
+        :param model_uid: 模型UID
+        :param thinking: 使用思考模式
+        :param load_prompt: 是否加载提示
+        :param save_context: 是否保存上下文
+        :param save_new_only: 是否只保存最新的内容
+        :param cross_user_data_operations: 跨用户数据流
+        :param allow_tool_calls: 是否允许工具调用
+        :param stream: 是否流式输出
+        :return: 返回对话结果
+        """
+        try:
+            # 记录开始时间
+            task_start_time = TimeStamp()
+
+            # 获取用户锁对象
+            lock = await self._get_namespace_lock(user_id)
+
+            # 进入RUL执行
+            async with lock:
+
+                # 进入状态
+                with self.runtime.task_status_map.enter(user_id, "Tasking"):
+                
+                    with self.runtime.task_status_map.enter(user_id, "Prepareing"):
+                        prepare_start_time = TimeStamp()
+                        logger.info("====================================", user_id = user_id)
+                        logger.info("Start Task", user_id = user_id)
+
+                        # region [Checking Blacklist]
+                        with self.runtime.task_status_map.enter(user_id, "Checking Blacklist"):
+                            # 判断用户是否在黑名单中
+                            if await self.in_blacklist(user_id):
+                                raise HTTPException(
+                                    status_code = 403,
+                                    detail = "Error: Sorry, you are in blacklist.",
+                                )
+                            
+                            if not ConfigManager.get_configs().model.stream and stream:
+                                raise HTTPException(
+                                    status_code = 403,
+                                    detail = "Error: The streaming response feature is turned off in the server configuration.",
+                                )
+                        # endregion
+
+                        # region [Getting Config]
+                        with self.runtime.task_status_map.enter(user_id, "Getting Config"):
+                            configs = await self.get_config(user_id)
+                        # endregion
+                        
+                        # region [Processing Cross User Data Access]
+                        with self.runtime.task_status_map.enter(user_id, "Processing Cross User Data Access"):
+                            if not configs.cross_user_data_access:
+                                logger.warning("Cross user data routing is not allowed.", user_id = user_id)
+                                cross_user_data_routing = None
+                            elif not ConfigManager.get_configs().user_data.cross_user_data_access:
+                                logger.warning("Cross user data routing is not allowed.", user_id = user_id)
+                                cross_user_data_routing = None
+                        
+                            cross_user_data_routing = await self.fill_missing_cross_user_data_routing(user_id, cross_user_data_routing)
+
+                            if user_id != cross_user_data_routing.config.load_from_user_id:
+                                configs = await self.get_config(cross_user_data_routing.config.load_from_user_id)
+                        # endregion
+                        
+                        # region [Getting model]
+                        with self.runtime.task_status_map.enter(user_id, "Getting model"):
+                            model = await get_model(
+                                configs = configs,
+                                global_configs = ConfigManager.get_configs(),
+                                model_info_client = self.runtime.model_info_client
+                            )
+                        # endregion
+
+                        # region [Getting model info]
+                        with self.runtime.task_status_map.enter(user_id, "Mapping user name"):
+                            # 进行用户名映射
+                            user_info = await self.nickname_mapping(user_id, user_info)
+                        # endregion
+
+                        # region [Getting template parser]
+                        with self.runtime.task_status_map.enter(user_id, "Getting template parser"):
+                            # 获取变量展开器以展开变量内容
+                            template_parser = TemplateParser(
+                                model = model,
+                                user_info = user_info,
+                                global_config = ConfigManager.get_configs(),
+                                user_config = configs
+                            )
+                        # endregion
+
+                        # region [Getting context]
+                        with self.runtime.task_status_map.enter(user_id, "Processing context"):
+                            context_loader = self.get_context_loader()
+                            submit_context, user_input = await make_context(
+                                user_id = user_id,
+                                message = message,
+                                configs = configs,
+                                context_loader = context_loader,
+                                template_parser = template_parser,
+                                static_resources_client = self.runtime.static_resources_client,
+                                history_messages = history_messages,
+                                history_msg_role_map = history_msg_role_map,
+                                role = role,
+                                role_name = role_name,
+                                extra_template_fields = extra_template_fields,
+                                temporary_prompt = temporary_prompt,
+                                additional_data = additional_data,
+                                load_prompt = load_prompt,
+                                cross_user_data_routing = cross_user_data_routing,
+                                task_status_map = self.runtime.task_status_map
+                            )
+                        # endregion
+                        
+                        # region [Make Request Object]
+                        with self.runtime.task_status_map.enter(user_id, "Make Request Object"):
+                            request = make_request(
+                                user_id = user_id,
+                                user_input = user_input,
+                                user_info = user_info,
+                                submit_context = submit_context,
+                                model = model,
+                                configs = configs,
+                                assistant_role = assistant_role,
+                                role_name = role_name,
+                                thinking = thinking
+                            )
+                            
+                            if ConfigManager.get_configs().tool_calls.enabled:
+                                tool_calls_configs = ConfigManager.get_configs().tool_calls
+                                server_registed_tools = tool_calls_configs.registed
+                                if allowed_tool_calls:
+                                    user_registed_tools = allowed_tool_calls
+                                elif configs.allowed_tool_calls:
+                                    user_registed_tools = configs.allowed_tool_calls
+                                elif tool_calls_configs.allowed_by_default:
+                                    user_registed_tools = tool_calls_configs.allowed_by_default
+                                else:
+                                    user_registed_tools = set()
+
+                                available_tool_calls = server_registed_tools.intersection(user_registed_tools)
+                            else:
+                                available_tool_calls = set()
+                            
+                            # 创建内容缓冲区
+                            content_buffer = ContentBuffer()
+                            await self.runtime.content_buffers_pool.add(user_id, content_buffer)
+                        # endregion
+                        
+                        # region [Make Request Object]
+                        with self.runtime.task_status_map.enter(user_id, "Make Request Runtime Object"):
+                            request_runtime = RequestRuntime(
+                                client_pool = self.runtime.openai_pool,
+                                status_map = self.runtime.task_status_map,
+                                content_buffer = content_buffer
+                            )
+                        # endregion
+
+                        # region [Pre-filled output]
+                        with self.runtime.task_status_map.enter(user_id, "Pre-filled output"):
+                            # 输出 (为了自动填充输出内容)
+                            output = Response()
+                            output.model_group = model.parent
+                            output.model_name = model.name
+                            output.model_uid = model.uid
+                            output.user_raw_input = message
+
+                            if user_input is not None:
+                                output.user_input = user_input.content
+
+                            # 是否保存上下文
+                            if save_context is None:
+                                if configs.save_context is not None:
+                                    save_context = configs.save_context
+                                else:
+                                    save_context = ConfigManager.get_configs().context.save_context
+                            
+                            # 是否在保存时删除多模态内容
+                            if configs.save_text_only is not None:
+                                save_only_text: bool = configs.save_text_only
+                            else:
+                                save_only_text: bool = ConfigManager.get_configs().context.save_text_only
+                            
+                            if save_new_only is None:
+                                if configs.save_new_only is not None:
+                                    save_new_only = configs.save_new_only
+                                else:
+                                    save_new_only = ConfigManager.get_configs().context.save_new_only
+                            
+                            enable_assistant_template = ConfigManager.get_configs().text_template.enable.assistant_template
+
+                            request_statistics_template = configs.request_statistics_template
+                            if request_statistics_template is None:
+                                request_statistics_template = ConfigManager.get_configs().text_template.request_statistics_template
+                        # endregion
+
+                        # region [Pre-filled Model Response]
+                        with self.runtime.task_status_map.enter(user_id, "Pre-filled Model Response"):
+                            model_response = ModelResponse()
+                            model_response.request_log.user_id = user_id
+                            model_response.request_log.task_start_time = task_start_time
+                            model_response.request_log.prepare_start_time = prepare_start_time
+                    
+                    # 记录预处理结束时间
+                    prepare_end_time = TimeStamp()
+
+                    model_response.request_log.prepare_end_time = prepare_end_time
+                    request_runtime.response = model_response
+
+                    # region [Requesting]
+                    with self.runtime.task_status_map.enter(user_id, "Requesting"):
+                        # 初始化 Client 并设置并发大小
+                        model_caller = ModelRequester(
+                            user_id = user_id,
+                            user_configs = configs,
+                            max_concurrency = (
+                                ConfigManager.get_configs().callapi.max_concurrency
+                                if self._max_concurrency is None else self._max_concurrency
+                            ),
+                            context_loader = context_loader,
+                            static_resources_client = self.runtime.static_resources_client
+                        )
+                        try:
+                            model_responses: MultiResponse | None = None
+                            
+                            async def submit():
+                                nonlocal output, model_responses
+                                model_responses = await model_caller.submit(
+                                    user_id = user_id,
+                                    request = request,
+                                    runtime = request_runtime,
+                                    available_tool_calls = available_tool_calls,
+                                    stream = stream
+                                )
+                                
+                                await self.runtime.content_buffers_pool.remove(user_id)
+                                output = await post_treatment(
+                                    user_id = user_id,
+                                    output = output,
+                                    responses = model_responses,
+                                    template_parser = template_parser,
+                                    user_input = user_input,
+                                    save_context = save_context,
+                                    save_new_only = save_new_only,
+                                    context_loader = context_loader,
+                                    task_status_map = self.runtime.task_status_map,
+                                    request_log_manager = self.runtime.request_log,
+                                    cross_user_data_routing = cross_user_data_routing,
+                                    enable_assistant_template = enable_assistant_template,
+                                    request_statistics_template = request_statistics_template,
+                                    save_only_text = save_only_text,
+                                )
+                            
+                            task = asyncio.create_task(submit())
+
+                            if stream:
+                                return model_caller.generator()
+                            else:
+                                await task
+                                return output
+                        except CallAPIException as e:
+                            traceback_info = traceback.format_exc()
+                            logger.exception(
+                                "CallAPI Error: \n{traceback_info}",
+                                user_id = user_id,
+                                traceback_info = traceback_info,
+                            )
+                            
+                            raise HTTPException(
+                                status_code = 500,
+                                detail = f"API Error: {e}"
+                            )
+                    # endregion
+        except Exception as e:
+            traceback_info = traceback.format_exc()
+            logger.error("API call failed: \n{traceback}", user_id = user_id, traceback = traceback_info)
+            raise
+    # endregion
