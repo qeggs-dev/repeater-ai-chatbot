@@ -2,6 +2,7 @@
 
 ## 获取提示词
   - [Get Prompt API](./get/get.md)
+  - [Render Prompt API](./get/render.md)
 
 ## 更新提示词
   - [Set Prompt API](./set/set.md)
