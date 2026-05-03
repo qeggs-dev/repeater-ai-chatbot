@@ -90,8 +90,7 @@ async def markdown_to_html(
 
     template: Template = environment.from_string(html_template)
 
-    full_html = await asyncio.to_thread(
-        template.render,
+    full_html = await template.render_async(
         markdown = html.escape(input_text),
         raw_text = input_text,
         html_content = clean_html,

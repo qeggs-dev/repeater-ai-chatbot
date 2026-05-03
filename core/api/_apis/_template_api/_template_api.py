@@ -34,8 +34,7 @@ async def template(user_id: str, request: ExpandVariableRequest):
 
     # 调用PromptVP类处理文本
     try:
-        output = await asyncio.to_thread(
-            template_parser.render_ex,
+        output = await template_parser.render_ex(
             request.text,
             user_id = user_id,
             **request.extra_fields

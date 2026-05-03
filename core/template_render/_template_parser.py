@@ -41,7 +41,7 @@ class TemplateParser:
         self._global_config = global_config
         self._user_config = user_config
 
-    def render(
+    async def render(
             self,
             text: str,
             /,
@@ -54,7 +54,7 @@ class TemplateParser:
             template: Template = environment.from_string(
                 source = text
             )
-            return template.render(
+            return await template.render_async(
                 **kwargs,
             )
         except Exception as e:
@@ -65,7 +65,7 @@ class TemplateParser:
             raise
         
 
-    def render_ex(
+    async def render_ex(
             self,
             text: str,
             user_id: str,
@@ -131,12 +131,8 @@ class TemplateParser:
         daily_random = random.Random(
             tz_now.year ^ tz_now.month ^ tz_now.day
         )
-
-        if self._global_config.text_template.allow_http:
-            http_client = httpx.Client
-            kwargs["httpget"] = http_client.get
         
-        return self.render(
+        return await self.render(
             text,
             user_id = user_id,
             pymath = math,
