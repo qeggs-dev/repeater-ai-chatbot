@@ -9,7 +9,7 @@ from ..global_config_manager import GlobalConfigs
 from ..user_config_manager import UserConfigs
 from ..assist_struct import RequestUserInfo
 from .._info import __version__
-from ..model_info import ModelInfo
+from ..clients.model_info import ModelInfo
 from jinja2 import Template
 from ..auxiliary.text import (
     escape_string
