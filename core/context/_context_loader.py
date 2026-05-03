@@ -369,8 +369,7 @@ class ContextLoader:
         """
         if extra_template_fields is None:
             extra_template_fields = {}
-        return await asyncio.to_thread(
-            template_parser.render_ex,
+        return await template_parser.render_ex(
             text = template,
             user_id = user_id,
             **extra_template_fields
