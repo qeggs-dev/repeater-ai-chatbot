@@ -33,7 +33,10 @@ from ..user_config_manager import (
 )
 from ..pools.lock_pool import AsyncLockPool
 from ..text_buffer import ContentBuffer
-from ..global_config_manager import ConfigManager
+from ..global_config_manager import (
+    ConfigManager,
+    GlobalConfigs
+)
 from ..assist_struct import (
     Response,
     RequestUserInfo,
@@ -43,6 +46,9 @@ from ..assist_struct import (
 from ..special_exception import HTTPException
 from ..request_log import (
     TimeStamp
+)
+from ..clients.model_info import (
+    ModelInfo
 )
 from ..template_render import (
     TemplateParser
@@ -197,6 +203,30 @@ class Core:
             return False
         return False
     # endregion
+
+    # region > get_template_parser
+    async def get_template_parser(
+        self,
+        user_config: UserConfigs,
+        global_config: GlobalConfigs,
+        model: ModelInfo | None = None,
+        user_info: RequestUserInfo | None = None,
+    ) -> TemplateParser:
+        if model is None:
+            model = await get_model(
+                configs = user_config,
+                global_configs = global_config,
+                model_info_client = self.runtime.model_info_client,
+            )
+        
+        template_parser = TemplateParser(
+            model = model,
+            user_info = user_info,
+            global_config = global_config,
+            user_config = user_config
+        )
+        return template_parser
+    # endregion
     
     # region > fill missing cross user data routing
     async def fill_missing_cross_user_data_routing(self, user_id: str, cross_user_data_routing: CrossUserDataRouting[str | None] | None = None) -> CrossUserDataRouting[str]:
@@ -329,15 +359,15 @@ class Core:
                         # region [Getting template parser]
                         with self.runtime.task_status_map.enter(user_id, "Getting template parser"):
                             # 获取变量展开器以展开变量内容
-                            template_parser = TemplateParser(
+                            template_parser = await self.get_template_parser(
+                                user_config = configs,
+                                global_config = ConfigManager.get_configs(),
                                 model = model,
                                 user_info = user_info,
-                                global_config = ConfigManager.get_configs(),
-                                user_config = configs
                             )
                         # endregion
 
-                        # region [Getting context]
+                        # region [Processing context]
                         with self.runtime.task_status_map.enter(user_id, "Processing context"):
                             context_loader = self.get_context_loader()
                             submit_context, user_input = await make_context(
