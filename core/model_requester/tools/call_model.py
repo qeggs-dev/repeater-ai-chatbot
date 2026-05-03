@@ -11,7 +11,7 @@ from ...data_manager import PromptManager
 from .._caller import ModelRequester
 from ...runtime_container import RuntimeContainer
 from ...text_buffer import ContentBuffer, TextBuffer
-from ...model_info import ModelInfo, SafeModelInfo
+from ...clients.model_info import ModelInfo, SafeModelInfo
 from pydantic import BaseModel, Field
 from enum import StrEnum
 
@@ -131,7 +131,7 @@ class CallModel(ToolCallPacakage):
     async def call(self, args: Params):
         runtime = RuntimeContainer.get_runtime()
         
-        response = await runtime.model_api_manager.get_models(
+        response = await runtime.model_info_client.get_models(
             model_uid = args.model_uid
         )
         if response.code != 200:
