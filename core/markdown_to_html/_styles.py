@@ -1,6 +1,6 @@
 from yarl import URL
 from ..auxiliary.path import sanitize_filename_with_dir
-from ..static_resources_client import StaticResourcesClient
+from ..clients.static_resources_client import StaticResourcesClient
 
 class Styles:
     def __init__(self, static_resources_client: StaticResourcesClient, style_base_path: str | URL):
