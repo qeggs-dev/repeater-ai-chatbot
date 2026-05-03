@@ -3,8 +3,8 @@ import httpx
 
 from urllib.parse import quote
 from ._response import ModelInfoResponse
-from ..special_exception import HTTPException
-from ..http_response import Response
+from ...special_exception import HTTPException
+from ...http_response import Response
 
 class ModelsClient:
     def __init__(self, base_url: str, timeout: int | None = None, verify: ssl.SSLContext | str | bool = True):
