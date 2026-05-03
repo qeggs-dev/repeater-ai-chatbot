@@ -63,33 +63,34 @@ async def post_treatment(
         new_context = responses.new_contexts()
 
         # 展开模型输出内容中的变量
-        content_unit = new_context.last_content
-        content = content_unit.content
-        if isinstance(content, str):
-            content = await template_parser.render_ex(
-                content,
-                user_id,
-                **extra_template_fields
-            )
-            content_unit.content = content
-        else:
-            content = content_unit.to_plaintext_content()
-            content = await template_parser.render_ex(
-                content,
-                user_id,
-                **extra_template_fields
-            )
-            content_unit.remove_context_block(TextBlock)
-            content_unit.content.append(
-                TextBlock(content)
-            )
-        if content_unit.reasoning_content:
-            content_unit.reasoning_content = await template_parser.render_ex(
-                content_unit.reasoning_content,
-                user_id,
-                **extra_template_fields
-            )
-        new_context.last_content = content_unit
+        if enable_assistant_template:
+            content_unit = new_context.last_content
+            content = content_unit.content
+            if isinstance(content, str):
+                content = await template_parser.render_ex(
+                    content,
+                    user_id,
+                    **extra_template_fields
+                )
+                content_unit.content = content
+            else:
+                content = content_unit.to_plaintext_content()
+                content = await template_parser.render_ex(
+                    content,
+                    user_id,
+                    **extra_template_fields
+                )
+                content_unit.remove_context_block(TextBlock)
+                content_unit.content.append(
+                    TextBlock(content)
+                )
+            if content_unit.reasoning_content:
+                content_unit.reasoning_content = await template_parser.render_ex(
+                    content_unit.reasoning_content,
+                    user_id,
+                    **extra_template_fields
+                )
+            new_context.last_content = content_unit
         
         with task_status_map.enter(user_id, "Saving Context"):
             if cross_user_data_routing.context.save_to_user_id == user_id:
@@ -148,8 +149,7 @@ async def post_treatment(
             output.request_log = responses.request_logs()
 
             if ConfigManager.get_configs().text_template.enable.request_statistics_template:
-                output.request_statistics = await asyncio.to_thread(
-                    template_parser.render_ex,
+                output.request_statistics = await template_parser.render_ex(
                     request_statistics_template,
                     user_id,
                     request_log = responses[-1].request_log,
