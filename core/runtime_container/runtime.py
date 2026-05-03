@@ -20,13 +20,13 @@ from ..pools.resource_pool import ResourcePool
 from ..text_buffer import ContentBuffer
 from ..auxiliary.regex_checker import RegexChecker
 from ..global_config_manager import ConfigManager
-from ..model_info import (
+from ..clients.model_info import (
     ModelsClient
 )
-from ..nexus_client import NexusClient
-from ..markdown_render import HTMLRenderClient
+from ..clients.nexus_client import NexusClient
+from ..clients.html_render_client import HTMLRenderClient
 from ..licenses_loader import LicenseLoader
-from ..static_resources_client import StaticResourcesClient
+from ..clients.static_resources_client import StaticResourcesClient
 from ..request_log import (
     RequestLogManager
 )
@@ -53,7 +53,7 @@ class RepeaterRuntime:
     @print_init_runtime("Models Manager")
     def init_models_manager(self):
         # 初始化 Model 管理器
-        self.model_api_manager = ModelsClient(
+        self.model_info_client = ModelsClient(
             ConfigManager.get_configs().model_api.base_url,
             ConfigManager.get_configs().model_api.timeout,
             verify = get_ssl_context()
