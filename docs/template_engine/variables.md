@@ -26,6 +26,9 @@
   - [`daily_randfloat`](./functions/daily_randfloat.md): 获取每天固定的随机浮点数
   - [`daily_random`](./functions/daily_random.md): 获取每天固定的随机数
   - [`date_countdown`](./functions/date_countdown.md): 获取日期倒计时
+  - [`load_directive`](./functions/load_directive.md): 加载 Prompt Directive
+  - [`directives`](./functions/directives.md): 获取当前的 Prompt Directives
+  - [`directive_ids`](./functions/directive_ids.md): 获取当前的 Prompt Directive 所有 ID
   - [`generate_uuid`](./functions/generate_uuid.md): 生成UUID
   - [`*json`](./functions/json.md): JSON处理函数
   - [`precise_age`](./functions/precise_age.md): 获取精确年龄
