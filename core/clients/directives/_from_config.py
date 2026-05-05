@@ -26,9 +26,7 @@ def prompt_directive_from_config(
     
     force_load_directives = global_configs.prompt.force_load_directives
 
-    for directive_type, directives in match_directive_type(base_type, force_load_directives):
-        for directive_name in directives:
-            yield directive_type, directive_name
+    yield from match_directive_type(base_type, force_load_directives)
 
 async def load_prompt_directive_from_config(
     base_type: Iterable[str],
