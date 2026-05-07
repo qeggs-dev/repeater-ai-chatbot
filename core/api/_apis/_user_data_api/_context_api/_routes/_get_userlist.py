@@ -1,10 +1,11 @@
 from ......server import Server
+from .._router import context_router
 from fastapi.responses import (
     ORJSONResponse
 )
 from loguru import logger
 
-@Server.app.get("/userdata/context/userlist")
+@context_router.get("/userlist")
 async def get_context_userlist():
     """
     Endpoint for getting context

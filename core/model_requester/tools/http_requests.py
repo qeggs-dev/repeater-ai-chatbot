@@ -7,102 +7,115 @@ import ipaddress
 from ...context import ToolCallPacakage, CallType
 from ...global_config_manager import HTTPMethods, ConfigManager
 from .._caller import ModelRequester
+from ...auxiliary.http import get_ssl_context
 from typing import Any, Self
 from pydantic import BaseModel, Field
 
+class Request(BaseModel):
+    method: HTTPMethods = Field(HTTPMethods.GET, description="The HTTP method to use for the request.")
+    url: str = Field("", description="The target URL of the request.")
+    query_params: dict[str, str] | None = Field(None, description="Query parameters to append to the request URL.")
+    headers: dict[str, str] | None = Field(None, description="HTTP headers to send with the request.")
+    cookies: dict[str, str] | None = Field(None, description="Cookies to attach to the request.")
+    form_data: dict[str, str] | None = Field(None, description="Form-data to send with the request.")
+    json_data: Any | None = Field(None, description="JSON data to send in the request body.")
+    auth: tuple[str, str] | None = Field(None, description="Basic authentication credentials as a (username, password) tuple.")
+    follow_redirects: bool = Field(True, description="Whether to automatically follow HTTP redirects.")
+    timeout_seconds: int = Field(10, description="Request timeout in seconds.")
+    
+class PublicIPOnlyTransport(httpx.AsyncHTTPTransport):
+    class AddrInfo(BaseModel):
+        family: socket.AddressFamily
+        type: socket.SocketKind
+        proto: int
+        canonname: str
+        host: str
+        port: int
+        flowinfo: int = 0
+        scope_id: int = 0
+        
+        @classmethod
+        def from_addr(cls, addr: tuple) -> Self:
+            family, type, proto, canonname, sockaddr = addr
+            
+            data = {
+                "family": family,
+                "type": type,
+                "proto": proto,
+                "canonname": canonname,
+                "host": sockaddr[0],
+                "port": sockaddr[1],
+            }
+            
+            if len(sockaddr) == 4:
+                data["flowinfo"] = sockaddr[2]
+                data["scope_id"] = sockaddr[3]
+            
+            return cls(**data)
+        
+        def to_ip_address(self) -> ipaddress.IPv4Address | ipaddress.IPv6Address:
+            return ipaddress.ip_address(self.host)
+        
+        @property
+        def is_ipv6(self) -> bool:
+            return self.family == socket.AF_INET6
+        
+        @property
+        def address_tuple(self) -> tuple[str, int] | tuple[str, int, int, int]:
+            if self.is_ipv6:
+                return (self.host, self.port, self.flowinfo, self.scope_id)
+            return (self.host, self.port)
+    
+    async def handle_async_request(self, request: httpx.Request) -> httpx.Response:
+        if not ConfigManager.get_configs().tool_calls.allow_private_network_requests:
+            host = request.url.host
+            port = request.url.port
+
+            try:
+                ip = ipaddress.ip_address(host)
+                if ip.is_private:
+                    raise httpx.TransportError("Private network requests are not allowed")
+            except ValueError:
+                # is not an ip address
+                # try to DNS resolve
+                loop = asyncio.get_event_loop()
+                addrs: list[tuple[socket.AddressFamily, socket.SocketKind, int, str, tuple[str, int] | tuple[str, int, int, int]]] = await loop.getaddrinfo(
+                    host,
+                    port,
+                    type = socket.SOCK_STREAM
+                )
+                for addr in addrs:
+                    addr_info = self.AddrInfo.from_addr(addr)
+                    if addr_info.to_ip_address().is_private:
+                        raise httpx.TransportError("Private network requests are not allowed")
+            
+        return await super().handle_async_request(request)
+    
+class Response(BaseModel):
+    request: Request
+    status_code: int | None = None
+    reason: str = ""
+    headers: dict | None = None
+    cookies: dict | None = None
+    data: Any = None
+
 @ModelRequester.reg_global_package
 class HTTPRequests(ToolCallPacakage):
+
     class Params(BaseModel):
-        method: HTTPMethods = Field(HTTPMethods.GET, description="The HTTP method to use for the request.")
-        url: str = Field("", description="The target URL of the request.")
-        query_params: dict[str, str] | None = Field(None, description="Query parameters to append to the request URL.")
-        headers: dict[str, str] | None = Field(None, description="HTTP headers to send with the request.")
-        cookies: dict[str, str] | None = Field(None, description="Cookies to attach to the request.")
-        form_data: dict[str, str] | None = Field(None, description="Form-data to send with the request.")
-        json_data: Any | None = Field(None, description="JSON data to send in the request body.")
-        auth: tuple[str, str] | None = Field(None, description="Basic authentication credentials as a (username, password) tuple.")
-        follow_redirects: bool = Field(True, description="Whether to automatically follow HTTP redirects.")
-        timeout_seconds: int = Field(10, description="Request timeout in seconds.")
+        base_url: str = Field("", description="The base URL shared by all requests.")
+        base_headers: dict[str, str] | None = Field(None, description="The underlying request header shared by all requests.")
+        base_cookies: dict[str, str] | None = Field(None, description="The base Cookie shared by all requests.")
+        base_auth: tuple[str, str] | None = Field(None, description="The base Auth shared by all requests.")
+        base_timeout: int = Field(5, description="Requests timeout in seconds.")
+        requests: list[list[Request]] = Field(..., description="Sending requests in batches using connection pooling (The outer list executes sequentially, and the inner list executes in parallel.).")
     
     class Result(BaseModel):
-        status_code: int | None = None
-        reason: str = ""
-        headers: dict | None = None
-        cookies: dict | None = None
-        data: Any = None
-    
-    class PublicIPOnlyTransport(httpx.AsyncHTTPTransport):
-        class AddrInfo(BaseModel):
-            family: socket.AddressFamily
-            type: socket.SocketKind
-            proto: int
-            canonname: str
-            host: str
-            port: int
-            flowinfo: int = 0
-            scope_id: int = 0
-            
-            @classmethod
-            def from_addr(cls, addr: tuple) -> Self:
-                family, type, proto, canonname, sockaddr = addr
-                
-                data = {
-                    "family": family,
-                    "type": type,
-                    "proto": proto,
-                    "canonname": canonname,
-                    "host": sockaddr[0],
-                    "port": sockaddr[1],
-                }
-                
-                if len(sockaddr) == 4:
-                    data["flowinfo"] = sockaddr[2]
-                    data["scope_id"] = sockaddr[3]
-                
-                return cls(**data)
-            
-            def to_ip_address(self) -> ipaddress.IPv4Address | ipaddress.IPv6Address:
-                return ipaddress.ip_address(self.host)
-            
-            @property
-            def is_ipv6(self) -> bool:
-                return self.family == socket.AF_INET6
-            
-            @property
-            def address_tuple(self) -> tuple[str, int] | tuple[str, int, int, int]:
-                if self.is_ipv6:
-                    return (self.host, self.port, self.flowinfo, self.scope_id)
-                return (self.host, self.port)
-        
-        async def handle_async_request(self, request: httpx.Request) -> httpx.Response:
-            if not ConfigManager.get_configs().tool_calls.allow_private_network_requests:
-                host = request.url.host
-                port = request.url.port
-
-                try:
-                    ip = ipaddress.ip_address(host)
-                    if ip.is_private:
-                        raise httpx.TransportError("Private network requests are not allowed")
-                except ValueError:
-                    # is not an ip address
-                    # try to DNS resolve
-                    loop = asyncio.get_event_loop()
-                    addrs: list[tuple[socket.AddressFamily, socket.SocketKind, int, str, tuple[str, int] | tuple[str, int, int, int]]] = await loop.getaddrinfo(
-                        host,
-                        port,
-                        type = socket.SOCK_STREAM
-                    )
-                    for addr in addrs:
-                        addr_info = self.AddrInfo.from_addr(addr)
-                        if addr_info.to_ip_address().is_private:
-                            raise httpx.TransportError("Private network requests are not allowed")
-                
-            return await super().handle_async_request(request)
+        responses: list[list[Response]] = Field(..., description="The responses of the requests.")
     
     name = "http_requests"
     call_type = CallType.ASYNC
     json_result = True
-    client = httpx.AsyncClient(transport = PublicIPOnlyTransport())
     document = "send a any method HTTP request to a URL and return the response."
     
     def validation_method(self, method: HTTPMethods) -> bool:
@@ -115,24 +128,24 @@ class HTTPRequests(ToolCallPacakage):
             return True
         else:
             return False
-
-    async def call(self, args: Params):
-        if not self.validation_method(args.method):
+    
+    async def send_request(self, client: httpx.AsyncClient, request: Request) -> Response:
+        if not self.validation_method(request.method):
             return self.Result(
-                reason=f"HTTP method {args.method} is not allowed."
+                reason=f"HTTP method {request.method} is not allowed."
             )
         try:
-            response = await self.client.request(
-                args.method,
-                args.url,
-                params = args.query_params,
-                headers = args.headers,
-                cookies = args.cookies,
-                data = args.form_data,
-                json = args.json_data,
-                auth = args.auth,
-                follow_redirects = args.follow_redirects,
-                timeout = args.timeout_seconds,
+            response = await client.request(
+                request.method,
+                request.url,
+                params = request.query_params,
+                headers = request.headers,
+                cookies = request.cookies,
+                data = request.form_data,
+                json = request.json_data,
+                auth = request.auth,
+                follow_redirects = request.follow_redirects,
+                timeout = request.timeout_seconds,
             )
         except httpx.TimeoutException as e:
             return self.Result(
@@ -142,15 +155,49 @@ class HTTPRequests(ToolCallPacakage):
             return self.Result(
                 reason = f"Error: {e}",
             )
+        
         try:
             data = response.json()
         except json.JSONDecodeError:
             data = response.text
-        
-        return self.Result(
+    
+        return Response(
+            request = request,
             status_code = response.status_code,
             reason = "success",
             headers = dict(response.headers),
             cookies = dict(response.cookies),
             data = data,
         )
+
+    async def call(self, args: Params):
+        client = httpx.AsyncClient(
+            base_url = args.base_url,
+            headers = args.base_headers,
+            cookies = args.base_cookies,
+            auth = args.base_auth,
+            timeout = args.base_timeout,
+            transport = PublicIPOnlyTransport(),
+            verify = get_ssl_context()
+        )
+
+        responses: list[list[Response]] = []
+        
+        tasks: set[asyncio.Task[Response]] = set()
+        for requests in args.requests:
+            for request in requests:
+                tasks.add(
+                    asyncio.create_task(
+                        self.send_request(
+                            client,
+                            request,
+                        )
+                    )
+                )
+            
+            results = await asyncio.gather(*tasks)
+            responses.append(results)
+        
+        return self.Result(
+            responses = results,
+        ).model_dump(exclude_none=True)

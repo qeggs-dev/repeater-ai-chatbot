@@ -3,5 +3,5 @@ from .runtime import RepeaterRuntime
 
 __all__ = [
     "RuntimeContainer",
-    "RepeaterRuntime"
+    "RepeaterRuntime",
 ]

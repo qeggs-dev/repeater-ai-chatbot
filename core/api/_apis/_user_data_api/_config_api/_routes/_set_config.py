@@ -1,4 +1,5 @@
 from ......server import Server
+from .._router import config_router
 from fastapi.responses import (
     ORJSONResponse,
 )
@@ -14,7 +15,7 @@ from loguru import logger
 
 from pydantic import ValidationError
 
-@Server.app.put("/userdata/config/set/{user_id}")
+@config_router.put("/set/{user_id}")
 async def set_config(user_id: str, request: UserConfigs):
     """
     Set user config
@@ -36,7 +37,7 @@ async def set_config(user_id: str, request: UserConfigs):
         request.model_dump(exclude_defaults=True)
     )
 
-@Server.app.put("/userdata/config/set/{user_id}/{key}")
+@config_router.put("/set/{user_id}/{key}")
 async def set_config_field(user_id: str, key: str, request: SetConfigRequest):
     """
     Endpoint for setting config

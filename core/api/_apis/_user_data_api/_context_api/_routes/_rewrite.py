@@ -1,4 +1,5 @@
 from ......server import Server
+from .._router import context_router
 from fastapi.responses import (
     ORJSONResponse
 )
@@ -9,7 +10,7 @@ from .._requests import (
     RewriteContext
 )
 
-@Server.app.post("/userdata/context/rewrite/{user_id}")
+@context_router.post("/rewrite/{user_id}")
 async def rewrite_context(user_id: str, rewrite_context: RewriteContext):
     """
     Endpoint for rewriting context

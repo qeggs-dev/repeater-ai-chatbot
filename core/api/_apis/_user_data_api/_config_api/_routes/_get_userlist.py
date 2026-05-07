@@ -1,10 +1,11 @@
 from ......server import Server
+from .._router import config_router
 from fastapi.responses import (
     ORJSONResponse
 )
 from loguru import logger
 
-@Server.app.get("/userdata/config/userlist")
+@config_router.get("/userlist")
 async def get_config_userlist():
     """
     Endpoint for getting config userlist

@@ -1,10 +1,11 @@
+import ssl
 import httpx
 
 from yarl import URL
 from ..special_exception import HTTPException
 
 class StaticResourcesClient:
-    def __init__(self, base_url: str, timeout: int | float | None = None):
+    def __init__(self, base_url: str, timeout: int | float | None = None, verify: ssl.SSLContext | str | bool = True):
         if isinstance(base_url, str):
             if base_url:
                 self._base_url = URL(base_url)
@@ -16,6 +17,7 @@ class StaticResourcesClient:
         self.client = httpx.AsyncClient(
             base_url = str(self._base_url),
             timeout = timeout,
+            verify = verify
         )
     
     @property

@@ -11,8 +11,9 @@ from fastapi.responses import (
 )
 from loguru import logger
 from .....global_config_manager import ConfigManager
+from .._admin_router import admin_router
 
-@Server.app.post("/admin/configs/reload")
+@admin_router.post("/configs/reload")
 async def reload_configs_api(api_key: str = Header(..., alias="X-Admin-API-Key")):
     """
     Reload Project Configs
@@ -21,8 +22,6 @@ async def reload_configs_api(api_key: str = Header(..., alias="X-Admin-API-Key")
 
     :param api_key: Admin API key
     """
-    if not Server.admin_key_manager.validate_key(api_key):
-        raise HTTPException(detail="Invalid API key", status_code=401)
     logger.info("Reloading configs", user_id="[Admin API]")
     await asyncio.to_thread(ConfigManager.load)
     return ORJSONResponse({"detail": "Configs reloaded"})

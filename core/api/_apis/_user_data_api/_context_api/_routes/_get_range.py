@@ -1,4 +1,5 @@
 from ......server import Server
+from .._router import context_router
 from ......context import (
     ContentUnit
 )
@@ -7,8 +8,8 @@ from fastapi.responses import (
 )
 from loguru import logger
 
-@Server.app.get("/userdata/context/part_of/{user_id}-{begin}-{end}")
-@Server.app.get("/userdata/context/part_of/{user_id}-{begin}-{end}.json")
+@context_router.get("/part_of/{user_id}-{begin}-{end}")
+@context_router.get("/part_of/{user_id}-{begin}-{end}.json")
 async def get_part_of_context(user_id: str, begin: int | float, end: int | float):
     """
     Get part of the context.

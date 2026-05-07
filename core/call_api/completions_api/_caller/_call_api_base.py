@@ -21,8 +21,9 @@ class BaseCallAPI(ABC):
         client_info = ClientInfo(
             url = request.url,
             proxy = request.proxy,
+            limits = request.limits,
+            timeout = request.timeout,
             encoding = request.encoding,
-            timeout = request.timeout
         )
         client = runtime.client_pool.get_openai(
             client_info = client_info,

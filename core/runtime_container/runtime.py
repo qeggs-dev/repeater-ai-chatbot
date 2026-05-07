@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 # ==== 标准库 ==== #
+import ssl
 from pathlib import Path
 
 # ==== 第三方库 ==== #
@@ -25,7 +26,6 @@ from ..model_info import (
 from ..nexus_client import NexusClient
 from ..markdown_render import HTMLRenderClient
 from ..licenses_loader import LicenseLoader
-from ..special_exception import HTTPException
 from ..static_resources_client import StaticResourcesClient
 from ..request_log import (
     RequestLogManager
@@ -33,6 +33,7 @@ from ..request_log import (
 from ..status_map import StatusMap
 from ..pools.awaitable_pool import TaskPool
 from ..pools.openai_pool import OpenAIPool
+from ..auxiliary.http import get_ssl_context
 
 class RepeaterRuntime:
     def __init__(self):
@@ -54,7 +55,8 @@ class RepeaterRuntime:
         # 初始化 Model 管理器
         self.model_api_manager = ModelsClient(
             ConfigManager.get_configs().model_api.base_url,
-            ConfigManager.get_configs().model_api.timeout
+            ConfigManager.get_configs().model_api.timeout,
+            verify = get_ssl_context()
         )
 
     @print_init_runtime("Static Resources Client")
@@ -62,7 +64,8 @@ class RepeaterRuntime:
         # 初始化静态资源客户端
         self.static_resources_client = StaticResourcesClient(
             ConfigManager.get_configs().static_resources_server.base_url,
-            ConfigManager.get_configs().static_resources_server.timeout
+            ConfigManager.get_configs().static_resources_server.timeout,
+            verify = get_ssl_context()
         )
 
     @print_init_runtime("Content Buffers Pool")
@@ -112,14 +115,17 @@ class RepeaterRuntime:
         render_config = ConfigManager.get_configs().render
         self.html_render_client = HTMLRenderClient(
             base_url = render_config.to_image.base_url,
-            timeout = render_config.to_image.timeout
+            timeout = render_config.to_image.timeout,
+            verify = get_ssl_context()
         )
     
     @print_init_runtime("Nexus Client")
     def init_nexus_client(self):
+        nexus_config = ConfigManager.get_configs().nexus
         self.nexus_client: NexusClient = NexusClient(
-            base_url = ConfigManager.get_configs().nexus.base_url,
-            request_timeout = ConfigManager.get_configs().nexus.api_timeout,
+            base_url = nexus_config.base_url,
+            request_timeout = nexus_config.api_timeout,
+            verify = get_ssl_context()
         )
     
     @print_init_runtime("License Loader")

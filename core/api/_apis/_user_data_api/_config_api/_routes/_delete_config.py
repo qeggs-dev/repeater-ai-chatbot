@@ -1,4 +1,5 @@
 from ......server import Server
+from .._router import config_router
 from typing import Any
 from fastapi.responses import (
     ORJSONResponse,
@@ -20,7 +21,7 @@ from loguru import logger
 
 from pydantic import BaseModel, ValidationError
 
-@Server.app.put("/userdata/config/delkey/{user_id}")
+@config_router.put("/delkey/{user_id}")
 async def delete_config_field(user_id: str, key: str = Form(...)):
     """
     Endpoint for delkey config

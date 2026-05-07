@@ -5,6 +5,7 @@ from ._favicon import (
 )
 from ._robots import robots
 from ._static_api import static_file
+from ._include_router import static_router
 
 __all__ = [
     "favicon_ico",

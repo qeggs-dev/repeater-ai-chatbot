@@ -1,9 +1,10 @@
 from ....server import Server
+from ._router import models_router
 from fastapi.responses import ORJSONResponse
 from ....special_exception import HTTPException
 from ._response import ResponseModel
 
-@Server.app.get("/models")
+@models_router.get("/")
 async def model_list():
     response = await Server.core.runtime.model_api_manager.get_all_models()
     if response.code == 200:

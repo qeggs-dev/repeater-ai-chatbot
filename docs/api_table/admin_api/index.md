@@ -2,12 +2,19 @@
 
 一组用于高级系统操作的 API。
 
-## 重载资源
-  - [重载全局配置](./reload/configs.md)
-  - [重载黑名单](./reload/blacklist.md)
+## Reload API
+  - [Reload Configs](./reload/configs.md)
+  - [Reload Blacklist](./reload/blacklist.md)
+  - [Reload SSL](./reload/ssl.md)
 
 ## Debug API
   - [Debug API](./debug/index.md)
+
+## Regenerate API
+  - [Regenerate Admin Key API](./regenerate/admin_key.md)
+
+## Clear API
+  - [Clear Model Client Pool](./clear/model_client_pool.md)
 
 注：Admin Key 需要保证足够的随机性，
 程序会检查 Admin Key 的熵值，

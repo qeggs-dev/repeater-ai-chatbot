@@ -1,4 +1,5 @@
 from ......server import Server
+from .._router import context_router
 from ......context import (
     ContentUnit,
     ContentRole
@@ -8,7 +9,7 @@ from fastapi.responses import (
 )
 from loguru import logger
 
-@Server.app.post("/userdata/context/inject/{user_id}")
+@context_router.post("/inject/{user_id}")
 async def inject_context(user_id: str, request: ContentUnit):
     """
     Injects a user's content into the context.
