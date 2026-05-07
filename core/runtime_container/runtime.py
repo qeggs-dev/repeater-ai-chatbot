@@ -1,11 +1,11 @@
 from __future__ import annotations
 
 # ==== 标准库 ==== #
-import ssl
 from pathlib import Path
 
 # ==== 第三方库 ==== #
 from loguru import logger
+from environs import Env
 
 # ==== 自定义库 ==== #
 from ..auxiliary.time import print_init_runtime
@@ -36,6 +36,8 @@ from ..pools.openai_pool import OpenAIPool
 from ..auxiliary.http import get_ssl_context
 
 class RepeaterRuntime:
+    _env = Env()
+
     def __init__(self):
         all_obj = dir(self)
         for obj in all_obj:
@@ -55,6 +57,9 @@ class RepeaterRuntime:
         # 初始化 Model 管理器
         self.model_info_client = ModelsClient(
             ConfigManager.get_configs().model_api.base_url,
+            self._env.str(
+                ConfigManager.get_configs().model_api.api_key_env_name
+            ),
             ConfigManager.get_configs().model_api.timeout,
             verify = get_ssl_context()
         )
