@@ -7,11 +7,20 @@ from ...special_exception import HTTPException
 from ...http_response import Response
 
 class ModelsClient:
-    def __init__(self, base_url: str, timeout: int | None = None, verify: ssl.SSLContext | str | bool = True):
+    def __init__(
+            self,
+            base_url: str,
+            api_key: str | None = None,
+            timeout: int | None = None,
+            verify: ssl.SSLContext | str | bool = True
+        ):
         self._base_url = base_url
         self._client = httpx.AsyncClient(
             base_url = self._base_url,
             timeout = timeout,
+            headers = {
+                "Authorization": f"Bearer {api_key}"
+            },
             verify = verify
         )
     
