@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from ......server import Server
 from .._router import nexus_router
 from ..._user_data_type import UserDataType, get_manager
-from ......nexus_client import InvalidUUIDError
+from ......clients.nexus_client import InvalidUUIDError
 from .._models import UploadRequest, UploadResponse
 
 @nexus_router.post("/upload/{user_id}/single/{user_data_type}")

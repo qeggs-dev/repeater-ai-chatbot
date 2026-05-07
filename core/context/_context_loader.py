@@ -40,7 +40,7 @@ from ..template_render import (
 )
 from ..auxiliary.path import validate_path, sanitize_filename_with_dir
 from ..global_config_manager import ConfigManager as GlobalConfigManager
-from ..static_resources_client import StaticResourcesClient
+from ..clients.static_resources_client import StaticResourcesClient
 
 # ==== 本模块代码 ==== #
 class ContextLoader:
@@ -369,8 +369,7 @@ class ContextLoader:
         """
         if extra_template_fields is None:
             extra_template_fields = {}
-        return await asyncio.to_thread(
-            template_parser.render_ex,
+        return await template_parser.render_ex(
             text = template,
             user_id = user_id,
             **extra_template_fields

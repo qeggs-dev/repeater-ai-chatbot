@@ -2,7 +2,7 @@ import ssl
 import httpx
 
 from yarl import URL
-from ..special_exception import HTTPException
+from ...special_exception import HTTPException
 
 class StaticResourcesClient:
     def __init__(self, base_url: str, timeout: int | float | None = None, verify: ssl.SSLContext | str | bool = True):

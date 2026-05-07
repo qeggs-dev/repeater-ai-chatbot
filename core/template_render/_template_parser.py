@@ -9,7 +9,7 @@ from ..global_config_manager import GlobalConfigs
 from ..user_config_manager import UserConfigs
 from ..assist_struct import RequestUserInfo
 from .._info import __version__
-from ..model_info import ModelInfo
+from ..clients.model_info import ModelInfo
 from jinja2 import Template
 from ..auxiliary.text import (
     escape_string
@@ -27,21 +27,26 @@ from ..auxiliary.time import (
 )
 from uuid import uuid4
 from typing import Any
+from ..clients.directives import (
+    load_prompt_directive,
+    load_prompt_directive_from_config,
+    prompt_directive_from_config
+)
 
 class TemplateParser:
     def __init__(
             self,
-            model: ModelInfo = ModelInfo(),
-            user_info: RequestUserInfo = RequestUserInfo(),
-            global_config: GlobalConfigs = GlobalConfigs(),
-            user_config: UserConfigs = UserConfigs(),
+            model: ModelInfo | None = None,
+            user_info: RequestUserInfo | None = None,
+            global_config: GlobalConfigs | None = None,
+            user_config: UserConfigs | None = None,
         ):
-        self._model = model
-        self._user_info = user_info
-        self._global_config = global_config
-        self._user_config = user_config
+        self._model = model or ModelInfo()
+        self._user_info = user_info or RequestUserInfo()
+        self._global_config = global_config or GlobalConfigs()
+        self._user_config = user_config or UserConfigs()
 
-    def render(
+    async def render(
             self,
             text: str,
             /,
@@ -54,7 +59,7 @@ class TemplateParser:
             template: Template = environment.from_string(
                 source = text
             )
-            return template.render(
+            return await template.render_async(
                 **kwargs,
             )
         except Exception as e:
@@ -65,7 +70,7 @@ class TemplateParser:
             raise
         
 
-    def render_ex(
+    async def render_ex(
             self,
             text: str,
             user_id: str,
@@ -131,12 +136,8 @@ class TemplateParser:
         daily_random = random.Random(
             tz_now.year ^ tz_now.month ^ tz_now.day
         )
-
-        if self._global_config.text_template.allow_http:
-            http_client = httpx.Client
-            kwargs["httpget"] = http_client.get
         
-        return self.render(
+        return await self.render(
             text,
             user_id = user_id,
             pymath = math,
@@ -192,7 +193,31 @@ class TemplateParser:
             random_matrix = np.random.rand,
             user_profile = self._user_config.user_profile if self._user_config.user_profile is not None else self._global_config.text_template.default_user_profile,
             user_configs = self._user_config.model_dump(exclude_none=True),
+            load_directive = load_prompt_directive,
+            directives = lambda base_type: self._load_prompt_directive_from_config(user_id, base_type),
+            directive_ids = lambda base_type: self._prompt_directive_from_config(base_type),
             json_loads = json.loads,
             json_dumps = json.dumps,
             **kwargs
         )
+    
+    async def _load_prompt_directive_from_config(self, user_id: str, base_type: list[str]):
+        directives = load_prompt_directive_from_config(
+            base_type,
+            self._user_config,
+            self._global_config
+        )
+        async for directive in directives:
+            yield await self.render_ex(
+                text = directive,
+                user_id = user_id,
+            )
+    
+    def _prompt_directive_from_config(self, base_type: list[str]):
+        directives = prompt_directive_from_config(
+            base_type,
+            self._user_config,
+            self._global_config
+        )
+        for type, directive in directives:
+            yield type, directive

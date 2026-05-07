@@ -10,7 +10,7 @@ from uuid import UUID
 from httpx import AsyncClient
 from loguru import logger
 
-from ..http_response import Response
+from ...http_response import Response
 from .responses import *
 from .exceptions import *
 

@@ -1,4 +1,4 @@
-from ._core import Core
+from .core import Core
 from ._info import (
     __version__,
     __author__,

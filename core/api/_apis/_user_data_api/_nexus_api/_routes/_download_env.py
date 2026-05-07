@@ -3,7 +3,7 @@ from fastapi.responses import ORJSONResponse
 from ......server import Server
 from .._router import nexus_router
 from ..._user_data_type import UserDataType, get_manager
-from ......nexus_client import InvalidUUIDError
+from ......clients.nexus_client import InvalidUUIDError
 from .._models import DownloadRequest, DownloadResponse
 from .._models import EnvironmentModel
 

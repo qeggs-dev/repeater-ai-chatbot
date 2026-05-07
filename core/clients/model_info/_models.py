@@ -1,5 +1,5 @@
 from pydantic import BaseModel, ConfigDict, Field
-from ..auxiliary.http import ClientLimits, ClientTimeout
+from ...auxiliary.http import ClientLimits, ClientTimeout
 from .models import ModelAPIData
 
 class SafeModelInfo(BaseModel):

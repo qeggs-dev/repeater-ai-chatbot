@@ -19,7 +19,7 @@ from loguru import logger
 # ==== 自定义库 ==== #
 from ..auxiliary.time import print_init_runtime
 from ..admin_api_key_manager import AdminKeyManager
-from .._core import Core
+from ..core import Core
 from ..global_config_manager import ConfigManager
 from ..logger_init import logger_init
 from ._lifespan import Lifespan

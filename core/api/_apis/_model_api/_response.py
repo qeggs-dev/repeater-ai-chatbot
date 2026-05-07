@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from ....model_info import SafeModelInfo
+from ....clients.model_info import SafeModelInfo
 
 class ResponseModel(BaseModel):
     """

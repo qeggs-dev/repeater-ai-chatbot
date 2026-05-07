@@ -44,6 +44,7 @@ class UserConfigs(BaseModel):
     save_new_only: bool | None = None
     save_text_only: bool | None = None
     make_multimodal_message: bool | None = None
+    prompt_directives: dict[str, list[str]] | None = None
 
     user_name: str | None = None
     user_profile: str | None = None
