@@ -102,7 +102,7 @@ def make_request(
     )
 
     # 设置请求对象的参数信息
-    request.user_name = user_info.nickname
+    request.user_name = user_info.display_username()
     if configs.remove_reasoning_prompt is not None:
         request.remove_reasoning_prompt = configs.remove_reasoning_prompt
     else:
