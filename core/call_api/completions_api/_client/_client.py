@@ -386,7 +386,13 @@ class ClientBase(ABC):
         if response.stream:
             fs_logger.info(
                 "Average Generation Rate: {avg_gen_rate:.2f}/s",
-                avg_gen_rate = response.token_usage.completion_tokens / ((response.request_log.stream_processing_end_time - response.request_log.stream_processing_start_time) / 1e9)
+                avg_gen_rate = response.token_usage.completion_tokens / 
+                    (
+                        (
+                            response.request_log.stream_processing_end_time.monotonic -
+                            response.request_log.stream_processing_start_time.monotonic
+                        ) / 1e9
+                    )
             )
 
         fs_logger.info("============= Content ==============")
