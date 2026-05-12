@@ -2,7 +2,7 @@ import asyncio
 
 from ._router import template_router
 from fastapi.responses import PlainTextResponse
-from ....server import Server
+from ....server import RepeaterMain
 from ....global_config_manager import ConfigManager as Global_Config_Manager
 from ....user_config_manager import ConfigManager
 from ._requests import ExpandVariableRequest
@@ -23,10 +23,13 @@ async def template(user_id: str, request: ExpandVariableRequest):
     # 初始化加载器
     config_loader = ConfigManager()
 
+    # 获取服务器实例
+    server = RepeaterMain.get_now_server()
+
     # 获取用户配置
     config = await config_loader.load(user_id=user_id)
 
-    template_parser = await Server.core.get_template_parser(
+    template_parser = await server.core.get_template_parser(
         user_config = config,
         global_config = Global_Config_Manager.get_configs(),
     )
