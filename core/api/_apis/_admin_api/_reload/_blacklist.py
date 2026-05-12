@@ -1,5 +1,5 @@
 import asyncio
-from .....server import Server
+from .....server import RepeaterMain
 from .....special_exception import HTTPException
 from fastapi import (
     Header
@@ -20,5 +20,5 @@ async def reload_blacklist_api():
     :return: JSON response
     """
     logger.info("Reloading blacklist", user_id="[Admin API]")
-    await Server.core.load_blacklist()
+    await RepeaterMain.get_now_server().core.load_blacklist()
     return ORJSONResponse({"detail": "Blacklist reloaded"})

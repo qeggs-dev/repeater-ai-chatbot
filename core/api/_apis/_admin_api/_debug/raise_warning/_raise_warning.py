@@ -1,9 +1,5 @@
 import warnings
-from ......server import Server
 from ......special_exception import HTTPException
-from fastapi import (
-    Header
-)
 from fastapi.responses import ORJSONResponse
 from ._warnings import WARNINGS
 from ._request import RaiseWarningRequest
