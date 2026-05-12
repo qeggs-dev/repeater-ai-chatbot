@@ -1,4 +1,4 @@
-from .....server import Server
+from ...._root import root_router
 from ._router import nexus_router
 
-Server.app.include_router(nexus_router)
+root_router.include_router(nexus_router)
