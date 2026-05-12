@@ -1,5 +1,5 @@
 from enum import StrEnum
-from ....server import Server
+from ....server import RepeaterMain
 from ....data_manager import UserDataManager
 
 class UserDataType(StrEnum):
@@ -8,12 +8,15 @@ class UserDataType(StrEnum):
     CONFIG = "config"
 
 def get_manager(data_type: UserDataType) -> UserDataManager:
+    server = RepeaterMain.get_now_server()
+    runtime = server.core.runtime
+    
     match data_type:
         case UserDataType.CONTEXT:
-            return Server.core.runtime.context_manager
+            return runtime.context_manager
         case UserDataType.PROMPT:
-            return Server.core.runtime.prompt_manager
+            return runtime.prompt_manager
         case UserDataType.CONFIG:
-            return Server.core.runtime.user_config_manager
+            return runtime.user_config_manager
     
     raise ValueError(f"Invalid data type: {data_type}")
