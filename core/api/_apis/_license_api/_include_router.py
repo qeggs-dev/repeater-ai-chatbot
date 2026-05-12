@@ -1,4 +1,4 @@
-from ....server import Server
+from .._root import root_router
 from ._router import license_router
 
-Server.app.include_router(license_router)
+root_router.include_router(license_router)
