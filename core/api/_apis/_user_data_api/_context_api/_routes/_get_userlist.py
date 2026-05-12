@@ -1,4 +1,4 @@
-from ......server import Server
+from ......server import RepeaterMain
 from .._router import context_router
 from fastapi.responses import (
     ORJSONResponse
@@ -13,8 +13,11 @@ async def get_context_userlist():
     Returns:
         ORJSONResponse: A ORJSONResponse containing a list of user IDs
     """
+    server = RepeaterMain.get_now_server()
+    runtime = server.core.runtime
+
     # 从chat.context_manager中获取所有用户ID
-    userid_list = await Server.core.runtime.context_manager.get_all_user_id()
+    userid_list = await runtime.context_manager.get_all_user_id()
 
     logger.info(f"Get Context userlist")
 

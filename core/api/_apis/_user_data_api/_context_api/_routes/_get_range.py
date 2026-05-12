@@ -1,4 +1,4 @@
-from ......server import Server
+from ......server import RepeaterMain
 from .._router import context_router
 from ......context import (
     ContentUnit
@@ -22,7 +22,9 @@ async def get_part_of_context(user_id: str, begin: int | float, end: int | float
     Returns:
         ORJSONResponse: A response indicating the success or failure of the operation.
     """
-    context_loader = Server.core.get_context_loader()
+    server = RepeaterMain.get_now_server()
+
+    context_loader = server.core.get_context_loader()
     context = await context_loader.load_context(user_id)
     
     time_range = context.time_range(begin, end)
