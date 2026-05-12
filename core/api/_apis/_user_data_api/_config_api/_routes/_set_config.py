@@ -1,4 +1,4 @@
-from ......server import Server
+from ......server import RepeaterMain
 from .._router import config_router
 from fastapi.responses import (
     ORJSONResponse,
@@ -27,7 +27,10 @@ async def set_config(user_id: str, request: UserConfigs):
     Returns:
         ORJSONResponse: User Config Data
     """
-    await Server.core.runtime.user_config_manager.save(user_id=user_id, data=request)
+    server = RepeaterMain.get_now_server()
+    runtime = server.core.runtime
+
+    await runtime.user_config_manager.save(user_id=user_id, data=request)
     logger.info(
         "Set user config: \n{config}",
         user_id = user_id,
@@ -75,8 +78,11 @@ async def set_config_field(user_id: str, key: str, request: SetConfigRequest):
         case _:
             raise HTTPException(status_code=400, detail="Invalid type.")
     
+    server = RepeaterMain.get_now_server()
+    runtime = server.core.runtime
+    
     # 读取配置
-    config = await Server.core.runtime.user_config_manager.load(user_id=user_id)
+    config = await runtime.user_config_manager.load(user_id=user_id)
     
     # 更新配置
     if key in type(config).model_fields.keys():
@@ -92,7 +98,7 @@ async def set_config_field(user_id: str, key: str, request: SetConfigRequest):
         raise HTTPException(400, "Invalid config key")
 
     # 保存配置
-    await Server.core.runtime.user_config_manager.save(user_id=user_id, data=config)
+    await runtime.user_config_manager.save(user_id=user_id, data=config)
     
     logger.info(
         "Set user config {key}={value}(type:{value_type})",
