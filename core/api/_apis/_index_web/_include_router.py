@@ -1,4 +1,4 @@
-from ....server import Server
+from .._root import root_router
 from ._router import web_router
 
-Server.app.include_router(web_router)
+root_router.include_router(web_router)
