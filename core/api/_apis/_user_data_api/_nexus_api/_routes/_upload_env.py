@@ -14,7 +14,7 @@ async def upload_env_to_nexus(user_id: str, request: UploadRequest):
     config_manager = get_manager(UserDataType.CONFIG)
     
     server = RepeaterMain.get_now_server()
-    runtime = server.core.runtime
+    runtime = server.runtime
 
     data = EnvironmentModel(
         context = await context_manager.load(user_id = user_id),

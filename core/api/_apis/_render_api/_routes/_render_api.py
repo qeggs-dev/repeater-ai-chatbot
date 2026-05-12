@@ -57,12 +57,12 @@ async def render(
     server = RepeaterMain.get_now_server()
     
     # 获取用户配置
-    config = await server.core.runtime.user_config_manager.load(user_id = user_id)
+    config = await server.runtime.user_config_manager.load(user_id = user_id)
         
     style_name, style_url = await get_style(
         request = request,
         user_configs = config,
-        static_resources_client = server.core.runtime.static_resources_client,
+        static_resources_client = server.runtime.static_resources_client,
     )
     
     if not request.image_expiry_time:
@@ -107,11 +107,11 @@ async def render(
         html_template_name = request.html_template
 
     html_template_file = html_template_dir / f"{html_template_name}{html_template_suffix}"
-    html_template = await server.core.runtime.static_resources_client.get_text(
+    html_template = await server.runtime.static_resources_client.get_text(
         html_template_file,
         text_encoding = html_template_encoding
     )
-    html_template_url = server.core.runtime.static_resources_client.base_url.join(html_template_file)
+    html_template_url = server.runtime.static_resources_client.base_url.join(html_template_file)
     
     end_of_preprocessing = time.perf_counter_ns()
 
@@ -139,7 +139,7 @@ async def render(
     end_of_md_to_html = time.perf_counter_ns()
 
     # 生成图片
-    response = await server.core.runtime.html_render_client.render(html)
+    response = await server.runtime.html_render_client.render(html)
     result = response.get_data()
     if result is None:
         raise HTTPException(status_code=500, detail="The response data could not be obtained correctly.")

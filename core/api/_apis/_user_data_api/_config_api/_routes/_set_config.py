@@ -28,7 +28,7 @@ async def set_config(user_id: str, request: UserConfigs):
         ORJSONResponse: User Config Data
     """
     server = RepeaterMain.get_now_server()
-    runtime = server.core.runtime
+    runtime = server.runtime
 
     await runtime.user_config_manager.save(user_id=user_id, data=request)
     logger.info(
@@ -79,7 +79,7 @@ async def set_config_field(user_id: str, key: str, request: SetConfigRequest):
             raise HTTPException(status_code=400, detail="Invalid type.")
     
     server = RepeaterMain.get_now_server()
-    runtime = server.core.runtime
+    runtime = server.runtime
     
     # 读取配置
     config = await runtime.user_config_manager.load(user_id=user_id)

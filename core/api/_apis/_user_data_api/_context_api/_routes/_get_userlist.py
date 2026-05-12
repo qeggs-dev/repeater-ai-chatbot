@@ -14,7 +14,7 @@ async def get_context_userlist():
         ORJSONResponse: A ORJSONResponse containing a list of user IDs
     """
     server = RepeaterMain.get_now_server()
-    runtime = server.core.runtime
+    runtime = server.runtime
 
     # 从chat.context_manager中获取所有用户ID
     userid_list = await runtime.context_manager.get_all_user_id()

@@ -20,7 +20,7 @@ async def set_prompt(user_id: str, prompt: str = Form(...)):
         PlainTextResponse: Success message
     """
     server = RepeaterMain.get_now_server()
-    runtime = server.core.runtime
+    runtime = server.runtime
 
     # 设置用户ID为user_id的提示词为prompt
     await runtime.prompt_manager.save(

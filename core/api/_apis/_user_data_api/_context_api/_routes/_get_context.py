@@ -18,7 +18,7 @@ async def get_context(user_id: str):
         ORJSONResponse: User context
     """
     server = RepeaterMain.get_now_server()
-    runtime = server.core.runtime
+    runtime = server.runtime
 
     # 从chat.context_manager中加载用户ID为user_id的上下文
     context_loader = server.core.get_context_loader()

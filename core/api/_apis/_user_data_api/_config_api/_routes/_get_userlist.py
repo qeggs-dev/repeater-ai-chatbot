@@ -16,7 +16,7 @@ async def get_config_userlist():
     server = RepeaterMain.get_now_server()
 
     # 获取所有用户ID
-    userid_list = await server.core.runtime.user_config_manager.get_all_user_id()
+    userid_list = await server.runtime.user_config_manager.get_all_user_id()
 
     logger.info(f"Get user config userlist")
 

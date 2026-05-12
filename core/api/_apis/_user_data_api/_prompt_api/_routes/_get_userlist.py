@@ -14,7 +14,7 @@ async def get_prompt_userlist():
         ORJSONResponse: User ID list
     """
     server = RepeaterMain.get_now_server()
-    runtime = server.core.runtime
+    runtime = server.runtime
 
     # 获取所有用户ID
     userid_list = await runtime.prompt_manager.get_all_user_id()

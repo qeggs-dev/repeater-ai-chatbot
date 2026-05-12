@@ -24,8 +24,8 @@ async def get_userdata_file(user_id: str):
     buffer = BytesIO()
     server = RepeaterMain.get_now_server()
     context_loader = server.core.get_context_loader()
-    prompt_manager = server.core.runtime.prompt_manager
-    config_manager = server.core.runtime.user_config_manager
+    prompt_manager = server.runtime.prompt_manager
+    config_manager = server.runtime.user_config_manager
     
     await package_user_space(
         user_id = user_id,

@@ -8,12 +8,12 @@ async def get_requirement_license(requirement_name: str):
     Get license information
     """
     server = RepeaterMain.get_now_server()
-    if requirement_name not in server.core.runtime.licenses:
+    if requirement_name not in server.runtime.licenses:
         return PlainTextResponse(
             "Requirement name not found",
             status_code=404
         )
             
     return ORJSONResponse(
-        await server.core.runtime.licenses.get_requirement_license(requirement_name)
+        await server.runtime.licenses.get_requirement_license(requirement_name)
     )

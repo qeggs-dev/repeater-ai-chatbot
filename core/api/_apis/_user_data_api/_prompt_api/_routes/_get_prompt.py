@@ -18,7 +18,7 @@ async def get_prompt(user_id: str):
         PlainTextResponse: User's prompt
     """
     server = RepeaterMain.get_now_server()
-    runtime = server.core.runtime
+    runtime = server.runtime
 
     # 获取用户ID为user_id的提示词
     prompt = await runtime.prompt_manager.load(user_id = user_id)

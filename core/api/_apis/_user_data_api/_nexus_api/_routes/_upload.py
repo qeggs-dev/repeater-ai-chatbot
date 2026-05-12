@@ -11,7 +11,7 @@ from .._models import UploadRequest, UploadResponse
 async def upload_to_nexus(user_id: str, user_data_type: UserDataType, request: UploadRequest):
     manager = get_manager(user_data_type)
     server = RepeaterMain.get_now_server()
-    runtime = server.core.runtime
+    runtime = server.runtime
     data = await manager.load(user_id = user_id)
     if isinstance(data, BaseModel):
         data = data.model_dump(exclude_none = True)

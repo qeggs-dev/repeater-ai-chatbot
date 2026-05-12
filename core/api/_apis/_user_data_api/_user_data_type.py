@@ -9,8 +9,8 @@ class UserDataType(StrEnum):
 
 def get_manager(data_type: UserDataType) -> UserDataManager:
     server = RepeaterMain.get_now_server()
-    runtime = server.core.runtime
-    
+    runtime = server.runtime
+
     match data_type:
         case UserDataType.CONTEXT:
             return runtime.context_manager

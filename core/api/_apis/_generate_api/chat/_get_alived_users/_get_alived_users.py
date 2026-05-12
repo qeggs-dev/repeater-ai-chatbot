@@ -8,7 +8,7 @@ from .._router import chat_router
 @chat_router.get("/alived_users")
 async def get_alived_users_api():
     server = RepeaterMain.get_now_server()
-    ids = server.core.runtime.content_buffers_pool.ids
+    ids = server.runtime.content_buffers_pool.ids
     if len(ids) == 0:
         return ORJSONResponse(
             content=TasksIDResponse(
@@ -19,7 +19,7 @@ async def get_alived_users_api():
     else:
         users: dict[str, UserInfo] = {}
         for id in ids:
-            buffer = await server.core.runtime.content_buffers_pool.get(id)
+            buffer = await server.runtime.content_buffers_pool.get(id)
             users[id] = UserInfo(
                 generated_length=len(buffer)
             )

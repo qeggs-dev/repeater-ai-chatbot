@@ -19,7 +19,7 @@ async def render_prompt(user_id: str):
         PlainTextResponse: Rendered prompt
     """
     server = RepeaterMain.get_now_server()
-    runtime = server.core.runtime
+    runtime = server.runtime
     context_loader = server.core.get_context_loader()
     prompt = await context_loader.load_prompt(
         user_id = user_id,

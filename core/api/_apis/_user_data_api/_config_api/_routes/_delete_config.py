@@ -34,7 +34,7 @@ async def delete_config_field(user_id: str, key: str = Form(...)):
         ORJSONResponse: New config content
     """
     server = RepeaterMain.get_now_server()
-    runtime = server.core.runtime
+    runtime = server.runtime
 
     # 读取配置
     config = await runtime.user_config_manager.load(user_id=user_id)

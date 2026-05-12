@@ -9,5 +9,5 @@ async def get_requirement_list():
     """
     server = RepeaterMain.get_now_server()
     return ORJSONResponse(
-        server.core.runtime.licenses.get_requirements_list(),
+        server.runtime.licenses.get_requirements_list(),
     )

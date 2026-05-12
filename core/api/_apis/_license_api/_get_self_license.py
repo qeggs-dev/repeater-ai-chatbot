@@ -9,5 +9,5 @@ async def get_license():
     """
     server = RepeaterMain.get_now_server()
     return ORJSONResponse(
-        await server.core.runtime.licenses.get_self_license(),
+        await server.runtime.licenses.get_self_license(),
     )

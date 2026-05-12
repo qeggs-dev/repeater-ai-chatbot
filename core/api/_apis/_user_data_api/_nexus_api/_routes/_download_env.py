@@ -14,7 +14,7 @@ async def download_env_from_nexus(user_id: str, request: DownloadRequest):
     config_manager = get_manager(UserDataType.CONFIG)
     
     server = RepeaterMain.get_now_server()
-    runtime = server.core.runtime
+    runtime = server.runtime
     
     try:
         response = await runtime.nexus_client.download("repeater.environment", user_id, "content")

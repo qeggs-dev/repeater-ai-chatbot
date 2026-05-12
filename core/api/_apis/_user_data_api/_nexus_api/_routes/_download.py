@@ -11,7 +11,7 @@ async def download_from_nexus(user_id: str, user_data_type: UserDataType, reques
     manager = get_manager(user_data_type)
 
     server = RepeaterMain.get_now_server()
-    runtime = server.core.runtime
+    runtime = server.runtime
 
     try:
         response = await runtime.nexus_client.download(f"repeater.{user_data_type.value}", request.id, "content")
