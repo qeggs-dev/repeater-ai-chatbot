@@ -44,9 +44,6 @@ class StreamingResponseGenerationLayer:
         # 创建响应对象
         self.response = runtime.response
 
-        # 创建调用日志
-        self.response.request_log = RequestLog()
-
         # 设置用户ID
         self.user_id = user_id
 
