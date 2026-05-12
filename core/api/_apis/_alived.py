@@ -1,6 +1,6 @@
-from ...server import Server
+from ._root import root_router
 from fastapi.responses import PlainTextResponse
 
-@Server.app.get("/alived", tags=["alived_check"])
+@root_router.get("/alived", tags=["alived_check"])
 def alived():
     return PlainTextResponse("OK")

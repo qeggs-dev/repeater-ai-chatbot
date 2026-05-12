@@ -1,5 +1,5 @@
-from ...server import Server
 from fastapi import APIRouter
+from ._root import root_router
 from ..._info import __version__ as __core_version__
 from fastapi.responses import (
     ORJSONResponse,
@@ -32,4 +32,4 @@ async def module_version(module: str):
             status_code = 404
         )
 
-Server.app.include_router(version_router)
+root_router.include_router(version_router)
