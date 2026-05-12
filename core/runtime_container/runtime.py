@@ -1,6 +1,7 @@
 from __future__ import annotations
 
 # ==== 标准库 ==== #
+import signal
 from pathlib import Path
 
 # ==== 第三方库 ==== #
@@ -34,6 +35,7 @@ from ..status_map import StatusMap
 from ..pools.awaitable_pool import TaskPool
 from ..pools.openai_pool import OpenAIPool
 from ..auxiliary.http import get_ssl_context
+from ..signal_listener import SignalListener
 
 class RepeaterRuntime:
     _env = Env()
@@ -137,3 +139,8 @@ class RepeaterRuntime:
     def init_licenses_data(self):
         self.licenses = LicenseLoader(ConfigManager.get_configs().licenses)
         self.licenses.scan_licenses()
+    
+    @print_init_runtime("Signal Listener")
+    def init_signal_listener(self):
+        self.signal_listener = SignalListener()
+        self.signal_listener.register_signal_handler(signal.SIGINT, signal.SIGTERM)
