@@ -241,8 +241,8 @@ class ClientBase(ABC):
 
         requests_time = response.request_log.request_end_time.monotonic - response.request_log.request_start_time.monotonic
         fs_logger.info(
-            "API Request Time: {requests_time:.2f}s({format_time_duration})",
-            requests_time = requests_time / 1e9,
+            "API Request Time: {requests_time:.2f}ms({format_time_duration})",
+            requests_time = requests_time / 1e6,
             format_time_duration = format_time_duration_ns(requests_time, use_abbreviation=True)
         )
 
@@ -385,7 +385,7 @@ class ClientBase(ABC):
             )
         if response.stream:
             fs_logger.info(
-                "Average Generation Rate: {avg_gen_rate:.2f} /s",
+                "Average Generation Rate: {avg_gen_rate:.2f}/s",
                 avg_gen_rate = response.token_usage.completion_tokens / ((response.request_log.stream_processing_end_time - response.request_log.stream_processing_start_time) / 1e9)
             )
 
