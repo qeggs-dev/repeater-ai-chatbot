@@ -24,8 +24,11 @@ from ..logger_init import logger_init
 from ._lifespan import Lifespan
 from .._info import __version__
 from ..runtime_container import RuntimeContainer
+from ._http_middleware import middleware_factory
 
 class Server:
+    _logger_inited: ClassVar[bool] = False
+    _instance: ClassVar[Server | None] = None
     
     def __init__(
         self,
@@ -39,13 +42,12 @@ class Server:
             on_shutdown = shutdown,
             version = __version__
         )
+        self.init_middleware()
+        self.runtime = RuntimeContainer.get_runtime()
         self.server: uvicorn.Server | None = None
         self.keyboard_interrupt_callback: Callable[[], Awaitable[None] | None] = lambda: logger.info("Keyboard interrupt")
         self.admin_key_manager: AdminKeyManager | None = None
-    
-    core: ClassVar[Core | None] = None
-    _logger_inited: ClassVar[bool] = False
-    _instance: ClassVar[Server | None] = None
+        self.core: Core | None = None
 
     def __new__(cls):
         if cls._instance is None:
@@ -74,6 +76,9 @@ class Server:
         self.init_core()
         self.init_admin_key_manager()
     
+    def init_middleware(self):
+        middleware_factory(self.app)
+    
     @classmethod
     def init_logger(cls):
         # 初始化日志
@@ -88,10 +93,11 @@ class Server:
     def init_runtime(cls):
         RuntimeContainer.init_runtime()
     
-    @classmethod
     @print_init_runtime("Core")
-    def init_core(cls):
-        cls.core = Core(runtime = RuntimeContainer.get_runtime())
+    def init_core(self):
+        self.core = Core(
+            runtime = self.runtime
+        )
 
     @print_init_runtime("Admin Key Manager")
     def init_admin_key_manager(self):
