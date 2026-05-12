@@ -16,14 +16,9 @@ from ..clients.model_info import (
 )
 
 async def get_model(
-    configs: UserConfigs,
-    global_configs: GlobalConfigs,
+    model_uid: str | list[str] | None,
     model_info_client: ModelsClient,
 ) -> ModelInfo:
-    # 获取默认模型uid
-    model_uid = configs.model_uid
-    if not model_uid:
-        model_uid = global_configs.model_api.default_model_uid
     
     # 如果有多个，则随机选择一个
     if isinstance(model_uid, list):

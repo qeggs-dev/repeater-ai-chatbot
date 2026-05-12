@@ -343,9 +343,13 @@ class Core:
                         
                         # region [Getting model]
                         with self.runtime.task_status_map.enter(user_id, "Getting model"):
+                            # 获取默认模型uid
+                            if not model_uid:
+                                model_uid = configs.model_uid
+                                if not model_uid:
+                                    model_uid = ConfigManager.get_configs().model_api.default_model_uid
                             model = await get_model(
-                                configs = configs,
-                                global_configs = ConfigManager.get_configs(),
+                                model_uid = model_uid,
                                 model_info_client = self.runtime.model_info_client
                             )
                         # endregion
