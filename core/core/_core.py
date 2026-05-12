@@ -478,7 +478,10 @@ class Core:
 
                         # region [Pre-filled Model Response]
                         with self.runtime.task_status_map.enter(user_id, "Pre-filled Model Response"):
-                            model_response = ModelResponse()
+                            model_response = ModelResponse(
+                                user_id = user_id,
+                                stream = request.stream
+                            )
                             model_response.request_log.user_id = user_id
                             model_response.request_log.task_start_time = task_start_time
                             model_response.request_log.prepare_start_time = prepare_start_time
