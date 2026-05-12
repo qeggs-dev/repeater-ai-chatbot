@@ -5,7 +5,10 @@ from ._info import (
     __license__,
     __copyright__,
 )
-from .server import Server
+from .server import (
+    Server,
+    RepeaterMain
+)
 from .api import *
 
 __all__ = [
@@ -15,6 +18,7 @@ __all__ = [
     "__copyright__",
     "Core",
     "Server",
+    "RepeaterMain",
     "admin_api_key_manager",
     "api",
     "assist_struct",
