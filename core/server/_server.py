@@ -26,20 +26,24 @@ from .._info import __version__
 from ..runtime_container import RuntimeContainer
 
 class Server:
-    startup: ClassVar[Sequence[Callable[[], Any]] | None] = None
-    shutdown: ClassVar[Sequence[Callable[[], Any]]] | None = None
     
-    app: ClassVar[FastAPI] = FastAPI(
-        title = "RepeaterChatBackend",
-        lifespan = Lifespan,
-        on_startup = startup,
-        on_shutdown = shutdown,
-        version = __version__
-    )
+    def __init__(
+        self,
+        startup: Sequence[Callable[[], Any]] | None = None,
+        shutdown: Sequence[Callable[[], Any]] | None = None
+    ) -> None:
+        self.app: FastAPI = FastAPI(
+            title = "Repeater Chat Backend",
+            lifespan = Lifespan,
+            on_startup = startup,
+            on_shutdown = shutdown,
+            version = __version__
+        )
+        self.server: uvicorn.Server | None = None
+        self.keyboard_interrupt_callback: Callable[[], Awaitable[None] | None] = lambda: logger.info("Keyboard interrupt")
+        self.admin_key_manager: AdminKeyManager | None = None
+    
     core: ClassVar[Core | None] = None
-    server: ClassVar[uvicorn.Server | None] = None
-    keyboard_interrupt_callback: ClassVar[Callable[[], Awaitable[None] | None]] = lambda: logger.info("Keyboard interrupt")
-    admin_key_manager: ClassVar[AdminKeyManager | None] = None
     _logger_inited: ClassVar[bool] = False
     _instance: ClassVar[Server | None] = None
 
@@ -52,25 +56,23 @@ class Server:
     def logger_inited(self):
         return self._logger_inited
 
-    @classmethod
-    def inited(cls):
-        if not cls._logger_inited:
+    def inited(self):
+        if not self._logger_inited:
             return False
         check_list: list[Any | None] = [
-            cls.core,
-            cls.server,
-            cls.admin_key_manager,
+            self.core,
+            self.server,
+            self.admin_key_manager,
         ]
         for item in check_list:
             if item is None:
                 return False
         return True
 
-    @classmethod
-    def init_all(cls):
-        cls.init_runtime()
-        cls.init_core()
-        cls.init_admin_key_manager()
+    def init_all(self):
+        self.init_runtime()
+        self.init_core()
+        self.init_admin_key_manager()
     
     @classmethod
     def init_logger(cls):
@@ -91,25 +93,23 @@ class Server:
     def init_core(cls):
         cls.core = Core(runtime = RuntimeContainer.get_runtime())
 
-    @classmethod
     @print_init_runtime("Admin Key Manager")
-    def init_admin_key_manager(cls):
+    def init_admin_key_manager(self):
         # 生成或读取API Key
-        cls.admin_key_manager = AdminKeyManager()
+        self.admin_key_manager = AdminKeyManager()
     
-    @classmethod
     @print_init_runtime("Server")
     def init_server(
-        cls,
+        self,
         host: str,
         port: int,
         workers: int = 1,
         reload: bool = False
     ):
         # 初始化API
-        cls.server = uvicorn.Server(
+        self.server = uvicorn.Server(
             uvicorn.Config(
-                app = cls.app,
+                app = self.app,
                 host = host,
                 port = port,
                 workers = workers,
@@ -118,20 +118,17 @@ class Server:
             )
         )
 
-    @classmethod
-    async def run_server(
-        cls
-    ) -> None:
-        if not cls.inited():
+    async def run_server(self) -> None:
+        if not self.inited():
             raise RuntimeError("API not initialized")
         try:
-            await cls.server.serve()
+            await self.server.serve()
         except KeyboardInterrupt:
-            if cls.keyboard_interrupt_callback:
-                if inspect.iscoroutinefunction(cls.keyboard_interrupt_callback):
-                    await cls.keyboard_interrupt_callback()
+            if self.keyboard_interrupt_callback:
+                if inspect.iscoroutinefunction(self.keyboard_interrupt_callback):
+                    await self.keyboard_interrupt_callback()
                 else:
-                    cls.keyboard_interrupt_callback()
-            await cls.server.shutdown()
+                    self.keyboard_interrupt_callback()
+            await self.server.shutdown()
         except Exception as e:
             logger.error(f"Server error: {e}")
