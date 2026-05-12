@@ -15,4 +15,4 @@ from ._version import (
     module_version
 )
 
-from .._root import root_router
+from ._root import root_router
