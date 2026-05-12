@@ -1,7 +1,6 @@
 # ==== 标准库 ==== #
 from __future__ import annotations
 import inspect
-import time
 
 from typing import (
     ClassVar,
@@ -39,7 +38,7 @@ class Server:
     )
     core: ClassVar[Core | None] = None
     server: ClassVar[uvicorn.Server | None] = None
-    keyboard_interrupt_callback: ClassVar[Callable[[], Awaitable[None] | None]] = None
+    keyboard_interrupt_callback: ClassVar[Callable[[], Awaitable[None] | None]] = lambda: logger.info("Keyboard interrupt")
     admin_key_manager: ClassVar[AdminKeyManager | None] = None
     _logger_inited: ClassVar[bool] = False
     _instance: ClassVar[Server | None] = None
