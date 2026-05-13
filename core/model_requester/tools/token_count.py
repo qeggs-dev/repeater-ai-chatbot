@@ -14,6 +14,7 @@ class TokenCount(ToolCallPacakage):
         output_tokens: int
         cache_hit_count: int
         cache_miss_count: int
+        cache_hit_ratio: float
 
     name = "token_count"
     document = "Calculates the total Token consumption for the current user."
@@ -44,5 +45,8 @@ class TokenCount(ToolCallPacakage):
         return self.Result(
             total_tokens = total_tokens,
             input_tokens = input_tokens,
-            output_tokens = output_tokens
+            output_tokens = output_tokens,
+            cache_hit_count = cache_hit_count,
+            cache_miss_count = cache_miss_count,
+            cache_hit_ratio = cache_hit_count / (cache_hit_count + cache_miss_count)
         )
