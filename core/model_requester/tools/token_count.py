@@ -12,6 +12,8 @@ class TokenCount(ToolCallPacakage):
         total_tokens: int
         input_tokens: int
         output_tokens: int
+        cache_hit_count: int
+        cache_miss_count: int
 
     name = "token_count"
     document = "Calculates the total Token consumption for the current user."
@@ -25,12 +27,19 @@ class TokenCount(ToolCallPacakage):
         total_tokens = 0
         input_tokens = 0
         output_tokens = 0
+        cache_hit_count = 0
+        cache_miss_count = 0
 
         async for request_log in request_logs:
             if request_log.user_id == self.user_id:
-                total_tokens += request_log.total_tokens
-                input_tokens += request_log.prompt_tokens
-                output_tokens += request_log.completion_tokens
+                total_token_count += request_log.total_tokens
+                input_token_count += request_log.prompt_tokens
+                output_token_count += request_log.completion_tokens
+                if request_log.cache_hit_count or request_log.cache_miss_count:
+                    cache_hit_count += request_log.cache_hit_count
+                    cache_miss_count += request_log.cache_miss_count
+                else:
+                    cache_miss_count += request_log.prompt_tokens
         
         return self.Result(
             total_tokens = total_tokens,
