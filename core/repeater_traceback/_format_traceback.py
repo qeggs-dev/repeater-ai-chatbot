@@ -4,6 +4,7 @@ import traceback
 
 from loguru import logger
 from datetime import datetime
+from uvicorn import Server
 from fastapi.responses import ORJSONResponse
 
 from ..special_exception import CriticalException, HTTPException
@@ -13,7 +14,7 @@ from ._save_error_traceback import save_error_traceback
 from ._error_output_model import ErrorResponse
 from ._traceback import TracebackHandler
 
-async def log_traceback(error: BaseException) -> ORJSONResponse:
+async def log_traceback(error: BaseException, server: Server) -> ORJSONResponse:
     error_time = time.time_ns()
 
     error_code = 500
@@ -85,8 +86,8 @@ async def log_traceback(error: BaseException) -> ORJSONResponse:
         if ConfigManager.get_configs().global_exception_handler.crash_exit:
             asyncio.create_task(
                 shutdown_server(
-                    error,
-                    send_signal = ConfigManager.get_configs().global_exception_handler.crash_exit_signal
+                    server = server,
+                    exception = error,
                 )
             )
         else:
