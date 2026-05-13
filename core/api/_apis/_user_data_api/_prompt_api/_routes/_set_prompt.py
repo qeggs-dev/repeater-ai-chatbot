@@ -1,4 +1,4 @@
-from ......server import RepeaterMain
+from ......repeater_main import RepeaterMain
 from .._router import prompt_router
 from fastapi import Form
 from fastapi.responses import (

@@ -1,4 +1,4 @@
-from .....server import RepeaterMain
+from .....repeater_main import RepeaterMain
 from fastapi.responses import (
     ORJSONResponse
 )

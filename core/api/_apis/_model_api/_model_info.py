@@ -1,4 +1,4 @@
-from ....server import RepeaterMain
+from ....repeater_main import RepeaterMain
 from ._router import models_router
 from fastapi.responses import ORJSONResponse
 from ....special_exception import HTTPException

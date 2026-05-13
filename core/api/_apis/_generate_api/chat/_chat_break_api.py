@@ -2,7 +2,7 @@ from fastapi.responses import (
     ORJSONResponse
 )
 from ._router import chat_router
-from .....server import RepeaterMain
+from .....repeater_main import RepeaterMain
 
 @chat_router.post("/break/{user_id}")
 async def chat_break_api(user_id: str):

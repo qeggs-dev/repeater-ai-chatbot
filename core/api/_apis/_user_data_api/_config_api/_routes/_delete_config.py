@@ -1,4 +1,4 @@
-from ......server import RepeaterMain
+from ......repeater_main import RepeaterMain
 from .._router import config_router
 from typing import Any
 from fastapi.responses import (

@@ -1,4 +1,4 @@
-from ....server import RepeaterMain
+from ....repeater_main import RepeaterMain
 from ._router import request_log_router
 import orjson
 from typing import AsyncIterator

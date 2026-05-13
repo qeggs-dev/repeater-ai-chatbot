@@ -1,7 +1,7 @@
 from fastapi.responses import ORJSONResponse
 from pydantic import BaseModel
 
-from ......server import RepeaterMain
+from ......repeater_main import RepeaterMain
 from .._router import nexus_router
 from ..._user_data_type import UserDataType, get_manager
 from ......clients.nexus_client import InvalidUUIDError

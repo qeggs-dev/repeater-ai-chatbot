@@ -1,5 +1,5 @@
 from fastapi import APIRouter, Depends, Request
-from ....server import RepeaterMain
+from ....repeater_main import RepeaterMain
 from ....special_exception import HTTPException
 
 def check_admin_api_key(request: Request):

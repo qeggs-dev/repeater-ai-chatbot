@@ -2,7 +2,7 @@ import time
 
 from loguru import logger
 from yarl import URL
-from .....server import RepeaterMain
+from .....repeater_main import RepeaterMain
 from .....markdown_to_html import (
     markdown_to_html,
 )

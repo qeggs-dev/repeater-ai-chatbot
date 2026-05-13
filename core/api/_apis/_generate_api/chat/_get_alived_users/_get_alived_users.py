@@ -1,7 +1,7 @@
 from fastapi.responses import (
     ORJSONResponse
 )
-from ......server import RepeaterMain
+from ......repeater_main import RepeaterMain
 from ._models import TasksIDResponse, UserInfo
 from .._router import chat_router
 

@@ -1,5 +1,5 @@
 from enum import StrEnum
-from ....server import RepeaterMain
+from ....repeater_main import RepeaterMain
 from ....data_manager import UserDataManager
 
 class UserDataType(StrEnum):

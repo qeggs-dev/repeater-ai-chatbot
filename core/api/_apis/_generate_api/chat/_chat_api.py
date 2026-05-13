@@ -9,7 +9,7 @@ from fastapi.responses import (
 from .....special_exception import (
     HTTPException
 )
-from .....server import RepeaterMain
+from .....repeater_main import RepeaterMain
 from .....assist_struct import Response
 from .....call_api.completions_api import Delta
 from ._router import chat_router

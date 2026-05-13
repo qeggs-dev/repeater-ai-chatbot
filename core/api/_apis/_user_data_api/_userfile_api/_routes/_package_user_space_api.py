@@ -1,5 +1,5 @@
 import asyncio
-from ......server import RepeaterMain
+from ......repeater_main import RepeaterMain
 from .._router import user_file_router
 from fastapi.responses import (
     StreamingResponse

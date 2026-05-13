@@ -1,4 +1,4 @@
-from ......server import RepeaterMain
+from ......repeater_main import RepeaterMain
 from ......global_config_manager import ConfigManager
 from .._router import prompt_router
 from fastapi.responses import (

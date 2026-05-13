@@ -1,5 +1,5 @@
 import asyncio
-from .....server import RepeaterMain
+from .....repeater_main import RepeaterMain
 from .....special_exception import HTTPException
 from fastapi import (
     Header
