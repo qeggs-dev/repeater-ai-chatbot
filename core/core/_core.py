@@ -213,9 +213,11 @@ class Core:
         user_info: RequestUserInfo | None = None,
     ) -> TemplateParser:
         if model is None:
+            model_uid = user_config.model_uid
+            if model_uid is None:
+                model_uid = global_config.model_api.default_model_uid
             model = await get_model(
-                configs = user_config,
-                global_configs = global_config,
+                model_uid = model_uid,
                 model_info_client = self.runtime.model_info_client,
             )
         
