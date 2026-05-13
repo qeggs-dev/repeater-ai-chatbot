@@ -1,6 +1,7 @@
 import ssl
 import httpx
 
+from urllib.parse import quote
 from yarl import URL
 from ...special_exception import HTTPException
 
@@ -36,7 +37,7 @@ class StaticResourcesClient:
         """Get a file from the server."""
         try:
             response = await self.client.get(
-                self.str_or_url(path)
+                quote(self.str_or_url(path))
             )
         except httpx.RequestError as e:
             raise HTTPException(detail = f"Get Static Resource Failed: {e}") from e
@@ -48,7 +49,7 @@ class StaticResourcesClient:
         """Get a text file from the server."""
         try:
             response = await self.client.get(
-                self.str_or_url(path),
+                quote(self.str_or_url(path)),
                 params = {
                     "text_encoding": text_encoding,
                 }
