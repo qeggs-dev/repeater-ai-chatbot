@@ -1,6 +1,7 @@
 import ssl
 import orjson
 
+from urllib.parse import quote
 from typing import (
     AsyncGenerator,
     Any,
@@ -42,7 +43,7 @@ class NexusClient:
             pool = pool
         )
         response = await self._client.post(
-            f"/api/{pool}/submit",
+            f"/api/{quote(pool)}/submit",
             json = {
                 "content": content,
                 "timeout": timeout
@@ -60,7 +61,7 @@ class NexusClient:
             pool = pool
         )
         response = await self._client.get(
-            f"/api/{pool}/resources/{self._check_uuid(resources_uuid)}/download/{data_id}"
+            f"/api/{quote(pool)}/resources/{self._check_uuid(resources_uuid)}/download/{quote(data_id)}"
         )
 
         return Response(
@@ -75,7 +76,7 @@ class NexusClient:
             pool = pool
         )
         response = await self._client.put(
-            f"/api/{pool}/resources/{self._check_uuid(resources_uuid)}/update",
+            f"/api/{quote(pool)}/resources/{self._check_uuid(resources_uuid)}/update",
             json = {
                 "content": content,
                 "timeout": timeout
@@ -92,7 +93,7 @@ class NexusClient:
             pool = pool
         )
         response = await self._client.get(
-            f"/api/{pool}/resources_list"
+            f"/api/{quote(pool)}/resources_list"
         )
         data = response.json()
         if not isinstance(data, list):
@@ -107,7 +108,7 @@ class NexusClient:
             pool = pool
         )
         response = await self._client.get(
-            f"/api/{pool}/resources_list/stream"
+            f"/api/{quote(pool)}/resources_list/stream"
         )
         async for line in response.aiter_lines():
             try:
@@ -135,7 +136,7 @@ class NexusClient:
             resource = resource
         )
         response = await self._client.get(
-            f"/api/{pool}/data_list/{resource}"
+            f"/api/{quote(pool)}/data_list/{quote(resource)}"
         )
         data = await response.json()
         if not isinstance(data, list):
@@ -151,7 +152,7 @@ class NexusClient:
             resource = resource
         )
         response = await self._client.get(
-            f"/api/{pool}/data_list/{resource}"
+            f"/api/{quote(pool)}/data_list/{quote(resource)}"
         )
         async for line in response.aiter_lines():
             data = orjson.loads(line)
@@ -169,7 +170,7 @@ class NexusClient:
             pool = pool
         )
         response = await self._client.delete(
-            f"/api/{pool}/resources/{self._check_uuid(resources_uuid)}/remove/resource"
+            f"/api/{quote(pool)}/resources/{self._check_uuid(resources_uuid)}/remove/resource"
         )
         return Response(
             response = response,
@@ -183,7 +184,7 @@ class NexusClient:
             pool = pool
         )
         response = await self._client.delete(
-            f"/api/{pool}/resources/{self._check_uuid(resources_uuid)}/remove/data/{data_id}"
+            f"/api/{quote(pool)}/resources/{self._check_uuid(resources_uuid)}/remove/data/{quote(data_id)}"
         )
         return Response(
             response = response,
