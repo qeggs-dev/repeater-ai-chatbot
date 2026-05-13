@@ -5,6 +5,7 @@ from .metaso import Metaso
 from .asteval_tool import Asteval
 from .get_models import GetModels
 from .call_model import CallModel
+from .token_count import TokenCount
 
 __all__ = [
     "HTTPRequests",
@@ -13,4 +14,5 @@ __all__ = [
     "Asteval",
     "GetModels",
     "CallModel",
+    "TokenCount",
 ]

@@ -1,0 +1,39 @@
+from ...context import ToolCallPacakage, CallType
+from ...runtime_container import RuntimeContainer
+from .._caller import ModelRequester
+from pydantic import BaseModel
+
+@ModelRequester.reg_global_package
+class TokenCount(ToolCallPacakage):
+    class Params(BaseModel):
+        pass
+
+    class Result(BaseModel):
+        total_tokens: int
+        input_tokens: int
+        output_tokens: int
+
+    name = "token_count"
+    document = "Calculates the total Token consumption for the current user."
+    call_type = CallType.ASYNC
+
+    async def call(self, args: Params):
+        runtime = RuntimeContainer.get_runtime()
+        request_log_manager = runtime.request_log
+        request_logs = request_log_manager.read_stream_request_log()
+
+        total_tokens = 0
+        input_tokens = 0
+        output_tokens = 0
+
+        async for request_log in request_logs:
+            if request_log.user_id == self.user_id:
+                total_tokens += request_log.total_tokens
+                input_tokens += request_log.prompt_tokens
+                output_tokens += request_log.completion_tokens
+        
+        return self.Result(
+            total_tokens = total_tokens,
+            input_tokens = input_tokens,
+            output_tokens = output_tokens
+        )
