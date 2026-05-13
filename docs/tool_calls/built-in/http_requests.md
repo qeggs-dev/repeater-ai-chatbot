@@ -4,6 +4,7 @@
 
 注册名：`http_requests`
 
+接受参数：
 ``` json
 {
   "base_url": "", // The base URL shared by all requests.

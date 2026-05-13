@@ -4,7 +4,7 @@
 
 注册名：`call_model`
 
-接受一个参数
+接受参数:
 ``` json
 {
   "model_uid": "", // Unique identifier used to locate and load the target model.
