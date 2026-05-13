@@ -1,4 +1,4 @@
-def main():
+def main(run_server: bool = True):
     while True:
         import time
         start_import_time = time.perf_counter_ns()
