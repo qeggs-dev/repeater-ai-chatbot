@@ -1,6 +1,7 @@
 # HTTP Requests Tool
 
 该工具用于发送 HTTP 请求
+如需访问内网需要配置 `tool_calls.allow_private_network_requests` 为 `true`
 
 注册名：`http_requests`
 
