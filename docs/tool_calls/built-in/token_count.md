@@ -11,6 +11,7 @@
   "input_tokens": 123, // The token count of the input. 
   "output_tokens": 123, // The token count of the output.
   "cache_hit_count": 0, // The number of cache hits.
-  "cache_miss_count": 123 // The number of cache misses.
+  "cache_miss_count": 123, // The number of cache misses.
+  "cache_hit_ratio": 0.0 // The ratio of cache hits.
 }
 ```
