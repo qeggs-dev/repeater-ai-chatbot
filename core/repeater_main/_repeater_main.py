@@ -10,18 +10,27 @@ from ..global_config_manager import (
     ConfigManager,
     GlobalConfigs,       
 )
-from ._server import Server
+from ..server import (
+    Server,
+    ServerIniter,
+)
 from .._info import __version__
 from ..requirements_version_checker import check_package_list
 from loguru import logger
+from ..repeater_traceback import WarningHandler
+
+# 初始化警告处理器
+warning_handler = WarningHandler()
+warning_handler.inject()
 
 class RepeaterMain:
     env = Env()
     env.read_env()
-    _now_server: ClassVar[Server] | None = None
+    _now_server: ClassVar[Server | None] = None
 
     def __init__(self):
         self.server = Server()
+        self.server_initer = ServerIniter(self.server)
 
     @classmethod
     def get_now_server(cls) -> Server:
@@ -72,12 +81,14 @@ class RepeaterMain:
         if reload:
             logger.info("Server will reload on code change")
         
-        self.server.init_server(
+        self.server_initer.init_server(
             host = host,
             port = port,
             workers = workers,
             reload = reload
         )
+
+        self.server_initer.init_middleware()
     
     def check_package(self, configs: GlobalConfigs):
         logger.info("Checking Packages...")
@@ -92,7 +103,7 @@ class RepeaterMain:
         )
     
     def init_logger(self):
-        self.server.init_logger()
+        self.server_initer.init_logger()
     
     def init_all(self, configs: GlobalConfigs):
         logger.info(f"Run With Python {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}")
@@ -102,7 +113,7 @@ class RepeaterMain:
             self.check_package(configs)
 
         start_init_resource_time = time.perf_counter_ns()
-        self.server.init_all()
+        self.server_initer.init_all()
         end_init_resource_time = time.perf_counter_ns()
 
         logger.info(
@@ -111,11 +122,11 @@ class RepeaterMain:
         )
     
     async def run_server(self):
-        self._now_server = self.server
+        RepeaterMain._now_server = self.server
         try:
             await self.server.run_server()
         finally:
-            self._now_server = None
+            RepeaterMain._now_server = None
 
     def run(self):
         logger.info("Server starting...")

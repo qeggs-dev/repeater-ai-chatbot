@@ -1,9 +1,9 @@
 from ._lifespan import Lifespan
 from ._server import Server
-from ._repeater_main import RepeaterMain
+from ._server_initer import ServerIniter
 
 __all__ = [
     "Lifespan",
     "Server",
-    "RepeaterMain"
+    "ServerIniter"
 ]
