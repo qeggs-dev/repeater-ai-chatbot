@@ -5,8 +5,13 @@ from ._info import (
     __license__,
     __copyright__,
 )
-from .server import Server
-from .api import *
+from .server import (
+    Server
+)
+from .repeater_main import (
+    RepeaterMain
+)
+from .api import root_router
 
 __all__ = [
     "__version__",
@@ -15,6 +20,8 @@ __all__ = [
     "__copyright__",
     "Core",
     "Server",
+    "RepeaterMain",
+    "root_router",
     "admin_api_key_manager",
     "api",
     "assist_struct",

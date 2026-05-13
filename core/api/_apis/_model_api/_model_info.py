@@ -1,4 +1,4 @@
-from ....server import Server
+from ....repeater_main import RepeaterMain
 from ._router import models_router
 from fastapi.responses import ORJSONResponse
 from ....special_exception import HTTPException
@@ -6,7 +6,8 @@ from ._response import ResponseModel
 
 @models_router.get("/{model_uid:path}")
 async def model_info(model_uid: str):
-    response = await Server.core.runtime.model_info_client.get_models(model_uid)
+    server = RepeaterMain.get_now_server()
+    response = await server.runtime.model_info_client.get_models(model_uid)
     if response.code == 200:
         model_info = response.get_data()
         if model_info is None:

@@ -1,4 +1,4 @@
-from ....server import Server
+from ....repeater_main import RepeaterMain
 from ._router import request_log_router
 import orjson
 from typing import AsyncIterator
@@ -16,7 +16,8 @@ async def get_request_log():
     Returns:
         ORJSONResponse: Filtered log object dictionary
     """
-    logs = await Server.core.runtime.request_log.read_request_log()
+    server = RepeaterMain.get_now_server()
+    logs = await server.runtime.request_log.read_request_log()
     return ORJSONResponse([log.model_dump() for log in logs])
 
 @request_log_router.get("/stream")
@@ -30,9 +31,10 @@ async def stream_request_log():
     Returns:
         StreamingResponse: Filtered log object dictionary
     """
+    server = RepeaterMain.get_now_server()
     async def generate_jsonl() -> AsyncIterator[bytes]:
         """生成JSONL格式的字节流"""
-        async for log in Server.core.runtime.request_log.read_stream_request_log():
+        async for log in server.runtime.request_log.read_stream_request_log():
             yield orjson.dumps(log.model_dump()) + b"\n"
 
     return StreamingResponse(

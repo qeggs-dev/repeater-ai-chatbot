@@ -1,4 +1,4 @@
-from ....server import Server
+from ....repeater_main import RepeaterMain
 from ._router import license_router
 from fastapi.responses import ORJSONResponse
 
@@ -7,6 +7,7 @@ async def get_license():
     """
     Get license information
     """
+    server = RepeaterMain.get_now_server()
     return ORJSONResponse(
-        await Server.core.runtime.licenses.get_self_license(),
+        await server.runtime.licenses.get_self_license(),
     )

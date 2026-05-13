@@ -1,9 +1,4 @@
-import ssl
 import asyncio
-from .....server import Server
-from .....special_exception import (
-    HTTPException
-)
 from fastapi import (
     Header
 )
@@ -15,7 +10,7 @@ from loguru import logger
 from .._admin_router import admin_router
 
 @admin_router.post("/configs/ssl")
-async def reload_configs_api(api_key: str = Header(..., alias="X-Admin-API-Key")):
+async def reload_configs_api():
     """
     Reload Project SSL configuration
 

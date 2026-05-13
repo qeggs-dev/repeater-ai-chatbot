@@ -132,27 +132,25 @@ class ClientBase(ABC):
         assert isinstance(request, Request), "request must be a Request object"
         assert isinstance(response, Response), "response must be a Response object"
 
-        logger.info("========== Fast Statistics =========", user_id = user_id)
-        logger.info("Generating statistics...", user_id = user_id)
-        logger.info("============= API INFO =============", user_id = user_id)
-        logger.info(
+        fs_logger = logger.bind(user_id = user_id)
+
+        fs_logger.info("========== Fast Statistics =========")
+        fs_logger.info("Generating statistics...")
+        fs_logger.info("============= API INFO =============")
+        fs_logger.info(
             "API_URL: {url}",
-            user_id = user_id,
             url = request.url,
         )
-        logger.info(
+        fs_logger.info(
             "Model: {model_id}",
-            user_id = user_id,
             model_id = request.model
         )
-        logger.info(
+        fs_logger.info(
             "UserName: {user_name}",
-            user_id = user_id,
             user_name = request.user_name
         )
-        logger.info(
+        fs_logger.info(
             "Chat Completion ID: {request_id}",
-            user_id = user_id,
             request_id = response.id
         )
         thinking_mode: str = "No Set"
@@ -161,144 +159,124 @@ class ClientBase(ABC):
                 thinking_mode = "Enabled"
             else:
                 thinking_mode = "Disabled"
-        logger.info(
+        fs_logger.info(
             "Thinking: {thinking}",
-            user_id = user_id,
             thinking = thinking_mode
         )
-        logger.info(
+        fs_logger.info(
             "Temperature: {temperature}",
-            user_id = user_id,
             temperature = request.temperature
         )
-        logger.info(
+        fs_logger.info(
             "Top P: {top_p}",
-            user_id = user_id,
             top_p = request.top_p
         )
-        logger.info(
+        fs_logger.info(
             "Frequency Penalty: {frequency_penalty}",
-            user_id = user_id,
             frequency_penalty = request.frequency_penalty
         )
-        logger.info(
+        fs_logger.info(
             "Presence Penalty: {presence_penalty}",
-            user_id = user_id,
             presence_penalty = request.presence_penalty
         )
-        logger.info(
+        fs_logger.info(
             "Max Tokens: {max_tokens}",
-            user_id = user_id,
             max_tokens = request.max_tokens
         )
-        logger.info(
+        fs_logger.info(
             "Max Completion Tokens: {max_completion_tokens}",
-            user_id = user_id,
             max_completion_tokens = request.max_completion_tokens
         )
         
-        logger.info("============= Response =============", user_id = user_id)
+        fs_logger.info("============= Response =============")
         if response.system_fingerprint:
-            logger.info(
+            fs_logger.info(
                 "System Fingerprint: {system_fingerprint}",
-                user_id = user_id,
                 system_fingerprint = response.system_fingerprint
             )
-        logger.info(
+        fs_logger.info(
             "Finish Reason: {finish_reason}",
-            user_id = user_id,
             finish_reason = response.finish_reason
         )
-        logger.info(
+        fs_logger.info(
             "Finish Reason Cause: {finish_reason_cause}",
-            user_id = user_id,
             finish_reason_cause = response.finish_reason_cause
         )
 
         if response.request_log.total_chunk > 0:
-            logger.info("============ Chunk Count ===========", user_id = user_id)
-            logger.info(
+            fs_logger.info("============ Chunk Count ===========")
+            fs_logger.info(
                 "Total Chunk: {total_chunk}",
-                user_id = user_id,
                 total_chunk = response.request_log.total_chunk
             )
             if response.request_log.empty_chunk > 0:
-                logger.info(
+                fs_logger.info(
                     "Empty Chunk: {empty_chunk}",
-                    user_id = user_id,
                     empty_chunk = response.request_log.empty_chunk
                 )
-                logger.info(
+                fs_logger.info(
                     "Non-Empty Chunk: {non_empty_chunk}",
-                    user_id = user_id,
                     non_empty_chunk = response.request_log.total_chunk - response.request_log.empty_chunk
                 )
-            logger.info(
+            fs_logger.info(
                 "Chunk effective ratio: {chunk_effective_ratio:.2%}",
-                user_id = user_id,
                 chunk_effective_ratio = 1 - response.request_log.empty_chunk / response.request_log.total_chunk
             )
         
-        logger.info("========== Time Statistics =========", user_id = user_id)
+        fs_logger.info("========== Time Statistics =========")
         
         total_time = response.request_log.stream_processing_end_time.monotonic - response.request_log.request_start_time.monotonic
-        logger.info(
+        fs_logger.info(
             "Total Time: {total_time:.2f}s({format_time_duration})",
-            user_id = user_id,
             total_time = total_time / 1e9,
             format_time_duration = format_time_duration_ns(total_time, use_abbreviation=True)
         )
 
         preprocessing_time = response.request_log.prepare_end_time.monotonic - response.request_log.prepare_start_time.monotonic
-        logger.info(
+        fs_logger.info(
             "Preprocessing Time: {preprocessing_time:.2f}ms({format_time_duration})",
-            user_id = user_id,
             preprocessing_time = preprocessing_time / 1e6,
             format_time_duration = format_time_duration_ns(preprocessing_time, use_abbreviation=True)
         )
 
         requests_time = response.request_log.request_end_time.monotonic - response.request_log.request_start_time.monotonic
-        logger.info(
-            "API Request Time: {requests_time:.2f}s({format_time_duration})",
-            user_id = user_id,
-            requests_time = requests_time / 1e9,
+        fs_logger.info(
+            "API Request Time: {requests_time:.2f}ms({format_time_duration})",
+            requests_time = requests_time / 1e6,
             format_time_duration = format_time_duration_ns(requests_time, use_abbreviation=True)
         )
 
         stream_processing_time = response.request_log.stream_processing_end_time.monotonic - response.request_log.stream_processing_start_time.monotonic
-        logger.info(
+        fs_logger.info(
             "Stream Processing Time: {stream_processing_time:.2f}s({format_time_duration})",
-            user_id = user_id,
             stream_processing_time = stream_processing_time / 1e9,
             format_time_duration = format_time_duration_ns(stream_processing_time, use_abbreviation=True)
         )
 
-        logger.info(
+        fs_logger.info(
             "Generation Speed: {generation_speed:.2f} Tokens/s",
-            user_id = user_id,
             generation_speed = response.token_usage.completion_tokens / (stream_processing_time / 1e9)
         )
 
         created_utc_dt = datetime.fromtimestamp(response.created, tz=timezone.utc)
         created_utc_str = created_utc_dt.strftime("%Y-%m-%d %H:%M:%S (UTC)")
-        logger.info(
+        fs_logger.info(
             "Created Time: {created_utc_str}",
-            user_id = user_id,
             created_utc_str = created_utc_str
         )
 
         created_local_dt = datetime.fromtimestamp(response.created)
         created_local_str = created_local_dt.strftime("%Y-%m-%d %H:%M:%S (Local)")
-        logger.info(
+        fs_logger.info(
             "Created Time: {created_local_str}",
-            user_id = user_id,
             created_local_str = created_local_str
         )
 
         if response.request_log.total_chunk > 0:
             if response.request_log.chunk_generated_times:
-                logger.info("==== Generated Chunk Statistics ====", user_id = user_id)
-                timestamps = np.array([time.monotonic for time in response.request_log.chunk_generated_times], dtype=np.int64)
+                fs_logger.info("==== Generated Chunk Statistics ====")
+                raw_timestamps = [time.timestamp for time in response.request_log.chunk_generated_times]
+                timestamps = np.array(raw_timestamps, dtype=np.int64)
                 time_differences = np.diff(timestamps)
                 non_zero_time_differences = time_differences[time_differences != 0]
                 if time_differences.size > 0 and non_zero_time_differences.size > 0:
@@ -307,38 +285,39 @@ class ClientBase(ABC):
                     ave_chunk_spawn_time = int(np.mean(time_differences))
                     chunk_generation_rate = response.request_log.total_chunk / (stream_processing_time / 1e9)
                     chunk_stability_cv = self._calculate_stability_cv(time_differences)
-                    logger.info(
+                    first_chunk_wait_time = raw_timestamps[0] - response.request_log.stream_processing_start_time.monotonic
+                    fs_logger.info(
                         "Chunk Generated Rate: {chunk_generation_rate:.2f} Chunks/s",
-                        user_id = user_id,
                         chunk_generation_rate = chunk_generation_rate
                     )
-                    logger.info(
+                    fs_logger.info(
+                        "First Generated Chunk Wait Time: {chunk_wait_time:.2f}ms",
+                        chunk_wait_time = first_chunk_wait_time / 1e6
+                    )
+                    fs_logger.info(
                         "Chunk Average Generated Time: {ave_chunk_spawn_time:.2f}ms({format_time_duration})",
-                        user_id = user_id,
                         ave_chunk_spawn_time = ave_chunk_spawn_time / 1e6,
                         format_time_duration = format_time_duration_ns(ave_chunk_spawn_time, use_abbreviation=True)
                     )
-                    logger.info(
+                    fs_logger.info(
                         "Chunk Max Generated Time: {max_chunk_spawn_time:.2f}ms({format_time_duration})",
-                        user_id = user_id,
                         max_chunk_spawn_time = max_chunk_spawn_time / 1e6,
                         format_time_duration = format_time_duration_ns(max_chunk_spawn_time, use_abbreviation=True)
                     )
-                    logger.info(
+                    fs_logger.info(
                         "Chunk Min Generated Time: {min_chunk_spawn_time:.2f}ms({format_time_duration})",
-                        user_id = user_id,
                         min_chunk_spawn_time = min_chunk_spawn_time / 1e6,
                         format_time_duration = format_time_duration_ns(min_chunk_spawn_time, use_abbreviation=True)
                     )
-                    logger.info(
+                    fs_logger.info(
                         "Chunk Generated Time Stability (Coefficient of Variation): {chunk_stability_cv}",
-                        user_id = user_id,
                         chunk_stability_cv = chunk_stability_cv
                     )
         
             if response.request_log.chunk_times:
-                logger.info("====== Parsed Chunk Statistics =====", user_id = user_id)
-                timestamps = np.array([time.monotonic for time in response.request_log.chunk_times], dtype=np.int64)
+                fs_logger.info("====== Parsed Chunk Statistics =====")
+                raw_timestamps = [time.monotonic for time in response.request_log.chunk_times]
+                timestamps = np.array(raw_timestamps, dtype=np.int64)
                 time_differences = np.diff(timestamps)
                 non_zero_time_differences = time_differences[time_differences != 0]
                 if time_differences.size > 0 and non_zero_time_differences.size > 0:
@@ -347,107 +326,101 @@ class ClientBase(ABC):
                     ave_chunk_spawn_time = int(np.mean(time_differences))
                     chunk_generation_rate = response.request_log.total_chunk / (stream_processing_time / 1e9)
                     chunk_stability_cv = self._calculate_stability_cv(time_differences)
-                    logger.info(
+                    first_chunk_wait_time = raw_timestamps[0] - response.request_log.stream_processing_start_time.monotonic
+                    fs_logger.info(
                         "Parsed Chunk Rate: {chunk_generation_rate:.2f} Chunks/s",
-                        user_id = user_id,
                         chunk_generation_rate = chunk_generation_rate
                     )
-                    logger.info(
+                    fs_logger.info(
+                        "First Parsed Chunk Wait Time: {chunk_wait_time:.2f}ms",
+                        chunk_wait_time = first_chunk_wait_time / 1e6
+                    )
+                    fs_logger.info(
                         "Chunk Average Parsed Time: {ave_chunk_spawn_time:.2f}ms({format_time_duration})",
-                        user_id = user_id,
                         ave_chunk_spawn_time = ave_chunk_spawn_time / 1e6,
                         format_time_duration = format_time_duration_ns(ave_chunk_spawn_time, use_abbreviation=True)
                     )
-                    logger.info(
+                    fs_logger.info(
                         "Chunk Max Parsed Time: {max_chunk_spawn_time:.2f}ms({format_time_duration})",
-                        user_id = user_id,
                         max_chunk_spawn_time = max_chunk_spawn_time / 1e6,
                         format_time_duration = format_time_duration_ns(max_chunk_spawn_time, use_abbreviation=True)
                     )
-                    logger.info(
+                    fs_logger.info(
                         "Chunk Min Parsed Time: {min_chunk_spawn_time:.2f}ms({format_time_duration})",
-                        user_id = user_id,
                         min_chunk_spawn_time = min_chunk_spawn_time / 1e6,
                         format_time_duration = format_time_duration_ns(min_chunk_spawn_time, use_abbreviation=True)
                     )
-                    logger.info(
+                    fs_logger.info(
                         "Chunk Parsed Time Stability (Coefficient of Variation): {chunk_stability_cv}",
-                        user_id = user_id,
                         chunk_stability_cv = chunk_stability_cv
                     )
 
-        logger.info("=========== Token Count ============", user_id = user_id)
-        logger.info(
+        fs_logger.info("=========== Token Count ============")
+        fs_logger.info(
             "Total Tokens: {total_tokens}",
-            user_id = user_id,
             total_tokens = response.token_usage.total_tokens
         )
-        logger.info(
+        fs_logger.info(
             "Context Input Tokens: {prompt_tokens}",
-            user_id = user_id,
             prompt_tokens = response.token_usage.prompt_tokens
         )
-        logger.info(
+        fs_logger.info(
             "Completion Output Tokens: {completion_tokens}",
-            user_id = user_id,
             completion_tokens = response.token_usage.completion_tokens
         )
         if response.token_usage.prompt_cache_hit_tokens is not None:
-            logger.info(
+            fs_logger.info(
                 "Cache Hit Count: {prompt_cache_hit_tokens}",
-                user_id = user_id,
                 prompt_cache_hit_tokens = response.token_usage.prompt_cache_hit_tokens
             )
         if response.token_usage.prompt_cache_miss_tokens is not None:
-            logger.info(
+            fs_logger.info(
                 "Cache Miss Count: {prompt_cache_miss_tokens}",
-                user_id = user_id,
                 prompt_cache_miss_tokens = response.token_usage.prompt_cache_miss_tokens
             )
         if not math.isnan(response.token_usage.cache_hit_ratio()):
-            logger.info(
+            fs_logger.info(
                 "Cache Hit Ratio: {cache_hit_ratio:.2%}",
-                user_id = user_id,
                 cache_hit_ratio = response.token_usage.cache_hit_ratio()
             )
         if response.stream:
-            logger.info(
-                "Average Generation Rate: {avg_gen_rate:.2f} /s",
-                user_id = user_id,
-                avg_gen_rate = response.token_usage.completion_tokens / ((response.request_log.stream_processing_end_time - response.request_log.stream_processing_start_time) / 1e9)
+            fs_logger.info(
+                "Average Generation Rate: {avg_gen_rate:.2f}/s",
+                avg_gen_rate = response.token_usage.completion_tokens / 
+                    (
+                        (
+                            response.request_log.stream_processing_end_time.monotonic -
+                            response.request_log.stream_processing_start_time.monotonic
+                        ) / 1e9
+                    )
             )
 
-        logger.info("============= Content ==============", user_id = user_id)
+        fs_logger.info("============= Content ==============")
         historical_context_text_length = response.historical_context.total_length
         new_context_text_length = response.new_context.total_length
         response.request_log.reasoning_content_length = sum(len(content.reasoning_content) for content in response.new_context.context_list if content.reasoning_content)
         response.request_log.new_content_length = sum(len(content.content) for content in response.new_context.context_list)
 
-        logger.info(
+        fs_logger.info(
             "Total Content Length: {total_context_length}",
-            user_id = user_id,
             total_context_length = historical_context_text_length + new_context_text_length
         )
         response.request_log.total_context_length = response.historical_context.total_length
-        logger.info(
+        fs_logger.info(
             "New Reasoning Content Length: {reasoning_content_length}",
-            user_id = user_id,
             reasoning_content_length = response.request_log.reasoning_content_length
         )
-        logger.info(
+        fs_logger.info(
             "New Answer Content Length: {new_content_length}",
-            user_id = user_id,
             new_content_length = response.request_log.new_content_length
         )
-        logger.info(
+        fs_logger.info(
             "Historical Context Text Length: {historical_context_length}",
-            user_id = user_id,
             historical_context_length = historical_context_text_length
         )
-        logger.info(
+        fs_logger.info(
             "New Content Text Length: {new_context_length}",
-            user_id = user_id,
             new_context_length = new_context_text_length
         )
 
-        logger.info("====================================", user_id = user_id)
+        fs_logger.info("====================================")

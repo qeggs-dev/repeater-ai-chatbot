@@ -16,6 +16,7 @@ class RuntimeContainer:
     @classmethod
     def init_runtime(cls) -> None:
         cls._objects = RepeaterRuntime()
+        return cls._objects
     
     @classmethod
     def get_runtime(cls, init: bool = False) -> RepeaterRuntime:

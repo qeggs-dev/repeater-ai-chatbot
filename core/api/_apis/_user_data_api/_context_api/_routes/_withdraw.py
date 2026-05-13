@@ -1,5 +1,5 @@
 from ......special_exception import HTTPException
-from ......server import Server
+from ......repeater_main import RepeaterMain
 from .._router import context_router
 from ......context import (
     Context
@@ -22,8 +22,10 @@ async def withdraw_context(user_id: str, context_pair_num: int = Form(1, gt=0), 
     Returns:
         ORJSONResponse: New context
     """
+    server = RepeaterMain.get_now_server()
+
     # 从context_loader中加载用户ID为user_id的上下文
-    context_loader = Server.core.get_context_loader()
+    context_loader = server.core.get_context_loader()
     context = await context_loader.load_context(user_id)
     pop_items: list[Context] = []
 

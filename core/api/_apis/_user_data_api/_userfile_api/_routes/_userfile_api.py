@@ -1,5 +1,5 @@
 import asyncio
-from ......server import Server
+from ......repeater_main import RepeaterMain
 from .._router import user_file_router
 from fastapi.responses import (
     StreamingResponse
@@ -24,10 +24,11 @@ async def get_userdata_file(user_id: str):
     """
     # 创建虚拟文件缓冲区
     buffer = BytesIO()
-    context_loader = Server.core.get_context_loader()
+    server = RepeaterMain.get_now_server()
+    context_loader = server.core.get_context_loader()
     context = await context_loader.load_context(user_id = user_id)
-    prompt = await Server.core.runtime.prompt_manager.load(user_id = user_id, default = "")
-    config = await Server.core.runtime.user_config_manager.load(user_id = user_id)
+    prompt = await server.runtime.prompt_manager.load(user_id = user_id, default = "")
+    config = await server.runtime.user_config_manager.load(user_id = user_id)
     
     await asyncio.to_thread(
         make_user_file,

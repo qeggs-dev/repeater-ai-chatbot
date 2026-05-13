@@ -1,4 +1,4 @@
-from ......server import Server
+from ......repeater_main import RepeaterMain
 from .._router import config_router
 from fastapi.responses import (
     ORJSONResponse
@@ -13,9 +13,10 @@ async def get_config_userlist():
     Returns:
         ORJSONResponse: A JSON response containing the list of user IDs
     """
+    server = RepeaterMain.get_now_server()
 
     # 获取所有用户ID
-    userid_list = await Server.core.runtime.user_config_manager.get_all_user_id()
+    userid_list = await server.runtime.user_config_manager.get_all_user_id()
 
     logger.info(f"Get user config userlist")
 

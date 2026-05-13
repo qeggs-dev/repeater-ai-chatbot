@@ -213,9 +213,11 @@ class Core:
         user_info: RequestUserInfo | None = None,
     ) -> TemplateParser:
         if model is None:
+            model_uid = user_config.model_uid
+            if model_uid is None:
+                model_uid = global_config.model_api.default_model_uid
             model = await get_model(
-                configs = user_config,
-                global_configs = global_config,
+                model_uid = model_uid,
                 model_info_client = self.runtime.model_info_client,
             )
         
@@ -343,9 +345,13 @@ class Core:
                         
                         # region [Getting model]
                         with self.runtime.task_status_map.enter(user_id, "Getting model"):
+                            # 获取默认模型uid
+                            if not model_uid:
+                                model_uid = configs.model_uid
+                                if not model_uid:
+                                    model_uid = ConfigManager.get_configs().model_api.default_model_uid
                             model = await get_model(
-                                configs = configs,
-                                global_configs = ConfigManager.get_configs(),
+                                model_uid = model_uid,
                                 model_info_client = self.runtime.model_info_client
                             )
                         # endregion
@@ -474,7 +480,10 @@ class Core:
 
                         # region [Pre-filled Model Response]
                         with self.runtime.task_status_map.enter(user_id, "Pre-filled Model Response"):
-                            model_response = ModelResponse()
+                            model_response = ModelResponse(
+                                user_id = user_id,
+                                stream = request.stream
+                            )
                             model_response.request_log.user_id = user_id
                             model_response.request_log.task_start_time = task_start_time
                             model_response.request_log.prepare_start_time = prepare_start_time

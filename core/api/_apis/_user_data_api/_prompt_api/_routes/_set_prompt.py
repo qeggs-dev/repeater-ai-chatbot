@@ -1,4 +1,4 @@
-from ......server import Server
+from ......repeater_main import RepeaterMain
 from .._router import prompt_router
 from fastapi import Form
 from fastapi.responses import (
@@ -19,8 +19,11 @@ async def set_prompt(user_id: str, prompt: str = Form(...)):
     Returns:
         PlainTextResponse: Success message
     """
+    server = RepeaterMain.get_now_server()
+    runtime = server.runtime
+
     # 设置用户ID为user_id的提示词为prompt
-    await Server.core.runtime.prompt_manager.save(
+    await runtime.prompt_manager.save(
         user_id = user_id,
         data = prompt
     )

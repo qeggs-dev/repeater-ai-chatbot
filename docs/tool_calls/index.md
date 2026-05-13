@@ -8,3 +8,6 @@
 3. [Demo Tool](./built-in/demo.md)
 4. [Get Models](./built-in/get_models.md)
 5. [Call Model](./built-in/call_model.md)
+6. [Asteval](./built-in/asteval.md)
+7. [token_count](./built-in/token_count.md)
+8. [Metaso](./built-in/metaso.md)

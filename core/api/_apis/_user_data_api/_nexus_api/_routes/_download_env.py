@@ -1,6 +1,6 @@
 from fastapi.responses import ORJSONResponse
 
-from ......server import Server
+from ......repeater_main import RepeaterMain
 from .._router import nexus_router
 from ..._user_data_type import UserDataType, get_manager
 from ......clients.nexus_client import InvalidUUIDError
@@ -13,8 +13,11 @@ async def download_env_from_nexus(user_id: str, request: DownloadRequest):
     prompt_manager = get_manager(UserDataType.PROMPT)
     config_manager = get_manager(UserDataType.CONFIG)
     
+    server = RepeaterMain.get_now_server()
+    runtime = server.runtime
+    
     try:
-        response = await Server.core.runtime.nexus_client.download("repeater.environment", user_id, "content")
+        response = await runtime.nexus_client.download("repeater.environment", user_id, "content")
     except InvalidUUIDError as e:
         return ORJSONResponse(
             content = DownloadResponse(

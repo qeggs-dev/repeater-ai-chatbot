@@ -1,4 +1,4 @@
-from ......server import Server
+from ......repeater_main import RepeaterMain
 from .._router import context_router
 from ......context import (
     ContentRole
@@ -20,8 +20,10 @@ async def check_role_structure(user_id: str):
     Returns:
         ORJSONResponse: The response containing the context role structure error.
     """
+    server = RepeaterMain.get_now_server()
+
     # 从chat.context_manager中加载用户ID为user_id的上下文
-    context_loader = Server.core.get_context_loader()
+    context_loader = server.core.get_context_loader()
     context = await context_loader.load_context(user_id)
     
     logger.info(

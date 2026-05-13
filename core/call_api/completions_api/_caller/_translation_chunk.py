@@ -66,7 +66,7 @@ async def translation_chunk(
             # 下次记得 Union 上一个 None 吧求了
             # 
             # 2026 前来考古
-            # 这里配了个 Any 上去...
+            # 这里终于在上面写上包含 None 了
             if choice.finish_reason is not None:
                 delta_data.finish_reason = FinishReason(choice.finish_reason)
             

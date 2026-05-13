@@ -1,4 +1,4 @@
-from ......server import Server
+from ......repeater_main import RepeaterMain
 from ......global_config_manager import ConfigManager
 from .._router import prompt_router
 from fastapi.responses import (
@@ -18,12 +18,13 @@ async def render_prompt(user_id: str):
     Returns:
         PlainTextResponse: Rendered prompt
     """
-    runtime = Server.core.runtime
-    context_loader = Server.core.get_context_loader()
+    server = RepeaterMain.get_now_server()
+    runtime = server.runtime
+    context_loader = server.core.get_context_loader()
     prompt = await context_loader.load_prompt(
         user_id = user_id,
         static_resources_client = runtime.static_resources_client,
-        template_parser = await Server.core.get_template_parser(
+        template_parser = await server.core.get_template_parser(
             user_config = await runtime.user_config_manager.load(user_id),
             global_config = ConfigManager.get_configs(),
         )

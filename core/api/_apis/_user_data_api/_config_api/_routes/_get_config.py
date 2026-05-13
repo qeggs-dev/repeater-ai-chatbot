@@ -1,4 +1,4 @@
-from ......server import Server
+from ......repeater_main import RepeaterMain
 from .._router import config_router
 from fastapi.responses import (
     ORJSONResponse
@@ -11,8 +11,10 @@ async def get_config(user_id: str):
     """
     Endpoint for get config
     """
+    server = RepeaterMain.get_now_server()
+
     # 获取用户ID为user_id的配置
-    config = await Server.core.get_config(user_id = user_id)
+    config = await server.core.get_config(user_id = user_id)
     
     logger.info(f"Get user config", user_id = user_id)
 

@@ -9,7 +9,7 @@ from fastapi.responses import (
 from .....special_exception import (
     HTTPException
 )
-from .....server import Server
+from .....repeater_main import RepeaterMain
 from .....assist_struct import Response
 from .....call_api.completions_api import Delta
 from ._router import chat_router
@@ -25,7 +25,8 @@ async def chat_endpoint(
     """
     Endpoint for chat
     """
-    chat_coroutine = Server.core.chat(
+    server = RepeaterMain.get_now_server()
+    chat_coroutine = server.core.chat(
         user_id = user_id,
         message = request.message,
         history_messages = request.history_messages,
@@ -47,7 +48,7 @@ async def chat_endpoint(
         stream = request.stream
     )
     try:
-        response = await Server.core.runtime.chat_task_pool.run_task(user_id, chat_coroutine)
+        response = await server.runtime.chat_task_pool.run_task(user_id, chat_coroutine)
     except asyncio.CancelledError:
         raise HTTPException(
             detail = "Chat Completion Task Cancelled or System Abnormal Shutdown.",

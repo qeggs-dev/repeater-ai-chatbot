@@ -7,4 +7,5 @@ class ServerConfig(BaseModel):
     port: int | None = None
     workers: int | None = None
     reload: bool | None = None
+    restart: bool = False
     run_server: bool = True

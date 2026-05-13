@@ -1,8 +1,4 @@
 import asyncio
-from .....server import Server
-from .....special_exception import (
-    HTTPException
-)
 from fastapi import (
     Header
 )
@@ -14,7 +10,7 @@ from .....global_config_manager import ConfigManager
 from .._admin_router import admin_router
 
 @admin_router.post("/configs/reload")
-async def reload_configs_api(api_key: str = Header(..., alias="X-Admin-API-Key")):
+async def reload_configs_api():
     """
     Reload Project Configs
 

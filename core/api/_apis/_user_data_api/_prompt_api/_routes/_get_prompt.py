@@ -1,4 +1,4 @@
-from ......server import Server
+from ......repeater_main import RepeaterMain
 from .._router import prompt_router
 from fastapi.responses import (
     PlainTextResponse
@@ -17,8 +17,11 @@ async def get_prompt(user_id: str):
     Returns:
         PlainTextResponse: User's prompt
     """
+    server = RepeaterMain.get_now_server()
+    runtime = server.runtime
+
     # 获取用户ID为user_id的提示词
-    prompt = await Server.core.runtime.prompt_manager.load(user_id = user_id)
+    prompt = await runtime.prompt_manager.load(user_id = user_id)
 
     logger.info("Get prompt", user_id=user_id)
 

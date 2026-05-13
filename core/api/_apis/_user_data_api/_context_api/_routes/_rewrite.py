@@ -1,4 +1,4 @@
-from ......server import Server
+from ......repeater_main import RepeaterMain
 from .._router import context_router
 from fastapi.responses import (
     ORJSONResponse
@@ -22,8 +22,10 @@ async def rewrite_context(user_id: str, rewrite_context: RewriteContext):
     Returns:
         ORJSONResponse: New context
     """
+    server = RepeaterMain.get_now_server()
+
     # 从context_loader中加载用户ID为user_id的上下文
-    context_loader = Server.core.get_context_loader()
+    context_loader = server.core.get_context_loader()
     context = await context_loader.load_context(user_id)
 
     # 检查索引是否在上下文范围内

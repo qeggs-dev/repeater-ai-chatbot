@@ -1,4 +1,4 @@
-from ......server import Server
+from ......repeater_main import RepeaterMain
 from .._router import context_router
 from fastapi.responses import (
     ORJSONResponse
@@ -16,8 +16,10 @@ async def get_context_length(user_id: str):
     Returns:
         ORJSONResponse: The JSON response containing the context length
     """
+    server = RepeaterMain.get_now_server()
+
     # 从chat.context_manager中加载用户ID为user_id的上下文
-    context_loader = Server.core.get_context_loader()
+    context_loader = server.core.get_context_loader()
     context = await context_loader.load_context(user_id)
     
     logger.info(f"Get Context length", user_id = user_id)

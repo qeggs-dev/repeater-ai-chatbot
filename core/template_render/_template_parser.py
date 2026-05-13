@@ -1,6 +1,5 @@
 import math
 import json
-import httpx
 import random
 import secrets
 import numpy as np
