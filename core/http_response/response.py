@@ -20,6 +20,9 @@ class Response(Generic[T]):
         self._response = response
         self._model = model
     
+    def __bool__(self) -> bool:
+        return self._response.status_code == 200
+    
     @property
     def code(self) -> int:
         return self._response.status_code
