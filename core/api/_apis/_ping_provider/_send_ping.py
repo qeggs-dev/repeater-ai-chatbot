@@ -6,7 +6,7 @@ from pythonping import ping
 from pythonping.executor import ResponseList
 
 @dataclass
-class PingDetail:
+class Detail:
     url: str
     timeout: int = 2
     times: int = 4
@@ -18,11 +18,11 @@ class PingDetail:
         return urlparse(self.url).hostname
 
 @dataclass
-class PingResponse:
+class Response:
     host: str = ""
     responses: ResponseList = field(default_factory = ResponseList)
 
-def send_ping(providers: Iterable[PingDetail]) -> list[PingResponse]:
+def send_ping(providers: Iterable[Detail]) -> list[Response]:
     responses: list[ResponseList] = []
     for provider in providers:
         if not provider.host:
@@ -34,7 +34,7 @@ def send_ping(providers: Iterable[PingDetail]) -> list[PingResponse]:
             size = provider.size,
             interval = provider.interval
         )
-        response = PingResponse(
+        response = Response(
             host = provider.host,
             responses = response_list
         )

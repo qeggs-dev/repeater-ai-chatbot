@@ -1,17 +1,18 @@
 import random
 import asyncio
 
-from pythonping.executor import Response as PingResponse
+from pythonping.executor import Response
 from fastapi.responses import ORJSONResponse
-from ._send_ping import send_ping, PingDetail
-from ....global_config_manager import ConfigManager
-from ....repeater_main import RepeaterMain
-from ....special_exception import HTTPException
-from ._router import ping_provider_router
-from ._response import Response, Detail
+from .._send_ping import send_ping, Detail
+from .....global_config_manager import ConfigManager
+from .....repeater_main import RepeaterMain
+from .....special_exception import HTTPException
+from .._router import ping_provider_router
+from .request import PingRequest
+from .response import PingResponse, PingDetail
 
 @ping_provider_router.post("/{user_id}")
-async def ping_provider(user_id: str):
+async def ping_provider(user_id: str, request: PingRequest):
     global_config = ConfigManager.get_configs()
     server = RepeaterMain.get_now_server()
     runtime = server.runtime
@@ -38,8 +39,12 @@ async def ping_provider(user_id: str):
         raise HTTPException(detail=f"Invalid response ({response.code})")
     
     ping_details = [
-        PingDetail(
+        Detail(
             url = model.url,
+            timeout = request.timeout,
+            times = request.times,
+            size = request.size,
+            interval = request.interval,
         )
         for model in models
     ]
@@ -47,22 +52,23 @@ async def ping_provider(user_id: str):
     responses = await asyncio.to_thread(send_ping, ping_details)
 
     successful: int = 0
-    time_ms: list[int] = []
-    details: list[PingDetail] = []
+    time_ms: list[float] = []
+    details: list[Detail] = []
 
     for response in responses:
-        detail = Detail(host = response.host)
+        detail = PingDetail(host = response.host)
         for ping_detail in response.responses:
-            ping_detail: PingResponse
+            ping_detail: Response
 
             if ping_detail.success:
                 successful += 1
             
             time_ms.append(ping_detail.time_elapsed_ms)
+            detail.time.append(ping_detail.time_elapsed_ms)
         details.append(detail)
 
     return ORJSONResponse(
-        content = Response(
+        content = PingResponse(
             successful = successful,
             average_time_spent = sum(time_ms) / len(time_ms) if len(time_ms) > 0 else 0,
             details = details
