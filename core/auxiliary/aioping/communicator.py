@@ -2,7 +2,6 @@ import os
 import sys
 import asyncio
 from typing import TextIO
-from .typing import PayloadProvider
 from .network import AioSocket
 from pythonping.executor import (
     Communicator,
@@ -10,6 +9,7 @@ from pythonping.executor import (
     Response,
     Message
 )
+from pythonping.payload_provider import PayloadProvider
 from pythonping import icmp
 
 class AioCommunicator(Communicator):
