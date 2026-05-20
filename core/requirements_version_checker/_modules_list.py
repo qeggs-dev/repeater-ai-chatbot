@@ -18,6 +18,8 @@ import yarl
 import bleach
 import asteval
 import pip_requirements_parser
+import jsonpatch
+import pythonping
 
 modules_list = [
     aiofiles,
@@ -39,7 +41,9 @@ modules_list = [
     yarl,
     bleach,
     asteval,
-    pip_requirements_parser
+    pip_requirements_parser,
+    jsonpatch,
+    pythonping
 ]
 
 name_map = {
