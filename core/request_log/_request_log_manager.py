@@ -84,7 +84,7 @@ class RequestLogManager:
             )
         )
     
-    async def _debonce_delete_cache(self):
+    async def _debonce_remove_cache(self):
         if self._cache_remove_task and not self._cache_remove_task.done():
             self._cache_remove_task.cancel()
         
@@ -233,6 +233,7 @@ class RequestLogManager:
             
             async with self._data_lock:
                 self._log_cache = cache
+                await self._debonce_remove_cache()
         
         # 输出内存日志
         for log in mem_logs:
