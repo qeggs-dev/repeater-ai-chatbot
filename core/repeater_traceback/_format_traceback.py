@@ -21,61 +21,63 @@ async def log_traceback(error: BaseException, server: Server) -> ORJSONResponse:
     exception_message = str(error)
     extra_data = None
 
+    configs = ConfigManager.get_configs()
+
     # 判断是否为特殊Exception
     is_critical_exception: bool = isinstance(error, CriticalException)
     is_http_exception: bool = isinstance(error, HTTPException)
 
-    if ConfigManager.get_configs().global_exception_handler.repeater_traceback.enable:
+    if configs.global_exception_handler.repeater_traceback.enable:
         repeater_traceback = TracebackHandler()
         traceback_str = await repeater_traceback.format_traceback(
             time.strftime(
-                ConfigManager.get_configs().global_exception_handler.repeater_traceback.timeformat,
+                configs.global_exception_handler.repeater_traceback.timeformat,
                 time.localtime(error_time / 1e9)
             ),
-            ConfigManager.get_configs().global_exception_handler.repeater_traceback.exclude_library_code,
-            ConfigManager.get_configs().global_exception_handler.code_reader.enable,
-            ConfigManager.get_configs().global_exception_handler.repeater_traceback.traditional_stack_frame,
-            ConfigManager.get_configs().global_exception_handler.repeater_traceback.format_validation_error
+            configs.global_exception_handler.repeater_traceback.exclude_library_code,
+            configs.global_exception_handler.code_reader.enable,
+            configs.global_exception_handler.repeater_traceback.traditional_stack_frame,
+            configs.global_exception_handler.repeater_traceback.format_validation_error
         )
     else:
         traceback_str = traceback.format_exc()
+    
+    # 写入 HTTP 状态码
+    if is_http_exception:
+        error_code = error.status_code
 
     # 记录异常日志
+    log_template = [
+        "{prompt}: {message}"
+    ]
     if is_critical_exception:
-        logger.critical(
-            (
-                "Critical Exception:\n"
-                "{traceback}"
-            ),
-            user_id = "[Global Exception Recorder]",
-            traceback = traceback_str,
-        )
-    elif is_http_exception and not (500 <= error.status_code < 600):
-        logger.error(
-            (
-                "HTTPException: \n"
-                "{traceback}"
-            ),
-            user_id = "[Global Exception Recorder]",
-            traceback = traceback_str
-        )
-    else:
-        if is_http_exception:
-            prompt = "HTTPException"
+        prompt = "CriticalException"
+        log_func = logger.critical
+        log_template.append("{traceback}")
+    elif is_http_exception:
+        prompt = "HTTPException"
+        if 500 <= error_code < 600:
+            log_func = logger.error
+            log_template.append("{traceback}")
         else:
-            prompt = "Exception"
-        logger.exception(
-            (
-                "{prompt}: \n"
-                "{traceback}"
-            ),
-            prompt = prompt,
-            user_id = "[Global Exception Recorder]",
-            traceback = traceback_str
-        )
+            log_func = logger.warning
+            if configs.global_exception_handler.record_warn_http_exception:
+                log_template.append("{traceback}")
+    else:
+        prompt = "Exception"
+        log_func = logger.exception
+        log_template.append("{traceback}")
+    
+    log_func(
+        "\n".join(log_template),
+        prompt = prompt,
+        user_id = "[Global Exception Recorder]",
+        traceback = traceback_str
+    )
+        
 
     # 记录Traceback
-    if ConfigManager.get_configs().global_exception_handler.traceback_save_to:
+    if configs.global_exception_handler.traceback_save_to:
         await save_error_traceback(
             datetime.fromtimestamp(error_time / 1e9),
             traceback_str
@@ -83,7 +85,7 @@ async def log_traceback(error: BaseException, server: Server) -> ORJSONResponse:
     
     # 判断是否要关闭服务器
     if is_critical_exception:
-        if ConfigManager.get_configs().global_exception_handler.crash_exit:
+        if configs.global_exception_handler.crash_exit:
             asyncio.create_task(
                 shutdown_server(
                     server = server,
@@ -96,10 +98,6 @@ async def log_traceback(error: BaseException, server: Server) -> ORJSONResponse:
                 user_id = "[Global Exception Recorder]",
             )
     
-    # 写入 HTTP 状态码
-    if is_http_exception:
-        error_code = error.status_code
-    
     error_response = ErrorResponse(
         error_code = error_code,
         timestamp_ns = error_time,
@@ -109,13 +107,13 @@ async def log_traceback(error: BaseException, server: Server) -> ORJSONResponse:
         extra_body = extra_data
     )
     if is_critical_exception:
-        error_response.error_message = ConfigManager.get_configs().global_exception_handler.critical_error_message
+        error_response.error_message = configs.global_exception_handler.critical_error_message
     elif is_http_exception:
         error_response.error_message = error.message
     else:
-        error_response.error_message = ConfigManager.get_configs().global_exception_handler.error_message
+        error_response.error_message = configs.global_exception_handler.error_message
     
-    if ConfigManager.get_configs().global_exception_handler.error_output_include_traceback:
+    if configs.global_exception_handler.error_output_include_traceback:
         error_response.exception_traceback = traceback_str
 
     return ORJSONResponse(
