@@ -1,0 +1,70 @@
+import random
+import asyncio
+
+from pythonping.executor import Response as PingResponse
+from fastapi.responses import ORJSONResponse
+from ._send_ping import send_ping, PingDetail
+from ....global_config_manager import ConfigManager
+from ....repeater_main import RepeaterMain
+from ....special_exception import HTTPException
+from ._router import ping_provider_router
+from ._response import Response, Detail
+
+@ping_provider_router.post("/{user_id}")
+async def ping_provider(user_id: str):
+    global_config = ConfigManager.get_configs()
+    server = RepeaterMain.get_now_server()
+    runtime = server.runtime
+    user_configs = await runtime.user_config_manager.load(user_id)
+
+    model_uids = user_configs.model_uid
+    if model_uids is None:
+        model_uids = global_config.model_api.default_model_uid
+    
+    if isinstance(model_uids, list):
+        model_uid = random.choice(model_uids)
+    elif isinstance(model_uids, str):
+        model_uid = model_uids
+    else:
+        raise HTTPException(detail="Invalid model uid")
+    
+    response = await runtime.model_info_client.get_models(model_uid)
+    if response:
+        response_data = response.get_data()
+        if response_data is None:
+            raise HTTPException(detail="Invalid response data")
+        models = response_data.models
+    else:
+        raise HTTPException(detail=f"Invalid response ({response.code})")
+    
+    ping_details = [
+        PingDetail(
+            url = model.url,
+        )
+        for model in models
+    ]
+
+    responses = await asyncio.to_thread(send_ping, ping_details)
+
+    successful: int = 0
+    time_ms: list[int] = []
+    details: list[PingDetail] = []
+
+    for response in responses:
+        detail = Detail(host = response.host)
+        for ping_detail in response.responses:
+            ping_detail: PingResponse
+
+            if ping_detail.success:
+                successful += 1
+            
+            time_ms.append(ping_detail.time_elapsed_ms)
+        details.append(detail)
+
+    return ORJSONResponse(
+        content = Response(
+            successful = successful,
+            average_time_spent = sum(time_ms) / len(time_ms) if len(time_ms) > 0 else 0,
+            details = details
+        ).model_dump()
+    )
