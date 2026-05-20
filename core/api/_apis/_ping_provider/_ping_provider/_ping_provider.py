@@ -18,7 +18,10 @@ async def ping_provider(user_id: str, request: PingRequest):
     runtime = server.runtime
     user_configs = await runtime.user_config_manager.load(user_id)
 
-    model_uids = user_configs.model_uid
+    model_uids = request.model_uid
+
+    if model_uids is None:
+        model_uids = user_configs.model_uid
     if model_uids is None:
         model_uids = global_config.model_api.default_model_uid
     

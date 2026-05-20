@@ -1,6 +1,7 @@
 from pydantic import BaseModel
 
 class PingRequest(BaseModel):
+    model_uid: str | list[str] | None = None
     timeout: float = 5.0
     times: int = 4
     size: int = 32
