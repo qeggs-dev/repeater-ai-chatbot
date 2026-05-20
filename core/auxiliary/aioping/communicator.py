@@ -1,7 +1,10 @@
 import os
 import sys
 import asyncio
-from typing import TextIO
+from typing import (
+    TextIO,
+    AsyncIterable,
+)
 from .network import AioSocket
 from pythonping.executor import (
     Communicator,
@@ -9,14 +12,13 @@ from pythonping.executor import (
     Response,
     Message
 )
-from pythonping.payload_provider import PayloadProvider
 from pythonping import icmp
 
 class AioCommunicator(Communicator):
     def __init__(
         self,
         target: str,
-        payload_provider: PayloadProvider,
+        payload_provider: AsyncIterable[str | bytes],
         timeout: int | float,
         interval: int,
         socket_options: tuple | None = None,
@@ -27,7 +29,7 @@ class AioCommunicator(Communicator):
         repr_format: str | None = None
     ):
         # Because the `AioSocket` is initialized instead of the `Socket`
-        # So don't execute Super().__init__()
+        # So don't execute `Super().__init__()``
         self.socket = AioSocket(
             target,
             "icmp",
@@ -40,7 +42,7 @@ class AioCommunicator(Communicator):
         self.responses = ResponseList(verbose=verbose, output=output)
         self.seed_id = seed_id
         self.repr_format = repr_format
-        # note that to make Communicator instances thread safe, the seed ID must be unique per thread
+        # note that to make Communicator instances concurrency safe, the seed ID must be unique per instance
         if self.seed_id is None:
             self.seed_id = os.getpid() & 0xFFFF
 
@@ -95,12 +97,26 @@ class AioCommunicator(Communicator):
         self.responses.clear()
         identifier = self.seed_id
         seq = 1
-        for payload in self.provider:
+        async for payload in self.provider:
             icmp_out = await self.send_ping(identifier, seq, payload)
             if not match_payloads:
-                self.responses.append(await self.listen_for(identifier, self.timeout, None, icmp_out))
+                self.responses.append(
+                    await self.listen_for(
+                        identifier,
+                        self.timeout,
+                        None,
+                        icmp_out
+                    )
+                )
             else:
-                self.responses.append(await self.listen_for(identifier, self.timeout, icmp_out.payload, icmp_out))
+                self.responses.append(
+                    await self.listen_for(
+                        identifier,
+                        self.timeout,
+                        icmp_out.payload,
+                        icmp_out
+                    )
+                )
 
             seq = self.increase_seq(seq)
 

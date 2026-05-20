@@ -4,7 +4,12 @@ from random import randint
 from .network import AioSocket
 from .communicator import AioCommunicator
 from pythonping.executor import ResponseList
-from pythonping import payload_provider
+from .payload_provider import (
+    AsyncPayloadProvider,
+    List,
+    Repeat,
+    Sweep
+)
 from pythonping.utils import random_text
 
 # this needs to be available across all thread usages and will hold ints
@@ -26,7 +31,8 @@ async def ping(
     source: str = None,
     out_format: str = "legacy"
 ) -> ResponseList:
-    """Pings a remote host and handles the responses
+    """
+    Pings a remote host and handles the responses
 
     :param target: The remote hostname or IP address to ping
     :type target: str
@@ -58,16 +64,17 @@ async def ping(
     :param repr_format: How to __repr__ the response. Allowed: legacy, None
     :type repr_format: str
     :return: List with the result of each ping
-    :rtype: executor.ResponseList"""
-    provider = payload_provider.Repeat(b'', 0)
+    :rtype: executor.ResponseList
+    """
+    provider = Repeat(b'', 0)
     if sweep_start and sweep_end and sweep_end >= sweep_start:
         if not payload:
             payload = random_text(sweep_start)
-        provider = payload_provider.Sweep(payload, sweep_start, sweep_end)
+        provider = Sweep(payload, sweep_start, sweep_end)
     elif size and size > 0:
         if not payload:
             payload = random_text(size)
-        provider = payload_provider.Repeat(payload, count)
+        provider = Repeat(payload, count)
     options = ()
     if df:
         options = AioSocket.DONT_FRAGMENT
