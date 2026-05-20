@@ -23,9 +23,11 @@ class AioCommunicator(Communicator):
         seed_id: int | None = None,
         verbose: bool = False,
         output: TextIO = sys.stdout,
-        source: str = None,
-        repr_format: str = None
+        source: str | None = None,
+        repr_format: str | None = None
     ):
+        # Because the `AioSocket` is initialized instead of the `Socket`
+        # So don't execute Super().__init__()
         self.socket = AioSocket(
             target,
             "icmp",
