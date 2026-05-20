@@ -8,7 +8,7 @@ class AioSocket(Socket):
         destination: str,
         protocol: int = 1,
         options: tuple | None = None,
-        buffer_size: int = 8192,
+        buffer_size: int = 2048,
         source: str | None = None
     ):
         if options is None:
@@ -26,13 +26,16 @@ class AioSocket(Socket):
     async def receive(self, timeout: float = 2):
         loop = asyncio.get_running_loop()
         start_time = time.perf_counter()
-        response = await asyncio.wait_for(
-            loop.sock_recvfrom(
-                self.socket,
-                self.buffer_size
-            ),
-            timeout = timeout
-        )
+        try:
+            response = await asyncio.wait_for(
+                loop.sock_recvfrom(
+                    self.socket,
+                    self.buffer_size
+                ),
+                timeout = timeout
+            )
+            packet, source = response
+        except asyncio.TimeoutError:
+            packet, source = b"", b""
         end_time = time.perf_counter()
-        packet, source = response
         return packet, source, timeout - (end_time - start_time)
