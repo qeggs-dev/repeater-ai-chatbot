@@ -41,23 +41,22 @@ async def ping_provider(user_id: str, request: PingRequest):
     else:
         raise HTTPException(detail=f"Invalid response ({response.code})")
     
+    model_urls = {model.url if model.proxy is None else model.proxy for model in models}
+    
     ping_details = [
         Detail(
-            url = model.url,
+            url = model_url,
             timeout = request.timeout,
             times = request.times,
             size = request.size,
             interval = request.interval,
         )
-        for model in models
+        for model_url in model_urls
     ]
 
     tasks = [
         asyncio.create_task(
-            asyncio.to_thread(
-                send_ping,
-                detail
-            )
+            send_ping(detail)
         )
         for detail in ping_details
     ]

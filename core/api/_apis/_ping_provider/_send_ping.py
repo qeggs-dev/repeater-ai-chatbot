@@ -2,7 +2,7 @@ from urllib.parse import urlparse
 from typing import Iterable
 from dataclasses import dataclass, field
 
-from pythonping import ping
+from ....auxiliary.aioping import ping
 from pythonping.executor import ResponseList
 
 @dataclass
@@ -22,10 +22,10 @@ class Response:
     host: str = ""
     responses: ResponseList = field(default_factory = ResponseList)
 
-def send_ping(provider: Detail) -> Response:
+async def send_ping(provider: Detail) -> Response:
     if not provider.host:
         raise ValueError("Host is not specified")
-    response_list: ResponseList = ping(
+    response_list: ResponseList = await ping(
         provider.host,
         timeout = provider.timeout,
         count = provider.times,
