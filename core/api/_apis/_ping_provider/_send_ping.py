@@ -22,21 +22,18 @@ class Response:
     host: str = ""
     responses: ResponseList = field(default_factory = ResponseList)
 
-def send_ping(providers: Iterable[Detail]) -> list[Response]:
-    responses: list[ResponseList] = []
-    for provider in providers:
-        if not provider.host:
-            continue
-        response_list: ResponseList = ping(
-            provider.host,
-            timeout = provider.timeout,
-            count = provider.times,
-            size = provider.size,
-            interval = provider.interval
-        )
-        response = Response(
-            host = provider.host,
-            responses = response_list
-        )
-        responses.append(response)
-    return responses
+def send_ping(provider: Detail) -> Response:
+    if not provider.host:
+        raise ValueError("Host is not specified")
+    response_list: ResponseList = ping(
+        provider.host,
+        timeout = provider.timeout,
+        count = provider.times,
+        size = provider.size,
+        interval = provider.interval
+    )
+    response = Response(
+        host = provider.host,
+        responses = response_list
+    )
+    return response

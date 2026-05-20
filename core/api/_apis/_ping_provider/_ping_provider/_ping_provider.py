@@ -49,7 +49,17 @@ async def ping_provider(user_id: str, request: PingRequest):
         for model in models
     ]
 
-    responses = await asyncio.to_thread(send_ping, ping_details)
+    tasks = [
+        asyncio.create_task(
+            asyncio.to_thread(
+                send_ping,
+                detail
+            )
+        )
+        for detail in ping_details
+    ]
+
+    responses = await asyncio.gather(*tasks)
 
     successful: int = 0
     time_ms: list[float] = []
@@ -57,7 +67,9 @@ async def ping_provider(user_id: str, request: PingRequest):
 
     for response in responses:
         detail = PingDetail(host = response.host)
-        for ping_detail in response.responses:
+        total_time_ms: float = 0.0
+        ping_response = response.responses
+        for ping_detail in ping_response:
             ping_detail: Response
 
             if ping_detail.success:
@@ -65,6 +77,15 @@ async def ping_provider(user_id: str, request: PingRequest):
             
             time_ms.append(ping_detail.time_elapsed_ms)
             detail.time.append(ping_detail.time_elapsed_ms)
+
+            total_time_ms += ping_detail.time_elapsed_ms
+            if ping_detail.time_elapsed_ms > detail.max_time:
+                detail.max_time = ping_detail.time_elapsed_ms
+            if ping_detail.time_elapsed_ms < detail.min_time or detail.min_time == 0.0:
+                detail.min_time = ping_detail.time_elapsed_ms
+        
+        detail.avg_time = total_time_ms / len(ping_response)
+        detail.packet_loss = ping_response.packet_loss
         details.append(detail)
 
     return ORJSONResponse(
