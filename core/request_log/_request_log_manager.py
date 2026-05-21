@@ -225,15 +225,18 @@ class RequestLogManager:
             cached = True
         else:
             cache: list[RequestLog | CallAPILog] = []
+            full_memory_cache = ConfigManager.get_configs().request_log.full_memory_cache
 
             async for log in self._read_file_logs():
                 yield log
                 readed_log_count += 1
-                cache.append(log)
+                if full_memory_cache:
+                    cache.append(log)
             
-            async with self._data_lock:
-                self._log_cache = cache
-                await self._debonce_remove_cache()
+            if full_memory_cache:
+                async with self._data_lock:
+                    self._log_cache = cache
+                    await self._debonce_remove_cache()
         
         # 输出内存日志
         for log in mem_logs:

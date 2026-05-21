@@ -8,3 +8,4 @@ class RequestLogConfig(BaseModel):
     debonce_save_wait_time: float = 600.0
     cache_keep_time: float = 600.0
     max_cache_size: int = 1000
+    full_memory_cache: bool = False
