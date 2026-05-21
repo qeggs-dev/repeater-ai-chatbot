@@ -72,6 +72,7 @@ async def log_traceback(error: BaseException, server: Server) -> ORJSONResponse:
         "\n".join(log_template),
         prompt = prompt,
         user_id = "[Global Exception Recorder]",
+        message = exception_message,
         traceback = traceback_str
     )
         
