@@ -1,9 +1,9 @@
+import socket
 from urllib.parse import urlparse
-from typing import Iterable
 from dataclasses import dataclass, field
 
 from ....auxiliary.aioping import ping
-from pythonping.executor import ResponseList
+from ....auxiliary.aioping.executor import ResponseList
 
 @dataclass
 class Detail:
@@ -16,10 +16,35 @@ class Detail:
     @property
     def host(self) -> str | None:
         return urlparse(self.url).hostname
+    
+    @property
+    def hostnames(self) -> list[str] | None:
+        ip = self.ip
+        if ip is None:
+            return None
+        
+        names: list[str] = []
+        try:
+            hostname, aliases, addresses = socket.gethostbyaddr(ip)
+            names.append(hostname)
+            names.extend(aliases)
+        except socket.herror:
+            names.append(self.host)
+        return names
+    
+    @property
+    def ip(self) -> str | None:
+        host_name = self.host
+        if host_name is None:
+            return None
+        
+        host = socket.gethostbyname(host_name)
+        return host
 
 @dataclass
 class Response:
-    host: str = ""
+    host_names: list[str] = field(default_factory = list)
+    ip: str | None = None
     responses: ResponseList = field(default_factory = ResponseList)
 
 async def send_ping(provider: Detail) -> Response:
@@ -33,7 +58,8 @@ async def send_ping(provider: Detail) -> Response:
         interval = provider.interval
     )
     response = Response(
-        host = provider.host,
+        host_names = provider.hostnames,
+        ip = provider.ip,
         responses = response_list
     )
     return response

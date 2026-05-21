@@ -1,7 +1,7 @@
 import random
 import asyncio
 
-from pythonping.executor import Response
+from .....auxiliary.aioping.executor import Response
 from fastapi.responses import ORJSONResponse
 from .._send_ping import send_ping, Detail
 from .....global_config_manager import ConfigManager
@@ -63,19 +63,22 @@ async def ping_provider(user_id: str, request: PingRequest):
 
     responses = await asyncio.gather(*tasks)
 
-    successful: int = 0
+    success_count: int = 0
     time_ms: list[float] = []
     details: list[Detail] = []
 
     for response in responses:
-        detail = PingDetail(host = response.host)
+        detail = PingDetail(
+            host_names = response.host_names,
+            ip = response.ip,
+        )
         total_time_ms: float = 0.0
         ping_response = response.responses
         for ping_detail in ping_response:
             ping_detail: Response
 
             if ping_detail.success:
-                successful += 1
+                success_count += 1
             
             time_ms.append(ping_detail.time_elapsed_ms)
             detail.time.append(ping_detail.time_elapsed_ms)
@@ -92,7 +95,7 @@ async def ping_provider(user_id: str, request: PingRequest):
 
     return ORJSONResponse(
         content = PingResponse(
-            successful = successful,
+            success_count = success_count,
             average_time_spent = sum(time_ms) / len(time_ms) if len(time_ms) > 0 else 0,
             details = details
         ).model_dump()
