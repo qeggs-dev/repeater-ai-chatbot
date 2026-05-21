@@ -43,13 +43,26 @@ async def ping_provider(user_id: str, request: PingRequest):
     
     model_urls = {model.url if model.proxy is None else model.proxy for model in models}
     
+    timeout = request.timeout
+    if timeout is None:
+        timeout = global_config.model_api.ping_provider.timeout
+    times = request.times
+    if times is None:
+        times = global_config.model_api.ping_provider.times
+    size = request.size
+    if size is None:
+        size = global_config.model_api.ping_provider.size
+    interval = request.interval
+    if interval is None:
+        interval = global_config.model_api.ping_provider.interval
+    
     ping_details = [
         Detail(
             url = model_url,
-            timeout = request.timeout,
-            times = request.times,
-            size = request.size,
-            interval = request.interval,
+            timeout = timeout,
+            times = times,
+            size = size,
+            interval = interval,
         )
         for model_url in model_urls
     ]
