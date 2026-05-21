@@ -124,8 +124,7 @@ class RepeaterMain:
     async def run_server(self):
         RepeaterMain._now_server = self.server
         try:
-            await self.server.run_server()
-            return self.server.exit_code
+            return await self.server.run_server()
         finally:
             RepeaterMain._now_server = None
 
@@ -137,6 +136,8 @@ class RepeaterMain:
             )
         except KeyboardInterrupt:
             logger.info("Server shutting down...")
+        except asyncio.CancelledError:
+            pass
         except Exception as e:
             logger.exception(e)
             return 1

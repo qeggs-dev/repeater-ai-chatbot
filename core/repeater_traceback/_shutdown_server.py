@@ -53,4 +53,4 @@ async def shutdown_server(server: Server, exception: CriticalException | None = 
         await asyncio.sleep(wait_time)
 
     logger.critical("The server crashed! exiting...")
-    await server.shutdown()
+    await server.shutdown(exit_code = exception.exit_code)

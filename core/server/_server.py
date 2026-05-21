@@ -1,6 +1,7 @@
 # ==== 标准库 ==== #
 from __future__ import annotations
 import inspect
+import asyncio
 
 from typing import (
     ClassVar,
@@ -46,14 +47,22 @@ class Server:
         self.keyboard_interrupt_callback: Callable[[], Awaitable[None] | None] = lambda: logger.info("Keyboard interrupt")
         self.admin_key_manager: AdminKeyManager | None = None
         self.core: Core | None = None
+        self._serve_task: asyncio.Task[None] | None = None
         self._exit_code: int = 0
+        self._shutdowned: bool = True
     
     @property
     def exit_code(self) -> int:
         return self._exit_code
     
     async def shutdown(self, exit_code: int = 0) -> None:
+        if self._shutdowned:
+            return
         await self.server.shutdown()
+        self._exit_code = exit_code
+        if self._serve_task is not None:
+            self._serve_task.cancel()
+        self._shutdowned = True
     
     @classmethod
     def logger_inited(self):
@@ -74,18 +83,26 @@ class Server:
                 return False
         return True
 
-    async def run_server(self) -> None:
+    async def run_server(self) -> int:
         async with self.lifespan:
             if not self.inited():
                 raise RuntimeError("API not initialized")
+            self._shutdowned = False
+            self._serve_task = asyncio.create_task(
+                self.server.serve()
+            )
             try:
-                await self.server.serve()
+                await self._serve_task
             except KeyboardInterrupt:
                 if self.keyboard_interrupt_callback:
                     if inspect.iscoroutinefunction(self.keyboard_interrupt_callback):
                         await self.keyboard_interrupt_callback()
                     else:
                         self.keyboard_interrupt_callback()
-                await self.server.shutdown()
+            except asyncio.CancelledError:
+                logger.info("Server cancelled")
             except Exception as e:
                 logger.error(f"Server error: {e}")
+            finally:
+                await self.shutdown()
+        return self._exit_code
