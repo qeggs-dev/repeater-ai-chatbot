@@ -89,6 +89,7 @@ class RequestLogManager:
             self._cache_remove_task.cancel()
         
         wait_time = self._debonce_save_wait_time
+        logger.info("Request log remove cache task created")
         
         self._cache_remove_task = asyncio.create_task(
             self._wait_and_remove_cache(
@@ -247,7 +248,7 @@ class RequestLogManager:
         logger.info(
             "Read {total} request logs"
             if cached else
-            "Read {readed_log_count} request logs (Cached)",
+            "Read {total} request logs (Cached)",
             total = total,
         )
     
@@ -305,16 +306,16 @@ class RequestLogManager:
             await self._save_request_log_async()
 
     async def _wait_and_remove_cache(self, wait_time: float = 5) -> None:
-        """等待并保存日志到文件"""
+        """等待并移除缓存"""
         try:
-            logger.info(f"Wait {wait_time} seconds to save request log")
+            logger.info(f"Wait {wait_time} seconds to remove cache")
             # 等待指定时间
             await asyncio.sleep(wait_time)
             # 时间到后保存日志
             async with self._data_lock:
                 self._log_cache.clear()
         except asyncio.CancelledError:
-            logger.info("Request log save task cancelled")
+            logger.info("Request log remove cache task cancelled")
 
     async def _wait_and_save_async(self, wait_time: float = 5) -> None:
         """等待并保存日志到文件"""
