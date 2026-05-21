@@ -5,7 +5,7 @@ class AsyncPayloadProvider:
     def __init__(self):
         raise NotImplementedError('Cannot create instances of PayloadProvider')
 
-    async def __aiter__(self):
+    def __aiter__(self):
         raise NotImplementedError()
 
     async def __anext__(self):
@@ -21,7 +21,7 @@ class List(AsyncPayloadProvider):
         self._payloads = payload_list
         self._counter = 0
 
-    async def __aiter__(self):
+    def __aiter__(self):
         self._counter = 0
         return self
 
@@ -30,7 +30,7 @@ class List(AsyncPayloadProvider):
             ret = self._payloads[self._counter]
             self._counter += 1
             return ret
-        raise StopIteration
+        raise StopAsyncIteration
 
 
 class Repeat(AsyncPayloadProvider):
@@ -45,7 +45,7 @@ class Repeat(AsyncPayloadProvider):
         self.count = count
         self._counter = 0
 
-    async def __aiter__(self):
+    def __aiter__(self):
         self._counter = 0
         return self
 
@@ -53,7 +53,7 @@ class Repeat(AsyncPayloadProvider):
         if self._counter < self.count:
             self._counter += 1
             return self.pattern
-        raise StopIteration
+        raise StopAsyncIteration
 
 
 class Sweep(AsyncPayloadProvider):
@@ -78,7 +78,7 @@ class Sweep(AsyncPayloadProvider):
             self.pattern += pattern
         self._current_size = self.start_size
 
-    async def __aiter__(self):
+    def __aiter__(self):
         self._current_size = self.start_size
         return self
 
@@ -87,4 +87,4 @@ class Sweep(AsyncPayloadProvider):
             ret = self.pattern[0:self._current_size]
             self._current_size += 1
             return ret
-        raise StopIteration
+        raise StopAsyncIteration
