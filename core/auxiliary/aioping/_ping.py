@@ -2,7 +2,7 @@ import sys
 from typing import TextIO
 from random import randint
 from .network import AioSocket
-from .communicator import AioCommunicator
+from .executor import AioCommunicator
 from pythonping.executor import ResponseList
 from .payload_provider import (
     AsyncPayloadProvider,
@@ -88,8 +88,7 @@ async def ping(
             SEED_IDs.append(seed_id)
             break
 
-
-    communicator = AioCommunicator(
+    async with AioCommunicator(
         target,
         provider,
         timeout,
@@ -100,10 +99,9 @@ async def ping(
         seed_id = seed_id,
         source = source,
         repr_format = out_format
-    )
+    ) as communicator:
+        await communicator.run(match_payloads=match)
 
-    await communicator.run(match_payloads=match)
+        SEED_IDs.remove(seed_id)
 
-    SEED_IDs.remove(seed_id)
-
-    return communicator.responses
+        return communicator.responses
