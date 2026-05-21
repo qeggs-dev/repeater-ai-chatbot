@@ -9,6 +9,7 @@ from ._model_api import *
 from ._index_web import *
 from ._static_api import *
 from ._status_api import *
+from ._ping_provider import *
 from ._alived import alived
 from ._version import (
     version,

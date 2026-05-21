@@ -46,3 +46,6 @@ Repeater 提供了许多接口，
 
 ## Alived Users API
   - [Alived Users API](./alived_users.md)
+
+## Ping Provider API
+  - [Ping Provider API](./ping_provider_api/ping_provider.md)

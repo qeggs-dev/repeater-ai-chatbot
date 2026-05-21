@@ -17,17 +17,24 @@ class RequestLogManager:
             self,
             base_dir: str | os.PathLike,
             debonce_save_wait_time: float | None = None,
+            cache_keep_time: float | None = None,
             max_cache_size: int | None = None,
             auto_save: bool = True
         ):
 
         # 日志缓存列表
+        self._log_cache: List[RequestLog | CallAPILog] = []
         self._log_list: List[RequestLog | CallAPILog] = []
 
         # 防抖保存等待时间
         if debonce_save_wait_time is None:
             debonce_save_wait_time = ConfigManager.get_configs().request_log.debonce_save_wait_time
         self._debonce_save_wait_time:float = debonce_save_wait_time
+
+        # 缓存保留时间
+        if cache_keep_time is None:
+            cache_keep_time = ConfigManager.get_configs().request_log.cache_keep_time
+        self._cache_keep_time:float = cache_keep_time
 
         # 最大缓存大小
         if max_cache_size is None:
@@ -44,10 +51,11 @@ class RequestLogManager:
             self._base_dir.mkdir(parents=True, exist_ok=True)
 
         # 日志锁
-        self._async_lock = asyncio.Lock()
+        self._data_lock = asyncio.Lock()
 
         # 防抖任务
-        self._debonce_task: asyncio.Task | None = None
+        self._debonce_save_task: asyncio.Task | None = None
+        self._cache_remove_task: asyncio.Task | None = None
 
         # 自动保存
         self._auto_save: bool = auto_save
@@ -62,16 +70,28 @@ class RequestLogManager:
     
     async def _debonce_save(self) -> None:
         # 防抖保存操作
-        if self._debonce_task and not self._debonce_task.done():
-            self._debonce_task.cancel()  # 如果已有任务，先取消
+        if self._debonce_save_task and not self._debonce_save_task.done():
+            self._debonce_save_task.cancel()  # 如果已有任务，先取消
         if len(self._log_list) < self._max_cache_size:
             logger.info("Request log debonce task created")
             wait_time = self._debonce_save_wait_time
         else:
             logger.info("Request log saved immediately")
             wait_time = 0
-        self._debonce_task = asyncio.create_task(
+        self._debonce_save_task = asyncio.create_task(
             self._wait_and_save_async(
+                wait_time = wait_time
+            )
+        )
+    
+    async def _debonce_remove_cache(self):
+        if self._cache_remove_task and not self._cache_remove_task.done():
+            self._cache_remove_task.cancel()
+        
+        wait_time = self._debonce_save_wait_time
+        
+        self._cache_remove_task = asyncio.create_task(
+            self._wait_and_remove_cache(
                 wait_time = wait_time
             )
         )
@@ -83,7 +103,7 @@ class RequestLogManager:
         :param request_log: 调用日志项
         :return: None
         """
-        async with self._async_lock:
+        async with self._data_lock:
             # 添加日志项
             self._log_list.append(request_log)
             logger.info("Request log added", user_id=request_log.user_id)
@@ -96,7 +116,7 @@ class RequestLogManager:
         :param request_log: 调用日志项
         :return: None
         """
-        async with self._async_lock:
+        async with self._data_lock:
             # 添加日志项
             user_ids: dict[str, int] = {}
             for request_log in request_logs:
@@ -152,6 +172,9 @@ class RequestLogManager:
         if not self._log_list:
             return
         
+        if self._log_cache:
+            self._log_cache.extend(self._log_list)
+        
         path = self.log_file_path
 
         if path.exists():
@@ -188,18 +211,49 @@ class RequestLogManager:
         :return: 读取调用日志的生成器
         """
         # 深拷贝内存日志
-        async with self._async_lock:
+        async with self._data_lock:
             mem_logs = copy.deepcopy(self._log_list)
         mem_log_count = len(mem_logs)
         logger.info(f"From {mem_log_count} memory logs")
+        readed_log_count: int = 0
+        cached = False
 
+        if self._log_cache:
+            for log in self._log_cache:
+                yield log
+                readed_log_count += 1
+            cached = True
+        else:
+            cache: list[RequestLog | CallAPILog] = []
+
+            async for log in self._read_file_logs():
+                yield log
+                readed_log_count += 1
+                cache.append(log)
+            
+            async with self._data_lock:
+                self._log_cache = cache
+                await self._debonce_remove_cache()
+        
+        # 输出内存日志
+        for log in mem_logs:
+            yield log
+
+        # 记录总数（所有日志已生成）
+        total = readed_log_count + mem_log_count
+        logger.info(
+            "Read {total} request logs"
+            if cached else
+            "Read {readed_log_count} request logs (Cached)",
+            total = total,
+        )
+    
+    async def _read_file_logs(self) -> AsyncIterator[RequestLog]:
         request_log_files = np.array(
             [str(file) for file in self._base_dir.glob("*.jsonl")]
         )
         sorted_request_log_files = np.sort(request_log_files)
-        
         # 读取文件日志
-        readed_log_count = 0
         log_file_count = 0
         for file in sorted_request_log_files:
             path = Path(file)
@@ -226,17 +280,8 @@ class RequestLogManager:
                                     error_field = "/".join(error["loc"]),
                                     error_message = error["msg"]
                                 )
-                        readed_log_count += 1  # 日志计数
                 log_file_count += 1  # 文件计数
         logger.info(f"From {log_file_count} file read logs")
-        
-        # 输出内存日志
-        for log in mem_logs:
-            yield log
-
-        # 记录总数（所有日志已生成）
-        total = readed_log_count + mem_log_count
-        logger.info(f"Read {total} request logs")
         
     
     def save_request_log(self) -> None:
@@ -244,17 +289,29 @@ class RequestLogManager:
         手动保存日志到文件
         """
         # 停止防抖任务
-        if self._debonce_task and not self._debonce_task.done():
-            self._debonce_task.cancel()  # 如果已有任务，先取消
+        if self._debonce_save_task and not self._debonce_save_task.done():
+            self._debonce_save_task.cancel()  # 如果已有任务，先取消
         self._save_request_log()
     
     async def save_request_log_async(self) -> None:
         """手动保存日志到文件"""
-        async with self._async_lock:
+        async with self._data_lock:
             # 停止防抖任务
-            if self._debonce_task and not self._debonce_task.done():
-                self._debonce_task.cancel()  # 如果已有任务，先取消
+            if self._debonce_save_task and not self._debonce_save_task.done():
+                self._debonce_save_task.cancel()  # 如果已有任务，先取消
             await self._save_request_log_async()
+
+    async def _wait_and_remove_cache(self, wait_time: float = 5) -> None:
+        """等待并保存日志到文件"""
+        try:
+            logger.info(f"Wait {wait_time} seconds to save request log")
+            # 等待指定时间
+            await asyncio.sleep(wait_time)
+            # 时间到后保存日志
+            async with self._data_lock:
+                self._log_cache.clear()
+        except asyncio.CancelledError:
+            logger.info("Request log save task cancelled")
 
     async def _wait_and_save_async(self, wait_time: float = 5) -> None:
         """等待并保存日志到文件"""
@@ -264,7 +321,8 @@ class RequestLogManager:
             await asyncio.sleep(wait_time)
             # 时间到后保存日志
             if self._auto_save:
-                await self._save_request_log_async()
+                async with self._data_lock:
+                    await self._save_request_log_async()
             else:
                 self._log_list.clear()
         except asyncio.CancelledError:

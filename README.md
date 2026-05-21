@@ -64,6 +64,8 @@
 | bleach            | 6.3.0    | Apache-2.0                           | [Apache-2.0](https://github.com/mozilla/bleach/blob/main/LICENSE)                   | `core.markdown_render`              | Clean HTML                            |
 | asteval           | 1.0.8    | MIT License                          | [MIT](https://github.com/newville/asteval/blob/main/LICENSE)                        | `core.model_requester.tools`        | Assist AI in performing mathematical calculations. |
 | pip-requirements-parser | 32.0.1 | MIT License                      | [MIT](https://github.com/jazzband/pip-requirements-parser/blob/main/LICENSE)        | `core.requirements_version_checker` | Parse requirements.txt files.         |
+| jsonpatch         | 1.33     | BSD-3-Clause license                 | [BSD-3-Clause license](https://github.com/stefankoegl/python-json-patch/blob/master/LICENSE) | `core.data_manager`        | JSON Diff & Patch                     |
+| pythonping        | 1.1.4    | MIT License                          | [MIT](https://github.com/alessandromaggio/pythonping/blob/main/LICENSE)             | `core.api`                          | Checking network connectivity         |
 
 具体依赖的License请查看[LICENSES](./LICENSES/index.md)
 

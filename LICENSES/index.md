@@ -26,3 +26,5 @@ This project includes the following third-party software components, licensed un
 - [Bleach](./bleach/index.md)
 - [Asteval](./asteval/index.md)
 - [Pip-requirements-parser](./pip-requirements-parser/index.md)
+- [JSONPatch](./jsonpatch/index.md)
+- [PythonPing](./pythonping/index.md)

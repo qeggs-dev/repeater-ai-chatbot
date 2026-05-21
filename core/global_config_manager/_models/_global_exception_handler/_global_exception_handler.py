@@ -14,3 +14,4 @@ class GlobalExceptionHandlerConfig(BaseModel):
     error_output_include_traceback: bool = False
     repeater_traceback: RepeaterTracebackConfig = Field(default_factory=RepeaterTracebackConfig)
     code_reader: CodeReaderConfig = Field(default_factory=CodeReaderConfig)
+    record_warn_http_exception: bool = False

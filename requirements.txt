@@ -18,3 +18,5 @@ yarl==1.23.0
 bleach==6.3.0
 asteval==1.0.8
 pip_requirements_parser==32.0.1
+jsonpatch==1.33
+pythonping==1.1.4
