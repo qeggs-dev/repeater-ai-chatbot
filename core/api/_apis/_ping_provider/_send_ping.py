@@ -24,12 +24,13 @@ class Detail:
             return None
         
         names: list[str] = []
+        names.append(self.host)
         try:
             hostname, aliases, addresses = socket.gethostbyaddr(ip)
             names.append(hostname)
             names.extend(aliases)
         except socket.herror:
-            names.append(self.host)
+            pass
         return names
     
     @property
