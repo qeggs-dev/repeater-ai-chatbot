@@ -8,6 +8,7 @@ class CriticalException(Exception):
     def __init__(
         self,
         message: str,
+        exit_code: int = 1,
         wait: float | Callable[[CriticalException], float] | Callable[[CriticalException], Coroutine[None, None, float]] | None = None
     ):
         """
@@ -23,4 +24,5 @@ class CriticalException(Exception):
         """
         super().__init__(message)
         self.message: str = message
+        self.exit_code: int = exit_code
         self.wait: float | Callable[[CriticalException], float] | Callable[[CriticalException], Coroutine[None, None, float]] | None = wait

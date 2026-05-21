@@ -2,7 +2,7 @@ import asyncio
 import inspect
 
 from loguru import logger
-from uvicorn import Server
+from ..server import Server
 from ..special_exception import CriticalException
 
 async def shutdown_server(server: Server, exception: CriticalException | None = None) -> None:

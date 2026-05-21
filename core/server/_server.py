@@ -1,7 +1,6 @@
 # ==== 标准库 ==== #
 from __future__ import annotations
 import inspect
-import asyncio
 
 from typing import (
     ClassVar,
@@ -47,6 +46,14 @@ class Server:
         self.keyboard_interrupt_callback: Callable[[], Awaitable[None] | None] = lambda: logger.info("Keyboard interrupt")
         self.admin_key_manager: AdminKeyManager | None = None
         self.core: Core | None = None
+        self._exit_code: int = 0
+    
+    @property
+    def exit_code(self) -> int:
+        return self._exit_code
+    
+    async def shutdown(self, exit_code: int = 0) -> None:
+        await self.server.shutdown()
     
     @classmethod
     def logger_inited(self):
