@@ -58,6 +58,7 @@ from ._make_request import make_request
 from ._make_context import make_context
 from ._post_treatment import post_treatment
 from ._get_model import get_model
+from ._check_rul import check_rul
 
 class Core:
     # region > init
@@ -297,8 +298,21 @@ class Core:
             # 获取用户锁对象
             lock = await self._get_namespace_lock(user_id)
 
+            global_configs = ConfigManager.get_configs()
+
+            # region [Getting Config]
+            with self.runtime.task_status_map.enter(user_id, "Getting Config"):
+                configs = await self.get_config(user_id)
+            # endregion
+
+            rul = check_rul(
+                rul = lock,
+                configs = configs,
+                global_configs = global_configs,
+            )
+
             # 进入RUL执行
-            async with lock:
+            async with rul:
 
                 # 进入状态
                 with self.runtime.task_status_map.enter(user_id, "Tasking"):
@@ -307,8 +321,6 @@ class Core:
                         prepare_start_time = TimeStamp()
                         logger.info("====================================", user_id = user_id)
                         logger.info("Start Task", user_id = user_id)
-
-                        global_configs = ConfigManager.get_configs()
 
                         # region [Checking Blacklist]
                         with self.runtime.task_status_map.enter(user_id, "Checking Blacklist"):
@@ -324,11 +336,6 @@ class Core:
                                     status_code = 403,
                                     detail = "Error: The streaming response feature is turned off in the server configuration.",
                                 )
-                        # endregion
-
-                        # region [Getting Config]
-                        with self.runtime.task_status_map.enter(user_id, "Getting Config"):
-                            configs = await self.get_config(user_id)
                         # endregion
                         
                         # region [Processing Cross User Data Access]
