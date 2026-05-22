@@ -41,6 +41,7 @@
   - [`secrets_token_bytes`](./functions/secrets_token_bytes.md): 包含 nbytes 个字节的随机字节字符串
   - [`secrets_token_hex`](./functions/secrets_token_hex.md): 返回一个十六进制随机文本字符串
   - [`secrets_token_urlsafe`](./functions/secrets_token_urlsafe.md): 返回一个使用 Base64 编码的随机 URL 安全文本字符串
+  - [`see_fortune`](./functions/see_fortune.md): 生成今日随机幸运报告
   - [`text_matrix`](./functions/text_matrix.md): 生成文本矩阵
   - [`time`](./functions/time.md): 获取当前时间
   - [`zodiac`](./functions/zodiac.md): 计算一个日期所在的星座
