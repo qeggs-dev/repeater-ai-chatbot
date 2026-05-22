@@ -33,6 +33,8 @@ class UserConfigs(BaseModel):
     context_shrink_limit: int | None = None
     remove_reasoning_prompt: bool | None = None
     request_statistics_template: str | None = None
+    allowed_tool_calls: set[str] | None = None
+    send_user_id: bool | None = None
 
     render_style: str | None = None
     render_html_template: str | None = None
@@ -50,11 +52,9 @@ class UserConfigs(BaseModel):
     user_profile: str | None = None
     user_age: int | float | None = None
     user_gender: str | None = None
-
     timezone: float | str | None = None
-    cross_user_data_access: bool | None = None
 
-    allowed_tool_calls: set[str] | None = None
+    cross_user_data_access: bool | None = None
     additional_user_data: dict[str, Any] = Field(default_factory=dict)
 
     @field_validator("timezone")
