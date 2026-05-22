@@ -7,3 +7,4 @@ class CallAPIConfig(BaseModel):
     include_usage: bool | None = None
     include_obfuscation: bool | None = None
     max_regenerate_times: int = Field(default=10, ge=1)
+    send_user_id: bool = False
