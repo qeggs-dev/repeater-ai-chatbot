@@ -38,6 +38,8 @@
     - `Check context`
     - `Make extra body`
       - `thinking`
+      - `reasoning_effort`
+      - `user_id`
     - `Send Request`
     - `Processing Response`
     - `Logging Response Content`
@@ -73,6 +75,8 @@
     - `Check context`
     - `Make extra body`
       - `thinking`
+      - `reasoning_effort`
+      - `user_id`
     - `Streaming`
     - `Logging Response Content`
     - `Fast Statistics`

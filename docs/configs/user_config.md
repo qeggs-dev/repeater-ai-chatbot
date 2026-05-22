@@ -86,6 +86,16 @@
     // 但某些 API 可能会因此调用失败
     "remove_reasoning_prompt": null,
 
+    // (list[str]) 允许调用的工具列表
+    "allowed_tool_calls": null,
+
+    // (bool) 是否发送用户 ID 到服务端
+    // 如果为 true，则 Repeater 会讲 user_id 进行 sha256 后填充到 `user_id` 字段中
+    // 需要服务端明确支持 `user_id` 字段
+    "send_user_id": null,
+
+    // ----------------------------------------------
+
     // (str) Request Statistics Message 模板
     // 用于生成一段自定义的统计文本
     "request_statistics_template": null,
@@ -106,6 +116,8 @@
     // 在生成图片的最下方添加一小段独立文本
     "render_document_bottom_comment": null,
 
+    // ------------------------------------------------
+
     // (bool) 是否加载提示词
     // 此选项会被API接口中传入的 load_prompt 参数覆盖
     "load_prompt": null,
@@ -120,6 +132,16 @@
 
     // (bool) 是否在保存时丢弃非文本数据
     "save_text_only": null,
+
+    // (bool) 是否构建多模态请求
+    // 如果为 false 则多模态内容将以文本的形式发送
+    "make_multimodal_message": null,
+
+    // (dict[str, list[str]]) 设置 Prompt Directives
+    // 键为基础类型，值为激活的 Prompt Directives 名称
+    "prompt_directives": null,
+
+    // -------------------------------------------------
 
     // (str) 用户名
     // 这个值在模板中为 `user_custom_name`
@@ -142,6 +164,8 @@
     // 用于控制模板展开器中的时间变量
     "timezone": null,
 
+    // -------------------------------------------------
+
     // (bool) 是否允许跨用户数据访问
     // 如果为true, 则使用请求里指定的的用户进行加载和保存
     // 如果为false, 则只能对当前用户操作
@@ -149,13 +173,6 @@
     // 如果要访问的目标用户也设置了该值
     // 且对方该值为false, 则请求将会自动回退到当前用户的上下文中
     "cross_user_data_access": null,
-
-    // (bool) 是否构建多模态请求
-    // 如果为 false 则多模态内容将以文本的形式发送
-    "make_multimodal_message": null,
-
-    // (list[str]) 允许调用的工具列表
-    "allowed_tool_calls": null,
 
     // (dict[str, Any]) 用户附加配置数据
     // 用于存储某些与用户相关的数据
