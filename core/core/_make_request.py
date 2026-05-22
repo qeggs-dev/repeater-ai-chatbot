@@ -17,44 +17,23 @@ from loguru import logger
 # ==== 自定义库 ==== #
 from ..call_api.completions_api import (
     Request,
-    Runtime as RequestRuntime,
-    Response as ModelResponse,
-    CallAPIException
-)
-from ..model_requester import (
-    ModelRequester,
-    MultiResponse
 )
 from ..context import (
-    ContextLoader,
     ContentRole,
     Context,
     ContentUnit,
-    TextBlock,
 )
 from ..user_config_manager import (
     UserConfigs
 )
-from ..pools.lock_pool import AsyncLockPool
-from ..text_buffer import ContentBuffer
-from ..global_config_manager import ConfigManager
+from ..global_config_manager import GlobalConfigs
 from ..assist_struct import (
-    Response,
     RequestUserInfo,
-    CrossUserDataRouting,
-    AdditionalData
 )
 from ..clients.model_info import (
     ModelInfo,
 )
 from ..special_exception import HTTPException
-from ..request_log import (
-    TimeStamp
-)
-from ..template_render import (
-    TemplateParser
-)
-from ..runtime_container import RepeaterRuntime
 from ._print_request_info import print_request_info
 
 def make_request(
@@ -64,11 +43,11 @@ def make_request(
     submit_context: Context,
     model: ModelInfo,
     configs: UserConfigs,
+    global_configs: GlobalConfigs,
     assistant_role: ContentRole,
     role_name: str | None = None,
     thinking: bool | None = None
 ) -> Request:
-    
     # 创建请求对象
     request = Request()
     # 设置上下文
@@ -106,57 +85,62 @@ def make_request(
     if configs.remove_reasoning_prompt is not None:
         request.remove_reasoning_prompt = configs.remove_reasoning_prompt
     else:
-        request.remove_reasoning_prompt = ConfigManager.get_configs().context.remove_reasoning_prompt
+        request.remove_reasoning_prompt = global_configs.context.remove_reasoning_prompt
     
     if configs.temperature is not None:
         request.temperature = configs.temperature
     else:
-        request.temperature = ConfigManager.get_configs().model.default_temperature
+        request.temperature = global_configs.model.default_temperature
     
     if configs.top_p is not None:
         request.top_p = configs.top_p
     else:
-        request.top_p = ConfigManager.get_configs().model.default_top_p
+        request.top_p = global_configs.model.default_top_p
     
     if configs.frequency_penalty is not None:
         request.frequency_penalty = configs.frequency_penalty
     else:
-        request.frequency_penalty = ConfigManager.get_configs().model.default_frequency_penalty
+        request.frequency_penalty = global_configs.model.default_frequency_penalty
     
     if configs.presence_penalty is not None:
         request.presence_penalty = configs.presence_penalty
     else:
-        request.presence_penalty = ConfigManager.get_configs().model.default_presence_penalty
+        request.presence_penalty = global_configs.model.default_presence_penalty
     
     if configs.max_tokens is not None:
         request.max_tokens = configs.max_tokens
     else:
-        request.max_tokens = ConfigManager.get_configs().model.default_max_tokens
+        request.max_tokens = global_configs.model.default_max_tokens
     
     if configs.max_completion_tokens is not None:
         request.max_completion_tokens = configs.max_completion_tokens
     else:
-        request.max_completion_tokens = ConfigManager.get_configs().model.default_max_completion_tokens
+        request.max_completion_tokens = global_configs.model.default_max_completion_tokens
     
     if configs.stop is not None:
         request.stop = configs.stop
     else:
-        request.stop = ConfigManager.get_configs().model.default_stop
+        request.stop = global_configs.model.default_stop
     
     if thinking is not None:
         request.thinking = thinking
     elif configs.thinking is not None:
         request.thinking = configs.thinking
     else:
-        request.thinking = ConfigManager.get_configs().model.default_thinking
+        request.thinking = global_configs.model.default_thinking
     
     if configs.reasoning_effort is not None:
         request.reasoning_effort = configs.reasoning_effort
     else:
-        request.reasoning_effort = ConfigManager.get_configs().model.default_reasoning_effort
+        request.reasoning_effort = global_configs.model.default_reasoning_effort
     
-    request.stream = ConfigManager.get_configs().model.stream
-    request.stream_options.include_obfuscation = ConfigManager.get_configs().callapi.include_obfuscation
-    request.stream_options.include_usage = ConfigManager.get_configs().callapi.include_usage
+    if configs.send_user_id is not None:
+        request.send_user_id = configs.send_user_id
+    else:
+        request.send_user_id = global_configs.callapi.send_user_id
+    
+    request.stream = global_configs.model.stream
+    request.stream_options.include_obfuscation = global_configs.callapi.include_obfuscation
+    request.stream_options.include_usage = global_configs.callapi.include_usage
 
     return request
