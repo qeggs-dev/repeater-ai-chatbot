@@ -63,6 +63,10 @@ class StreamAPI(CallStreamAPIBase):
             with runtime.status_map.enter(user_id, "reasoning_effort"):
                 if request.reasoning_effort is not None:
                     extra_body["reasoning_effort"] = request.reasoning_effort.value
+            
+            if request.send_user_id:
+                with runtime.status_map.enter(user_id, "user_id"):
+                    extra_body["user_id"] = user_id
         
         # 请求流式连接
         with runtime.status_map.enter(user_id, "Send Request"):

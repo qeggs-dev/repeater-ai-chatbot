@@ -54,6 +54,7 @@ class Request(BaseModel):
     remove_created: bool = True
     
     print_chunk: bool = True
+    send_user_id: bool = False
     output_role: ContentRole = ContentRole.ASSISTANT
 
     tools: list[dict[str, Any]] | None = None

@@ -61,8 +61,8 @@ class CallAPI(CallNstreamAPIBase):
         with runtime.status_map.enter(user_id, "Make extra body"):
             extra_body = {}
 
-            with runtime.status_map.enter(user_id, "thinking"):
-                if request.thinking is not None:
+            if request.thinking is not None:
+                with runtime.status_map.enter(user_id, "thinking"):
                     if request.thinking:
                         extra_body["thinking"] = {
                             "type": "enabled"
@@ -72,10 +72,14 @@ class CallAPI(CallNstreamAPIBase):
                             "type": "disabled"
                         }
             
-            with runtime.status_map.enter(user_id, "reasoning_effort"):
-                if request.reasoning_effort is not None:
+            if request.reasoning_effort is not None:
+                with runtime.status_map.enter(user_id, "reasoning_effort"):
                     extra_body["reasoning_effort"] = request.reasoning_effort.value
-        
+            
+            if request.send_user_id:
+                with runtime.status_map.enter(user_id, "user_id"):
+                    extra_body["user_id"] = user_id
+
         # 发送请求
         with runtime.status_map.enter(user_id, "Send Request"):
             logger.info(f"Send Request", user_id = user_id)
