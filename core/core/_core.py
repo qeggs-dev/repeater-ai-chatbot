@@ -298,10 +298,9 @@ class Core:
             # 获取用户锁对象
             lock = await self._get_namespace_lock(user_id)
 
-            global_configs = ConfigManager.get_configs()
-
             # region [Getting Config]
             with self.runtime.task_status_map.enter(user_id, "Getting Config"):
+                global_configs = ConfigManager.get_configs()
                 configs = await self.get_config(user_id)
             # endregion
 
