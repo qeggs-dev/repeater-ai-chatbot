@@ -196,7 +196,7 @@ class TemplateParser:
             user_gender = self._user_info.gender,
             user_custom_gender = self._user_config.user_gender,
             user_info = self._user_info.model_dump(exclude_none=True),
-            see_fortune = lambda user_ids = None: self.see_fortune(tz_now, [user_id].extend(user_ids or [])),
+            see_fortune = lambda user_ids = None: self.see_fortune(tz_now, [user_id] + (user_ids or [])),
             zodiac = date_to_zodiac,
             time = lambda time_format = default_time_format: tz_now.strftime(time_format),
             now = tz_now,
