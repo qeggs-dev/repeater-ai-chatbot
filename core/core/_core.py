@@ -78,8 +78,9 @@ class Core:
             """
             退出时执行的任务
             """
+            configs = ConfigManager.get_configs()
             # 保存调用日志
-            if ConfigManager.get_configs().request_log.auto_save:
+            if configs.request_log.auto_save:
                 self.runtime.request_log.save_request_log()
             logger.info("Exiting...")
         
@@ -100,7 +101,7 @@ class Core:
     # endregion
     
     # region > nickname mapping
-    async def nickname_mapping(self, user_id: str, user_info: RequestUserInfo) -> RequestUserInfo:
+    async def nickname_mapping(self, user_id: str, user_info: RequestUserInfo, global_configs: GlobalConfigs) -> RequestUserInfo:
         """
         用户昵称映射
 
@@ -108,7 +109,7 @@ class Core:
         :param user_info: 用户信息
         :return: 昵称
         """
-        user_nickname_mapping_file_path = Path(ConfigManager.get_configs().user_nickname_mapping.file_path)
+        user_nickname_mapping_file_path = Path(global_configs.user_nickname_mapping.file_path)
         if not user_nickname_mapping_file_path.exists():
             return user_info
         async with aiofiles.open(user_nickname_mapping_file_path, "rb") as f:
@@ -160,14 +161,14 @@ class Core:
     # endregion
 
     # region > load blacklist
-    async def load_blacklist(self, path: str | Path | None = None) -> None:
+    async def load_blacklist(self, global_configs: GlobalConfigs, path: str | Path | None = None) -> None:
         """
         加载黑名单
 
         :param path: 黑名单文件路径
         """
         if not path:
-            blacklist_file_path = Path(ConfigManager.get_configs().blacklist.file_path)
+            blacklist_file_path = Path(global_configs.blacklist.file_path)
         else:
             blacklist_file_path = Path(path)
         
@@ -307,6 +308,8 @@ class Core:
                         logger.info("====================================", user_id = user_id)
                         logger.info("Start Task", user_id = user_id)
 
+                        global_configs = ConfigManager.get_configs()
+
                         # region [Checking Blacklist]
                         with self.runtime.task_status_map.enter(user_id, "Checking Blacklist"):
                             # 判断用户是否在黑名单中
@@ -316,7 +319,7 @@ class Core:
                                     detail = "Error: Sorry, you are in blacklist.",
                                 )
                             
-                            if not ConfigManager.get_configs().model.stream and stream:
+                            if not global_configs.model.stream and stream:
                                 raise HTTPException(
                                     status_code = 403,
                                     detail = "Error: The streaming response feature is turned off in the server configuration.",
@@ -333,7 +336,7 @@ class Core:
                             if not configs.cross_user_data_access:
                                 logger.warning("Cross user data routing is not allowed.", user_id = user_id)
                                 cross_user_data_routing = None
-                            elif not ConfigManager.get_configs().user_data.cross_user_data_access:
+                            elif not global_configs.user_data.cross_user_data_access:
                                 logger.warning("Cross user data routing is not allowed.", user_id = user_id)
                                 cross_user_data_routing = None
                         
@@ -349,7 +352,7 @@ class Core:
                             if not model_uid:
                                 model_uid = configs.model_uid
                                 if not model_uid:
-                                    model_uid = ConfigManager.get_configs().model_api.default_model_uid
+                                    model_uid = global_configs.model_api.default_model_uid
                             model = await get_model(
                                 model_uid = model_uid,
                                 model_info_client = self.runtime.model_info_client
@@ -359,7 +362,11 @@ class Core:
                         # region [Getting model info]
                         with self.runtime.task_status_map.enter(user_id, "Mapping user name"):
                             # 进行用户名映射
-                            user_info = await self.nickname_mapping(user_id, user_info)
+                            user_info = await self.nickname_mapping(
+                                user_id = user_id,
+                                user_info = user_info,
+                                global_configs = global_configs
+                            )
                         # endregion
 
                         # region [Getting template parser]
@@ -367,7 +374,7 @@ class Core:
                             # 获取变量展开器以展开变量内容
                             template_parser = await self.get_template_parser(
                                 user_config = configs,
-                                global_config = ConfigManager.get_configs(),
+                                global_config = global_configs,
                                 model = model,
                                 user_info = user_info,
                             )
@@ -405,13 +412,14 @@ class Core:
                                 submit_context = submit_context,
                                 model = model,
                                 configs = configs,
+                                global_configs = global_configs,
                                 assistant_role = assistant_role,
                                 role_name = role_name,
                                 thinking = thinking
                             )
                             
-                            if ConfigManager.get_configs().tool_calls.enabled:
-                                tool_calls_configs = ConfigManager.get_configs().tool_calls
+                            if global_configs.tool_calls.enabled:
+                                tool_calls_configs = global_configs.tool_calls
                                 server_registed_tools = tool_calls_configs.registed
                                 if allowed_tool_calls:
                                     user_registed_tools = allowed_tool_calls
@@ -457,25 +465,25 @@ class Core:
                                 if configs.save_context is not None:
                                     save_context = configs.save_context
                                 else:
-                                    save_context = ConfigManager.get_configs().context.save_context
+                                    save_context = global_configs.context.save_context
                             
                             # 是否在保存时删除多模态内容
                             if configs.save_text_only is not None:
                                 save_only_text: bool = configs.save_text_only
                             else:
-                                save_only_text: bool = ConfigManager.get_configs().context.save_text_only
+                                save_only_text: bool = global_configs.context.save_text_only
                             
                             if save_new_only is None:
                                 if configs.save_new_only is not None:
                                     save_new_only = configs.save_new_only
                                 else:
-                                    save_new_only = ConfigManager.get_configs().context.save_new_only
+                                    save_new_only = global_configs.context.save_new_only
                             
-                            enable_assistant_template = ConfigManager.get_configs().text_template.enable.assistant_template
+                            enable_assistant_template = global_configs.text_template.enable.assistant_template
 
                             request_statistics_template = configs.request_statistics_template
                             if request_statistics_template is None:
-                                request_statistics_template = ConfigManager.get_configs().text_template.request_statistics_template
+                                request_statistics_template = global_configs.text_template.request_statistics_template
                         # endregion
 
                         # region [Pre-filled Model Response]
@@ -501,7 +509,7 @@ class Core:
                             user_id = user_id,
                             user_configs = configs,
                             max_concurrency = (
-                                ConfigManager.get_configs().callapi.max_concurrency
+                                global_configs.callapi.max_concurrency
                                 if self._max_concurrency is None else self._max_concurrency
                             ),
                             context_loader = context_loader,
