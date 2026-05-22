@@ -143,6 +143,11 @@ class CallModel(ToolCallPacakage):
         
         if not model_info.models:
             raise ValueError("Error: No model found.")
+        
+        if self.user_configs.send_user_id is not None:
+            send_user_id = self.user_configs.send_user_id
+        else:
+            send_user_id = self.global_configs.callapi.send_user_id
 
         model = random.choice(model_info.models)
 
@@ -165,6 +170,7 @@ class CallModel(ToolCallPacakage):
             reasoning_effort = args.reasoning_effort,
             remove_reasoning_prompt = args.remove_reasoning_prompt,
             remove_created = True,
+            send_user_id = send_user_id,
             stream = ConfigManager.get_configs().model.stream,
             stream_options = StreamOptions(
                 include_obfuscation = ConfigManager.get_configs().callapi.include_obfuscation,
