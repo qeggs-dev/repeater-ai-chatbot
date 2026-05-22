@@ -2,6 +2,7 @@ import math
 import json
 import random
 import secrets
+import hashlib
 import numpy as np
 
 from ..global_config_manager import GlobalConfigs
@@ -67,7 +68,46 @@ class TemplateParser:
                 error = e
             )
             raise
-        
+
+    @staticmethod
+    def daily_seed(time: datetime) -> int:
+        return time.year ^ time.month ^ time.day
+    
+    @staticmethod
+    def int_to_bytes(n: int, byteorder: str = "big", signed: bool = False) -> bytes:
+        length = (n.bit_length() + 7) // 8
+        if signed and n < 0:
+            length = (n.bit_length() + 8) // 8
+        return n.to_bytes(length, byteorder, signed=signed)
+    
+    @classmethod
+    def see_fortune(cls, now: datetime, user_ids: list[str]):
+        daily_seed = cls.daily_seed(now)
+        hash_value = hashlib.pbkdf2_hmac(
+            "sha256",
+            cls.int_to_bytes(daily_seed),
+            ("\n".join(user_ids)).encode("utf-8"),
+            10 ** 5
+        )
+        seed = int.from_bytes(hash_value, "big")
+        rand = random.Random(seed)
+        fortunes: dict[str, float] = {
+            "Money": rand.random(),
+            "Love": rand.random(),
+            "Work": rand.random(),
+            "Health": rand.random(),
+            "Social": rand.random(),
+            "Study": rand.random(),
+            "Travel": rand.random(),
+        }
+        average = sum(fortunes.values()) / len(fortunes)
+        text_buffer = [f"{key} Fortune: {value:.2%}" for key, value in fortunes.items()]
+        extreme_luck_factor = ((average-0.5)**2) / 0.25
+        return (
+            f"Extreme Luck Factor: {extreme_luck_factor:.2%}\n"
+            f"Average Fortune: {average:.2%}\n" +
+            "\n".join(text_buffer)
+        )
 
     async def render_ex(
             self,
@@ -133,7 +173,7 @@ class TemplateParser:
         default_time_format = self._global_config.text_template.time.time_format
 
         daily_random = random.Random(
-            tz_now.year ^ tz_now.month ^ tz_now.day
+            self.daily_seed(tz_now)
         )
         
         return await self.render(
@@ -156,6 +196,7 @@ class TemplateParser:
             user_gender = self._user_info.gender,
             user_custom_gender = self._user_config.user_gender,
             user_info = self._user_info.model_dump(exclude_none=True),
+            see_fortune = lambda user_ids = None: self.see_fortune(tz_now, [user_id].extend(user_ids or [])),
             zodiac = date_to_zodiac,
             time = lambda time_format = default_time_format: tz_now.strftime(time_format),
             now = tz_now,
