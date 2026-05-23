@@ -3,6 +3,7 @@ import atexit
 import asyncio
 import traceback
 from pathlib import Path
+from uuid import uuid4
 from typing import (
     AsyncIterator,
     Any,
@@ -59,6 +60,7 @@ from ._make_context import make_context
 from ._post_treatment import post_treatment
 from ._get_model import get_model
 from ._check_rul import check_rul
+from ._task_lifespan import TaskLifespan
 
 class Core:
     # region > init
@@ -299,30 +301,39 @@ class Core:
             lock = await self._get_namespace_lock(user_id)
 
             # region [Getting Config]
-            with self.runtime.task_status_map.enter(user_id, "Getting Config"):
-                global_configs = ConfigManager.get_configs()
-                configs = await self.get_config(user_id)
+            global_configs = ConfigManager.get_configs()
+            configs = await self.get_config(user_id)
             # endregion
 
-            rul = check_rul(
-                rul = lock,
+            enable_rul = check_rul(
                 configs = configs,
                 global_configs = global_configs,
+                save_context = save_context
             )
 
             # 进入RUL执行
-            async with rul:
+            async with TaskLifespan(
+                user_id = user_id,
+                rul = lock,
+                enable_rul = enable_rul,
+                runtime = self.runtime
+            ) as task_lifespan:
+                task_status_stack = task_lifespan.task_status_stack
 
                 # 进入状态
-                with self.runtime.task_status_map.enter(user_id, "Tasking"):
+                with task_status_stack.enter("Tasking"):
                 
-                    with self.runtime.task_status_map.enter(user_id, "Prepareing"):
+                    with task_status_stack.enter("Prepareing"):
                         prepare_start_time = TimeStamp()
                         logger.info("====================================", user_id = user_id)
-                        logger.info("Start Task", user_id = user_id)
+                        logger.info(
+                            "Start Task {task_id}",
+                            user_id = user_id,
+                            task_id = task_lifespan.task_id,
+                        )
 
                         # region [Checking Blacklist]
-                        with self.runtime.task_status_map.enter(user_id, "Checking Blacklist"):
+                        with task_status_stack.enter("Checking Blacklist"):
                             # 判断用户是否在黑名单中
                             if await self.in_blacklist(user_id):
                                 raise HTTPException(
@@ -338,7 +349,7 @@ class Core:
                         # endregion
                         
                         # region [Processing Cross User Data Access]
-                        with self.runtime.task_status_map.enter(user_id, "Processing Cross User Data Access"):
+                        with task_status_stack.enter("Processing Cross User Data Access"):
                             if not configs.cross_user_data_access:
                                 logger.warning("Cross user data routing is not allowed.", user_id = user_id)
                                 cross_user_data_routing = None
@@ -353,7 +364,7 @@ class Core:
                         # endregion
                         
                         # region [Getting model]
-                        with self.runtime.task_status_map.enter(user_id, "Getting model"):
+                        with task_status_stack.enter("Getting model"):
                             # 获取默认模型uid
                             if not model_uid:
                                 model_uid = configs.model_uid
@@ -366,7 +377,7 @@ class Core:
                         # endregion
 
                         # region [Getting model info]
-                        with self.runtime.task_status_map.enter(user_id, "Mapping user name"):
+                        with task_status_stack.enter("Mapping user name"):
                             # 进行用户名映射
                             user_info = await self.nickname_mapping(
                                 user_id = user_id,
@@ -376,7 +387,7 @@ class Core:
                         # endregion
 
                         # region [Getting template parser]
-                        with self.runtime.task_status_map.enter(user_id, "Getting template parser"):
+                        with task_status_stack.enter("Getting template parser"):
                             # 获取变量展开器以展开变量内容
                             template_parser = await self.get_template_parser(
                                 user_config = configs,
@@ -387,7 +398,7 @@ class Core:
                         # endregion
 
                         # region [Processing context]
-                        with self.runtime.task_status_map.enter(user_id, "Processing context"):
+                        with task_status_stack.enter("Processing context"):
                             context_loader = self.get_context_loader()
                             submit_context, user_input = await make_context(
                                 user_id = user_id,
@@ -405,12 +416,12 @@ class Core:
                                 additional_data = additional_data,
                                 load_prompt = load_prompt,
                                 cross_user_data_routing = cross_user_data_routing,
-                                task_status_map = self.runtime.task_status_map
+                                task_status_stack = task_status_stack
                             )
                         # endregion
                         
                         # region [Make Request Object]
-                        with self.runtime.task_status_map.enter(user_id, "Make Request Object"):
+                        with task_status_stack.enter("Make Request Object"):
                             request = make_request(
                                 user_id = user_id,
                                 user_input = user_input,
@@ -441,21 +452,20 @@ class Core:
                                 available_tool_calls = set()
                             
                             # 创建内容缓冲区
-                            content_buffer = ContentBuffer()
-                            await self.runtime.content_buffers_pool.add(user_id, content_buffer)
+                            content_buffer = task_lifespan.task_content_buffer
                         # endregion
                         
                         # region [Make Request Object]
-                        with self.runtime.task_status_map.enter(user_id, "Make Request Runtime Object"):
+                        with task_status_stack.enter("Make Request Runtime Object"):
                             request_runtime = RequestRuntime(
                                 client_pool = self.runtime.openai_pool,
-                                status_map = self.runtime.task_status_map,
+                                status_stack = task_status_stack,
                                 content_buffer = content_buffer
                             )
                         # endregion
 
                         # region [Pre-filled output]
-                        with self.runtime.task_status_map.enter(user_id, "Pre-filled output"):
+                        with task_status_stack.enter("Pre-filled output"):
                             # 输出 (为了自动填充输出内容)
                             output = Response()
                             output.model_group = model.parent
@@ -493,7 +503,7 @@ class Core:
                         # endregion
 
                         # region [Pre-filled Model Response]
-                        with self.runtime.task_status_map.enter(user_id, "Pre-filled Model Response"):
+                        with task_status_stack.enter("Pre-filled Model Response"):
                             model_response = ModelResponse(
                                 user_id = user_id,
                                 stream = request.stream
@@ -509,7 +519,7 @@ class Core:
                     request_runtime.response = model_response
 
                     # region [Requesting]
-                    with self.runtime.task_status_map.enter(user_id, "Requesting"):
+                    with task_status_stack.enter("Requesting"):
                         # 初始化 Client 并设置并发大小
                         model_caller = ModelRequester(
                             user_id = user_id,
@@ -534,7 +544,6 @@ class Core:
                                     stream = stream
                                 )
                                 
-                                await self.runtime.content_buffers_pool.remove(user_id)
                                 output = await post_treatment(
                                     user_id = user_id,
                                     output = output,
@@ -544,7 +553,7 @@ class Core:
                                     save_context = save_context,
                                     save_new_only = save_new_only,
                                     context_loader = context_loader,
-                                    task_status_map = self.runtime.task_status_map,
+                                    task_status_stack = task_status_stack,
                                     request_log_manager = self.runtime.request_log,
                                     cross_user_data_routing = cross_user_data_routing,
                                     enable_assistant_template = enable_assistant_template,
