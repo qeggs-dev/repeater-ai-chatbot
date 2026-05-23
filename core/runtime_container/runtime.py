@@ -30,7 +30,7 @@ from ..clients.static_resources_client import StaticResourcesClient
 from ..request_log import (
     RequestLogManager
 )
-from ..status_map import StatusMap
+from ..status_map import StatusStack
 from ..pools.awaitable_pool import TaskPool
 from ..pools.openai_pool import OpenAIPool
 from ..auxiliary.http import get_ssl_context
@@ -76,7 +76,7 @@ class RepeaterRuntime:
     @print_init_runtime("Content Buffers Pool")
     def init_content_buffers_pool(self):
         # 初始化内容缓冲池
-        self.content_buffers_pool: ResourcePool[ContentBuffer] = ResourcePool()
+        self.content_buffers_pools: ResourcePool[str, ResourcePool[str, ContentBuffer]] = ResourcePool()
 
     @print_init_runtime("Call Log Manager")
     def init_call_log_manager(self):
@@ -103,7 +103,7 @@ class RepeaterRuntime:
     @print_init_runtime("Task Status Map")
     def init_task_status_map(self):
         # Task 状态表
-        self.task_status_map: StatusMap[str, str] = StatusMap()
+        self.task_status_stacks: ResourcePool[str, ResourcePool[str, StatusStack[str]]] = ResourcePool()
 
     @print_init_runtime("Chat Task Pool")
     def init_chat_task_pool(self):
