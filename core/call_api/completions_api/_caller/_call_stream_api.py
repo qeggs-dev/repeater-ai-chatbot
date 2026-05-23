@@ -33,7 +33,7 @@ class StreamAPI(CallStreamAPIBase):
         assert isinstance(request, Request), "request must be a Request object"
         assert isinstance(runtime, Runtime), "runtime must be a Runtime object"
 
-        with runtime.status_map.enter(user_id, "Create OpenAI Client"):
+        with runtime.status_stack.enter("Create OpenAI Client"):
             # 创建OpenAI Client
             logger.info(f"Created OpenAI Client", user_id = user_id)
             client = self.get_client(
@@ -41,15 +41,15 @@ class StreamAPI(CallStreamAPIBase):
                 runtime = runtime
             )
 
-        with runtime.status_map.enter(user_id, "Check context"):
+        with runtime.status_stack.enter("Check context"):
             # 如果context为空，则抛出异常
             if not request.context:
                 raise ValueError("context is required")
         
-        with runtime.status_map.enter(user_id, "Make extra body"):
+        with runtime.status_stack.enter("Make extra body"):
             extra_body = {}
 
-            with runtime.status_map.enter(user_id, "thinking"):
+            with runtime.status_stack.enter("thinking"):
                 if request.thinking is not None:
                     if request.thinking:
                         extra_body["thinking"] = {
@@ -60,16 +60,16 @@ class StreamAPI(CallStreamAPIBase):
                             "type": "disabled"
                         }
             
-            with runtime.status_map.enter(user_id, "reasoning_effort"):
+            with runtime.status_stack.enter("reasoning_effort"):
                 if request.reasoning_effort is not None:
                     extra_body["reasoning_effort"] = request.reasoning_effort.value
             
             if request.send_user_id:
-                with runtime.status_map.enter(user_id, "user_id"):
+                with runtime.status_stack.enter("user_id"):
                     extra_body["user_id"] = user_id
         
         # 请求流式连接
-        with runtime.status_map.enter(user_id, "Send Request"):
+        with runtime.status_stack.enter("Send Request"):
             logger.info(f"Start Connecting to the API", user_id = user_id)
             response: AsyncStream[ChatCompletionChunk] = await client.chat.completions.create(
                 model = request.model,
@@ -92,7 +92,7 @@ class StreamAPI(CallStreamAPIBase):
                 extra_body = extra_body
             )
         
-        with runtime.status_map.enter(user_id, "Streaming"):
+        with runtime.status_stack.enter("Streaming"):
             async def translation_chunks(response: AsyncStream[ChatCompletionChunk]):
                 logger.info("Start Streaming", user_id = user_id)
                 async for chunk in response:

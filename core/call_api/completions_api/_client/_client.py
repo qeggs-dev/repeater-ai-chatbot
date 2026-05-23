@@ -50,7 +50,7 @@ class ClientBase(ABC):
         assert isinstance(request, Request)
         assert isinstance(response, Response)
 
-        with runtime.status_map.enter(user_id, "Logging Response Content"):
+        with runtime.status_stack.enter("Logging Response Content"):
             if response.new_context.last_content.reasoning_content:
                 logger.info(
                     "Reasoning_Content: \n\n{reasoning_content}\n",
@@ -66,7 +66,7 @@ class ClientBase(ABC):
                     donot_send_console = True
                 )
         
-        with runtime.status_map.enter(user_id, "Fast Statistics"):
+        with runtime.status_stack.enter("Fast Statistics"):
             await self._print_fast_statistics(
                 user_id = user_id,
                 request = request,

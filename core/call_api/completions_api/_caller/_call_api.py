@@ -33,11 +33,11 @@ class CallAPI(CallNstreamAPIBase):
         assert isinstance(request, Request), "request must be Request"
         assert isinstance(runtime, Runtime), "runtime must be Runtime"
 
-        with runtime.status_map.enter(user_id, "Init objects"):
+        with runtime.status_stack.enter("Init objects"):
             # 创建模型响应对象
             model_response = runtime.response
 
-        with runtime.status_map.enter(user_id, "Create OpenAI Client"):
+        with runtime.status_stack.enter("Create OpenAI Client"):
             # 创建OpenAI Client
             logger.info(f"Created OpenAI Client", user_id = user_id)
             client = self.get_client(
@@ -45,7 +45,7 @@ class CallAPI(CallNstreamAPIBase):
                 runtime = runtime
             )
         
-        with runtime.status_map.enter(user_id, "Write calling log base data"):
+        with runtime.status_stack.enter("Write calling log base data"):
             # 写入调用日志基础数据
             model_response.request_log.url = request.url
             model_response.request_log.user_id = user_id
@@ -54,15 +54,15 @@ class CallAPI(CallNstreamAPIBase):
             model_response.request_log.stream = request.stream
 
         # 如果上下文为空，则抛出异常
-        with runtime.status_map.enter(user_id, "Check context"):
+        with runtime.status_stack.enter("Check context"):
             if not request.context:
                 raise ValueError("context is required")
         
-        with runtime.status_map.enter(user_id, "Make extra body"):
+        with runtime.status_stack.enter("Make extra body"):
             extra_body = {}
 
             if request.thinking is not None:
-                with runtime.status_map.enter(user_id, "thinking"):
+                with runtime.status_stack.enter("thinking"):
                     if request.thinking:
                         extra_body["thinking"] = {
                             "type": "enabled"
@@ -73,15 +73,15 @@ class CallAPI(CallNstreamAPIBase):
                         }
             
             if request.reasoning_effort is not None:
-                with runtime.status_map.enter(user_id, "reasoning_effort"):
+                with runtime.status_stack.enter("reasoning_effort"):
                     extra_body["reasoning_effort"] = request.reasoning_effort.value
             
             if request.send_user_id:
-                with runtime.status_map.enter(user_id, "user_id"):
+                with runtime.status_stack.enter("user_id"):
                     extra_body["user_id"] = user_id
 
         # 发送请求
-        with runtime.status_map.enter(user_id, "Send Request"):
+        with runtime.status_stack.enter("Send Request"):
             logger.info(f"Send Request", user_id = user_id)
             request_start_time = TimeStamp()
             response: ChatCompletion = await client.chat.completions.create(
@@ -106,7 +106,7 @@ class CallAPI(CallNstreamAPIBase):
             )
             request_end_time = TimeStamp()
 
-        with runtime.status_map.enter(user_id, "Processing Response"):
+        with runtime.status_stack.enter("Processing Response"):
             # 创建响应内容单元
             model_response_content_unit:ContentUnit = ContentUnit()
             # 设置角色
