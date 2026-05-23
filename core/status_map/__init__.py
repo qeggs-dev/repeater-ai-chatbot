@@ -1,1 +1,1 @@
-from ._status_map import StatusMap
+from ._status_map import StatusStack
