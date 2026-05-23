@@ -97,30 +97,32 @@ class ModelRequester:
             self,
             request: Request,
             response: Response,
+            runtime: Runtime,
             available_tool_calls: set[str] | None = None,
         ) -> Response:
         if available_tool_calls and response.tool_calls:
-            calling_requests: list[CallingRequest] = []
-            for tool_call in response.tool_calls:
-                calling_requests.append(
-                    tool_call.to_calling_request()
+            with runtime.status_stack.enter("Calling Tools"):
+                calling_requests: list[CallingRequest] = []
+                for tool_call in response.tool_calls:
+                    calling_requests.append(
+                        tool_call.to_calling_request()
+                    )
+                results = await self._tools_caller.call_functions(
+                    response.user_id,
+                    calling_requests = calling_requests,
+                    available_tool_calls = available_tool_calls,
                 )
-            results = await self._tools_caller.call_functions(
-                response.user_id,
-                calling_requests = calling_requests,
-                available_tool_calls = available_tool_calls,
-            )
-            self._tool_responses.append(results)
-            for tool_response in results:
-                await self._stream_chunk_queue.put(tool_response)
-            if request.context:
-                request.context.extend(response.new_context)
-            else:
-                request.context = response.new_context
-            request.context.extend(results)
-            if request.thinking:
-                request.remove_reasoning_prompt = False
-            raise Regenerate(request)
+                self._tool_responses.append(results)
+                for tool_response in results:
+                    await self._stream_chunk_queue.put(tool_response)
+                if request.context:
+                    request.context.extend(response.new_context)
+                else:
+                    request.context = response.new_context
+                request.context.extend(results)
+                if request.thinking:
+                    request.remove_reasoning_prompt = False
+                raise Regenerate(request)
     
     async def submit(
         self,
@@ -173,6 +175,7 @@ class ModelRequester:
                     await self._parse_response(
                         request = request,
                         response = response,
+                        runtime = runtime,
                         available_tool_calls = available_tool_calls,
                     )
                     raise GenerateFinished

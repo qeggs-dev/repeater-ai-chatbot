@@ -180,7 +180,6 @@ class CallModel(ToolCallPacakage):
         
         request_runtime = Runtime(
             client_pool = runtime.openai_pool,
-            status_stack = runtime.task_status_map,
             content_buffer = ContentBuffer()
         )
         requestser = ModelRequester(
