@@ -6,5 +6,8 @@
   - **Request**
     - ***method:** `GET`
   - **Response**
-    - `reasoning` (str): 推理内容
-    - `content` (str): AI回复内容
+    - `user_id`
+    - `buffers` (dict[str, dict[str, str]]): 缓冲区内容
+      - *\*task_id* (str): 任务ID
+        - `reasoning` (str): 推理内容
+        - `content` (str): AI回复内容

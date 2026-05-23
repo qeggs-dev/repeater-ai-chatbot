@@ -6,9 +6,12 @@
   - **Request**
     - **method**: `GET`
   - **Response**
-    - **type**: `JSON List`
+    - **type**: `JSON`
     - **Content:**
-      - *\*当前执行阶段的任务栈列表*
+      - `contains` (bool): 当前用户是否存在任务
+      - `tasks` (dict[str, list[str]]): 每个 task_id 对应的执行栈状态
+      - *\*List*
+      
 
 目前任务结构树如下:
 
@@ -44,6 +47,7 @@
     - `Processing Response`
     - `Logging Response Content`
     - `Fast Statistics`
+  - `Calling Tools`
   - `PostProcessing`
     - `Template Expanding`
     - `Saving Context`
@@ -54,7 +58,6 @@
 - `Tasking`
   - `Prepareing`
     - `Checking Blacklist`
-    - `Getting Config`
     - `Processing Cross User Data Access`
     - `Getting model`
     - `Mapping user name`
@@ -80,6 +83,7 @@
     - `Streaming`
     - `Logging Response Content`
     - `Fast Statistics`
+  - `Calling Tools`
   - `PostProcessing`
     - `Template Expanding`
     - `Saving Context`
