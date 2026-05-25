@@ -289,7 +289,7 @@ class UserDataManager(Generic[T]):
         Returns:
             list: A list of all user IDs.
         """
-        return [fname_b64_decode(f.name) for f in (self.base_path).glob("*.json") if f.is_dir()]
+        return [fname_b64_decode(f.name) for f in (self.base_path).iterdir() if f.is_dir()]
 
     async def get_all_branch_id(self, user_id: str) -> list[str]:
         """
