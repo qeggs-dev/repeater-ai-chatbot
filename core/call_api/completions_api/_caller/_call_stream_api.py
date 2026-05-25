@@ -1,11 +1,11 @@
 # ==== 标准库 ==== #
+import asyncio
 from typing import (
     AsyncIterator,
     Literal,
 )
 
 # ==== 第三方库 ==== #
-import openai
 from openai.types.chat import ChatCompletionChunk
 from openai import AsyncStream
 from loguru import logger
@@ -96,11 +96,30 @@ class StreamAPI(CallStreamAPIBase):
             runtime.response.request_log.request_end_time = TimeStamp()
         
         with runtime.status_stack.enter("Streaming"):
-            async def translation_chunks(response: AsyncStream[ChatCompletionChunk]):
-                logger.info("Start Streaming", user_id = user_id)
+            chunk_queue: asyncio.Queue[ChatCompletionChunk | None] = asyncio.Queue()
+            chunk_times: list[TimeStamp] = []
+
+            async def fetch_response_chunks(response: AsyncStream[ChatCompletionChunk]):
+                nonlocal chunk_queue, runtime
                 async for chunk in response:
-                    # 翻译chunk
+                    this_chunk_time = TimeStamp()
+                    await chunk_queue.put(chunk)
+                    chunk_times.append(this_chunk_time)
+                await chunk_queue.put(None)
+                runtime.response.request_log.chunk_generated_times = chunk_times
+            
+            async def translation_chunks():
+                logger.info("Start Streaming", user_id = user_id)
+                while True:
+                    chunk = await chunk_queue.get()
+                    if chunk is None:
+                        break
                     delta_data = await translation_chunk(chunk)
                     yield delta_data
             
-            return translation_chunks(response)
+            fetch_response_chunks_task = asyncio.create_task(
+                fetch_response_chunks(
+                    response
+                )
+            )
+            return translation_chunks()
