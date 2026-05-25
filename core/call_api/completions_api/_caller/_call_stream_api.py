@@ -16,6 +16,7 @@ from .._objects import (
     Delta,
     Runtime
 )
+from ....request_log import TimeStamp
 from ._translation_chunk import translation_chunk
 from ._call_api_base import CallStreamAPIBase
 from .._exceptions import *
@@ -71,6 +72,7 @@ class StreamAPI(CallStreamAPIBase):
         # 请求流式连接
         with runtime.status_stack.enter("Send Request"):
             logger.info(f"Start Connecting to the API", user_id = user_id)
+            runtime.response.request_log.request_start_time = TimeStamp()
             response: AsyncStream[ChatCompletionChunk] = await client.chat.completions.create(
                 model = request.model,
                 temperature = self.none_to_omit(request.temperature),
@@ -91,6 +93,7 @@ class StreamAPI(CallStreamAPIBase):
                 stream_options=request.stream_options.model_dump(),
                 extra_body = extra_body
             )
+            runtime.response.request_log.request_end_time = TimeStamp()
         
         with runtime.status_stack.enter("Streaming"):
             async def translation_chunks(response: AsyncStream[ChatCompletionChunk]):

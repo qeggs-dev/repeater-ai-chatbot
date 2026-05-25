@@ -61,9 +61,6 @@ class StreamingResponseGenerationLayer:
         if not self.request.context:
             raise ValueError("context is required")
         
-        # 请求流式连接
-        self.request_start_time = TimeStamp()
-        self.request_end_time = TimeStamp()
         # chunk计数器
         self.chunk_count:int = 0
         # 空chunk计数器
@@ -94,8 +91,6 @@ class StreamingResponseGenerationLayer:
         self.response.request_log.id = self.response.id
         self.response.request_log.total_chunk = self.chunk_count
         self.response.request_log.empty_chunk = self.empty_chunk_count
-        self.response.request_log.request_start_time = self.request_start_time
-        self.response.request_log.request_end_time = self.request_end_time
         self.response.request_log.created_time = self.response.created
         self.response.request_log.chunk_times = self.chunk_times
         self.response.request_log.chunk_generated_times = self.chunk_generated_times
