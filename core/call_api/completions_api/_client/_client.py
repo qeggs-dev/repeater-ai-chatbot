@@ -275,7 +275,7 @@ class ClientBase(ABC):
         if response.request_log.total_chunk > 0:
             if response.request_log.chunk_generated_times:
                 fs_logger.info("==== Generated Chunk Statistics ====")
-                raw_timestamps = [time.timestamp for time in response.request_log.chunk_generated_times]
+                raw_timestamps = [time.monotonic for time in response.request_log.chunk_generated_times]
                 timestamps = np.array(raw_timestamps, dtype=np.int64)
                 time_differences = np.diff(timestamps)
                 non_zero_time_differences = time_differences[time_differences != 0]
