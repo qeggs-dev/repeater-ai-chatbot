@@ -66,6 +66,7 @@
 | pip-requirements-parser | 32.0.1 | MIT License                      | [MIT](https://github.com/jazzband/pip-requirements-parser/blob/main/LICENSE)        | `core.requirements_version_checker` | Parse requirements.txt files.         |
 | jsonpatch         | 1.33     | BSD-3-Clause license                 | [BSD-3-Clause license](https://github.com/stefankoegl/python-json-patch/blob/master/LICENSE) | `core.data_manager`        | JSON Diff & Patch                     |
 | pythonping        | 1.1.4    | MIT License                          | [MIT](https://github.com/alessandromaggio/pythonping/blob/main/LICENSE)             | `core.api`                          | Checking network connectivity         |
+| cachetools        | 7.1.4    | MIT License                          | [MIT](https://github.com/tkem/cachetools/blob/master/LICENSE)                       | *Entire Project*                    | Cachetools is a caching library for Python |
 
 具体依赖的License请查看[LICENSES](./LICENSES/index.md)
 
