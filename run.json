@@ -41,7 +41,8 @@
         "asteval==1.0.8",
         "pip_requirements_parser==32.0.1",
         "jsonpatch==1.33",
-        "pythonping==1.1.4"
+        "pythonping==1.1.4",
+        "cachetools==7.1.4"
     ],
     "run_cmd_need_to_ask": false,
     "run_cmd_ask_default_values": {}
