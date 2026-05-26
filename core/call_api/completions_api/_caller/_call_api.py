@@ -26,7 +26,7 @@ from ._call_api_base import CallNstreamAPIBase
 from .._exceptions import *
 
 class CallAPI(CallNstreamAPIBase):
-    async def _call(self, user_id:str, request: Request, runtime: Runtime) -> Response:
+    async def _openai_call(self, user_id:str, request: Request, runtime: Runtime) -> Response:
         """调用API"""
         # 检查参数
         assert isinstance(user_id, str), "user_id must be str"

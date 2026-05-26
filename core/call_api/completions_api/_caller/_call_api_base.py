@@ -53,7 +53,7 @@ class BaseCallAPI(ABC):
             raise TypeError("runtime must be Runtime")
         
         try:
-            return await self._call(user_id, request, runtime)
+            return await self._openai_call(user_id, request, runtime)
         except openai.APITimeoutError as e:
             raise APITimeoutError(str(e)) from e
         except openai.BadRequestError as e:
@@ -66,7 +66,7 @@ class BaseCallAPI(ABC):
             raise CallAPIException(str(e)) from e
     
     @abstractmethod
-    async def _call(self, user_id: str, request: Request, runtime: Runtime) -> T:
+    async def _openai_call(self, user_id: str, request: Request, runtime: Runtime) -> T:
         pass
 
     @property
@@ -84,7 +84,7 @@ class CallNstreamAPIBase(BaseCallAPI, ABC):
         return False
 
     @abstractmethod
-    async def _call(self, user_id: str, request: Request, runtime: Runtime) -> Response:
+    async def _openai_call(self, user_id: str, request: Request, runtime: Runtime) -> Response:
         pass
 
 class CallStreamAPIBase(BaseCallAPI, ABC):
@@ -97,5 +97,5 @@ class CallStreamAPIBase(BaseCallAPI, ABC):
         return True
 
     @abstractmethod
-    async def _call(self, user_id: str, request: Request, runtime: Runtime) -> AsyncIterator[Delta]:
+    async def _openai_call(self, user_id: str, request: Request, runtime: Runtime) -> AsyncIterator[Delta]:
         pass

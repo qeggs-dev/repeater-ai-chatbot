@@ -1,7 +1,7 @@
 from .._objects import Delta, ToolCall, TokensCount, FinishReason
 from openai.types.chat import ChatCompletionChunk
 
-async def translation_chunk(
+async def translation_openai_chunk(
     chunk: ChatCompletionChunk,
 ) -> Delta:
     """

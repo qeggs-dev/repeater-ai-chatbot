@@ -7,6 +7,7 @@ from ....context import (
 )
 from ....global_config_manager import ReasoningEffort
 from ....context import Context
+from ._interface_type import InterfaceType
 from ....auxiliary.http import (
     ClientLimits,
     ClientTimeout
@@ -25,6 +26,7 @@ class Request(BaseModel):
     limits: ClientLimits = Field(default_factory=ClientLimits)
     encoding: str = "utf-8"
     timeout: int | float | ClientTimeout = 600.0
+    interface: InterfaceType = InterfaceType.OPENAI
 
     key: str = ""
     model: str = ""

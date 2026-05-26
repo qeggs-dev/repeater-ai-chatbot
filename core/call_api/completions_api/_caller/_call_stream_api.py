@@ -17,12 +17,12 @@ from .._objects import (
     Runtime
 )
 from ....request_log import TimeStamp
-from ._translation_chunk import translation_chunk
+from ._translation_openai_chunk import translation_openai_chunk
 from ._call_api_base import CallStreamAPIBase
 from .._exceptions import *
 
 class StreamAPI(CallStreamAPIBase):
-    async def _call(self, user_id: str, request: Request, runtime: Runtime) -> AsyncIterator[Delta]:
+    async def _openai_call(self, user_id: str, request: Request, runtime: Runtime) -> AsyncIterator[Delta]:
         """
         调用流式API
 
@@ -114,7 +114,7 @@ class StreamAPI(CallStreamAPIBase):
                     chunk = await chunk_queue.get()
                     if chunk is None:
                         break
-                    delta_data = await translation_chunk(chunk)
+                    delta_data = await translation_openai_chunk(chunk)
                     yield delta_data
             
             fetch_response_chunks_task = asyncio.create_task(
