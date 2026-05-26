@@ -6,6 +6,7 @@ from ._runtime import Runtime
 from ._response import Response
 from ._tokens_count import TokensCount
 from ._stream_options import StreamOptions
+from ._interface_type import InterfaceType
 
 __all__ = [
     "Delta",
@@ -18,4 +19,5 @@ __all__ = [
     "Response",
     "TokensCount",
     "StreamOptions",
+    "InterfaceType",
 ]
