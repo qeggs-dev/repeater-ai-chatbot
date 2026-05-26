@@ -113,7 +113,10 @@ class RepeaterRuntime:
     @print_init_runtime("Openai Pool")
     def init_openai_pool(self):
         # 初始化客户端池
-        self.openai_pool: OpenAIPool = OpenAIPool()
+        config = ConfigManager.get_configs()
+        self.openai_pool: OpenAIPool = OpenAIPool(
+            config.callapi.client_cache_size
+        )
 
     @print_init_runtime("HTML Render Client")
     def init_html_render_client(self):
