@@ -14,15 +14,15 @@ class UserDataConfig(BaseModel):
     metadata_file_name: str = "metadata.json"
     cache_medadata: bool | CacheDataConfig = False
     cache_data: bool | CacheDataConfig = False
-    cache_maxsize: int | Literal["infinite", "inf"] = 64
+    user_data_cache_maxsize: int | Literal["infinite", "inf"] = 8
     max_sub_manager_cache_size: int | Literal["infinite", "inf"] = 1024
     cross_user_data_access: bool = False
     metadata_fields:MetadataFields = Field(default_factory=MetadataFields)
 
-    def get_cache_maxsize(self) -> int | float:
-        if self.cache_maxsize in ["infinite", "inf"]:
+    def get_user_data_cache_maxsize(self) -> int | float:
+        if self.user_data_cache_maxsize in ["infinite", "inf"]:
             return float("inf")
-        return self.cache_maxsize
+        return self.user_data_cache_maxsize
     
     def get_max_sub_manager_cache_size(self) -> int | float:
         if self.max_sub_manager_cache_size in ["infinite", "inf"]:
