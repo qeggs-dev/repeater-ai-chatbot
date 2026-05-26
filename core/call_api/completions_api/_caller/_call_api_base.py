@@ -3,7 +3,7 @@ import openai
 
 from typing import Literal, AsyncIterator, TextIO, TypeVar, Any
 from abc import ABC, abstractmethod
-from .._objects import Request, Response, Delta, Runtime
+from .._objects import Request, Response, Delta, Runtime, InterfaceType
 from .._exceptions import *
 from ....pools.client_pool import ClientInfo
 
@@ -52,19 +52,21 @@ class BaseCallAPI(ABC):
         if not isinstance(runtime, Runtime):
             raise TypeError("runtime must be Runtime")
         
-        try:
-            return await self._openai_call(user_id, request, runtime)
-        except openai.APITimeoutError as e:
-            raise APITimeoutError(str(e)) from e
-        except openai.BadRequestError as e:
-            raise BadRequestError(str(e)) from e
-        except openai.InternalServerError as e:
-            raise APIServerError(str(e)) from e
-        except openai.APIConnectionError as e:
-            raise APIConnectionError(str(e)) from e
-        except Exception as e:
-            raise CallAPIException(str(e)) from e
-    
+        match request.interface:
+            case InterfaceType.OPENAI:
+                try:
+                    return await self._openai_call(user_id, request, runtime)
+                except openai.APITimeoutError as e:
+                    raise APITimeoutError(str(e)) from e
+                except openai.BadRequestError as e:
+                    raise BadRequestError(str(e)) from e
+                except openai.InternalServerError as e:
+                    raise APIServerError(str(e)) from e
+                except openai.APIConnectionError as e:
+                    raise APIConnectionError(str(e)) from e
+                except Exception as e:
+                    raise CallAPIException(str(e)) from e
+            
     @abstractmethod
     async def _openai_call(self, user_id: str, request: Request, runtime: Runtime) -> T:
         pass
