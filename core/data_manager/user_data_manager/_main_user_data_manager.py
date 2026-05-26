@@ -38,7 +38,7 @@ class UserDataManager(Generic[T]):
 
         self._cache_metadata = cache_metadata
         self._cache_data = cache_data
-        self._cache_maxsize = configs.user_data.get_cache_maxsize()
+        self._cache_maxsize = configs.user_data.get_user_data_cache_maxsize()
 
         self._sub_dir_name = branches_dir_name
 
