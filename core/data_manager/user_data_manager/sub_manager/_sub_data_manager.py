@@ -1,7 +1,5 @@
 # ==== 标准库 ==== #
 import os
-import time
-import shutil
 import asyncio
 from typing import Any, Generator
 from pathlib import Path
@@ -9,6 +7,9 @@ from pathlib import Path
 # ==== 第三方库 ==== #
 import orjson
 import aiofiles
+
+from cachetools import LRUCache
+from loguru import logger
 
 # ==== 项目库 ==== #
 from ....auxiliary.path import validate_path, sanitize_filename
@@ -18,7 +19,14 @@ from ....global_config_manager import ConfigManager
 from ._branch_info import BranchInfo
 
 class SubManager:
-    def __init__(self, base_path: str | os.PathLike, sub_dir_name: str, cache_metadata:bool = False, cache_data:bool = False):
+    def __init__(
+            self,
+            base_path: str | os.PathLike,
+            sub_dir_name: str,
+            cache_metadata:bool = False,
+            cache_data:bool = False,
+            cache_maxsize:int | float = float("inf"),
+        ):
         self.base_path: Path = Path(base_path)
         sub_dir_name: str = sanitize_filename(sub_dir_name)
         self.sub_dir_name: str = sub_dir_name
@@ -28,10 +36,13 @@ class SubManager:
         self._metadata_filename = ConfigManager.get_configs().user_data.metadata_file_name
         
         self.cache_metadata:bool = cache_metadata
-        self._metadata_cache: Any | None = None
+        self._metadata_cache: Any = {}
 
         self.cache_data:bool = cache_data
-        self._data_cache: dict[str, Any] = {}
+        self._data_cache_size: int = cache_maxsize
+        self._data_cache: LRUCache[str, Any] = LRUCache(
+            maxsize = self._data_cache_size
+        )
 
     @property
     def _default_base_file(self) -> Path:
@@ -52,21 +63,6 @@ class SubManager:
             raise ValueError(f"Invalid file name: {file_name}")
         return self._default_base_file / file_name
     
-    def _get_snapshot_directory(self, branch_id: str) -> Path:
-        """获取快照目录"""
-        snapshot_directory_name = ConfigManager.get_configs().user_data.snapshot_directory_name
-        return self.base_path / snapshot_directory_name / branch_id
-    
-    def _get_snapshot_file(self, branch_id: str, snapshot_id: str) -> Path:
-        return self._get_snapshot_directory(branch_id) / fname_b64_encode(snapshot_id)
-    
-    def _get_snapshot_files(self, branch_id: str) -> Generator[Path, None, None]:
-        """获取快照文件列表"""
-        base_path = self._get_snapshot_directory(branch_id)
-        for file in base_path.iterdir():
-            if file.is_file() and file.suffix == ".json":
-                yield file
-    
     async def _get_branch_lock(self, branch_id: str) -> asyncio.Lock:
         """获取 branch_id 对应的锁，如果没有则创建"""
         async with self._global_lock:
@@ -86,15 +82,18 @@ class SubManager:
         async with self._global_lock:
             try:
                 if self.cache_metadata and self._metadata_cache is not None:
+                    logger.info("Using cached metadata")
                     return self._metadata_cache
                 else:
                     if not self._get_metadata_file_path.exists():
+                        logger.info("Metadata file does not exist")
                         return default
                     async with aiofiles.open(self._get_metadata_file_path, "rb") as f:
                         fdata = await f.read()
                         metadata = await asyncio.to_thread(orjson.loads, fdata)
                         if self.cache_metadata:
                             self._metadata_cache = metadata
+                        logger.info("Loaded metadata")
                         return metadata
             except FileNotFoundError:
                 return default
@@ -118,6 +117,7 @@ class SubManager:
                 await f.write(fdata)
             if self.cache_metadata:
                 self._metadata_cache = data
+            logger.info("Saved metadata")
     
     async def load(self, branch_id: str, default: Any | None = None) -> Any:
         """
@@ -132,16 +132,19 @@ class SubManager:
         async with await self._get_branch_lock(branch_id):
             try:
                 if self.cache_data and self._data_cache is not None and branch_id in self._data_cache:
+                    logger.info("Loading data from cache")
                     return self._data_cache[branch_id]
                 else:
                     path = self._get_file_path(branch_id)
                     if not path.exists():
+                        logger.info("Data file not found")
                         return default
                     async with aiofiles.open(path, "rb") as f:
                         fdata = await f.read()
                         data = await asyncio.to_thread(orjson.loads, fdata)
                         if self.cache_data:
                             self._data_cache[branch_id] = data
+                        logger.info("Loaded data")
                         return data
             except FileNotFoundError:
                 return default
@@ -167,6 +170,7 @@ class SubManager:
                 await f.write(await asyncio.to_thread(orjson.dumps, data))
             if self.cache_data:
                 self._data_cache[branch_id] = data
+            logger.info("Saved data")
     
     async def delete(self, branch_id: str) -> None:
         """Delete a file from the cache.
@@ -185,6 +189,7 @@ class SubManager:
                     if self.cache_data:
                         del self._data_cache[branch_id]
                 await loop.run_in_executor(None, remove_data)
+                logger.info("Deleted data")
             except FileNotFoundError:
                 pass
     
@@ -208,6 +213,11 @@ class SubManager:
             if dst_path.exists():
                 raise FileExistsError(f"{dst_path} already exists.")
             dst_path.hardlink_to(src_path)
+            logger.info(
+                "Hardlinked {src_path} to {dst_path}",
+                src_path = src_path,
+                dst_path = dst_path
+            )
     
     def exists(self, branch_id: str) -> bool:
         """Check if a branch exists.
@@ -246,45 +256,3 @@ class SubManager:
                 modified_time = info.st_mtime,
                 file_exists = True,
             )
-    
-    async def create_snapshot(self, branch_id: str, snapshot_id: str):
-        async with await self._get_branch_lock(branch_id):
-            path = self._get_snapshot_file(branch_id, snapshot_id)
-            if not path.parent.exists():
-                path.parent.mkdir(parents=True)
-            data = await self.load(branch_id)
-            async with aiofiles.open(path, "wb") as f:
-                await f.write(orjson.dumps(data))
-    
-    async def load_snapshot(self, branch_id: str, snapshot_id: str):
-        async with await self._get_branch_lock(branch_id):
-            file = self._get_snapshot_file(branch_id, snapshot_id)
-            if not file.exists():
-                raise FileNotFoundError(f"Snapshot {snapshot_id} not found")
-            async with aiofiles.open(file, "rb") as f:
-                data = orjson.loads(await f.read())
-            await self.save(branch_id, data)
-    
-    def get_snapshot_list(self, branch_id: str) -> list[str]:
-        """
-        Get all snapshot files in a branch
-        """
-        files: list[str] = []
-        for file in self._get_snapshot_files(branch_id):
-            files.append(fname_b64_decode(file.name))
-        return files
-    
-    async def remove_snapshot(self, branch_id: str, snapshot_id: str) -> None:
-        """
-        Remove a snapshot file
-        """
-        file = self._get_snapshot_file(branch_id, snapshot_id)
-        if file.exists():
-            await file.unlink()
-    
-    def get_snapshot_modification_time(self, branch_id: str, snapshot_id: str) -> float:
-        """
-        Get the modification time of a snapshot file
-        """
-        file = self._get_snapshot_file(branch_id, snapshot_id)
-        return file.stat().st_mtime
