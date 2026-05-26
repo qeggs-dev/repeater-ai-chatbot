@@ -1,6 +1,6 @@
 from pydantic import BaseModel, ConfigDict, Field
 from typing import Literal
-from ._cache_data import CacheDataConfig
+from ._data_types import DataTypes
 from ._metadata_fields import MetadataFields
 
 class UserDataConfig(BaseModel):
@@ -12,8 +12,8 @@ class UserDataConfig(BaseModel):
     b64_encode_path: bool = True
     snapshot_directory_name: str = "snapshots"
     metadata_file_name: str = "metadata.json"
-    cache_medadata: bool | CacheDataConfig = False
-    cache_data: bool | CacheDataConfig = False
+    cache_medadata: bool | DataTypes[bool] = False
+    cache_data: bool | DataTypes[bool] = False
     user_data_cache_maxsize: int | Literal["infinite", "inf"] = 8
     max_sub_manager_cache_size: int | Literal["infinite", "inf"] = 1024
     cross_user_data_access: bool = False
