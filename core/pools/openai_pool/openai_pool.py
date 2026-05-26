@@ -2,8 +2,10 @@ from ..client_pool import ClientInfo, ClientPool
 from openai import AsyncOpenAI
 
 class OpenAIPool:
-    def __init__(self):
-        self._clients = ClientPool()
+    def __init__(self, cache_size: int | float = 1000):
+        self._clients = ClientPool(
+            cache_size = cache_size
+        )
     
     def get_openai(self, client_info: ClientInfo, api_key: str):
         client = self._clients.get_client(client_info)
