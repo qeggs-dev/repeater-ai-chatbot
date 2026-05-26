@@ -14,8 +14,8 @@ class UserDataConfig(BaseModel):
     metadata_file_name: str = "metadata.json"
     cache_medadata: bool | CacheDataConfig = False
     cache_data: bool | CacheDataConfig = False
-    cache_maxsize: int | Literal["infinite", "inf"] = "infinite"
-    max_sub_manager_cache_size: int | Literal["infinite", "inf"] = "infinite"
+    cache_maxsize: int | Literal["infinite", "inf"] = 64
+    max_sub_manager_cache_size: int | Literal["infinite", "inf"] = 1024
     cross_user_data_access: bool = False
     metadata_fields:MetadataFields = Field(default_factory=MetadataFields)
 
