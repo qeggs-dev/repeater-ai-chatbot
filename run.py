@@ -451,7 +451,9 @@ TIME_LEVELS: list[tuple[str, str, int]] = [
     ("hour", "h", 24),
     ("day", "day", 30),
     ("month", "mon", 12),
-    ("year", "y", 100),
+    ("year", "y", 10),
+    ("decade", "dec", 10),
+    ("century", "cent", 10),
 ]
 # endregion
 
@@ -895,7 +897,7 @@ class SlovesStarter:
             default: bool = True,
             print_return_code: bool = True,
             print_runtime: bool = True,
-            runtime_handler: Callable[[int, int], str] = lambda start, end: format_carry_duration(end - start, use_abbreviation=True, levels=TIME_LEVELS, final_level=("century", "cent")),
+            runtime_handler: Callable[[int, int], str] = lambda start, end: format_carry_duration(end - start, use_abbreviation=True, levels=TIME_LEVELS, final_level=("millennium", "mill")),
             env: dict[str, str] | None = None,
             askfile: TextIO = sys.stdout,
             capture_output: bool = False,
