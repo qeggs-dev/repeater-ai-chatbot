@@ -2,7 +2,7 @@
 
 列出所有模型
 
-- **`/models/{model_type: str}`**
+- **`/models`**
   - **method**: `GET`
   - **Response**
     - **type:** `JSON`

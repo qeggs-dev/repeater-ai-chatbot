@@ -4,6 +4,9 @@
 
 - **`/models/{model_uid: str}`**
   - **method**: `GET`
+  - **Request**
+    - **Query**
+      - `detailed_info` (bool): 是否返回详细模型信息，默认为 False
   - **Response**
     - **type:** `JSON`
     - **Content:**
