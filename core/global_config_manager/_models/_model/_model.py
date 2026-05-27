@@ -1,17 +1,22 @@
 from pydantic import BaseModel, ConfigDict, Field
 from ._reasoning_effort import ReasoningEffort
+from ._service_tier import ServiceTier
 
 class ModelConfig(BaseModel):
     model_config = ConfigDict(case_sensitive=False)
 
     default_timeout: float = Field(600.0, ge = 0.0)
-    default_temperature: float = Field(0.7, ge = 0.0, le = 2.0)
-    default_top_p: float = Field(1.0, ge=0.0, le=1.0)
-    default_max_tokens: int = 4096
-    default_max_completion_tokens: int = 4096
-    default_frequency_penalty: float = Field(0.0, ge = -2.0, le = 2.0)
-    default_presence_penalty: float = Field(0.0, ge = -2.0, le = 2.0)
-    default_stop: list[str] = Field(default_factory = list)
+    default_temperature: float | None = Field(0.7, ge = 0.0, le = 2.0)
+    default_top_a: float | None = Field(None, ge = 0.0)
+    default_top_p: float | None = Field(None, ge = 0.0, le = 1.0)
+    default_top_k: int | None = None
+    default_max_tokens: int | None = Field(None, ge = 0)
+    default_max_completion_tokens: int | None = Field(None, ge = 0)
+    default_repetition_penalty: float | None = Field(None, gt = 0.0, le = 2.0)
+    default_frequency_penalty: float | None = Field(None, ge = -2.0, le = 2.0)
+    default_presence_penalty: float | None = Field(None, ge = -2.0, le = 2.0)
+    default_stop: list[str] | None = None
     default_thinking: bool | None = None
     default_reasoning_effort: ReasoningEffort | None = None
+    default_service_tier: ServiceTier | None = None
     stream: bool = True
