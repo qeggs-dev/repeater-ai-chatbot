@@ -9,7 +9,7 @@ class ModelConfig(BaseModel):
     default_temperature: float | None = Field(0.7, ge = 0.0, le = 2.0)
     default_top_a: float | None = Field(None, ge = 0.0)
     default_top_p: float | None = Field(None, ge = 0.0, le = 1.0)
-    default_top_k: int | None = None
+    default_top_k: int | None = Field(None, ge = 1)
     default_max_tokens: int | None = Field(None, ge = 0)
     default_max_completion_tokens: int | None = Field(None, ge = 0)
     default_repetition_penalty: float | None = Field(None, gt = 0.0, le = 2.0)
