@@ -1,12 +1,12 @@
 from ..text import format_carry_duration
 
 TOKEN_LEVELS = [
-    ("token", "", 1024),
-    ("K token", "K", 1024),
-    ("M token", "M", 1024),
-    ("G token", "G", 1024),
-    ("T token", "T", 1024),
-    ("P token", "P", 1024),
+    ("Tokens", "", 1024),
+    ("K Tokens", "K", 1024),
+    ("M Tokens", "M", 1024),
+    ("G Tokens", "G", 1024),
+    ("T Tokens", "T", 1024),
+    ("P Tokens", "P", 1024),
 ]
 
 def format_token_duration(duration: int, start_with: int = 0, use_abbreviation: bool = False, delimiter: str = ", ") -> str:
