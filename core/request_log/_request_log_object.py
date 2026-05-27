@@ -1,6 +1,7 @@
 from pydantic import BaseModel, Field, ConfigDict
 from typing import Any
 from ._timestamp_object import TimeStamp
+from ._logprob import Logprob
 
 class RequestLog(BaseModel):
     """
@@ -38,6 +39,7 @@ class RequestLog(BaseModel):
     completion_tokens: int = 0
     cache_hit_count: int = 0
     cache_miss_count: int = 0
+    logprob: Logprob | list[Logprob] | None = None
 
     total_context_length: int = 0
     reasoning_content_length: int = 0
