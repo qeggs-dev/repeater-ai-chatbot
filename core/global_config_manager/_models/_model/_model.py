@@ -18,8 +18,9 @@ class ModelConfig(BaseModel):
     default_presence_penalty: float | None = Field(None, ge = -2.0, le = 2.0)
     default_stop: list[str] | None = None
     default_thinking: bool | None = None
+    default_fim_echo: bool | None = None
     default_reasoning_effort: ReasoningEffort | None = None
     default_service_tier: ServiceTier | None = None
-    default_logprobs: bool | None = None
-    default_top_logprobs: int | None = Field(None, ge = 0)
+    logprobs: bool | None = None
+    top_logprobs: int | None = Field(None, ge = 0)
     stream: bool = True

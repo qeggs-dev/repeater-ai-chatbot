@@ -20,6 +20,7 @@ class UserConfigs(BaseModel):
 
     preset_prompt_name: str | None = None
     model_uid: str | list[str] | None = None
+    fim_echo: bool | None = None
     seed: int | None = None
     temperature: float | None = Field(None, ge=0.0, le=2.0)
     top_a: float | None = Field(None, ge=0.0)
