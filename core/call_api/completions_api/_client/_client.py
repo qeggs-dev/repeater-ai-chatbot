@@ -436,17 +436,18 @@ class ClientBase(ABC):
                 "Cache Hit Ratio: {cache_hit_ratio:.2%}",
                 cache_hit_ratio = response.token_usage.cache_hit_ratio()
             )
-        if response.stream:
-            fs_logger.info(
-                "Average Generation Rate: {avg_gen_rate:.2f}Token/s",
-                avg_gen_rate = response.token_usage.completion_tokens / 
+        if response.stream and response.request_log.chunk_times:
+            if len(response.request_log.chunk_times) > 1:
+                fs_logger.info(
+                    "Average Generation Rate: {avg_gen_rate:.2f} Token/s",
+                    avg_gen_rate = response.token_usage.completion_tokens / 
                     (
                         (
-                            response.request_log.stream_processing_end_time.monotonic -
-                            response.request_log.stream_processing_start_time.monotonic
+                            response.request_log.chunk_times[0].monotonic -
+                            response.request_log.chunk_times[-1].monotonic
                         ) / 1e9
                     )
-            )
+                )
 
         fs_logger.info("============= Content ==============")
         historical_context_text_length = response.historical_context.total_length
