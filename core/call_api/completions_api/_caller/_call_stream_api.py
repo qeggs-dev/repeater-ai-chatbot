@@ -96,17 +96,20 @@ class StreamAPI(CallStreamAPIBase):
             runtime.response.request_log.request_end_time = TimeStamp()
         
         with runtime.status_stack.enter("Streaming"):
-            chunk_queue: asyncio.Queue[ChatCompletionChunk | None] = asyncio.Queue()
+            chunk_queue: asyncio.Queue[ChatCompletionChunk | Exception | None] = asyncio.Queue()
             chunk_times: list[TimeStamp] = []
 
             async def fetch_response_chunks(response: AsyncStream[ChatCompletionChunk]):
                 nonlocal chunk_queue, runtime
-                async for chunk in response:
-                    this_chunk_time = TimeStamp()
-                    await chunk_queue.put(chunk)
-                    chunk_times.append(this_chunk_time)
-                await chunk_queue.put(None)
-                runtime.response.request_log.chunk_generated_times = chunk_times
+                try:
+                    async for chunk in response:
+                        this_chunk_time = TimeStamp()
+                        await chunk_queue.put(chunk)
+                        chunk_times.append(this_chunk_time)
+                    await chunk_queue.put(None)
+                    runtime.response.request_log.chunk_generated_times = chunk_times
+                except Exception as e:
+                    await chunk_queue.put(e)
             
             async def translation_chunks():
                 logger.info("Start Streaming", user_id = user_id)
@@ -114,6 +117,8 @@ class StreamAPI(CallStreamAPIBase):
                     chunk = await chunk_queue.get()
                     if chunk is None:
                         break
+                    elif isinstance(chunk, Exception):
+                        raise chunk
                     delta_data = await translation_openai_chunk(chunk)
                     yield delta_data
             
