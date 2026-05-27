@@ -291,8 +291,9 @@ class ClientBase(ABC):
                         chunk_generation_rate = chunk_generation_rate
                     )
                     fs_logger.info(
-                        "First Generated Chunk Wait Time: {chunk_wait_time:.2f}ms",
-                        chunk_wait_time = first_chunk_wait_time / 1e6
+                        "First Generated Chunk Wait Time: {chunk_wait_time:.2f}ms({format_time_duration})",
+                        chunk_wait_time = first_chunk_wait_time / 1e6,
+                        format_time_duration = format_time_duration_ns(first_chunk_wait_time, use_abbreviation=True)
                     )
                     fs_logger.info(
                         "Chunk Average Generated Time: {ave_chunk_spawn_time:.2f}ms({format_time_duration})",
@@ -333,8 +334,9 @@ class ClientBase(ABC):
                         chunk_generation_rate = chunk_generation_rate
                     )
                     fs_logger.info(
-                        "First Translation Chunk Wait Time: {chunk_wait_time:.2f}ms",
-                        chunk_wait_time = first_chunk_wait_time / 1e6
+                        "First Translation Chunk Wait Time: {chunk_wait_time:.2f}ms({format_time_duration})",
+                        chunk_wait_time = first_chunk_wait_time / 1e6,
+                        format_time_duration = format_time_duration_ns(first_chunk_wait_time, use_abbreviation=True)
                     )
                     fs_logger.info(
                         "Chunk Average Translation Time: {ave_chunk_spawn_time:.2f}ms({format_time_duration})",
@@ -374,8 +376,9 @@ class ClientBase(ABC):
                         chunk_generation_rate = chunk_generation_rate
                     )
                     fs_logger.info(
-                        "First Parsed Chunk Wait Time: {chunk_wait_time:.2f}ms",
-                        chunk_wait_time = first_chunk_wait_time / 1e6
+                        "First Parsed Chunk Wait Time: {chunk_wait_time:.2f}ms({format_time_duration})",
+                        chunk_wait_time = first_chunk_wait_time / 1e6,
+                        format_time_duration = format_time_duration_ns(first_chunk_wait_time, use_abbreviation=True)
                     )
                     fs_logger.info(
                         "Chunk Average Parsed Time: {ave_chunk_spawn_time:.2f}ms({format_time_duration})",
