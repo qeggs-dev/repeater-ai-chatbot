@@ -5,6 +5,9 @@ from typing import Any
 
 class ChatRequest(BaseModel):
     message: str | None = ""
+    suffix: str | None = None
+    echo: bool = False
+    fim_mode: bool = False
     history_messages: list[ContentUnit] | None = None
     user_info: RequestUserInfo = Field(default_factory=RequestUserInfo)
     role: ContentRole = ContentRole.USER

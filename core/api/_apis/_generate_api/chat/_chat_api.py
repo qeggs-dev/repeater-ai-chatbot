@@ -29,6 +29,9 @@ async def chat_endpoint(
     chat_coroutine = server.core.chat(
         user_id = user_id,
         message = request.message,
+        suffix = request.suffix,
+        echo = request.echo,
+        fim_mode = request.fim_mode,
         history_messages = request.history_messages,
         history_msg_role_map = request.history_msg_role_map,
         user_info = request.user_info,
