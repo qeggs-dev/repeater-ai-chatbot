@@ -1,11 +1,13 @@
 from pydantic import BaseModel, Field, ConfigDict
 from typing import Callable, Any
-from ._delta import Delta
 from ._stream_options import StreamOptions
 from ....context import (
     ContentRole
 )
-from ....global_config_manager import ReasoningEffort
+from ....global_config_manager import (
+    ReasoningEffort,
+    ServiceTier
+)
 from ....context import Context
 from ._interface_type import InterfaceType
 from ....auxiliary.http import (
@@ -27,18 +29,22 @@ class Request(BaseModel):
     encoding: str = "utf-8"
     timeout: int | float | ClientTimeout = 600.0
     interface: InterfaceType = InterfaceType.OPENAI
+    service_tier: ServiceTier | None = None
 
-    key: str = ""
     model: str = ""
+    key: str = ""
 
     user_name: str | None = None
 
     temperature: float = 1.0
-    top_p: float = 1.0
-    presence_penalty: float = 0.0
-    frequency_penalty: float = 0.0
-    max_tokens: int = 0
-    max_completion_tokens: int = 0
+    top_a: float | None = None
+    top_p: float | None = None
+    top_k: int | None = None
+    repetition_penalty: float | None = None
+    frequency_penalty: float | None = None
+    presence_penalty: float | None = None
+    max_tokens: int | None = None
+    max_completion_tokens: int | None = None
     stream: bool = False
     thinking: bool | None = None
     stop: list[str] | None = None
