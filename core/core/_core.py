@@ -252,6 +252,9 @@ class Core:
             self,
             message: str | None,
             user_id: str,
+            suffix: str | None = None,
+            echo: bool | None = None,
+            fim_mode: bool = False,
             history_messages: list[ContentUnit] | None = None,
             history_msg_role_map: dict[ContentRole, ContentRole | None] | None = None,
             user_info: RequestUserInfo = RequestUserInfo(),
@@ -306,6 +309,7 @@ class Core:
             # endregion
 
             enable_rul = check_rul(
+                fim_mode = fim_mode,
                 configs = configs,
                 global_configs = global_configs,
                 save_context = save_context
@@ -407,7 +411,7 @@ class Core:
                                 context_loader = context_loader,
                                 template_parser = template_parser,
                                 static_resources_client = self.runtime.static_resources_client,
-                                history_messages = history_messages,
+                                history_messages = history_messages if not fim_mode else [],
                                 history_msg_role_map = history_msg_role_map,
                                 role = role,
                                 role_name = role_name,
@@ -418,6 +422,12 @@ class Core:
                                 cross_user_data_routing = cross_user_data_routing,
                                 task_status_stack = task_status_stack
                             )
+                            if suffix:
+                                suffix = await template_parser.render_ex(
+                                    suffix,
+                                    user_id,
+                                    **extra_template_fields
+                                )
                         # endregion
                         
                         # region [Make Request Object]
@@ -426,7 +436,11 @@ class Core:
                                 user_id = user_id,
                                 user_input = user_input,
                                 user_info = user_info,
-                                submit_context = submit_context,
+                                suffix = suffix,
+                                echo = echo,
+                                fim_mode = fim_mode,
+                                save_context = save_context,
+                                load_prompt = load_prompt,
                                 model = model,
                                 configs = configs,
                                 global_configs = global_configs,
@@ -550,7 +564,7 @@ class Core:
                                     responses = model_responses,
                                     template_parser = template_parser,
                                     user_input = user_input,
-                                    save_context = save_context,
+                                    save_context = save_context if not fim_mode else False,
                                     save_new_only = save_new_only,
                                     context_loader = context_loader,
                                     task_status_stack = task_status_stack,

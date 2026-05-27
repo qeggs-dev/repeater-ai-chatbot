@@ -48,7 +48,7 @@ async def make_context(
     load_prompt: bool | None = None,
     cross_user_data_routing: CrossUserDataRouting[str | None] | None = None,
     task_status_stack: StatusStack[str] | None = None
-):
+) -> tuple[Context, ContentUnit]:
 
     with task_status_stack.enter("Getting history context"):
         if load_prompt is None:
