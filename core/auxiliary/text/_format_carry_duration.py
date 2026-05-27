@@ -63,8 +63,6 @@ def format_carry_duration(
     # Handle the final level
     if remaining_part > 0:
         unit = end_level_abbreviation if use_abbreviation else end_level
-        if remaining_part != 1 and not use_abbreviation:
-            unit += "s"
         data_level_stack.append(f"{int(remaining_part)} {unit}")
     
     # Reverse the stack to get the correct order (largest to smallest)
