@@ -43,7 +43,6 @@ def make_request(
     suffix: str = None,
     echo: bool | None = None,
     fim_mode: bool = False,
-    load_prompt: bool | None = None,
     user_info: RequestUserInfo,
     submit_context: Context,
     model: ModelInfo,
