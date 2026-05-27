@@ -121,6 +121,15 @@ class ClientBase(ABC):
         cv = std_dev / mean_val  # 变异系数
         stability = 1 / (1 + cv)  # 转换为稳定度分数 (0-1之间，越大越稳定)
         return float(stability)
+    
+    @staticmethod
+    def _parse_special_values(value) -> str:
+        if value is None:
+            return "No Set"
+        elif isinstance(value, bool):
+            return "Enabled" if value else "Disabled"
+        else:
+            return str(value)
 
     # region 打印日志
     async def _print_fast_statistics(self, user_id: str, request: Request, response: Response):
@@ -156,40 +165,58 @@ class ClientBase(ABC):
             "Chat Completion ID: {request_id}",
             request_id = response.id
         )
-        thinking_mode: str = "No Set"
-        if request.thinking is not None:
-            if request.thinking:
-                thinking_mode = "Enabled"
-            else:
-                thinking_mode = "Disabled"
         fs_logger.info(
             "Thinking: {thinking}",
-            thinking = thinking_mode
+            thinking = self._parse_special_values(request.thinking)
+        )
+        fs_logger.info(
+            "Seed: {seed}",
+            seed = self._parse_special_values(request.seed)
         )
         fs_logger.info(
             "Temperature: {temperature}",
-            temperature = request.temperature
+            temperature = self._parse_special_values(request.temperature)
+        )
+        fs_logger.info(
+            "Top A: {top_p}",
+            top_p = self._parse_special_values(request.top_a)
         )
         fs_logger.info(
             "Top P: {top_p}",
-            top_p = request.top_p
+            top_p = self._parse_special_values(request.top_p)
+        )
+        fs_logger.info(
+            "Top K: {top_k}",
+            top_k = self._parse_special_values(request.top_k)
+        )
+        fs_logger.info(
+            "Repetition Penalty: {repetition_penalty}",
+            repetition_penalty = self._parse_special_values(request.repetition_penalty)
         )
         fs_logger.info(
             "Frequency Penalty: {frequency_penalty}",
-            frequency_penalty = request.frequency_penalty
+            frequency_penalty = self._parse_special_values(request.frequency_penalty)
         )
         fs_logger.info(
             "Presence Penalty: {presence_penalty}",
-            presence_penalty = request.presence_penalty
+            presence_penalty = self._parse_special_values(request.presence_penalty)
         )
         fs_logger.info(
             "Max Tokens: {max_tokens}",
-            max_tokens = request.max_tokens
+            max_tokens = self._parse_special_values(request.max_tokens)
         )
         fs_logger.info(
             "Max Completion Tokens: {max_completion_tokens}",
-            max_completion_tokens = request.max_completion_tokens
+            max_completion_tokens = self._parse_special_values(request.max_completion_tokens)
         )
+        if request.fim_mode:
+            fs_logger.info("Completion Mode: FIM")
+            fs_logger.info(
+                "FIM Echo: {fim_echo}",
+                fim_echo = self._parse_special_values(request.echo)
+            )
+        else:
+            fs_logger.info("Completion Mode: Chat")
         
         fs_logger.info("============= Response =============")
         if response.system_fingerprint:

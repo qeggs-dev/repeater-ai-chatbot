@@ -51,7 +51,7 @@ class Request(BaseModel):
     stop: list[str] | None = None
     stream_options: StreamOptions = Field(default_factory=StreamOptions)
     reasoning_effort: ReasoningEffort | None = None
-    logprobs: bool = False
+    logprobs: bool | None = None
     top_logprobs: int | None = None
 
     context: Context | None = None

@@ -9,9 +9,7 @@ from ._objects import (
     Runtime,
     Response,
     TokensCount,
-    TopLogprob,
     FinishReason,
-    Logprob,
     Delta,
     StreamOptions
 )
@@ -34,9 +32,7 @@ __all__ = [
     "Runtime",
     "Response",
     "TokensCount",
-    "TopLogprob",
     "FinishReason",
-    "Logprob",
     "Delta",
     "StreamOptions",
     "CallAPIException",

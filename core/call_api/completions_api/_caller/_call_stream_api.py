@@ -103,6 +103,7 @@ class StreamAPI(CallStreamAPIBase):
                     logprobs = self.none_to_omit(request.top_logprobs if request.logprobs else None),
                     seed = self.none_to_omit(request.seed),
                     stop = self.none_to_omit(request.stop),
+                    stream = True,
                     stream_options = request.stream_options.model_dump(),
                     extra_body = extra_body,
                 )
