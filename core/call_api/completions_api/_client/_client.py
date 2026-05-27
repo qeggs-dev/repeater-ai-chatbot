@@ -313,6 +313,48 @@ class ClientBase(ABC):
                         "Chunk Generated Time Stability (Coefficient of Variation): {chunk_stability_cv}",
                         chunk_stability_cv = chunk_stability_cv
                     )
+
+        if response.request_log.total_chunk > 0:
+            if response.request_log.chunk_generated_times:
+                fs_logger.info("=== Translation Chunk Statistics ===")
+                raw_timestamps = [time.monotonic for time in response.request_log.translation_chunk_times]
+                timestamps = np.array(raw_timestamps, dtype=np.int64)
+                time_differences = np.diff(timestamps)
+                non_zero_time_differences = time_differences[time_differences != 0]
+                if time_differences.size > 0 and non_zero_time_differences.size > 0:
+                    max_chunk_spawn_time = int(np.max(time_differences))
+                    min_chunk_spawn_time = int(np.min(non_zero_time_differences))
+                    ave_chunk_spawn_time = int(np.mean(time_differences))
+                    chunk_generation_rate = response.request_log.total_chunk / (stream_processing_time / 1e9)
+                    chunk_stability_cv = self._calculate_stability_cv(time_differences)
+                    first_chunk_wait_time = raw_timestamps[0] - response.request_log.stream_processing_start_time.monotonic
+                    fs_logger.info(
+                        "Chunk Translation Rate: {chunk_generation_rate:.2f} Chunks/s",
+                        chunk_generation_rate = chunk_generation_rate
+                    )
+                    fs_logger.info(
+                        "First Translation Chunk Wait Time: {chunk_wait_time:.2f}ms",
+                        chunk_wait_time = first_chunk_wait_time / 1e6
+                    )
+                    fs_logger.info(
+                        "Chunk Average Translation Time: {ave_chunk_spawn_time:.2f}ms({format_time_duration})",
+                        ave_chunk_spawn_time = ave_chunk_spawn_time / 1e6,
+                        format_time_duration = format_time_duration_ns(ave_chunk_spawn_time, use_abbreviation=True)
+                    )
+                    fs_logger.info(
+                        "Chunk Max Translation Time: {max_chunk_spawn_time:.2f}ms({format_time_duration})",
+                        max_chunk_spawn_time = max_chunk_spawn_time / 1e6,
+                        format_time_duration = format_time_duration_ns(max_chunk_spawn_time, use_abbreviation=True)
+                    )
+                    fs_logger.info(
+                        "Chunk Min Translation Time: {min_chunk_spawn_time:.2f}ms({format_time_duration})",
+                        min_chunk_spawn_time = min_chunk_spawn_time / 1e6,
+                        format_time_duration = format_time_duration_ns(min_chunk_spawn_time, use_abbreviation=True)
+                    )
+                    fs_logger.info(
+                        "Chunk Translation Time Stability (Coefficient of Variation): {chunk_stability_cv}",
+                        chunk_stability_cv = chunk_stability_cv
+                    )
         
             if response.request_log.chunk_times:
                 fs_logger.info("====== Parsed Chunk Statistics =====")
