@@ -405,32 +405,35 @@ class ClientBase(ABC):
 
         fs_logger.info("=========== Token Count ============")
         fs_logger.info(
-            "Total Tokens: {total_tokens}({format_token_duration})",
+            "Total Tokens: {total_tokens}({format_token_duration}Tokens)",
             total_tokens = response.token_usage.total_tokens,
-            format_token_duration = format_token_duration(response.token_usage.total_tokens)
+            format_token_duration = format_token_duration(response.token_usage.total_tokens, use_abbreviation = True, delimiter = " ")
         )
         fs_logger.info(
-            "Context Input Tokens: {prompt_tokens}({format_token_duration})",
+            "Context Input Tokens: {prompt_tokens}({format_token_duration}Tokens)",
             prompt_tokens = response.token_usage.prompt_tokens,
-            format_token_duration = format_token_duration(response.token_usage.prompt_tokens)
+            format_token_duration = format_token_duration(response.token_usage.prompt_tokens, use_abbreviation = True, delimiter = " ")
         )
-        fs_logger.info(
-            "Completion Output Tokens: {completion_tokens}({format_token_duration})",
-            completion_tokens = response.token_usage.completion_tokens,
-            format_token_duration = format_token_duration(response.token_usage.completion_tokens)
-        )
+
         if response.token_usage.prompt_cache_hit_tokens is not None:
             fs_logger.info(
-                "Cache Hit Count: {prompt_cache_hit_tokens}({format_token_duration})",
+                "Cache Hit Count: {prompt_cache_hit_tokens}({format_token_duration}Tokens)",
                 prompt_cache_hit_tokens = response.token_usage.prompt_cache_hit_tokens,
-                format_token_duration = format_token_duration(response.token_usage.prompt_cache_hit_tokens)
+                format_token_duration = format_token_duration(response.token_usage.prompt_cache_hit_tokens, use_abbreviation = True, delimiter = " ")
             )
         if response.token_usage.prompt_cache_miss_tokens is not None:
             fs_logger.info(
-                "Cache Miss Count: {prompt_cache_miss_tokens}({format_token_duration})",
+                "Cache Miss Count: {prompt_cache_miss_tokens}({format_token_duration}Tokens)",
                 prompt_cache_miss_tokens = response.token_usage.prompt_cache_miss_tokens,
-                format_token_duration = format_token_duration(response.token_usage.prompt_cache_miss_tokens)
+                format_token_duration = format_token_duration(response.token_usage.prompt_cache_miss_tokens, use_abbreviation = True, delimiter = " ")
             )
+
+        fs_logger.info(
+            "Completion Output Tokens: {completion_tokens}({format_token_duration}Tokens)",
+            completion_tokens = response.token_usage.completion_tokens,
+            format_token_duration = format_token_duration(response.token_usage.completion_tokens, use_abbreviation = True, delimiter = " ")
+        )
+        
         if not math.isnan(response.token_usage.cache_hit_ratio()):
             fs_logger.info(
                 "Cache Hit Ratio: {cache_hit_ratio:.2%}",
@@ -443,8 +446,8 @@ class ClientBase(ABC):
                     avg_gen_rate = response.token_usage.completion_tokens / 
                     (
                         (
-                            response.request_log.chunk_times[0].monotonic -
-                            response.request_log.chunk_times[-1].monotonic
+                            response.request_log.chunk_times[-1].monotonic -
+                            response.request_log.chunk_times[0].monotonic
                         ) / 1e9
                     )
                 )
