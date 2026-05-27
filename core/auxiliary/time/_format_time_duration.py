@@ -9,7 +9,9 @@ NS_TIME_LEVELS: list[tuple[str, str, int]] = [
     ("hour", "h", 24),
     ("day", "day", 30),
     ("month", "mon", 12),
-    ("year", "y", 100),
+    ("year", "y", 10),
+    ("decade", "dec", 10),
+    ("century", "cent", 10),
 ]
 
 TIME_LEVELS: list[tuple[str, str, int]] = [
@@ -44,5 +46,5 @@ def format_time_duration(duration: int, start_with: int = 0, use_abbreviation: b
         start_with=start_with,
         use_abbreviation=use_abbreviation,
         delimiter=delimiter,
-        final_level=("century", "cent")
+        final_level=("millennium", "mill")
     )
