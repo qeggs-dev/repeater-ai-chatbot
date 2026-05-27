@@ -80,6 +80,10 @@ class StreamAPI(CallStreamAPIBase):
             if request.top_k is not None:
                 with runtime.status_stack.enter("top_k"):
                     extra_body["top_k"] = request.top_k
+            
+            if request.repetition_penalty is not None:
+                with runtime.status_stack.enter("repetition_penalty"):
+                    extra_body["repetition_penalty"] = request.repetition_penalty
         
         # 请求流式连接
         with runtime.status_stack.enter("Send Request"):
@@ -88,7 +92,19 @@ class StreamAPI(CallStreamAPIBase):
             if request.fim_mode:
                 response: AsyncStream[Completion] = await client.completions.create(
                     model = request.model,
-
+                    prompt = request.prompt,
+                    echo = self.none_to_omit(request.echo),
+                    suffix = self.none_to_omit(request.suffix),
+                    temperature = self.none_to_omit(request.temperature),
+                    top_p = self.none_to_omit(request.top_p),
+                    frequency_penalty = self.none_to_omit(request.frequency_penalty),
+                    presence_penalty = self.none_to_omit(request.presence_penalty),
+                    max_tokens = self.none_to_omit(request.max_tokens),
+                    logprobs = self.none_to_omit(request.top_logprobs if request.logprobs else None),
+                    seed = self.none_to_omit(request.seed),
+                    stop = self.none_to_omit(request.stop),
+                    stream_options = request.stream_options.model_dump(),
+                    extra_body = extra_body,
                 )
             else:
                 response: AsyncStream[ChatCompletionChunk] = await client.chat.completions.create(

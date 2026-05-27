@@ -1,4 +1,5 @@
 from .._objects import Delta, ToolCall, TokensCount, FinishReason
+from ....request_log import Logprob, TopLogprob
 from openai.types.chat import ChatCompletionChunk
 from openai.types.completion import Completion
 
@@ -71,6 +72,30 @@ async def translation_openai_chunk(
                 # 这里终于在上面写上包含 None 了
                 if choice.finish_reason is not None:
                     delta_data.finish_reason = FinishReason(choice.finish_reason)
+            
+            # 处理logprobs
+            if hasattr(choice, "logprobs"):
+                if hasattr(choice.logprobs, "content"):
+                    logprobs = []
+                    for token in choice.logprobs.content:
+                        logprob = Logprob()
+                        if hasattr(token, "token"):
+                            logprob.token = token.token
+                        if hasattr(token, "logprob"):
+                            logprob.logprob = token.logprob
+                        if hasattr(token, "top_logprob"):
+                            top_logprobs = []
+                            for top_token in token.top_logprob:
+                                top_logprob = TopLogprob()
+                                if hasattr(top_token, "token"):
+                                    top_logprob.token = top_token.token
+                                if hasattr(top_token, "logprob"):
+                                    top_logprob.logprob = top_token.logprob
+                                top_logprobs.append(top_logprob)
+                            logprob.top_logprobs = top_logprobs
+                        logprobs.append(logprob)
+                    logprobs = logprobs
+
                 
         if hasattr(chunk, "system_fingerprint"):
             delta_data.system_fingerprint = chunk.system_fingerprint

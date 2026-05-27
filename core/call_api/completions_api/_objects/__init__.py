@@ -1,6 +1,5 @@
 from ._delta import Delta, ToolCall
 from ._finish_reason import FinishReason
-from ._logprob import Logprob, TopLogprob
 from ._request import Request
 from ._runtime import Runtime
 from ._response import Response
@@ -12,8 +11,6 @@ __all__ = [
     "Delta",
     "ToolCall",
     "FinishReason",
-    "Logprob",
-    "TopLogprob",
     "Request",
     "Runtime",
     "Response",
