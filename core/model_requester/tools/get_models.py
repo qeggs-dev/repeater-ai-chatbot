@@ -13,7 +13,8 @@ class GetModels(ToolCallPacakage):
     call_type = CallType.ASYNC
 
     class Params(BaseModel):
-        model_id: str | None = None
+        model_id: str | None = Field(None, description = "Model query expression.")
+        detailed_info: bool = Field(False, description = "More detailed model information.")
     
     class Result(BaseModel):
         models: list[SafeModelInfo] = Field(default_factory=list)
@@ -30,7 +31,7 @@ class GetModels(ToolCallPacakage):
             if model_info is None:
                 raise ValueError("Model info is None")
             return self.Result(
-                models = [model.to_safe() for model in model_info.models]
+                models = [model.to_safe(args.detailed_info) for model in model_info.models]
             ).model_dump(exclude_none = True)
         else:
             raise ValueError(f"Failed to get models: {response.text}")
