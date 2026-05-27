@@ -21,6 +21,9 @@ from ....pools.awaitable_pool import CoroutinePool
 from ....auxiliary.time import (
     format_time_duration_ns
 )
+from ....auxiliary.token import (
+    format_token_duration
+)
 from .._caller import (
     CallAPI,
     StreamAPI
@@ -402,26 +405,31 @@ class ClientBase(ABC):
 
         fs_logger.info("=========== Token Count ============")
         fs_logger.info(
-            "Total Tokens: {total_tokens}",
-            total_tokens = response.token_usage.total_tokens
+            "Total Tokens: {total_tokens}({format_token_duration})",
+            total_tokens = response.token_usage.total_tokens,
+            format_token_duration = format_token_duration(response.token_usage.total_tokens)
         )
         fs_logger.info(
-            "Context Input Tokens: {prompt_tokens}",
-            prompt_tokens = response.token_usage.prompt_tokens
+            "Context Input Tokens: {prompt_tokens}({format_token_duration})",
+            prompt_tokens = response.token_usage.prompt_tokens,
+            format_token_duration = format_token_duration(response.token_usage.prompt_tokens)
         )
         fs_logger.info(
-            "Completion Output Tokens: {completion_tokens}",
-            completion_tokens = response.token_usage.completion_tokens
+            "Completion Output Tokens: {completion_tokens}({format_token_duration})",
+            completion_tokens = response.token_usage.completion_tokens,
+            format_token_duration = format_token_duration(response.token_usage.completion_tokens)
         )
         if response.token_usage.prompt_cache_hit_tokens is not None:
             fs_logger.info(
-                "Cache Hit Count: {prompt_cache_hit_tokens}",
-                prompt_cache_hit_tokens = response.token_usage.prompt_cache_hit_tokens
+                "Cache Hit Count: {prompt_cache_hit_tokens}({format_token_duration})",
+                prompt_cache_hit_tokens = response.token_usage.prompt_cache_hit_tokens,
+                format_token_duration = format_token_duration(response.token_usage.prompt_cache_hit_tokens)
             )
         if response.token_usage.prompt_cache_miss_tokens is not None:
             fs_logger.info(
-                "Cache Miss Count: {prompt_cache_miss_tokens}",
-                prompt_cache_miss_tokens = response.token_usage.prompt_cache_miss_tokens
+                "Cache Miss Count: {prompt_cache_miss_tokens}({format_token_duration})",
+                prompt_cache_miss_tokens = response.token_usage.prompt_cache_miss_tokens,
+                format_token_duration = format_token_duration(response.token_usage.prompt_cache_miss_tokens)
             )
         if not math.isnan(response.token_usage.cache_hit_ratio()):
             fs_logger.info(
@@ -430,7 +438,7 @@ class ClientBase(ABC):
             )
         if response.stream:
             fs_logger.info(
-                "Average Generation Rate: {avg_gen_rate:.2f}/s",
+                "Average Generation Rate: {avg_gen_rate:.2f}Token/s",
                 avg_gen_rate = response.token_usage.completion_tokens / 
                     (
                         (
