@@ -36,10 +36,11 @@ class Request(BaseModel):
 
     user_name: str | None = None
 
-    temperature: float = 1.0
+    temperature: float | None = None
     top_a: float | None = None
     top_p: float | None = None
     top_k: int | None = None
+    seed: int | None = None
     repetition_penalty: float | None = None
     frequency_penalty: float | None = None
     presence_penalty: float | None = None
@@ -57,6 +58,8 @@ class Request(BaseModel):
     prompt: str | None = None
     echo: bool | None = None
     suffix: str | None = None
+
+    fim_mode: bool = False
     
     remove_reasoning_prompt: bool = True
     remove_created: bool = True
