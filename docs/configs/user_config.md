@@ -27,10 +27,19 @@
     // 温度越高模型输出的随机性就越高
     "temperature": null,
 
-    // (float) 模型Top-p参数
+    // (float) 模型 Top-A 参数
+    // 筛选出所有概率不低于 最高概率的token × A 的 token
+    // 然后归一化重新采样
+    "top_a": null,
+
+    // (float) 模型 Top-P 参数
     // Top-p参数越低
     // 模型在采样的时候就更倾向于使用更高概率的词
     "top_p": null,
+
+    // (float) 模型 Top-K 参数
+    // 从概率最高的 K 个 token 中抽样，其余 token 的概率被直接置为零
+    "top_k": null,
 
     // (int) 最大生成长度
     // 模型新生成的文本长度不能超过这个值
@@ -55,6 +64,11 @@
     // 模型会停止生成
     // 如果为 null 则使用模型的默认超时
     "model_timeout": null,
+
+    // (float) 模型重复惩罚参数
+    // 重复惩罚参数越高
+    // 模型在生成文本时重复越少
+    "repetition_penalty": null,
 
     // (float) 模型频率惩罚参数
     // 频率惩罚参数越高
