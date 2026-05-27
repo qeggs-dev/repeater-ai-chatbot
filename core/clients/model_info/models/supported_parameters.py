@@ -1,28 +1,51 @@
 from enum import StrEnum
 
 class SupportedParameters(StrEnum):
-    TOOL_CHOICE = "tool_choice"
-    VERBOSITY = "verbosity"
-    LOGIT_BIAS = "logit_bias"
-    REPETITION_PENALTY = "repetition_penalty"
-    FREQUENCY_PENALTY = "frequency_penalty"
+    # === 基础核心参数 ===
+    MODEL = "model"
+    MESSAGES = "messages"
+    STREAM = "stream"
+    N = "n"
+    USER = "user"
+    SERVICE_TIER = "service_tier"
+
+    # === 输出长度控制 ===
     MAX_TOKENS = "max_tokens"
-    REASONING = "reasoning"
+    MAX_COMPLETION_TOKENS = "max_completion_tokens"
+
+    # === 采样与随机性控制 ===
+    TEMPERATURE = "temperature"
     TOP_P = "top_p"
     TOP_A = "top_a"
-    PRESENCE_PENALTY = "presence_penalty"
-    MAX_COMPLETION_TOKENS = "max_completion_tokens"
-    STRUCTURED_OUTPUTS = "structured_outputs"
-    MIN_P = "min_p"
-    STOP = "stop"
-    TOP_LOGPROBS = "top_logprobs"
-    TOOLS = "tools"
-    SEED = "seed"
     TOP_K = "top_k"
-    INCLUDE_REASONING = "include_reasoning"
-    PARALLEL_TOOL_CALLS = "parallel_tool_calls"
-    REASONING_EFFORT = "reasoning_effort"
+    MIN_P = "min_p"
+    SEED = "seed"
+
+    # === 惩罚机制 ===
+    FREQUENCY_PENALTY = "frequency_penalty"
+    PRESENCE_PENALTY = "presence_penalty"
+    REPETITION_PENALTY = "repetition_penalty"
+
+    # === 停止与日志概率 ===
+    STOP = "stop"
     LOGPROBS = "logprobs"
-    WEB_SEARCH_OPTIONS = "web_search_options"
+    TOP_LOGPROBS = "top_logprobs"
+
+    # === 工具 / 函数调用 ===
+    TOOLS = "tools"
+    TOOL_CHOICE = "tool_choice"
+    PARALLEL_TOOL_CALLS = "parallel_tool_calls"
+
+    # === 结构化输出 ===
     RESPONSE_FORMAT = "response_format"
-    TEMPERATURE = "temperature"
+    STRUCTURED_OUTPUTS = "structured_outputs"
+
+    # === 推理相关（Reasoning Models）===
+    REASONING = "reasoning"
+    REASONING_EFFORT = "reasoning_effort"
+    INCLUDE_REASONING = "include_reasoning"
+
+    # === 其他常见参数 ===
+    VERBOSITY = "verbosity"
+    LOGIT_BIAS = "logit_bias"
+    WEB_SEARCH_OPTIONS = "web_search_options"
