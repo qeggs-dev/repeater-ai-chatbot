@@ -21,7 +21,7 @@ from .._objects import (
 from ....context import (
     ContentUnit
 )
-from ....request_log import RequestLog, TimeStamp
+from ....request_log import TimeStamp
 from ._call_api_base import CallNstreamAPIBase
 from .._exceptions import *
 
@@ -102,9 +102,12 @@ class CallAPI(CallNstreamAPIBase):
                     remove_reasoning_prompt = request.remove_reasoning_prompt,
                     remove_created = request.remove_created,
                 ),
+                seed = self.none_to_omit(request.seed),
                 tools = self.none_to_omit(request.tools),
                 tool_choice = self.none_to_omit(request.tool_choice),
                 stream_options = self.none_to_omit(request.stream_options.model_dump()),
+                logprobs = self.none_to_omit(request.logprobs),
+                top_logprobs = self.none_to_omit(request.top_logprobs if request.top_logprobs else None),
                 extra_body = extra_body
             )
             request_end_time = TimeStamp()

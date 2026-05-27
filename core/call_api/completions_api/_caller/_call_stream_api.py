@@ -7,6 +7,7 @@ from typing import (
 
 # ==== 第三方库 ==== #
 from openai.types.chat import ChatCompletionChunk
+from openai.types.completion import Completion
 from openai import AsyncStream
 from loguru import logger
 
@@ -71,31 +72,48 @@ class StreamAPI(CallStreamAPIBase):
             if request.send_user_id:
                 with runtime.status_stack.enter("user_id"):
                     extra_body["user_id"] = user_id
+            
+            if request.top_a is not None:
+                with runtime.status_stack.enter("top_a"):
+                    extra_body["top_a"] = request.top_a
+            
+            if request.top_k is not None:
+                with runtime.status_stack.enter("top_k"):
+                    extra_body["top_k"] = request.top_k
         
         # 请求流式连接
         with runtime.status_stack.enter("Send Request"):
             logger.info(f"Start Connecting to the API", user_id = user_id)
             runtime.response.request_log.request_start_time = TimeStamp()
-            response: AsyncStream[ChatCompletionChunk] = await client.chat.completions.create(
-                model = request.model,
-                temperature = self.none_to_omit(request.temperature),
-                top_p = self.none_to_omit(request.top_p),
-                frequency_penalty = self.none_to_omit(request.frequency_penalty),
-                presence_penalty = self.none_to_omit(request.presence_penalty),
-                max_tokens = self.none_to_omit(request.max_tokens),
-                max_completion_tokens = self.none_to_omit(request.max_completion_tokens),
-                stop = self.none_to_omit(request.stop),
-                stream = True,
-                messages = request.context.to_context(
-                    with_prompt = True,
-                    remove_reasoning_prompt = request.remove_reasoning_prompt,
-                    remove_created = request.remove_created,
-                ),
-                tools = self.none_to_omit(request.tools),
-                tool_choice = self.none_to_omit(request.tool_choice),
-                stream_options=request.stream_options.model_dump(),
-                extra_body = extra_body
-            )
+            if request.fim_mode:
+                response: AsyncStream[Completion] = await client.completions.create(
+                    model = request.model,
+
+                )
+            else:
+                response: AsyncStream[ChatCompletionChunk] = await client.chat.completions.create(
+                    model = request.model,
+                    temperature = self.none_to_omit(request.temperature),
+                    top_p = self.none_to_omit(request.top_p),
+                    frequency_penalty = self.none_to_omit(request.frequency_penalty),
+                    presence_penalty = self.none_to_omit(request.presence_penalty),
+                    max_tokens = self.none_to_omit(request.max_tokens),
+                    max_completion_tokens = self.none_to_omit(request.max_completion_tokens),
+                    stop = self.none_to_omit(request.stop),
+                    stream = True,
+                    messages = request.context.to_context(
+                        with_prompt = True,
+                        remove_reasoning_prompt = request.remove_reasoning_prompt,
+                        remove_created = request.remove_created,
+                    ),
+                    seed = self.none_to_omit(request.seed),
+                    tools = self.none_to_omit(request.tools),
+                    tool_choice = self.none_to_omit(request.tool_choice),
+                    stream_options=request.stream_options.model_dump(),
+                    logprobs = self.none_to_omit(request.logprobs),
+                    top_logprobs = self.none_to_omit(request.top_logprobs if request.top_logprobs else None),
+                    extra_body = extra_body
+                )
             runtime.response.request_log.request_end_time = TimeStamp()
         
         with runtime.status_stack.enter("Streaming"):

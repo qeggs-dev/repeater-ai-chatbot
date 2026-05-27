@@ -1,13 +1,14 @@
 import sys
 import openai
 
-from typing import Literal, AsyncIterator, TextIO, TypeVar, Any
+from typing import Literal, AsyncIterator, TextIO, TypeVar, Any, overload
 from abc import ABC, abstractmethod
 from .._objects import Request, Response, Delta, Runtime, InterfaceType
 from .._exceptions import *
 from ....pools.client_pool import ClientInfo
 
 T = TypeVar("T")
+T_Value = TypeVar("T_Value")
 
 class BaseCallAPI(ABC):
     """
@@ -32,7 +33,17 @@ class BaseCallAPI(ABC):
         return client
     
     @staticmethod
-    def none_to_omit(value: Any) -> Any:
+    @overload
+    def none_to_omit(value: None) -> openai.Omit:
+        ...
+    
+    @staticmethod
+    @overload
+    def none_to_omit(value: T_Value) -> T_Value:
+        ...
+    
+    @staticmethod
+    def none_to_omit(value: T_Value | None) -> T_Value | openai.Omit:
         if value is None:
             return openai.omit
         return value
