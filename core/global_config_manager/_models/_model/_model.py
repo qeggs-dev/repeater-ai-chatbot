@@ -6,6 +6,7 @@ class ModelConfig(BaseModel):
     model_config = ConfigDict(case_sensitive=False)
 
     default_timeout: float = Field(600.0, ge = 0.0)
+    default_seed: int | None = None
     default_temperature: float | None = Field(0.7, ge = 0.0, le = 2.0)
     default_top_a: float | None = Field(None, ge = 0.0)
     default_top_p: float | None = Field(None, ge = 0.0, le = 1.0)
@@ -19,4 +20,6 @@ class ModelConfig(BaseModel):
     default_thinking: bool | None = None
     default_reasoning_effort: ReasoningEffort | None = None
     default_service_tier: ServiceTier | None = None
+    default_logprobs: bool | None = None
+    default_top_logprobs: int | None = Field(None, ge = 0)
     stream: bool = True
