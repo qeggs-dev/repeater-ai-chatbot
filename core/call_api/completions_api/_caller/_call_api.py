@@ -33,6 +33,9 @@ class CallAPI(CallNstreamAPIBase):
         assert isinstance(request, Request), "request must be Request"
         assert isinstance(runtime, Runtime), "runtime must be Runtime"
 
+        if request.stream:
+            raise NotImplementedError("Stream API not implemented")
+
         with runtime.status_stack.enter("Init objects"):
             # 创建模型响应对象
             model_response = runtime.response

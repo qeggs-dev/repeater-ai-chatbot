@@ -34,6 +34,9 @@ class StreamAPI(CallStreamAPIBase):
         assert isinstance(request, Request), "request must be a Request object"
         assert isinstance(runtime, Runtime), "runtime must be a Runtime object"
 
+        if not request.stream:
+            raise NotImplementedError("Direct API is not implemented")
+
         with runtime.status_stack.enter("Create OpenAI Client"):
             # 创建OpenAI Client
             logger.info(f"Created OpenAI Client", user_id = user_id)
