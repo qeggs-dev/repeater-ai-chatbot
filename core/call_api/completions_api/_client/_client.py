@@ -595,7 +595,7 @@ class ClientBase(ABC):
                         max_queue_backlog = queue_backlog.min()
                     )
                     fs_logger.info(
-                        "Parsed Mean Queue Backlog: {max_queue_backlog}",
+                        "Parsed Mean Queue Backlog: {max_queue_backlog:.4f}",
                         max_queue_backlog = queue_backlog.mean()
                     )
         
@@ -702,7 +702,7 @@ class ClientBase(ABC):
                         max_queue_backlog = queue_backlog.min()
                     )
                     fs_logger.info(
-                        "Parsed Mean Queue Backlog: {max_queue_backlog}",
+                        "Parsed Mean Queue Backlog: {max_queue_backlog:.4f}",
                         max_queue_backlog = queue_backlog.mean()
                     )
 
