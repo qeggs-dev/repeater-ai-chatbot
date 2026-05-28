@@ -75,6 +75,7 @@ class StreamingResponseGenerationLayer:
         self.created:TimeStamp = TimeStamp()
         # chunk耗时列表
         self.chunk_times:list[TimeStamp] = []
+        self.processor_queue_backlog: list[int] = []
 
         self._chunk_queue: asyncio.Queue[Delta | Exception | None] = asyncio.Queue()
 
@@ -84,6 +85,7 @@ class StreamingResponseGenerationLayer:
         self._print_chunk = config_to_log_level(ConfigManager.get_configs().logger.level) > LogLevel.TRACE
     
     def finally_stream(self):
+        stream_processing_end_time: int = TimeStamp()
         if self.request.print_chunk:
             self._print_file.write("\n\n")
             self._print_file.flush()
@@ -94,11 +96,13 @@ class StreamingResponseGenerationLayer:
         self.response.request_log.empty_chunk = self.empty_chunk_count
         self.response.request_log.created_time = self.response.created
         self.response.request_log.chunk_times = self.chunk_times
+        self.response.request_log.processor_queue_backlog = self.processor_queue_backlog
         self.response.request_log.total_tokens = self.response.token_usage.total_tokens
         self.response.request_log.prompt_tokens = self.response.token_usage.prompt_tokens
         self.response.request_log.completion_tokens = self.response.token_usage.completion_tokens
         self.response.request_log.cache_hit_count = self.response.token_usage.prompt_cache_hit_tokens
         self.response.request_log.cache_miss_count = self.response.token_usage.prompt_cache_miss_tokens
+        self.response.request_log.stream_processing_end_time = stream_processing_end_time
 
         # 由于工具调用不分顺序，而是通过 ID 定位
         # 所以这里这里可以忽略索引
@@ -141,11 +145,10 @@ class StreamingResponseGenerationLayer:
         Returns the next chunk of data from the streaming response generation layer.
         """
         delta_data = await self._chunk_queue.get()
+        self.processor_queue_backlog.append(self._chunk_queue.qsize())
         if delta_data is None:
             if not self._finished:
                 self._finished = True
-                stream_processing_end_time: int = TimeStamp()
-                self.response.request_log.stream_processing_end_time = stream_processing_end_time
                 self.finally_stream()
                 raise StopAsyncIteration
         elif isinstance(delta_data, Exception):
