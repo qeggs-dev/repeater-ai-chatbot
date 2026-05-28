@@ -137,6 +137,7 @@ class StreamAPI(CallStreamAPIBase):
             chunk_queue: asyncio.Queue[ChatCompletionChunk | Exception | None] = asyncio.Queue()
             chunk_times: list[TimeStamp] = []
             translation_chunk_times:list[TimeStamp] = []
+            translation_queue_backlog: list[int] = []
 
             async def fetch_response_chunks(response: AsyncStream[ChatCompletionChunk]):
                 nonlocal chunk_queue, runtime
@@ -151,10 +152,11 @@ class StreamAPI(CallStreamAPIBase):
                     await chunk_queue.put(e)
             
             async def translation_chunks():
-                nonlocal chunk_queue, translation_chunk_times, runtime
+                nonlocal chunk_queue, translation_chunk_times, runtime, translation_queue_backlog
                 logger.info("Start Streaming", user_id = user_id)
                 while True:
                     chunk = await chunk_queue.get()
+                    translation_queue_backlog.append(chunk_queue.qsize())
                     if chunk is None:
                         break
                     elif isinstance(chunk, Exception):
@@ -163,8 +165,8 @@ class StreamAPI(CallStreamAPIBase):
                     translation_chunk_times.append(TimeStamp())
                     yield delta_data
                 runtime.response.request_log.translation_chunk_times = translation_chunk_times
-                
-            
+                runtime.response.request_log.translation_queue_backlog = translation_queue_backlog
+
             fetch_response_chunks_task = asyncio.create_task(
                 fetch_response_chunks(
                     response
