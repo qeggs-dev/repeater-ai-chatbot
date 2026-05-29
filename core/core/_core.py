@@ -447,6 +447,11 @@ class Core:
                                 role_name = role_name,
                                 thinking = thinking
                             )
+
+                            if configs.max_generate_times:
+                                max_generate_times = configs.max_generate_times
+                            else:
+                                max_generate_times = global_configs.callapi.max_generate_times
                             
                             if global_configs.tool_calls.enabled:
                                 tool_calls_configs = global_configs.tool_calls
@@ -553,6 +558,7 @@ class Core:
                                     user_id = user_id,
                                     request = request,
                                     runtime = request_runtime,
+                                    max_generated_times = max_generate_times,
                                     available_tool_calls = available_tool_calls,
                                     stream = stream
                                 )
