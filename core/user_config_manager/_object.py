@@ -41,6 +41,8 @@ class UserConfigs(BaseModel):
     allowed_tool_calls: set[str] | None = None
     send_user_id: bool | None = None
 
+    max_generate_times: int | None = None
+
     render_style: str | None = None
     render_html_template: str | None = None
     render_title: str | None = None
