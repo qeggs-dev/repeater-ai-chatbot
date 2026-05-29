@@ -129,12 +129,12 @@ class ModelRequester:
         user_id:str,
         request: Request,
         runtime: Runtime,
+        max_generated_times: int = 16,
         available_tool_calls: set[str] | None = None,
         tool_choice_model: ToolChoice = ToolChoice.AUTO,
         stream: bool = False,
     ) -> MultiResponse:
         generated_times: int = 0
-        max_generated_times: int = ConfigManager.get_configs().callapi.max_regenerate_times
         responses: MultiResponse = MultiResponse()
         responses.historical_context = request.context.copy()
         if request.remove_reasoning_prompt:
