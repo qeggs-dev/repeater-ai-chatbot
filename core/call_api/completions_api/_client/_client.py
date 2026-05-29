@@ -407,7 +407,7 @@ class ClientBase(ABC):
                 if time_differences.size > 0 and non_zero_time_differences.size > 0:
                     max_chunk_spawn_time = int(np.max(time_differences))
                     min_chunk_spawn_time = int(np.min(non_zero_time_differences))
-                    ave_chunk_spawn_time = float(np.mean(time_differences))
+                    ave_chunk_spawn_time = round(float(np.mean(time_differences)), 4)
                     chunk_median_time = float(np.median(time_differences))
                     chunk_spawn_time_std = float(np.std(time_differences))
                     chunk_spawn_time_iqr = self._calculate_interquartile_range(time_differences)
@@ -449,7 +449,7 @@ class ClientBase(ABC):
                         format_time_duration = format_time_duration_ns(min_chunk_spawn_time, use_abbreviation=True)
                     )
                     fs_logger.info(
-                        "Generated Chunk Time CV(Coefficient of Variation): {chunk_stability_cv:.2%}",
+                        "Generated Chunk Time CV: {chunk_stability_cv:.2%}",
                         chunk_stability_cv = chunk_stability_cv,
                     )
                     fs_logger.info(
@@ -463,32 +463,32 @@ class ClientBase(ABC):
                         format_time_duration = format_time_duration_ns(chunk_median_time, use_abbreviation=True)
                     )
                     fs_logger.info(
-                        "Generated Chunk Time STD(Standard Deviation): {chunk_std_time:.2f}ms({format_time_duration})",
+                        "Generated Chunk Time STD: {chunk_std_time:.2f}ms({format_time_duration})",
                         chunk_std_time = chunk_spawn_time_std / 1e6,
-                        format_time_duration = format_time_duration_ns(chunk_spawn_time_std, use_abbreviation=True)
+                        format_time_duration = format_time_duration_ns(round(chunk_spawn_time_std, 4), use_abbreviation=True)
                     )
                     fs_logger.info(
-                        "Generated Chunk Time MAD(Median Absolute Deviation): {chunk_mad_time:.2f}ms({format_time_duration})",
+                        "Generated Chunk Time MAD: {chunk_mad_time:.2f}ms({format_time_duration})",
                         chunk_mad_time = chunk_spawn_time_mad / 1e6,
-                        format_time_duration = format_time_duration_ns(chunk_spawn_time_mad, use_abbreviation=True)
+                        format_time_duration = format_time_duration_ns(round(chunk_spawn_time_mad, 4), use_abbreviation=True)
                     )
                     fs_logger.info(
-                        "Generated Chunk Time Relative MAD(Median Absolute Deviation): {chunk_relative_time_mad:.2%}",
+                        "Generated Chunk Time Relative MAD: {chunk_relative_time_mad:.2%}",
                         chunk_relative_time_mad = chunk_spawn_time_relative_mad
                     )
                     fs_logger.info(
-                        "Generated Chunk Time IQR(Interquartile Range): {chunk_iqr_time:.2f}ms({format_time_duration})",
+                        "Generated Chunk Time IQR: {chunk_iqr_time:.2f}ms({format_time_duration})",
                         chunk_iqr_time = chunk_spawn_time_iqr / 1e6,
                         format_time_duration = format_time_duration_ns(chunk_spawn_time_iqr, use_abbreviation=True)
                     )
                     fs_logger.info(
-                        "Generated Chunk Time Skewness {chunk_time_skewness:.4f}",
-                        chunk_time_skewness = skewness
-                    )
-                    fs_logger.info(
-                        "Generated Chunk Time IDR(Interdecile Range): {chunk_idr_time:.2f}ms({format_time_duration})",
+                        "Generated Chunk Time IDR: {chunk_idr_time:.2f}ms({format_time_duration})",
                         chunk_idr_time = chunk_spawn_time_idr / 1e6,
                         format_time_duration = format_time_duration_ns(chunk_spawn_time_idr, use_abbreviation=True)
+                    )
+                    fs_logger.info(
+                        "Generated Chunk Time Skewness {chunk_time_skewness:.4f}",
+                        chunk_time_skewness = skewness
                     )
         
         if response.request_log.total_chunk > 0:
@@ -503,7 +503,7 @@ class ClientBase(ABC):
                 if time_differences.size > 0 and non_zero_time_differences.size > 0:
                     max_chunk_spawn_time = int(np.max(time_differences))
                     min_chunk_spawn_time = int(np.min(non_zero_time_differences))
-                    ave_chunk_spawn_time = float(np.mean(time_differences))
+                    ave_chunk_spawn_time = round(float(np.mean(time_differences)), 4)
                     chunk_median_time = float(np.median(time_differences))
                     chunk_spawn_time_std = float(np.std(time_differences))
                     chunk_spawn_time_iqr = self._calculate_interquartile_range(time_differences)
@@ -545,7 +545,7 @@ class ClientBase(ABC):
                         format_time_duration = format_time_duration_ns(min_chunk_spawn_time, use_abbreviation=True)
                     )
                     fs_logger.info(
-                        "Translation Chunk Time CV(Coefficient of Variation): {chunk_stability_cv:.2%}",
+                        "Translation Chunk Time CV: {chunk_stability_cv:.2%}",
                         chunk_stability_cv = chunk_stability_cv,
                     )
                     fs_logger.info(
@@ -559,26 +559,26 @@ class ClientBase(ABC):
                         format_time_duration = format_time_duration_ns(chunk_median_time, use_abbreviation=True)
                     )
                     fs_logger.info(
-                        "Translation Chunk Time Std(Standard Deviation): {chunk_std_time:.2f}ms({format_time_duration})",
+                        "Translation Chunk Time STD: {chunk_std_time:.2f}ms({format_time_duration})",
                         chunk_std_time = chunk_spawn_time_std / 1e6,
-                        format_time_duration = format_time_duration_ns(chunk_spawn_time_std, use_abbreviation=True)
+                        format_time_duration = format_time_duration_ns(round(chunk_spawn_time_std, 4), use_abbreviation=True)
                     )
                     fs_logger.info(
-                        "Translation Chunk Time MAD(Median Absolute Deviation): {chunk_mad_time:.2f}ms({format_time_duration})",
+                        "Translation Chunk Time MAD: {chunk_mad_time:.2f}ms({format_time_duration})",
                         chunk_mad_time = chunk_spawn_time_mad / 1e6,
-                        format_time_duration = format_time_duration_ns(chunk_spawn_time_mad, use_abbreviation=True)
+                        format_time_duration = format_time_duration_ns(round(chunk_spawn_time_mad, 4), use_abbreviation=True)
                     )
                     fs_logger.info(
-                        "Translation Chunk Time Relative MAD(Median Absolute Deviation): {chunk_relative_time_mad:.2%}",
+                        "Translation Chunk Time Relative MAD: {chunk_relative_time_mad:.2%}",
                         chunk_relative_time_mad = chunk_spawn_time_relative_mad
                     )
                     fs_logger.info(
-                        "Translation Chunk Time IQR(Interquartile Range): {chunk_iqr_time:.2f}ms({format_time_duration})",
+                        "Translation Chunk Time IQR: {chunk_iqr_time:.2f}ms({format_time_duration})",
                         chunk_iqr_time = chunk_spawn_time_iqr / 1e6,
                         format_time_duration = format_time_duration_ns(chunk_spawn_time_iqr, use_abbreviation=True)
                     )
                     fs_logger.info(
-                        "Translation Chunk Time IDR(Interdecile Range): {chunk_idr_time:.2f}ms({format_time_duration})",
+                        "Translation Chunk Time IDR: {chunk_idr_time:.2f}ms({format_time_duration})",
                         chunk_idr_time = chunk_spawn_time_idr / 1e6,
                         format_time_duration = format_time_duration_ns(chunk_spawn_time_idr, use_abbreviation=True)
                     )
@@ -610,7 +610,7 @@ class ClientBase(ABC):
                 if time_differences.size > 0 and non_zero_time_differences.size > 0:
                     max_chunk_spawn_time = int(np.max(time_differences))
                     min_chunk_spawn_time = int(np.min(non_zero_time_differences))
-                    ave_chunk_spawn_time = float(np.mean(time_differences))
+                    ave_chunk_spawn_time = round(float(np.mean(time_differences)), 4)
                     chunk_median_time = float(np.median(time_differences))
                     chunk_spawn_time_std = float(np.std(time_differences))
                     chunk_spawn_time_iqr = self._calculate_interquartile_range(time_differences)
@@ -652,7 +652,7 @@ class ClientBase(ABC):
                         format_time_duration = format_time_duration_ns(min_chunk_spawn_time, use_abbreviation=True)
                     )
                     fs_logger.info(
-                        "Parsed Chunk Time CV(Coefficient of Variation): {chunk_stability_cv:.2%}",
+                        "Parsed Chunk Time CV: {chunk_stability_cv:.2%}",
                         chunk_stability_cv = chunk_stability_cv,
                     )
                     fs_logger.info(
@@ -666,14 +666,14 @@ class ClientBase(ABC):
                         format_time_duration = format_time_duration_ns(chunk_median_time, use_abbreviation=True)
                     )
                     fs_logger.info(
-                        "Parsed Chunk Time Std: {chunk_std_time:.2f}ms({format_time_duration})",
+                        "Parsed Chunk Time STD: {chunk_std_time:.2f}ms({format_time_duration})",
                         chunk_std_time = chunk_spawn_time_std / 1e6,
-                        format_time_duration = format_time_duration_ns(chunk_spawn_time_std, use_abbreviation=True)
+                        format_time_duration = format_time_duration_ns(round(chunk_spawn_time_std, 4), use_abbreviation=True)
                     )
                     fs_logger.info(
                         "Parsed Chunk Time MAD: {chunk_mad_time:.2f}ms({format_time_duration})",
                         chunk_mad_time = chunk_spawn_time_mad / 1e6,
-                        format_time_duration = format_time_duration_ns(chunk_spawn_time_mad, use_abbreviation=True)
+                        format_time_duration = format_time_duration_ns(round(chunk_spawn_time_mad, 4), use_abbreviation=True)
                     )
                     fs_logger.info(
                         "Parsed Chunk Time Relative MAD: {chunk_relative_time_mad:.2%}",
@@ -685,7 +685,7 @@ class ClientBase(ABC):
                         format_time_duration = format_time_duration_ns(chunk_spawn_time_iqr, use_abbreviation=True)
                     )
                     fs_logger.info(
-                        "Parsed Chunk Time IDR(Interdecile Range): {chunk_idr_time:.2f}ms({format_time_duration})",
+                        "Parsed Chunk Time IDR: {chunk_idr_time:.2f}ms({format_time_duration})",
                         chunk_idr_time = chunk_spawn_time_idr / 1e6,
                         format_time_duration = format_time_duration_ns(chunk_spawn_time_idr, use_abbreviation=True)
                     )
