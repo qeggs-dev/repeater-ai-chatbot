@@ -33,18 +33,30 @@ from ..request_log import (
 from ..status_map import StatusStack
 from ..pools.awaitable_pool import TaskPool
 from ..pools.openai_pool import OpenAIPool
-from ..auxiliary.http import get_ssl_context
+from ..auxiliary.http import (
+    ssl_context,
+    RepeaterTransport
+)
 
 class RepeaterRuntime:
     _env = Env()
 
-    def __init__(self):
-        all_obj = dir(self)
-        for obj in all_obj:
-            if obj.startswith("init_") and hasattr(self, obj):
-                func = getattr(self, obj)
-                func()
+    # 初始化列表
+    # 用于保证初始化顺序
+    init_list = []
 
+    def __init__(self):
+        for init_func in self.init_list:
+            init_func(self)
+
+    @init_list.append
+    @print_init_runtime("Repeater Transport Layer")
+    def init_transport(self):
+        self.transport = RepeaterTransport(
+            verify = ssl_context.get_ssl_context()
+        )
+
+    @init_list.append
     @print_init_runtime("Data Manager")
     def init_data_manager(self):
         # 初始化用户数据管理器
@@ -52,6 +64,7 @@ class RepeaterRuntime:
         self.prompt_manager = PromptManager()
         self.user_config_manager: UserConfigManager = UserConfigManager()
 
+    @init_list.append
     @print_init_runtime("Models Manager")
     def init_models_manager(self):
         # 初始化 Model 管理器
@@ -61,23 +74,26 @@ class RepeaterRuntime:
                 ConfigManager.get_configs().model_api.api_key_env_name
             ),
             ConfigManager.get_configs().model_api.timeout,
-            verify = get_ssl_context()
+            transport = self.transport,
         )
 
+    @init_list.append
     @print_init_runtime("Static Resources Client")
     def init_static_resources_client(self):
         # 初始化静态资源客户端
         self.static_resources_client = StaticResourcesClient(
             ConfigManager.get_configs().static_resources_server.base_url,
             ConfigManager.get_configs().static_resources_server.timeout,
-            verify = get_ssl_context()
+            transport = self.transport,
         )
 
+    @init_list.append
     @print_init_runtime("Content Buffers Pool")
     def init_content_buffers_pool(self):
         # 初始化内容缓冲池
         self.content_buffers_pools: ResourcePool[str, ResourcePool[str, ContentBuffer]] = ResourcePool()
 
+    @init_list.append
     @print_init_runtime("Call Log Manager")
     def init_call_log_manager(self):
         # 初始化调用日志管理器
@@ -86,6 +102,7 @@ class RepeaterRuntime:
             auto_save = ConfigManager.get_configs().request_log.auto_save,
         )
 
+    @init_list.append
     @print_init_runtime("Blacklist")
     def init_blacklist(self):
         # 黑名单
@@ -100,16 +117,19 @@ class RepeaterRuntime:
             logger.error(f"Blacklist file not found: {blacklist_file_path}")
         self.blacklist_match_timeout: int | None = ConfigManager.get_configs().blacklist.match_timeout
 
+    @init_list.append
     @print_init_runtime("Task Status Map")
     def init_task_status_map(self):
         # Task 状态表
         self.task_status_stacks: ResourcePool[str, ResourcePool[str, StatusStack[str]]] = ResourcePool()
 
+    @init_list.append
     @print_init_runtime("Chat Task Pool")
     def init_chat_task_pool(self):
         # 初始化任务池
         self.chat_task_pool: TaskPool = TaskPool()
 
+    @init_list.append
     @print_init_runtime("Openai Pool")
     def init_openai_pool(self):
         # 初始化客户端池
@@ -117,25 +137,28 @@ class RepeaterRuntime:
         self.openai_pool: OpenAIPool = OpenAIPool(
             config.callapi.client_cache_size
         )
-
+    
+    @init_list.append
     @print_init_runtime("HTML Render Client")
     def init_html_render_client(self):
         render_config = ConfigManager.get_configs().render
         self.html_render_client = HTMLRenderClient(
             base_url = render_config.to_image.base_url,
             timeout = render_config.to_image.timeout,
-            verify = get_ssl_context()
+            transport = self.transport,
         )
     
+    @init_list.append
     @print_init_runtime("Nexus Client")
     def init_nexus_client(self):
         nexus_config = ConfigManager.get_configs().nexus
         self.nexus_client: NexusClient = NexusClient(
             base_url = nexus_config.base_url,
             request_timeout = nexus_config.api_timeout,
-            verify = get_ssl_context()
+            transport = self.transport,
         )
     
+    @init_list.append
     @print_init_runtime("License Loader")
     def init_licenses_data(self):
         self.licenses = LicenseLoader(ConfigManager.get_configs().licenses)
