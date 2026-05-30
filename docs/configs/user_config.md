@@ -12,11 +12,8 @@
 并通过接口来修改它们
 
 ```json
-{
-    
-    // (str) 预设提示词
-    // 用于快速路由定义好的提示词文件
-    "preset_prompt_name": null,
+{   
+    // Model Parameters ----------------------------------------------
 
     // (str | list[str]) 模型UID
     // 用于指定消息处理模型
@@ -80,6 +77,71 @@
     // 模型越倾向于讨论新话题
     "presence_penalty": null,
 
+    // (bool) 是否发送用户 ID 到服务端
+    // 如果为 true，则 Repeater 会讲 user_id 进行 sha256 后填充到 `user_id` 字段中
+    // 需要服务端明确支持 `user_id` 字段
+    "send_user_id": null,
+
+    // Generate Loop ----------------------------------------------
+
+    // (int) 单次请求允许的最大生成次数
+    // 该值会影响 Tool Call 等需要循环调用的功能
+    "max_generate_times": null,
+
+    // Render ----------------------------------------------
+
+    // (str) Request Statistics Message 模板
+    // 用于生成一段自定义的统计文本
+    "request_statistics_template": null,
+
+    // (str) 渲染风格
+    // 用于指定文本转图片时的CSS样式文件
+    "render_style": null,
+
+    // (str) 渲染 HTML 模板
+    // 用于指定文本转图片时的HTML模板文件
+    "render_html_template": null,
+
+    // (str) 渲染 HTML 标题
+    // 用于指定文本转图片时的图片标题
+    "render_title": null,
+
+    // (str) 渲染尾部注释
+    // 在生成图片的最下方添加一小段独立文本
+    "render_document_bottom_comment": null,
+
+    // Prompt ------------------------------------------------
+
+    // (bool) 是否加载提示词
+    // 此选项会被API接口中传入的 load_prompt 参数覆盖
+    "load_prompt": null,
+    
+    // (str) 预设提示词
+    // 用于快速路由定义好的提示词文件
+    "preset_prompt_name": null,
+
+    // (dict[str, list[str]]) 设置 Prompt Directives
+    // 键为基础类型，值为激活的 Prompt Directives 名称
+    "prompt_directives": null,
+
+
+    // Context ----------------------------------------------
+
+    // (bool) 是否保存上下文
+    // 此选项会被API接口中传入的 save_context 参数覆盖
+    "save_context": null,
+
+    // (bool) 是否只保存新消息
+    // 如果启用，则只保存新消息，而不是追加到历史消息中
+    "save_new_only": null,
+
+    // (bool) 是否在保存时丢弃非文本数据
+    "save_text_only": null,
+
+    // (bool) 是否构建多模态请求
+    // 如果为 false 则多模态内容将以文本的形式发送
+    "make_multimodal_message": null,
+
     // (int) 定义上下文问的极限字数
     // Repeater会以一对消息为单位去删除过多的部分。
     "context_shrink_limit": null,
@@ -103,65 +165,7 @@
     // (list[str]) 允许调用的工具列表
     "allowed_tool_calls": null,
 
-    // (bool) 是否发送用户 ID 到服务端
-    // 如果为 true，则 Repeater 会讲 user_id 进行 sha256 后填充到 `user_id` 字段中
-    // 需要服务端明确支持 `user_id` 字段
-    "send_user_id": null,
-
-    // ----------------------------------------------
-
-    // (int) 单次请求允许的最大生成次数
-    // 该值会影响 Tool Call 等需要循环调用的功能
-    "max_generate_times": null,
-
-    // ----------------------------------------------
-
-    // (str) Request Statistics Message 模板
-    // 用于生成一段自定义的统计文本
-    "request_statistics_template": null,
-
-    // (str) 渲染风格
-    // 用于指定文本转图片时的CSS样式文件
-    "render_style": null,
-
-    // (str) 渲染 HTML 模板
-    // 用于指定文本转图片时的HTML模板文件
-    "render_html_template": null,
-
-    // (str) 渲染 HTML 标题
-    // 用于指定文本转图片时的图片标题
-    "render_title": null,
-
-    // (str) 渲染尾部注释
-    // 在生成图片的最下方添加一小段独立文本
-    "render_document_bottom_comment": null,
-
-    // ------------------------------------------------
-
-    // (bool) 是否加载提示词
-    // 此选项会被API接口中传入的 load_prompt 参数覆盖
-    "load_prompt": null,
-
-    // (bool) 是否保存上下文
-    // 此选项会被API接口中传入的 save_context 参数覆盖
-    "save_context": null,
-
-    // (bool) 是否只保存新消息
-    // 如果启用，则只保存新消息，而不是追加到历史消息中
-    "save_new_only": null,
-
-    // (bool) 是否在保存时丢弃非文本数据
-    "save_text_only": null,
-
-    // (bool) 是否构建多模态请求
-    // 如果为 false 则多模态内容将以文本的形式发送
-    "make_multimodal_message": null,
-
-    // (dict[str, list[str]]) 设置 Prompt Directives
-    // 键为基础类型，值为激活的 Prompt Directives 名称
-    "prompt_directives": null,
-
-    // -------------------------------------------------
+    // User Profile -------------------------------------------------
 
     // (str) 用户名
     // 这个值在模板中为 `user_custom_name`
@@ -184,7 +188,7 @@
     // 用于控制模板展开器中的时间变量
     "timezone": null,
 
-    // -------------------------------------------------
+    // Permission -------------------------------------------------
 
     // (bool) 是否允许跨用户数据访问
     // 如果为true, 则使用请求里指定的的用户进行加载和保存
@@ -193,6 +197,8 @@
     // 如果要访问的目标用户也设置了该值
     // 且对方该值为false, 则请求将会自动回退到当前用户的上下文中
     "cross_user_data_access": null,
+
+    // Additional User Data -------------------------------------------------
 
     // (dict[str, Any]) 用户附加配置数据
     // 用于存储某些与用户相关的数据
