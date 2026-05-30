@@ -87,10 +87,16 @@ def make_request(
 
     # 设置请求对象的参数信息
     request.user_name = user_info.display_username()
+
     if configs.remove_reasoning_prompt is not None:
         request.remove_reasoning_prompt = configs.remove_reasoning_prompt
     else:
         request.remove_reasoning_prompt = global_configs.context.remove_reasoning_prompt
+    
+    if configs.tool_calling_remove_reasoning is not None:
+        request.tool_calling_remove_reasoning = configs.tool_calling_remove_reasoning
+    else:
+        request.tool_calling_remove_reasoning = global_configs.context.tool_calling_remove_reasoning
     
     if configs.seed is not None:
         request.seed = configs.seed
