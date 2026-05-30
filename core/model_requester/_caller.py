@@ -4,7 +4,6 @@ from ..context import (
     Function,
     FunctionCaller,
     CallingRequest,
-    Context,
     ContentUnit,
     ToolChoice,
     ToolCallPacakage
@@ -120,7 +119,8 @@ class ModelRequester:
                 else:
                     request.context = response.new_context
                 request.context.extend(results)
-                if request.thinking:
+                
+                if not request.tool_calling_remove_reasoning:
                     request.remove_reasoning_prompt = False
                 raise Regenerate(request)
     
@@ -137,6 +137,7 @@ class ModelRequester:
         generated_times: int = 0
         responses: MultiResponse = MultiResponse()
         responses.historical_context = request.context.copy()
+        remove_reasoning_prompt = request.remove_reasoning_prompt
         if request.remove_reasoning_prompt:
             submit_context = request.context.remove_reasoning_content()
         else:
@@ -203,4 +204,6 @@ class ModelRequester:
             )
             runtime.content_buffer.clear()
             return responses
+        finally:
+            request.remove_reasoning_prompt = remove_reasoning_prompt
                 
