@@ -62,6 +62,7 @@ class Request(BaseModel):
     fim_mode: bool = False
     
     remove_reasoning_prompt: bool = True
+    tool_calling_remove_reasoning: bool = True
     remove_created: bool = True
     
     print_chunk: bool = True
