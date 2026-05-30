@@ -6,7 +6,7 @@ from .supported_parameters import SupportedParameters
 from .links import Links
 
 class ModelAPIData(BaseModel):
-    id: str = ""
+    id: str | None = None
     canonical_slug: str | None = None
     hugging_face_id: str | None = None
     name: str | None = None
