@@ -465,12 +465,12 @@ class ClientBase(ABC):
                     fs_logger.info(
                         "Generated Chunk Time STD: {chunk_std_time:.2f}ms({format_time_duration})",
                         chunk_std_time = chunk_spawn_time_std / 1e6,
-                        format_time_duration = format_time_duration_ns(int(chunk_spawn_time_std, 4), use_abbreviation=True)
+                        format_time_duration = format_time_duration_ns(int(chunk_spawn_time_std), use_abbreviation=True)
                     )
                     fs_logger.info(
                         "Generated Chunk Time MAD: {chunk_mad_time:.2f}ms({format_time_duration})",
                         chunk_mad_time = chunk_spawn_time_mad / 1e6,
-                        format_time_duration = format_time_duration_ns(int(chunk_spawn_time_mad, 4), use_abbreviation=True)
+                        format_time_duration = format_time_duration_ns(int(chunk_spawn_time_mad), use_abbreviation=True)
                     )
                     fs_logger.info(
                         "Generated Chunk Time Relative MAD: {chunk_relative_time_mad:.2%}",
@@ -561,12 +561,12 @@ class ClientBase(ABC):
                     fs_logger.info(
                         "Translation Chunk Time STD: {chunk_std_time:.2f}ms({format_time_duration})",
                         chunk_std_time = chunk_spawn_time_std / 1e6,
-                        format_time_duration = format_time_duration_ns(int(chunk_spawn_time_std, 4), use_abbreviation=True)
+                        format_time_duration = format_time_duration_ns(int(chunk_spawn_time_std), use_abbreviation=True)
                     )
                     fs_logger.info(
                         "Translation Chunk Time MAD: {chunk_mad_time:.2f}ms({format_time_duration})",
                         chunk_mad_time = chunk_spawn_time_mad / 1e6,
-                        format_time_duration = format_time_duration_ns(int(chunk_spawn_time_mad, 4), use_abbreviation=True)
+                        format_time_duration = format_time_duration_ns(int(chunk_spawn_time_mad), use_abbreviation=True)
                     )
                     fs_logger.info(
                         "Translation Chunk Time Relative MAD: {chunk_relative_time_mad:.2%}",
@@ -672,12 +672,12 @@ class ClientBase(ABC):
                     fs_logger.info(
                         "Parsed Chunk Time STD: {chunk_std_time:.2f}ms({format_time_duration})",
                         chunk_std_time = chunk_spawn_time_std / 1e6,
-                        format_time_duration = format_time_duration_ns(int(chunk_spawn_time_std, 4), use_abbreviation=True)
+                        format_time_duration = format_time_duration_ns(int(chunk_spawn_time_std), use_abbreviation=True)
                     )
                     fs_logger.info(
                         "Parsed Chunk Time MAD: {chunk_mad_time:.2f}ms({format_time_duration})",
                         chunk_mad_time = chunk_spawn_time_mad / 1e6,
-                        format_time_duration = format_time_duration_ns(int(chunk_spawn_time_mad, 4), use_abbreviation=True)
+                        format_time_duration = format_time_duration_ns(int(chunk_spawn_time_mad), use_abbreviation=True)
                     )
                     fs_logger.info(
                         "Parsed Chunk Time Relative MAD: {chunk_relative_time_mad:.2%}",
