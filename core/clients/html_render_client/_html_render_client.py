@@ -4,13 +4,20 @@ from ._model import RenderResponse
 from ...http_response import Response
 
 class HTMLRenderClient:
-    def __init__(self, base_url: str, timeout: int, verify: ssl.SSLContext | str | bool = True):
+    def __init__(
+            self,
+            base_url: str,
+            timeout: int,
+            verify: ssl.SSLContext | str | bool = True,
+            transport: httpx.AsyncHTTPTransport | None = None
+        ):
         self._base_url = base_url
         self._timeout = timeout
         self._client = httpx.AsyncClient(
             base_url = base_url,
             timeout = timeout,
-            verify = verify
+            verify = verify,
+            transport = transport
         )
     
     async def render(self, text: str) -> Response[RenderResponse]:

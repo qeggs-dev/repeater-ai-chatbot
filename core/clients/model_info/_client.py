@@ -12,7 +12,8 @@ class ModelsClient:
             base_url: str,
             api_key: str | None = None,
             timeout: int | None = None,
-            verify: ssl.SSLContext | str | bool = True
+            verify: ssl.SSLContext | str | bool = True,
+            transport: httpx.AsyncHTTPTransport | None = None,
         ):
         self._base_url = base_url
         self._client = httpx.AsyncClient(
@@ -21,7 +22,8 @@ class ModelsClient:
             headers = {
                 "Authorization": f"Bearer {api_key}"
             },
-            verify = verify
+            verify = verify,
+            transport = transport
         )
     
     async def get_models(self, model_uid: str) -> Response[ModelInfoResponse]:
