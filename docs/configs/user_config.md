@@ -110,6 +110,12 @@
 
     // ----------------------------------------------
 
+    // (int) 单次请求允许的最大生成次数
+    // 该值会影响 Tool Call 等需要循环调用的功能
+    "max_generate_times": null,
+
+    // ----------------------------------------------
+
     // (str) Request Statistics Message 模板
     // 用于生成一段自定义的统计文本
     "request_statistics_template": null,
