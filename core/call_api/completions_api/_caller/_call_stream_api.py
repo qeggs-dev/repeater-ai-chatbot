@@ -108,6 +108,11 @@ class StreamAPI(CallStreamAPIBase):
                     extra_body = extra_body,
                 )
             else:
+                messages = request.context.to_context(
+                    with_prompt = True,
+                    remove_reasoning_prompt = request.remove_reasoning_prompt,
+                    remove_created = request.remove_created,
+                )
                 response: AsyncStream[ChatCompletionChunk] = await client.chat.completions.create(
                     model = request.model,
                     temperature = self.none_to_omit(request.temperature),
@@ -118,11 +123,7 @@ class StreamAPI(CallStreamAPIBase):
                     max_completion_tokens = self.none_to_omit(request.max_completion_tokens),
                     stop = self.none_to_omit(request.stop),
                     stream = True,
-                    messages = request.context.to_context(
-                        with_prompt = True,
-                        remove_reasoning_prompt = request.remove_reasoning_prompt,
-                        remove_created = request.remove_created,
-                    ),
+                    messages = messages,
                     seed = self.none_to_omit(request.seed),
                     tools = self.none_to_omit(request.tools),
                     tool_choice = self.none_to_omit(request.tool_choice),
