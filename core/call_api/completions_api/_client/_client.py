@@ -313,6 +313,11 @@ class ClientBase(ABC):
         else:
             fs_logger.info("Completion Mode: Chat")
         
+        if not request.remove_reasoning_prompt:
+            fs_logger.info("Reasoning Prompt: Retained")
+        else:
+            fs_logger.info("Reasoning Prompt: Removed")
+        
         fs_logger.info("============= Response =============")
         if response.system_fingerprint:
             fs_logger.info(
