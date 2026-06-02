@@ -27,7 +27,7 @@
         "follow_redirects": true, // Whether to automatically follow HTTP redirects.
         "timeout_seconds": 10, // Request timeout in seconds.
         "verify_crawler_permissions": true, // Whether to verify crawler permissions.
-        "exclude_crawler_user_agent": false // Whether to exclude the crawler user agent from the request headers.
+        "exclude_crawler_user_agent": false // Whether to not actively add the `User-Agent` in the request header (turn off this option if you need to set 'User-Agent') .
       }
     ]
   ]
