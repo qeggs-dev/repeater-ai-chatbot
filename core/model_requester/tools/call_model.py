@@ -152,7 +152,7 @@ class CallModel(ToolCallPacakage):
         model = random.choice(model_info.models)
 
         request = Request(
-            url = model.url,
+            url = model.get_base_url(),
             limits = model.limits,
             key = model.api_key,
             timeout = args.timeout if args.timeout is not None else model.timeout,
