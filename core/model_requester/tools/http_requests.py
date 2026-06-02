@@ -72,7 +72,7 @@ class PublicIPOnlyTransport(httpx.AsyncHTTPTransport):
             return (self.host, self.port)
     
     async def handle_async_request(self, request: httpx.Request) -> httpx.Response:
-        if not ConfigManager.get_configs().tool_calls.tools_configs.http_request.allow_private_network_requests:
+        if not ConfigManager.get_configs().tool_calls.tools_configs.http_requests.allow_private_network_requests:
             host = request.url.host
             port = request.url.port
 
@@ -125,7 +125,7 @@ class HTTPRequests(ToolCallPacakage):
     robots_cache: ClassVar[TTLCache[str, str, float] | None] = None
     
     def validation_method(self, method: HTTPMethods) -> bool:
-        allowed_http_methods = self.global_configs.tool_calls.tools_configs.http_request.allowed_http_methods
+        allowed_http_methods = self.global_configs.tool_calls.tools_configs.http_requests.allowed_http_methods
         if allowed_http_methods is None:
             return False
         elif isinstance(allowed_http_methods, list):
@@ -138,8 +138,8 @@ class HTTPRequests(ToolCallPacakage):
     def __post_init__(self):
         if self.robots_cache is None:
             self.robots_cache = TTLCache(
-                self.global_configs.tool_calls.tools_configs.http_request.robots_cache_size,
-                self.global_configs.tool_calls.tools_configs.http_request.robots_cache_timeout,
+                self.global_configs.tool_calls.tools_configs.http_requests.robots_cache_size,
+                self.global_configs.tool_calls.tools_configs.http_requests.robots_cache_timeout,
             )
     
     @staticmethod
@@ -151,7 +151,7 @@ class HTTPRequests(ToolCallPacakage):
     
     async def crawler_header(self) -> dict[str, str]:
         return {
-            "User-Agent": self.global_configs.tool_calls.tools_configs.http_request.crawler_name,
+            "User-Agent": self.global_configs.tool_calls.tools_configs.http_requests.crawler_name,
         }
     
     async def verify_crawler_permissions(self, client: httpx.AsyncClient, url: str) -> bool:
@@ -179,7 +179,7 @@ class HTTPRequests(ToolCallPacakage):
             robot_file_parser = RobotFileParser()
             robot_file_parser.parse(text.splitlines())
             return robot_file_parser.can_fetch(
-                self.global_configs.tool_calls.tools_configs.http_request.crawler_name, url
+                self.global_configs.tool_calls.tools_configs.http_requests.crawler_name, url
             )
         except Exception:
             return True
