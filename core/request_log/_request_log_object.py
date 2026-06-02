@@ -15,6 +15,7 @@ class RequestLog(BaseModel):
     url: str = ""
     model: str = ""
     user_id: str = ""
+    task_id: str = ""
     user_name: str | None = None
     stream: bool = True
 
