@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from ._http_request import HTTPRequest
+from ._http_request import HTTPRequests
 
 class ToolsConfigs(BaseModel):
-    http_request: HTTPRequest = Field(default_factory=HTTPRequest)
+    http_requests: HTTPRequests = Field(default_factory=HTTPRequests)

@@ -2,7 +2,7 @@ from pydantic import BaseModel
 from ._http_methods import HTTPMethods
 from typing import Literal
 
-class HTTPRequest(BaseModel):
+class HTTPRequests(BaseModel):
     crawler_name: str = "Repeater AI Crawler"
     robots_cache_size: int = 8192
     robots_cache_timeout: int = 3600
