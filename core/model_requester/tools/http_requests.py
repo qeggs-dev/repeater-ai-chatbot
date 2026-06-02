@@ -26,7 +26,7 @@ class Request(BaseModel):
     follow_redirects: bool = Field(True, description="Whether to automatically follow HTTP redirects.")
     timeout_seconds: int = Field(10, description="Request timeout in seconds.")
     verify_crawler_permissions: bool = Field(True, description="Whether to verify crawler permissions.")
-    exclude_crawler_user_agent: bool = Field(False, description="Whether to exclude the crawler user agent from the request headers.")
+    exclude_crawler_user_agent: bool = Field(False, description="Whether to not actively add the `User-Agent` in the request header (turn off this option if you need to set 'User-Agent') .")
     
 class PublicIPOnlyTransport(httpx.AsyncHTTPTransport):
     class AddrInfo(BaseModel):
