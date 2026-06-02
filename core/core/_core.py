@@ -527,6 +527,7 @@ class Core:
                                 stream = request.stream
                             )
                             model_response.request_log.user_id = user_id
+                            model_response.request_log.task_id = task_lifespan.task_id
                             model_response.request_log.task_start_time = task_start_time
                             model_response.request_log.prepare_start_time = prepare_start_time
                     
