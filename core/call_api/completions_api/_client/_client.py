@@ -245,7 +245,7 @@ class ClientBase(ABC):
         fs_logger.info("Generating statistics...")
         fs_logger.info("============= API INFO =============")
         fs_logger.info(
-            "API_URL: {url}",
+            "API URL: {url}",
             url = request.url,
         )
         fs_logger.info(
@@ -253,11 +253,15 @@ class ClientBase(ABC):
             model_id = request.model
         )
         fs_logger.info(
-            "UserName: {user_name}",
+            "User Name: {user_name}",
             user_name = request.user_name
         )
         fs_logger.info(
-            "Chat Completion ID: {request_id}",
+            "Task ID: {task_id}",
+            task_id = response.request_log.task_id
+        )
+        fs_logger.info(
+            "Response ID: {request_id}",
             request_id = response.id
         )
         fs_logger.info(
