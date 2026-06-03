@@ -1,5 +1,5 @@
 from pydantic import BaseModel
-from ._http_methods import HTTPMethods
+from .._http_methods import HTTPMethods
 from typing import Literal
 
 class HTTPRequests(BaseModel):
