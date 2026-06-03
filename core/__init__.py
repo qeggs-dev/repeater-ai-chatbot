@@ -4,6 +4,8 @@ from ._info import (
     __author__,
     __license__,
     __copyright__,
+    __remarks__,
+    __github__
 )
 from .server import (
     Server
