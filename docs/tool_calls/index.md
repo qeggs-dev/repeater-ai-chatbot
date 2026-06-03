@@ -11,3 +11,4 @@
 6. [Asteval](./built-in/asteval.md)
 7. [token_count](./built-in/token_count.md)
 8. [Metaso](./built-in/metaso.md)
+9. [System Info](./built-in/system_info.md)
