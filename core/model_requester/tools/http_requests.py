@@ -145,7 +145,7 @@ class HTTPRequests(ToolCallPacakage):
     def init_cache(cls, size: int, timeout: float):
         if cls.robots_cache is None:
             cls.robots_cache = TTLCache(
-                size = size,
+                maxsize = size,
                 ttl = timeout
             )
     

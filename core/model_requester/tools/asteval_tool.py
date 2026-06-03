@@ -22,7 +22,7 @@ class Asteval(ToolCallPacakage):
         )
     
     @classmethod
-    async def init_thread_pool(cls, max_workers: int):
+    def init_thread_pool(cls, max_workers: int):
         if cls.executor_thread_pool is not None:
             cls.executor_thread_pool = ThreadPoolExecutor(
                 max_workers = max_workers
