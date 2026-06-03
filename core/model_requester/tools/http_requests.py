@@ -136,10 +136,17 @@ class HTTPRequests(ToolCallPacakage):
             return False
     
     def __post_init__(self):
-        if self.robots_cache is None:
-            self.robots_cache = TTLCache(
-                self.global_configs.tool_calls.tools_configs.http_requests.robots_cache_size,
-                self.global_configs.tool_calls.tools_configs.http_requests.robots_cache_timeout,
+        self.init_cache(
+            self.global_configs.tool_calls.tools_configs.http_requests.robots_cache_size,
+            self.global_configs.tool_calls.tools_configs.http_requests.robots_cache_timeout,
+        )
+    
+    @classmethod
+    def init_cache(cls, size: int, timeout: float):
+        if cls.robots_cache is None:
+            cls.robots_cache = TTLCache(
+                size = size,
+                ttl = timeout
             )
     
     @staticmethod
