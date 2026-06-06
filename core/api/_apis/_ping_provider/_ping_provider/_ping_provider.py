@@ -21,9 +21,9 @@ async def ping_provider(user_id: str, request: PingRequest):
     model_uids = request.model_uid
 
     if model_uids is None:
-        model_uids = user_configs.model_uid
+        model_uids = user_configs.model_id
     if model_uids is None:
-        model_uids = global_config.model_api.default_model_uid
+        model_uids = global_config.model_api.default_model_id
     
     if isinstance(model_uids, list):
         model_uid = random.choice(model_uids)
