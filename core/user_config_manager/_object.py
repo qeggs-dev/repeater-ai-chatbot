@@ -19,7 +19,7 @@ class UserConfigs(BaseModel):
     )
     
     # Model Parameters
-    model_uid: str | list[str] | None = None
+    model_id: str | list[str] | None = None
     fim_echo: bool | None = None
     seed: int | None = None
     temperature: float | None = Field(None, ge=0.0, le=2.0)
