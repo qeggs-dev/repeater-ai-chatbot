@@ -31,7 +31,7 @@ class CallModel(ToolCallPacakage):
     call_type = CallType.ASYNC
     
     class Params(BaseModel):
-        model_uid: str = Field(
+        model_id: str = Field(
             "", 
             description="Unique identifier used to locate and load the target model."
         )
@@ -132,7 +132,7 @@ class CallModel(ToolCallPacakage):
         runtime = RuntimeContainer.get_runtime()
         
         response = await runtime.model_info_client.get_models(
-            model_id = args.model_uid
+            model_id = args.model_id
         )
         if response.code != 200:
             raise ValueError(f"Error: {response.text}")

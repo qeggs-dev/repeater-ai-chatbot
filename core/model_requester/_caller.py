@@ -242,17 +242,17 @@ class ModelRequester:
                 "APIConnectionError: {error_message}",
                 error_message = e.message,
             )
-            self._model_info_client.disable(
+            await self._model_info_client.disable(
                 model_id = request.model_uid,
                 timeout = int(self._global_configs.callapi.failed_disable_timeout * 1e9)
             )
-            raise
+            raise Regenerate(request) from e
         except InternalServerError as e:
             logger.error(
                 "InternalServerError: {error_message}",
                 error_message = e.message,
             )
-            self._model_info_client.disable(
+            await self._model_info_client.disable(
                 model_id = request.model_uid,
                 timeout = int(self._global_configs.callapi.failed_disable_timeout * 1e9)
             )
