@@ -59,10 +59,13 @@ class ModelsClient:
 
         return response
     
-    async def disable(self, model_id: str) -> Response[DisableResponse]:
+    async def disable(self, model_id: str, timeout: int) -> Response[DisableResponse]:
         try:
             http_response = await self._client.post(
-                f"/disable/{quote(model_id)}"
+                f"/disable/{quote(model_id)}",
+                json = {
+                    "timeout": timeout
+                }
             )
         except httpx.RequestError as e:
             raise HTTPException(detail = f"Disable Model API Failed: {e}") from e
