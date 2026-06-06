@@ -120,10 +120,7 @@ class TemplateParser:
 
         :param text: 待渲染的文本
         :param user_id: 用户ID
-        :param model_uid: 模型UID
-        :param user_info: 用户信息
-        :param config: 用户配置
-        :return: PromptVP实例
+        :return: 渲染后的文本
         """
         tz_config = self._user_config.timezone
         if tz_config is None:
@@ -183,7 +180,7 @@ class TemplateParser:
             date_countdown = date_countdown,
             escape_str = escape_string,
             version = self._global_config.text_template.version or __version__,
-            model_uid = self._model.uid,
+            model_id = self._model.uid,
             model_name = self._model.name,
             model_id = self._model.id,
             model_detailed = self._model.detailed,
