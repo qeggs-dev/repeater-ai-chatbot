@@ -18,21 +18,21 @@ async def ping_provider(user_id: str, request: PingRequest):
     runtime = server.runtime
     user_configs = await runtime.user_config_manager.load(user_id)
 
-    model_uids = request.model_uid
+    model_ids = request.model_id
 
-    if model_uids is None:
-        model_uids = user_configs.model_id
-    if model_uids is None:
-        model_uids = global_config.model_api.default_model_id
+    if model_ids is None:
+        model_ids = user_configs.model_id
+    if model_ids is None:
+        model_ids = global_config.model_api.default_model_id
     
-    if isinstance(model_uids, list):
-        model_uid = random.choice(model_uids)
-    elif isinstance(model_uids, str):
-        model_uid = model_uids
+    if isinstance(model_ids, list):
+        model_id = random.choice(model_ids)
+    elif isinstance(model_ids, str):
+        model_id = model_ids
     else:
-        raise HTTPException(detail="Invalid model uid")
+        raise HTTPException(detail="Invalid model id")
     
-    response = await runtime.model_info_client.get_models(model_uid)
+    response = await runtime.model_info_client.get_models(model_id)
     if response:
         response_data = response.get_data()
         if response_data is None:

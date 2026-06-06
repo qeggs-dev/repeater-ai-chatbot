@@ -14,7 +14,7 @@ class ChatRequest(BaseModel):
     assistant_role: ContentRole = ContentRole.ASSISTANT
     history_msg_role_map: dict[ContentRole, ContentRole | None] | None = None
     role_name: str | None = None
-    model_uid: str | None = None
+    model_id: str | None = None
     thinking: bool | None = None
     load_prompt: bool | None = None
     save_context: bool | None = None
