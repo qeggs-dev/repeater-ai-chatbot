@@ -8,4 +8,5 @@ class CallAPIConfig(BaseModel):
     include_usage: bool | None = None
     include_obfuscation: bool | None = None
     max_generate_times: int = Field(default=10, ge=1)
+    failed_disable_timeout: int | float = Field(default=60, ge=1)
     send_user_id: bool = False
