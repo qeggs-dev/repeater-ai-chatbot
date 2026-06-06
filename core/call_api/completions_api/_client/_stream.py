@@ -58,26 +58,15 @@ class StreamClient(ClientBase):
             raise APIConnectionError(f"{request.url} Connection Failed")
     
     async def _submit_task(self, user_id: str, request: Request, runtime: Runtime) -> AsyncIterator[Delta]:
-        try:
-            if request.stream:
-                client = StreamAPI()
-            else:
-                raise StreamNotAvailable("When request.stream == True, the stream is not available.")
-            generator = await client.call(
-                user_id = user_id,
-                request = request,
-                runtime = runtime
-            )
+        if request.stream:
+            client = StreamAPI()
+        else:
+            raise StreamNotAvailable("When request.stream == True, the stream is not available.")
+        generator = await client.call(
+            user_id = user_id,
+            request = request,
+            runtime = runtime
+        )
 
-            async for delta in generator:
-                yield delta
-        except openai.BadRequestError as e:
-            if e.code in range(400, 500):
-                logger.error(f"BadRequestError: {e}", user_id = user_id)
-                raise BadRequestError(e.message)
-            elif e.code in range(500, 600):
-                logger.error(f"API Server Error: {e}", user_id = user_id)
-                raise APIServerError(e.message)
-        except Exception as e:
-            logger.error(f"Error: {e}", user_id = user_id)
-            raise CallAPIException(e)
+        async for delta in generator:
+            yield delta

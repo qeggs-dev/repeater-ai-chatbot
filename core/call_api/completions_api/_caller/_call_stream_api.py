@@ -2,7 +2,8 @@
 import asyncio
 from typing import (
     AsyncIterator,
-    Literal,
+    Any,
+    Coroutine,
 )
 
 # ==== 第三方库 ==== #
@@ -23,7 +24,7 @@ from ._call_api_base import CallStreamAPIBase
 from .._exceptions import *
 
 class StreamAPI(CallStreamAPIBase):
-    async def _openai_call(self, user_id: str, request: Request, runtime: Runtime) -> AsyncIterator[Delta]:
+    async def _openai_call(self, user_id: str, request: Request, runtime: Runtime) -> Coroutine[Any, Any, AsyncIterator[Delta]]:
         """
         调用流式API
 

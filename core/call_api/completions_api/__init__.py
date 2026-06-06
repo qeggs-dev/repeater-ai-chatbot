@@ -15,12 +15,20 @@ from ._objects import (
 )
 from ._exceptions import (
     CallAPIException,
-    BadRequestError,
-    ModelNotFoundError,
+    APIError,
     APIConnectionError,
     APITimeoutError,
-    StreamNotAvailable,
-    APIServerError
+    APIStatusError,
+    ClientBadRequest,
+    BadRequestError,
+    AuthenticationError,
+    PermissionDeniedError,
+    NotFoundError,
+    ConflictError,
+    UnprocessableEntityError,
+    RateLimitError,
+    InternalServerError,
+    UnknowAPIStatusError
 )
 
 __all__ = [
@@ -36,10 +44,18 @@ __all__ = [
     "Delta",
     "StreamOptions",
     "CallAPIException",
-    "BadRequestError",
-    "ModelNotFoundError",
+    "APIError",
     "APIConnectionError",
     "APITimeoutError",
-    "StreamNotAvailable",
-    "APIServerError"
+    "APIStatusError",
+    "ClientBadRequest",
+    "BadRequestError",
+    "AuthenticationError",
+    "PermissionDeniedError",
+    "NotFoundError",
+    "ConflictError",
+    "UnprocessableEntityError",
+    "RateLimitError",
+    "InternalServerError",
+    "UnknowAPIStatusError"
 ]

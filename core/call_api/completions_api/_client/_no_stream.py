@@ -60,41 +60,18 @@ class NoStreamClient(ClientBase):
         return output
     
     async def _submit_task(self, user_id: str, request: Request, runtime: Runtime) -> AsyncIterator[Delta] | Response:
-        try:
-            if request.stream:
-                client = StreamAPI()
-                call = await client.call(
-                    user_id = user_id,
-                    request = request,
-                    runtime = runtime
-                )
-            else:
-                client = CallAPI()
-                call = await client.call(
-                    user_id = user_id,
-                    request = request,
-                    runtime = runtime
-                )
-            return call
-        except openai.BadRequestError as e:
-            if e.code in range(400, 500):
-                logger.error(
-                    "BadRequestError: {error}",
-                    user_id = user_id,
-                    error = str(e)
-                )
-                raise BadRequestError(e.message)
-            elif e.code in range(500, 600):
-                logger.error(
-                    "API Server Error: {error}",
-                    user_id = user_id,
-                    error = str(e)
-                )
-                raise APIServerError(e.message)
-        except Exception as e:
-            logger.error(
-                "Error: {error}",
+        if request.stream:
+            client = StreamAPI()
+            call = await client.call(
                 user_id = user_id,
-                error = str(e)
+                request = request,
+                runtime = runtime
             )
-            raise CallAPIException(e) from e
+        else:
+            client = CallAPI()
+            call = await client.call(
+                user_id = user_id,
+                request = request,
+                runtime = runtime
+            )
+        return call
