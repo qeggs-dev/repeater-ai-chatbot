@@ -16,10 +16,11 @@
   - `model_id`(str): 模型 ID
   - `model_uid`(str): 模型 UID
   - `model_name`(str): 模型名称
-  - `model_type`(str): 模型类型
+  - `model_detailed`(dict[str, Any]): 模型详细描述
+  - `model_group`(str): 模型组
   - `model_group`(str): 模型组
   - `user_profile`(str): 用户简介
-  - `user_configs`(dict): 用户配置(副本)
+  - `user_configs`(dict[str, Any]): 用户配置(副本)
 - **Functions:**
   - [`age`](./functions/age.md): 获取用户年龄
   - [`copy_text`](./functions/copy_text.md): 复制文本
