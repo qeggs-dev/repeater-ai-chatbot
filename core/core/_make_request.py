@@ -60,6 +60,7 @@ def make_request(
     # 设置请求对象的API信息
     request.url = model.get_base_url()
     request.model = model.id
+    request.model_uid = model.uid
     request.limits = model.limits
     request.timeout = model.timeout
     if configs.model_timeout is None:
