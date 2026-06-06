@@ -244,7 +244,7 @@ class ModelRequester:
             )
             self._model_info_client.disable(
                 model_id = request.model_uid,
-                timeout = self._global_configs.callapi.failed_disable_timeout
+                timeout = int(self._global_configs.callapi.failed_disable_timeout * 1e9)
             )
             raise
         except InternalServerError as e:
@@ -254,6 +254,6 @@ class ModelRequester:
             )
             self._model_info_client.disable(
                 model_id = request.model_uid,
-                timeout = self._global_configs.callapi.failed_disable_timeout
+                timeout = int(self._global_configs.callapi.failed_disable_timeout * 1e9)
             )
             raise
