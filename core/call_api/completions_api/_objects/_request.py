@@ -32,6 +32,7 @@ class Request(BaseModel):
     service_tier: ServiceTier | None = None
 
     model: str = ""
+    model_id: str | list[str] = ""
     model_uid: str = ""
     key: str = ""
 
