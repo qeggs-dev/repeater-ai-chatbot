@@ -18,7 +18,10 @@ from ..call_api.completions_api import (
     APIConnectionError,
     InternalServerError
 )
-from ..clients.model_info import ModelsClient
+from ..clients.model_info import (
+    ModelsClient,
+    ModelInfo
+)
 from ..user_config_manager import UserConfigs
 from ..global_config_manager import GlobalConfigs
 from typing import (
@@ -57,6 +60,7 @@ class ModelRequester:
             global_configs.callapi.max_concurrency
             if max_concurrency is None else max_concurrency
         )
+        self._user_configs = user_configs
         self._global_configs = global_configs
         self._model_info_client = model_info_client
         self._stream_chunk_queue: asyncio.Queue[Delta | ContentUnit | None] = asyncio.Queue()
@@ -246,6 +250,10 @@ class ModelRequester:
                 model_id = request.model_uid,
                 timeout = int(self._global_configs.callapi.failed_disable_timeout * 1e9)
             )
+            model = await self._model_info_client.get_model(
+                model_id = request.model_id
+            )
+            self.update_request_model(request, model)
             raise Regenerate(request) from e
         except InternalServerError as e:
             logger.error(
@@ -257,3 +265,15 @@ class ModelRequester:
                 timeout = int(self._global_configs.callapi.failed_disable_timeout * 1e9)
             )
             raise
+
+    def update_request_model(self, request: Request, model: ModelInfo) -> None:
+        request.url = model.get_base_url()
+        request.model = model.id
+        request.model_uid = model.uid
+        request.limits = model.limits
+        request.timeout = model.timeout
+        if self._user_configs.model_timeout is None:
+            request.timeout = model.timeout
+        else:
+            request.timeout = self._user_configs.model_timeout
+        request.key = model.api_key
