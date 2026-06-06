@@ -241,9 +241,10 @@ class ModelRequester:
                 )
 
             return response
-        except APIConnectionError as e:
+        except (APIConnectionError, InternalServerError) as e:
             logger.error(
-                "APIConnectionError: {error_message}",
+                "{error_type}: {error_message}",
+                error_type = type(e).__name__,
                 error_message = e.message,
             )
             await self._model_info_client.disable(
@@ -255,16 +256,6 @@ class ModelRequester:
             )
             self.update_request_model(request, model)
             raise Regenerate(request) from e
-        except InternalServerError as e:
-            logger.error(
-                "InternalServerError: {error_message}",
-                error_message = e.message,
-            )
-            await self._model_info_client.disable(
-                model_id = request.model_uid,
-                timeout = int(self._global_configs.callapi.failed_disable_timeout * 1e9)
-            )
-            raise
 
     def update_request_model(self, request: Request, model: ModelInfo) -> None:
         request.url = model.get_base_url()
