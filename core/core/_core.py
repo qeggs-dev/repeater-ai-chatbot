@@ -543,6 +543,7 @@ class Core:
                         model_caller = ModelRequester(
                             user_id = user_id,
                             user_configs = configs,
+                            global_configs = global_configs,
                             max_concurrency = (
                                 global_configs.callapi.max_concurrency
                                 if self._max_concurrency is None else self._max_concurrency
