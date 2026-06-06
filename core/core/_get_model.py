@@ -16,38 +16,33 @@ from ..clients.model_info import (
 )
 
 async def get_model(
-    model_uid: str | list[str] | None,
+    model_id: str | list[str] | None,
     model_info_client: ModelsClient,
 ) -> ModelInfo:
+    if model_id is None:
+        raise HTTPException(
+            status_code = 400,
+            detail = "Model ID is required"
+        )
     
-    # 如果有多个，则随机选择一个
-    if isinstance(model_uid, list):
-        if len(model_uid) == 1:
-            model_uid_str = model_uid[0]
-        elif len(model_uid) > 1:
-            model_uid_str = random.choice(model_uid)
-        else:
+    if isinstance(model_id, str):
+        model_id = [model_id]
+    
+    models: list[ModelInfo] = []
+    for id in model_id:
+        # 获取API信息
+        model_info_response = await model_info_client.get_models(id)
+        if model_info_response.code != 200:
             raise HTTPException(
-                status_code = 500,
-                detail = "Error: No model uid is specified.",
+                status_code = model_info_response.code,
+                detail = f"Model Info Server Error: {model_info_response.text}",
             )
-    elif isinstance(model_uid, str):
-        model_uid_str = model_uid
-    else:
-        raise HTTPException(
-            status_code = 500,
-            detail = "Error: Model uid must be a string or a list of strings.",
-        )
+        model_info = model_info_response.get_data()
+        models.extend(model_info.models)
+        if model_info.models:
+            break
     
-    # 获取API信息
-    model_info_response = await model_info_client.get_models(model_uid_str)
-    if model_info_response.code != 200:
-        raise HTTPException(
-            status_code = model_info_response.code,
-            detail = f"Model Info Server Error: {model_info_response.text}",
-        )
-    model_info = model_info_response.get_data()
-    if not model_info:
+    if models is None:
         raise HTTPException(
             status_code = 404,
             detail = "Error: Model Info Server Response is Empty.",

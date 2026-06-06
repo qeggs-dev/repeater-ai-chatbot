@@ -217,9 +217,9 @@ class Core:
         user_info: RequestUserInfo | None = None,
     ) -> TemplateParser:
         if model is None:
-            model_uid = user_config.model_uid
+            model_uid = user_config.model_id
             if model_uid is None:
-                model_uid = global_config.model_api.default_model_uid
+                model_uid = global_config.model_api.default_model_id
             model = await get_model(
                 model_uid = model_uid,
                 model_info_client = self.runtime.model_info_client,
@@ -264,7 +264,7 @@ class Core:
             extra_template_fields: dict[str, Any] | None = None,
             temporary_prompt: str | None = None,
             additional_data: AdditionalData | None = None,
-            model_uid: str | None = None,
+            model_id: str | None = None,
             thinking: bool | None = None,
             load_prompt: bool | None = None,
             save_context: bool | None = None,
@@ -370,12 +370,12 @@ class Core:
                         # region [Getting model]
                         with task_status_stack.enter("Getting model"):
                             # 获取默认模型uid
-                            if not model_uid:
-                                model_uid = configs.model_uid
-                                if not model_uid:
-                                    model_uid = global_configs.model_api.default_model_uid
+                            if not model_id:
+                                model_id = configs.model_id
+                                if not model_id:
+                                    model_id = global_configs.model_api.default_model_id
                             model = await get_model(
-                                model_uid = model_uid,
+                                model_id = model_id,
                                 model_info_client = self.runtime.model_info_client
                             )
                         # endregion
@@ -544,6 +544,7 @@ class Core:
                             user_id = user_id,
                             user_configs = configs,
                             global_configs = global_configs,
+                            model_info_client = self.runtime.model_info_client,
                             max_concurrency = (
                                 global_configs.callapi.max_concurrency
                                 if self._max_concurrency is None else self._max_concurrency
