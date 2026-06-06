@@ -217,11 +217,11 @@ class Core:
         user_info: RequestUserInfo | None = None,
     ) -> TemplateParser:
         if model is None:
-            model_uid = user_config.model_id
-            if model_uid is None:
-                model_uid = global_config.model_api.default_model_id
+            model_id = user_config.model_id
+            if model_id is None:
+                model_id = global_config.model_api.default_model_id
             model = await get_model(
-                model_uid = model_uid,
+                model_id = model_id,
                 model_info_client = self.runtime.model_info_client,
             )
         
@@ -286,7 +286,7 @@ class Core:
         :param extra_template_fields: 模板字段扩展
         :param temporary_prompt: 临时提示词
         :param additional_data: 额外数据
-        :param model_uid: 模型UID
+        :param model_id: 模型 ID
         :param thinking: 使用思考模式
         :param load_prompt: 是否加载提示
         :param save_context: 是否保存上下文
