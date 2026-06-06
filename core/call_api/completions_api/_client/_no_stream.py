@@ -7,7 +7,6 @@ from typing import (
 )
 
 # ==== 第三方库 ==== #
-import openai
 from loguru import logger
 
 # ==== 自定义库 ==== #
@@ -21,7 +20,6 @@ from .._caller import (
     CallAPI,
     StreamAPI
 )
-from .._exceptions import *
 from .._caller import StreamingResponseGenerationLayer
 from ._client import ClientBase
 
@@ -35,27 +33,21 @@ class NoStreamClient(ClientBase):
             runtime: Runtime,
         ) -> Response:
         """提交请求，并等待API返回结果"""
-        try:
-            response = await self._submit_task(user_id, request, runtime)
-            if not isinstance(response, Response):
-                generator = StreamingResponseGenerationLayer(
-                    user_id = user_id,
-                    request = request,
-                    runtime = runtime,
-                    response_iterator = response
-                )
-                async for chunk in generator:
-                    pass
-                output = generator.response
-            else:
-                output = response
+        response = await self._submit_task(user_id, request, runtime)
+        if not isinstance(response, Response):
+            generator = StreamingResponseGenerationLayer(
+                user_id = user_id,
+                request = request,
+                runtime = runtime,
+                response_iterator = response
+            )
+            async for chunk in generator:
+                pass
+            output = generator.response
+        else:
+            output = response
 
-            await self._preprocess_response(user_id, request, output, runtime)
-
-        except openai.NotFoundError:
-            raise ModelNotFoundError(request.model)
-        except openai.APIConnectionError:
-            raise APIConnectionError(f"{request.url} Connection Failed")
+        await self._preprocess_response(user_id, request, output, runtime)
         
         return output
     

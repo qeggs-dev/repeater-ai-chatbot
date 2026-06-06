@@ -8,7 +8,6 @@ from typing import (
 )
 
 # ==== 第三方库 ==== #
-import openai
 from loguru import logger
 
 # ==== 自定义库 ==== #
@@ -21,7 +20,7 @@ from .._objects import (
 from .._caller import (
     StreamAPI
 )
-from .._exceptions import *
+from .._exceptions import StreamNotAvailable
 from .._caller import StreamingResponseGenerationLayer
 from ._client import ClientBase
 
@@ -36,26 +35,20 @@ class StreamClient(ClientBase):
             chunk_callback: Callable[[Delta], Awaitable[None]] | None = None
         ) -> Response:
         """提交请求，并等待API返回结果"""
-        try:
-            generator: AsyncIterator[Delta] = self._submit_task(user_id, request, runtime)
-            warping_generator = StreamingResponseGenerationLayer(
-                user_id = user_id,
-                request = request,
-                content_buffer = runtime.content_buffer,
-                response_iterator = generator
-            )
-            async for delta in warping_generator:
-                if chunk_callback is not None:
-                    await chunk_callback(delta)
+        generator: AsyncIterator[Delta] = self._submit_task(user_id, request, runtime)
+        warping_generator = StreamingResponseGenerationLayer(
+            user_id = user_id,
+            request = request,
+            content_buffer = runtime.content_buffer,
+            response_iterator = generator
+        )
+        async for delta in warping_generator:
+            if chunk_callback is not None:
+                await chunk_callback(delta)
 
-            await self._preprocess_response(user_id, request, warping_generator.response, runtime)
-            
-            return warping_generator.response
-                
-        except openai.NotFoundError:
-            raise ModelNotFoundError(request.model)
-        except openai.APIConnectionError:
-            raise APIConnectionError(f"{request.url} Connection Failed")
+        await self._preprocess_response(user_id, request, warping_generator.response, runtime)
+        
+        return warping_generator.response
     
     async def _submit_task(self, user_id: str, request: Request, runtime: Runtime) -> AsyncIterator[Delta]:
         if request.stream:

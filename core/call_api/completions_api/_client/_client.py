@@ -7,7 +7,6 @@ from typing import (
 )
 
 # ==== 第三方库 ==== #
-import openai
 from loguru import logger
 import numpy as np
 
@@ -28,7 +27,6 @@ from .._caller import (
     CallAPI,
     StreamAPI
 )
-from .._exceptions import *
 
 class ClientBase(ABC):
     def __init__(self, max_concurrency: int = 1000):
@@ -87,21 +85,10 @@ class ClientBase(ABC):
             client = StreamAPI()
         else:
             client = CallAPI()
-        try:
-            return await client.call(
-                user_id = user_id,
-                request = request
-            ), client
-        except openai.BadRequestError as e:
-            if e.code in range(400, 500):
-                logger.error(f"BadRequestError: {e}", user_id = user_id)
-                raise BadRequestError(e.message)
-            elif e.code in range(500, 600):
-                logger.error(f"API Server Error: {e}", user_id = user_id)
-                raise APIServerError(e.message)
-        except Exception as e:
-            logger.error(f"Error: {e}", user_id = user_id)
-            raise CallAPIException(e)
+        return await client.call(
+            user_id = user_id,
+            request = request
+        ), client
     # endregion
 
     @staticmethod

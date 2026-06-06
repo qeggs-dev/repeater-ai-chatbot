@@ -59,3 +59,7 @@ class InternalServerError(APIStatusError):
 class UnknowAPIStatusError(APIStatusError):
     """Exception raised when the API returns an unknown status code."""
     pass
+
+class StreamNotAvailable(CallAPIException):
+    """Exception raised when the API does not support streaming."""
+    pass
