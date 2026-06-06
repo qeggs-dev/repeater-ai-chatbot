@@ -83,9 +83,8 @@ class BaseCallAPI(ABC):
                     ) from e
                 except openai.APIConnectionError as e:
                     raise APIConnectionError(
-                        e.message,
+                        message = e.message,
                         request = e.request,
-                        body = e.body,
                     ) from e
                 except openai.APIStatusError as e:
                     match e.status_code:
