@@ -52,7 +52,7 @@ class RateLimitError(ClientBadRequest, _openai.RateLimitError):
     """Exception raised when the request exceeds the rate limit."""
     pass
 
-class InternalServerError(APIStatusError):
+class InternalServerError(APIStatusError, _openai.InternalServerError):
     """Exception raised when the API returns a 500 status code."""
     pass
 
