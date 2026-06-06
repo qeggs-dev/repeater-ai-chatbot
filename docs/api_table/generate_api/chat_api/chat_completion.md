@@ -50,20 +50,20 @@
     - **type:** `JSON` | `JSONL STREAM`
     - **Content:**
       - `JSON`:
-        - `reasoning_content` (str): CoT回复内容，即使模型没有返回CoT它仍然存在，注意判断逻辑应为非null和非空字符串
         - `context`
           - `context_list` (list[ContentUnit]): 上下文列表，包含所有新生成的上下文内容
         - `user_raw_input` (str): 用户发送的原始消息
         - `user_input` (str | list[ContentBlock]): 用户发送的消息经过格式化后处理后的内容，使用[OpenAI Chat Completion User Message Content](https://platform.openai.com/docs/api-reference/chat/create#chat_create-messages-user_message-content)格式
         - `model_group` (str): 模型组，由[API_Info文件](../configs/api_info.md)决定
         - `model_name` (str): 模型名称，通常是该模型的可读名称
-        - `model_type` (str): 模型类型, 由[API_Info文件](../configs/api_info.md)决定，通常这个接口返回的是`chat`
+        - `model_uid` (str): 模型唯一标识，用于锁定当前请求使用的模型
         - `create_time` (int): 提交请求到API时API厂商报告的请求创建时间戳
         - `id` (str): 请求ID，通常是一个随机的字符串，由API厂商生成，通常可以被作为唯一标识使用
         - `finish_reason_code` (str): 模型结束生成的原因，由API厂商提供
         - `finish_reason_cause` (str): 模型结束生成的原因，该字段为可读版本，由程序自动生成
         - `request_log` (RequestLogObject): [Request Log Object](./../request_log/request_log_object.md)
-        - `status` (int): 状态码，这里和http状态码一致，只是为了报告而写，通常你应该优先选择检查http报告的状态码而不是这个字段
+        - `request_statistics` (str): 请求统计信息，由程序自动生成
+        - `status` (int): 状态码，这里和http状态码一致，只是为了报告而写，通常应该优先选择检查 http 报告的状态码而不是这个字段
       - `JSON STREAM`:
         - *\*每一行*
           - **Delta**:
@@ -99,22 +99,17 @@
 直到该用户的上一个请求完成
 这保证了用户在频繁发起请求时数据的线性处理
 `user_id` 不同时RUL不会阻碍它们并行处理
+当 `save_context` 为 `false` 时，RUL 不会生效
 
 在请求时，Repeater 并不会立刻保存当前用户的输入
 而是先放在内存中，并在生成完全结束后与生成的部分一起保存
 这有效避免了在出现异常导致流程中断时
 本地上下文不会因此而多出来一个 `user` 消息
 
-由于程序是 Async 架构的
-初始化阶段是计算密集型任务居多
-大概持续 `40ms` 左右
-在这段时间内，当前执行的协程会无法让出执行权
-所以还请注意
+请求预处理大概持续 `80ms ~ 150ms` 左右
 
 `logprobs` 参数目前并没有数据内容
 它只是在占位
-不过如果模型在流式输出中添加了 `logprobs` 参数
-那么它将会在这里出现
 
 你可以在 `message` 中编写模板
 参考 [模板展开器](./../template_engine/main.md)
@@ -125,3 +120,7 @@
 当你在提供 `history_messages` 数据时
 建议设置 `save_context` 为 `false`
 否则临时上下文可能会覆盖你的数据
+
+设置 `history_msg_role_map` 时
+如果不设置 `save_context` 为 `false`
+那么用户的上下文会被新的内容所覆盖
