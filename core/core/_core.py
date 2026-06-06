@@ -58,7 +58,6 @@ from ..runtime_container import RepeaterRuntime
 from ._make_request import make_request
 from ._make_context import make_context
 from ._post_treatment import post_treatment
-from ._get_model import get_model
 from ._check_rul import check_rul
 from ._task_lifespan import TaskLifespan
 
@@ -220,9 +219,8 @@ class Core:
             model_id = user_config.model_id
             if model_id is None:
                 model_id = global_config.model_api.default_model_id
-            model = await get_model(
+            model = await self.runtime.model_info_client.get_model(
                 model_id = model_id,
-                model_info_client = self.runtime.model_info_client,
             )
         
         template_parser = TemplateParser(
@@ -264,7 +262,7 @@ class Core:
             extra_template_fields: dict[str, Any] | None = None,
             temporary_prompt: str | None = None,
             additional_data: AdditionalData | None = None,
-            model_id: str | None = None,
+            model_id: str | list[str] | None = None,
             thinking: bool | None = None,
             load_prompt: bool | None = None,
             save_context: bool | None = None,
@@ -374,9 +372,8 @@ class Core:
                                 model_id = configs.model_id
                                 if not model_id:
                                     model_id = global_configs.model_api.default_model_id
-                            model = await get_model(
-                                model_id = model_id,
-                                model_info_client = self.runtime.model_info_client
+                            model = await self.runtime.model_info_client.get_model(
+                                model_id = model_id
                             )
                         # endregion
 
@@ -440,6 +437,7 @@ class Core:
                                 fim_mode = fim_mode,
                                 user_info = user_info,
                                 submit_context = submit_context,
+                                model_id = model_id,
                                 model = model,
                                 configs = configs,
                                 global_configs = global_configs,
