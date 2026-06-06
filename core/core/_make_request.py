@@ -45,6 +45,7 @@ def make_request(
     fim_mode: bool = False,
     user_info: RequestUserInfo,
     submit_context: Context,
+    model_id: str | list[str],
     model: ModelInfo,
     configs: UserConfigs,
     global_configs: GlobalConfigs,
@@ -54,12 +55,14 @@ def make_request(
 ) -> Request:
     # 创建请求对象
     request = Request()
+
     # 设置上下文
     request.context = submit_context
     
-    # 设置请求对象的API信息
+    # 设置 Model 信息
     request.url = model.get_base_url()
     request.model = model.id
+    request.model_id = model_id
     request.model_uid = model.uid
     request.limits = model.limits
     request.timeout = model.timeout
@@ -67,15 +70,7 @@ def make_request(
         request.timeout = model.timeout
     else:
         request.timeout = configs.model_timeout
-    request.output_role = assistant_role
-    if isinstance(model, ModelInfo):
-        api_key = model.api_key
-    else:
-        raise HTTPException(
-            status_code = 503,
-            detail = "Error: Model API key not found",
-        )
-    request.key = api_key
+    request.key = model.api_key
     
     print_request_info(
         user_id = user_id,
@@ -186,6 +181,7 @@ def make_request(
     request.stream = global_configs.model.stream
     request.stream_options.include_obfuscation = global_configs.callapi.include_obfuscation
     request.stream_options.include_usage = global_configs.callapi.include_usage
+    request.output_role = assistant_role
     request.logprobs = global_configs.model.logprobs
     request.top_logprobs = global_configs.model.top_logprobs
 
