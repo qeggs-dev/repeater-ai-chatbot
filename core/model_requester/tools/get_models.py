@@ -24,7 +24,7 @@ class GetModels(ToolCallPacakage):
         if args.model_id is None:
             response = await runtime.model_info_client.get_all_models()
         else:
-            response = await runtime.model_info_client.get_models(model_uid = args.model_id)
+            response = await runtime.model_info_client.get_models(model_id = args.model_id)
         
         if response.code == 200:
             model_info = response.get_data()

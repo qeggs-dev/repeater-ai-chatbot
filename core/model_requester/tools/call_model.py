@@ -132,7 +132,7 @@ class CallModel(ToolCallPacakage):
         runtime = RuntimeContainer.get_runtime()
         
         response = await runtime.model_info_client.get_models(
-            model_uid = args.model_uid
+            model_id = args.model_uid
         )
         if response.code != 200:
             raise ValueError(f"Error: {response.text}")
