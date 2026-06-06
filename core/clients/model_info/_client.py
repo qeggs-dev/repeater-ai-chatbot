@@ -1,11 +1,13 @@
 import ssl
 import httpx
+import random
 
 from urllib.parse import quote
 from .responses import (
     ModelInfoResponse,
     DisableResponse
 )
+from ._models import ModelInfo
 from ...special_exception import HTTPException
 from ...http_response import Response
 
@@ -28,6 +30,50 @@ class ModelsClient:
             verify = verify,
             transport = transport
         )
+    
+    async def get_model(
+        self,
+        model_id: str | list[str] | None,
+    ) -> ModelInfo:
+        if model_id is None:
+            raise HTTPException(
+                status_code = 400,
+                detail = "Model ID is required"
+            )
+        
+        if isinstance(model_id, str):
+            model_id = [model_id]
+        
+        models: list[ModelInfo] = []
+        for id in model_id:
+            # 获取API信息
+            response = await self.get_models(id)
+            if response.code != 200:
+                raise HTTPException(
+                    status_code = response.code,
+                    detail = f"Model Info Server Error: {response.text}",
+                )
+            model_info = response.get_data()
+            models.extend(model_info.models)
+            if model_info.models:
+                break
+        
+        if models is None:
+            raise HTTPException(
+                status_code = 404,
+                detail = "Error: Model Info Server Response is Empty.",
+            )
+        
+        models = model_info.models
+        if not models:
+            raise HTTPException(
+                status_code = 404,
+                detail = "Error: Model is Not Found.",
+            )
+        
+        model = random.choice(models)
+
+        return model
     
     async def get_models(self, model_id: str) -> Response[ModelInfoResponse]:
         try:
