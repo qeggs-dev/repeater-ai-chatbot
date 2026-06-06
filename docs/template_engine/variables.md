@@ -13,7 +13,7 @@
   - `user_custom_name`(str | null): 用户自定义名称
   - `user_custom_age`(int | float | null): 用户自定义年龄
   - `user_custom_gender`(str | null): 用户自定义性别
-  - `model_uid`(str): 模型ID
+  - `model_id`(str): 模型ID
   - `model_name`(str): 模型名称
   - `model_type`(str): 模型类型
   - `model_group`(str): 模型组

@@ -2,7 +2,7 @@
 
 列出所有指定UID的模型
 
-- **`/models/{model_uid: str}`**
+- **`/models/{model_id: str}`**
   - **method**: `GET`
   - **Request**
     - **Query**

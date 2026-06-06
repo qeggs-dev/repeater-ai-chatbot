@@ -6,7 +6,7 @@
   - **Request**
     - **method:** `POST`
     - **Content:**
-      - `model_uid` (str): 模型 UID
+      - `model_id` (str): 模型 UID
       - `timeout` (int): 请求超时时间
       - `times` (int): 请求次数
       - `size` (int): 请求包大小

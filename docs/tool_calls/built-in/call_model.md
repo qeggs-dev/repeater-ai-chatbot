@@ -7,7 +7,7 @@
 接受参数:
 ``` json
 {
-  "model_uid": "", // Unique identifier used to locate and load the target model.
+  "model_id": "", // Unique identifier used to locate and load the target model.
   "user_name": "", // Name of the user making the request, used for logging and personalization.
   "temperature": 1.0, // Controls randomness in output. Lower values (e.g., 0.2) make output more deterministic; higher values (e.g., 1.5) increase diversity. Must be between 0 and 2.
   "top_p": 1.0, // Nucleus sampling threshold. The model considers only the smallest set of tokens whose cumulative probability >= top_p. Must be between 0 and 1.
