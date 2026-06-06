@@ -12,7 +12,7 @@ class Response(BaseModel):
     user_input: str | list[ContentBlock] | None = None
     model_group: str | None = None
     model_name: str | None = None
-    model_id: str | None = None
+    model_uid: str | None = None
     create_time: int | None = None
     id: str | None = None
     finish_reason_cause: str | None = None
