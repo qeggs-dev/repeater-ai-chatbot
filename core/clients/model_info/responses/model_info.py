@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from ._models import ModelInfo
+from .._models import ModelInfo
 
 class ModelInfoResponse(BaseModel):
     message: str = ""

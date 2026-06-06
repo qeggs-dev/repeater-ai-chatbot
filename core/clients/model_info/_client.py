@@ -2,7 +2,10 @@ import ssl
 import httpx
 
 from urllib.parse import quote
-from ._response import ModelInfoResponse
+from .responses import (
+    ModelInfoResponse,
+    DisableResponse
+)
 from ...special_exception import HTTPException
 from ...http_response import Response
 
@@ -26,10 +29,10 @@ class ModelsClient:
             transport = transport
         )
     
-    async def get_models(self, model_uid: str) -> Response[ModelInfoResponse]:
+    async def get_models(self, model_id: str) -> Response[ModelInfoResponse]:
         try:
             http_response = await self._client.get(
-                f"/models/{quote(model_uid)}"
+                f"/models/{quote(model_id)}"
             )
         except httpx.RequestError as e:
             raise HTTPException(detail = f"Get Models API Failed: {e}") from e
@@ -52,6 +55,21 @@ class ModelsClient:
         response = Response(
             response = http_response,
             model = ModelInfoResponse
+        )
+
+        return response
+    
+    async def disable(self, model_id: str) -> Response[DisableResponse]:
+        try:
+            http_response = await self._client.post(
+                f"/disable/{quote(model_id)}"
+            )
+        except httpx.RequestError as e:
+            raise HTTPException(detail = f"Disable Model API Failed: {e}") from e
+
+        response = Response(
+            response = http_response,
+            model = DisableResponse
         )
 
         return response
