@@ -20,12 +20,20 @@ class NexusClient:
             self,
             base_url: str,
             request_timeout: int = 60,
+            params: dict[str, str | int | float | bool | None] | None = None,
+            headers: dict[str, str] | None = None,
+            cookies: dict[str, str] | None = None,
+            auth: tuple[str, str] | None = None,
             verify: ssl.SSLContext | str | bool = True,
             transport: httpx.AsyncHTTPTransport | None = None
         ) -> None:
         self._client = httpx.AsyncClient(
             base_url = base_url,
             timeout = request_timeout,
+            params = params,
+            headers = headers,
+            cookies = cookies,
+            auth = auth,
             verify = verify,
             transport = transport
         )

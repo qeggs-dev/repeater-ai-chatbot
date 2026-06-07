@@ -8,6 +8,10 @@ class HTMLRenderClient:
             self,
             base_url: str,
             timeout: int,
+            params: dict[str, str | int | float | bool | None] | None = None,
+            headers: dict[str, str] | None = None,
+            cookies: dict[str, str] | None = None,
+            auth: tuple[str, str] | None = None,
             verify: ssl.SSLContext | str | bool = True,
             transport: httpx.AsyncHTTPTransport | None = None
         ):
@@ -16,6 +20,10 @@ class HTMLRenderClient:
         self._client = httpx.AsyncClient(
             base_url = base_url,
             timeout = timeout,
+            params = params,
+            headers = headers,
+            cookies = cookies,
+            auth = auth,
             verify = verify,
             transport = transport
         )

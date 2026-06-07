@@ -17,16 +17,24 @@ class ModelsClient:
             base_url: str,
             api_key: str | None = None,
             timeout: int | None = None,
+            params: dict[str, str | int | float | bool | None] | None = None,
+            headers: dict[str, str] | None = None,
+            cookies: dict[str, str] | None = None,
+            auth: tuple[str, str] | None = None,
             verify: ssl.SSLContext | str | bool = True,
             transport: httpx.AsyncHTTPTransport | None = None,
         ):
         self._base_url = base_url
+        headers.update({
+            "Authorization": f"Bearer {api_key}"
+        })
         self._client = httpx.AsyncClient(
             base_url = self._base_url,
             timeout = timeout,
-            headers = {
-                "Authorization": f"Bearer {api_key}"
-            },
+            params = params,
+            headers = headers,
+            cookies = cookies,
+            auth = auth,
             verify = verify,
             transport = transport
         )
