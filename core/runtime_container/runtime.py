@@ -46,6 +46,7 @@ class RepeaterRuntime:
     init_list = []
 
     def __init__(self):
+        self._configs = ConfigManager.get_configs()
         for init_func in self.init_list:
             init_func(self)
 
@@ -69,11 +70,14 @@ class RepeaterRuntime:
     def init_models_manager(self):
         # 初始化 Model 管理器
         self.model_info_client = ModelsClient(
-            ConfigManager.get_configs().model_api.base_url,
-            self._env.str(
-                ConfigManager.get_configs().model_api.api_key_env_name
+            base_url = self._configs.model_api.base_url,
+            api_key = self._env.str(
+                self._configs.model_api.api_key_env_name
             ),
-            ConfigManager.get_configs().model_api.timeout,
+            timeout = self._configs.model_api.timeout,
+            headers = {
+                "User-Agent": self._configs.system_identification.system_ua
+            },
             transport = self.transport,
         )
 
@@ -82,8 +86,11 @@ class RepeaterRuntime:
     def init_static_resources_client(self):
         # 初始化静态资源客户端
         self.static_resources_client = StaticResourcesClient(
-            ConfigManager.get_configs().static_resources_server.base_url,
-            ConfigManager.get_configs().static_resources_server.timeout,
+            base_url = self._configs.static_resources_server.base_url,
+            timeout = self._configs.static_resources_server.timeout,
+            headers = {
+                "User-Agent": self._configs.system_identification.system_ua
+            },
             transport = self.transport,
         )
 
@@ -98,8 +105,8 @@ class RepeaterRuntime:
     def init_call_log_manager(self):
         # 初始化调用日志管理器
         self.request_log = RequestLogManager(
-            ConfigManager.get_configs().request_log.dir,
-            auto_save = ConfigManager.get_configs().request_log.auto_save,
+            self._configs.request_log.dir,
+            auto_save = self._configs.request_log.auto_save,
         )
 
     @init_list.append
@@ -107,7 +114,7 @@ class RepeaterRuntime:
     def init_blacklist(self):
         # 黑名单
         self.blacklist: RegexChecker = RegexChecker()
-        blacklist_file_path = Path(ConfigManager.get_configs().blacklist.file_path)
+        blacklist_file_path = Path(self._configs.blacklist.file_path)
         try:
             with open(blacklist_file_path, "r", encoding="utf-8") as f:
                 self.blacklist.load_strstream(f)
@@ -115,7 +122,7 @@ class RepeaterRuntime:
             logger.error("Invalid blacklist file")
         except FileNotFoundError:
             logger.error(f"Blacklist file not found: {blacklist_file_path}")
-        self.blacklist_match_timeout: int | None = ConfigManager.get_configs().blacklist.match_timeout
+        self.blacklist_match_timeout: int | None = self._configs.blacklist.match_timeout
 
     @init_list.append
     @print_init_runtime("Task Status Map")
@@ -133,7 +140,7 @@ class RepeaterRuntime:
     @print_init_runtime("Openai Pool")
     def init_openai_pool(self):
         # 初始化客户端池
-        config = ConfigManager.get_configs()
+        config = self._configs
         self.openai_pool: OpenAIPool = OpenAIPool(
             config.callapi.client_cache_size
         )
@@ -141,25 +148,31 @@ class RepeaterRuntime:
     @init_list.append
     @print_init_runtime("HTML Render Client")
     def init_html_render_client(self):
-        render_config = ConfigManager.get_configs().render
+        render_config = self._configs.render
         self.html_render_client = HTMLRenderClient(
             base_url = render_config.to_image.base_url,
             timeout = render_config.to_image.timeout,
+            headers = {
+                "User-Agent": self._configs.system_identification.system_ua
+            },
             transport = self.transport,
         )
     
     @init_list.append
     @print_init_runtime("Nexus Client")
     def init_nexus_client(self):
-        nexus_config = ConfigManager.get_configs().nexus
+        nexus_config = self._configs.nexus
         self.nexus_client: NexusClient = NexusClient(
             base_url = nexus_config.base_url,
             request_timeout = nexus_config.api_timeout,
+            headers = {
+                "User-Agent": self._configs.system_identification.system_ua
+            },
             transport = self.transport,
         )
     
     @init_list.append
     @print_init_runtime("License Loader")
     def init_licenses_data(self):
-        self.licenses = LicenseLoader(ConfigManager.get_configs().licenses)
+        self.licenses = LicenseLoader(self._configs.licenses)
         self.licenses.scan_licenses()
