@@ -131,7 +131,7 @@ class CallModel(ToolCallPacakage):
     async def call(self, args: Params):
         runtime = RuntimeContainer.get_runtime()
         
-        model = await runtime.model_info_client.get_model(
+        model = await runtime.model_info_client.get_random_model(
             model_id = args.model_id
         )
         

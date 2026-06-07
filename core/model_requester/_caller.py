@@ -251,7 +251,7 @@ class ModelRequester:
                 model_id = request.model_uid,
                 timeout = int(self._global_configs.callapi.failed_disable_timeout * 1e9)
             )
-            model = await self._model_info_client.get_model(
+            model = await self._model_info_client.get_random_model(
                 model_id = request.model_id
             )
             self.update_request_model(request, model)
