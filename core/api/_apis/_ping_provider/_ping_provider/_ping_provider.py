@@ -25,23 +25,12 @@ async def ping_provider(user_id: str, request: PingRequest):
     if model_ids is None:
         model_ids = global_config.model_api.default_model_id
     
-    if isinstance(model_ids, list):
-        model_id = random.choice(model_ids)
-    elif isinstance(model_ids, str):
-        model_id = model_ids
-    else:
-        raise HTTPException(detail="Invalid model id")
+    model = await runtime.model_info_client.get_model(model_ids)
     
-    response = await runtime.model_info_client.get_models(model_id)
-    if response:
-        response_data = response.get_data()
-        if response_data is None:
-            raise HTTPException(detail="Invalid response data")
-        models = response_data.models
+    if model.proxy is None:
+        model_url = model.base_url
     else:
-        raise HTTPException(detail=f"Invalid response ({response.code})")
-    
-    model_urls = {model.url if model.proxy is None else model.proxy for model in models}
+        model_url = model.proxy
     
     timeout = request.timeout
     if timeout is None:
@@ -64,7 +53,7 @@ async def ping_provider(user_id: str, request: PingRequest):
             size = size,
             interval = interval,
         )
-        for model_url in model_urls
+        for model_url in model_url
     ]
 
     tasks = [
@@ -80,13 +69,13 @@ async def ping_provider(user_id: str, request: PingRequest):
     time_ms: list[float] = []
     details: list[Detail] = []
 
-    for response in responses:
+    for model_info in responses:
         detail = PingDetail(
-            host_names = response.host_names,
-            ip = response.ip,
+            host_names = model_info.host_names,
+            ip = model_info.ip,
         )
         total_time_ms: float = 0.0
-        ping_response = response.responses
+        ping_response = model_info.responses
         for ping_detail in ping_response:
             ping_detail: Response
 
