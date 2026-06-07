@@ -219,7 +219,7 @@ class Core:
             model_id = user_config.model_id
             if model_id is None:
                 model_id = global_config.model_api.default_model_id
-            model = await self.runtime.model_info_client.get_model(
+            model = await self.runtime.model_info_client.get_random_model(
                 model_id = model_id,
             )
         
@@ -372,7 +372,7 @@ class Core:
                                 model_id = configs.model_id
                                 if not model_id:
                                     model_id = global_configs.model_api.default_model_id
-                            model = await self.runtime.model_info_client.get_model(
+                            model = await self.runtime.model_info_client.get_random_model(
                                 model_id = model_id
                             )
                         # endregion
