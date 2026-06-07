@@ -31,10 +31,10 @@ class ModelsClient:
             transport = transport
         )
     
-    async def get_model(
+    async def get_model_list(
         self,
         model_id: str | list[str] | None,
-    ) -> ModelInfo:
+    ) -> list[ModelInfo]:
         if model_id is None:
             raise HTTPException(
                 status_code = 400,
@@ -71,6 +71,10 @@ class ModelsClient:
                 detail = "Error: Model is Not Found.",
             )
         
+        return models
+        
+    async def get_random_model(self, model_id: str | list[str]) -> ModelInfo:
+        models = await self.get_model_list(model_id)
         model = random.choice(models)
 
         return model
