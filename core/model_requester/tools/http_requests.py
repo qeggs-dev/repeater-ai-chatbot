@@ -158,7 +158,7 @@ class HTTPRequests(ToolCallPacakage):
     
     async def crawler_header(self) -> dict[str, str]:
         return {
-            "User-Agent": self.global_configs.tool_calls.tools_configs.http_requests.crawler_name,
+            "User-Agent": self.global_configs.system_identification.crawler_name,
         }
     
     async def verify_crawler_permissions(self, client: httpx.AsyncClient, url: str) -> bool:
@@ -186,7 +186,7 @@ class HTTPRequests(ToolCallPacakage):
             robot_file_parser = RobotFileParser()
             robot_file_parser.parse(text.splitlines())
             return robot_file_parser.can_fetch(
-                self.global_configs.tool_calls.tools_configs.http_requests.crawler_name, url
+                self.global_configs.system_identification.crawler_name, url
             )
         except Exception:
             return True
