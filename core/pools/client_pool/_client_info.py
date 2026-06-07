@@ -5,7 +5,7 @@ from ...auxiliary.http import ClientTimeout, ClientLimits, get_ssl_context
 
 class ClientInfo(BaseModel, frozen=True):
     url: str = ""
-    params: dict[str, str] | None = None
+    params: dict[str, str | int | float | bool | None] | None = None
     headers: dict[str, str] | None = None
     cookies: dict[str, str] | None = None
     auth: tuple[str, str] | None = None
