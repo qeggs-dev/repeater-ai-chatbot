@@ -185,4 +185,8 @@ def make_request(
     request.logprobs = global_configs.model.logprobs
     request.top_logprobs = global_configs.model.top_logprobs
 
+    request.headers = {
+        "User-Agent": global_configs.system_identification.system_ua
+    }
+
     return request
