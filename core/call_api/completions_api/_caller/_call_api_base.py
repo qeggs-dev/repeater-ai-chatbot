@@ -33,6 +33,8 @@ class BaseCallAPI(ABC):
             limits = request.limits,
             timeout = request.timeout,
             encoding = request.encoding,
+            headers = request.headers,
+            params = request.params,
         )
         client = runtime.client_pool.get_openai(
             client_info = client_info,
