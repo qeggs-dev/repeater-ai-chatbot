@@ -25,12 +25,9 @@ async def ping_provider(user_id: str, request: PingRequest):
     if model_ids is None:
         model_ids = global_config.model_api.default_model_id
     
-    model = await runtime.model_info_client.get_model(model_ids)
+    model_info = await runtime.model_info_client.get_model_list(model_ids)
     
-    if model.proxy is None:
-        model_url = model.base_url
-    else:
-        model_url = model.proxy
+    model_urls = {model.base_url if model.proxy is None else model.proxy for model in model_info}
     
     timeout = request.timeout
     if timeout is None:
@@ -53,7 +50,7 @@ async def ping_provider(user_id: str, request: PingRequest):
             size = size,
             interval = interval,
         )
-        for model_url in model_url
+        for model_url in model_urls
     ]
 
     tasks = [
