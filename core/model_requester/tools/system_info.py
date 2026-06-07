@@ -24,7 +24,8 @@ class SystemInfo(ToolCallPacakage):
             "author": __author__,
             "license": __license__,
             "copyright": __copyright__,
-            "github": __github__
+            "github": __github__,
+            "system_identificationConfig": self.global_configs.system_identification.model_dump(),
         }
 
     def call(self, args: Params):
