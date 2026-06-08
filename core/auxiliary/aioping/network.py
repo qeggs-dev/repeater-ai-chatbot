@@ -17,7 +17,6 @@ class AioSocket(Socket):
         # Nonblocking is required here to support asynchronous operations.
         self.socket.setblocking(False)
         self.static_lock = asyncio.Lock()
-        self._socket_closed = False
     
     async def send(self, packet: bytes) -> None:
         loop = asyncio.get_running_loop()
@@ -47,9 +46,7 @@ class AioSocket(Socket):
             self._close()
     
     async def _close(self):
-        if not self._socket_closed:
-            await self.aclose()
-            self._socket_closed = True
+        await self.socket.close()
     
     async def __aenter__(self):
         return self
