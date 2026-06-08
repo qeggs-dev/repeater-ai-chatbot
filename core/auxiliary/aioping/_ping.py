@@ -1,3 +1,5 @@
+"""Defines the ping() method"""
+
 import sys
 from typing import TextIO
 from random import randint

@@ -42,24 +42,28 @@ class AioSocket(Socket):
         end_time = time.perf_counter()
         return packet, source, timeout - (end_time - start_time)
     
-    async def close(self):
+    async def aclose(self):
         async with self.static_lock:
-            if not self._socket_closed:
-                self.socket.close()
-                self._socket_closed = True
+            self._close()
+    
+    async def _close(self):
+        if not self._socket_closed:
+            await self.aclose()
+            self._socket_closed = True
     
     async def __aenter__(self):
         return self
     
     async def __aexit__(self, exc_type, exc_val, exc_tb):
-        if not self._socket_closed:
-            self.close()
+        self.aclose()
     
     def __del__(self):
-        # Direct to override to fine-tune logic to reduce unnecessary operations.
+        """
+        Instead of relying on this method, you should explicitly close it using aclose() or __aexit__().
+        """
         try:
-            if hasattr(self, "socket") and self.socket and not self._socket_closed:
-                self.socket.close()
+            if hasattr(self, "socket") and self.socket:
+                self._close()
         except AttributeError:
             raise AttributeError("Attribute error because of failed socket init. Make sure you have the root privilege."
                                  " This error may also be caused from DNS resolution problems.")
