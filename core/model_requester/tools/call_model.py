@@ -6,7 +6,7 @@ from ...call_api.completions_api import (
     StreamOptions
 )
 from ...context import ToolCallPacakage, CallType, Context, ContentRole
-from ...global_config_manager import ReasoningEffort, ConfigManager
+from ...global_config_manager import ReasoningEffort
 from ...data_manager import PromptManager
 from .._caller import ModelRequester
 from ...runtime_container import RuntimeContainer
@@ -162,10 +162,10 @@ class CallModel(ToolCallPacakage):
             remove_reasoning_prompt = args.remove_reasoning_prompt,
             remove_created = True,
             send_user_id = send_user_id,
-            stream = ConfigManager.get_configs().model.stream,
+            stream = self.global_configs.model.stream,
             stream_options = StreamOptions(
-                include_obfuscation = ConfigManager.get_configs().callapi.include_obfuscation,
-                include_usage = ConfigManager.get_configs().callapi.include_usage
+                include_obfuscation = self.global_configs.callapi.include_obfuscation,
+                include_usage = self.global_configs.callapi.include_usage
             )
         )
         
@@ -176,7 +176,9 @@ class CallModel(ToolCallPacakage):
         requestser = ModelRequester(
             user_id = self.user_id,
             user_configs = self.user_configs,
-            max_concurrency = ConfigManager.get_configs().callapi.max_concurrency
+            global_configs = self.global_configs,
+            model_info_client = runtime.model_info_client,
+            max_concurrency = self.global_configs.callapi.max_concurrency
         )
 
         responses = await requestser.submit(
