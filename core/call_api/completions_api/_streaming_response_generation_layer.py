@@ -61,23 +61,21 @@ class StreamingResponseGenerationLayer:
         if not self.request.context:
             raise ValueError("context is required")
         
-        # 请求流式连接
-        self.request_start_time = TimeStamp()
-        self.request_end_time = TimeStamp()
         # chunk计数器
         self.chunk_count:int = 0
         # 空chunk计数器
         self.empty_chunk_count:int = 0
 
         # 开始处理流式响应
-        self._print_file.write("\n")
-        self._print_file.flush()
+        if self.request.print_chunk:
+            self._print_file.write("\n")
+            self._print_file.flush()
         # 记录流开始时间
         # 记录上次chunk时间
         self.created:TimeStamp = TimeStamp()
         # chunk耗时列表
         self.chunk_times:list[TimeStamp] = []
-        self.chunk_generated_times:list[TimeStamp] = []
+        self.processor_queue_backlog: list[int] = []
 
         self._chunk_queue: asyncio.Queue[Delta | Exception | None] = asyncio.Queue()
 
@@ -87,23 +85,24 @@ class StreamingResponseGenerationLayer:
         self._print_chunk = config_to_log_level(ConfigManager.get_configs().logger.level) > LogLevel.TRACE
     
     def finally_stream(self):
-        self._print_file.write("\n\n")
-        self._print_file.flush()
+        stream_processing_end_time: int = TimeStamp()
+        if self.request.print_chunk:
+            self._print_file.write("\n\n")
+            self._print_file.flush()
 
         # 添加日志统计数据
         self.response.request_log.id = self.response.id
         self.response.request_log.total_chunk = self.chunk_count
         self.response.request_log.empty_chunk = self.empty_chunk_count
-        self.response.request_log.request_start_time = self.request_start_time
-        self.response.request_log.request_end_time = self.request_end_time
         self.response.request_log.created_time = self.response.created
         self.response.request_log.chunk_times = self.chunk_times
-        self.response.request_log.chunk_generated_times = self.chunk_generated_times
+        self.response.request_log.processor_queue_backlog = self.processor_queue_backlog
         self.response.request_log.total_tokens = self.response.token_usage.total_tokens
         self.response.request_log.prompt_tokens = self.response.token_usage.prompt_tokens
         self.response.request_log.completion_tokens = self.response.token_usage.completion_tokens
         self.response.request_log.cache_hit_count = self.response.token_usage.prompt_cache_hit_tokens
         self.response.request_log.cache_miss_count = self.response.token_usage.prompt_cache_miss_tokens
+        self.response.request_log.stream_processing_end_time = stream_processing_end_time
 
         # 由于工具调用不分顺序，而是通过 ID 定位
         # 所以这里这里可以忽略索引
@@ -128,7 +127,6 @@ class StreamingResponseGenerationLayer:
         try:
             async for chunk in self._response_iterator:
                 await self._chunk_queue.put(chunk)
-                self.chunk_generated_times.append(TimeStamp())
             await self._chunk_queue.put(None)
         except Exception as e:
             await self._chunk_queue.put(e)
@@ -147,11 +145,10 @@ class StreamingResponseGenerationLayer:
         Returns the next chunk of data from the streaming response generation layer.
         """
         delta_data = await self._chunk_queue.get()
+        self.processor_queue_backlog.append(self._chunk_queue.qsize())
         if delta_data is None:
             if not self._finished:
                 self._finished = True
-                stream_processing_end_time: int = TimeStamp()
-                self.response.request_log.stream_processing_end_time = stream_processing_end_time
                 self.finally_stream()
                 raise StopAsyncIteration
         elif isinstance(delta_data, Exception):
@@ -241,7 +238,8 @@ class StreamingResponseGenerationLayer:
         self.chunk_count += 1
         
         # 刷新打印缓冲区
-        self._print_file.flush()
+        if self.request.print_chunk:
+            self._print_file.flush()
     @property
     def is_finished(self) -> bool:
         """

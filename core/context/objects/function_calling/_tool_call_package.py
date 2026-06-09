@@ -34,6 +34,10 @@ class ToolCallPacakage(ABC):
         self.global_configs = global_configs
         self.extra_positional_args = args
         self.extra_keyword_args = kwargs
+        self.__post_init__()
+    
+    def __post_init__(self):
+        pass
 
     def document_method(self) -> str:
         """

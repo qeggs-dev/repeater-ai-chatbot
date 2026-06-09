@@ -2,6 +2,7 @@ def main(run_server: bool = True):
     while True:
         import time
         start_import_time = time.perf_counter_ns()
+        import sys
         from core import RepeaterMain
         from loguru import logger
         end_import_time = time.perf_counter_ns()
@@ -36,7 +37,14 @@ def main(run_server: bool = True):
         repeater_main.init_server(configs)
         
         if run_server:
-            repeater_main.run()
+            exit_code = repeater_main.run()
+        
+        if exit_code != 0:
+            logger.error(
+                "Repeater exited with code {exit_code}",
+                exit_code = exit_code
+            )
+            sys.exit(exit_code)
         
         if configs.server.restart:
             logger.info("Repeater Restarting...")

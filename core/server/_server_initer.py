@@ -1,8 +1,14 @@
 # ==== 标准库 ==== #
 from __future__ import annotations
+from typing import Callable, Awaitable
 
 # ==== 第三方库 ==== #
 from loguru import logger
+from fastapi import (
+    FastAPI,
+    Request,
+    Response
+)
 
 # ==== 自定义库 ==== #
 from ..auxiliary.time import print_init_runtime
@@ -26,11 +32,7 @@ class ServerIniter:
         self.init_admin_key_manager()
     
     def init_middleware(self):
-        from ._http_middleware import middleware_factory
-        middleware_factory(
-            self.server.app,
-            server = self.server.server,
-        )
+        self.middleware_factory()
     
     def init_logger(self):
         from ..logger_init import logger_init
@@ -85,3 +87,17 @@ class ServerIniter:
                 log_config = None
             )
         )
+    
+    def middleware_factory(self):
+        from ..repeater_traceback import log_traceback
+        @self.server.app.middleware("http")
+        async def http_middleware(request: Request, call_next: Callable[[Request], Awaitable[Response]]):
+            try:
+                return await call_next(request)
+            except Exception as e:
+                return await log_traceback(e, self.server)
+            except BaseException as e:
+                if ConfigManager().get_configs().global_exception_handler.record_all_exceptions:
+                    await log_traceback(e, self.server)
+                raise
+        return http_middleware

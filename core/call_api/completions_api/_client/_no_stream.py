@@ -7,7 +7,6 @@ from typing import (
 )
 
 # ==== 第三方库 ==== #
-import openai
 from loguru import logger
 
 # ==== 自定义库 ==== #
@@ -21,7 +20,6 @@ from .._caller import (
     CallAPI,
     StreamAPI
 )
-from .._exceptions import *
 from .._caller import StreamingResponseGenerationLayer
 from ._client import ClientBase
 
@@ -35,66 +33,37 @@ class NoStreamClient(ClientBase):
             runtime: Runtime,
         ) -> Response:
         """提交请求，并等待API返回结果"""
-        try:
-            response = await self._submit_task(user_id, request, runtime)
-            if not isinstance(response, Response):
-                generator = StreamingResponseGenerationLayer(
-                    user_id = user_id,
-                    request = request,
-                    runtime = runtime,
-                    response_iterator = response
-                )
-                async for chunk in generator:
-                    pass
-                output = generator.response
-            else:
-                output = response
+        response = await self._submit_task(user_id, request, runtime)
+        if not isinstance(response, Response):
+            generator = StreamingResponseGenerationLayer(
+                user_id = user_id,
+                request = request,
+                runtime = runtime,
+                response_iterator = response
+            )
+            async for chunk in generator:
+                pass
+            output = generator.response
+        else:
+            output = response
 
-            await self._preprocess_response(user_id, request, output, runtime)
-
-        except openai.NotFoundError:
-            raise ModelNotFoundError(request.model)
-        except openai.APIConnectionError:
-            raise APIConnectionError(f"{request.url} Connection Failed")
+        await self._preprocess_response(user_id, request, output, runtime)
         
         return output
     
     async def _submit_task(self, user_id: str, request: Request, runtime: Runtime) -> AsyncIterator[Delta] | Response:
-        try:
-            if request.stream:
-                client = StreamAPI()
-                call = await client.call(
-                    user_id = user_id,
-                    request = request,
-                    runtime = runtime
-                )
-            else:
-                client = CallAPI()
-                call = await client.call(
-                    user_id = user_id,
-                    request = request,
-                    runtime = runtime
-                )
-            return call
-        except openai.BadRequestError as e:
-            if e.code in range(400, 500):
-                logger.error(
-                    "BadRequestError: {error}",
-                    user_id = user_id,
-                    error = str(e)
-                )
-                raise BadRequestError(e.message)
-            elif e.code in range(500, 600):
-                logger.error(
-                    "API Server Error: {error}",
-                    user_id = user_id,
-                    error = str(e)
-                )
-                raise APIServerError(e.message)
-        except Exception as e:
-            logger.error(
-                "Error: {error}",
+        if request.stream:
+            client = StreamAPI()
+            call = await client.call(
                 user_id = user_id,
-                error = str(e)
+                request = request,
+                runtime = runtime
             )
-            raise CallAPIException(e) from e
+        else:
+            client = CallAPI()
+            call = await client.call(
+                user_id = user_id,
+                request = request,
+                runtime = runtime
+            )
+        return call

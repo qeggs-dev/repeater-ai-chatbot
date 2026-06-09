@@ -1,3 +1,4 @@
+from urllib.parse import urljoin
 from pydantic import BaseModel, ConfigDict, Field
 from ...auxiliary.http import ClientLimits, ClientTimeout
 from .models import ModelAPIData
@@ -11,7 +12,9 @@ class SafeModelInfo(BaseModel):
     detailed: ModelAPIData | None = None
 
 class ModelInfo(BaseModel):
-    url: str = ""
+    base_url: str = ""
+    endpoint: str = ""
+    fetch_models_endpoint: str = "/models"
     proxy: str | None = None
     limits: ClientLimits = Field(default_factory=ClientLimits)
     timeout: ClientTimeout = Field(default_factory=ClientTimeout)
@@ -34,3 +37,8 @@ class ModelInfo(BaseModel):
             timeout = self.timeout,
             detailed = self.detailed if detailed_info else None
         )
+    
+    def get_base_url(self) -> str:
+        if self.endpoint:
+            return urljoin(self.base_url, self.endpoint)
+        return self.base_url

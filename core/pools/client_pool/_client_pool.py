@@ -1,12 +1,17 @@
-from ._client_info import ClientInfo
+import asyncio
+
 from httpx import AsyncClient
 from loguru import logger
+from cachetools import LRUCache
+from ._client_info import ClientInfo
 
 class ClientPool:
-    def __init__(self):
-        self._clients: dict[ClientInfo, AsyncClient] = {}
+    def __init__(self, cache_size: int = 100):
+        self._clients: LRUCache[ClientInfo, AsyncClient] = LRUCache(maxsize=cache_size)
+        self._pool_lock = asyncio.Lock()
         self._cache_hits: int = 0
         self._cache_misses: int = 0
+        self._cache_size: int = cache_size
     
     def get_client(self, client_info: ClientInfo):
         if client_info in self._clients:

@@ -2,8 +2,8 @@ from typing import Any
 from pydantic import BaseModel, Field
 from ._finish_reason import FinishReason
 from ._tokens_count import TokensCount
-from ._logprob import Logprob
 from ._tool_calls import ToolCall
+from ....request_log import Logprob
 
 class Delta(BaseModel):
     """

@@ -1,4 +1,5 @@
 import ssl
+import httpx
 import orjson
 
 from urllib.parse import quote
@@ -8,7 +9,6 @@ from typing import (
 )
 from uuid import UUID
 
-from httpx import AsyncClient
 from loguru import logger
 
 from ...http_response import Response
@@ -20,12 +20,22 @@ class NexusClient:
             self,
             base_url: str,
             request_timeout: int = 60,
-            verify: ssl.SSLContext | str | bool = True
+            params: dict[str, str | int | float | bool | None] | None = None,
+            headers: dict[str, str] | None = None,
+            cookies: dict[str, str] | None = None,
+            auth: tuple[str, str] | None = None,
+            verify: ssl.SSLContext | str | bool = True,
+            transport: httpx.AsyncHTTPTransport | None = None
         ) -> None:
-        self._client = AsyncClient(
+        self._client = httpx.AsyncClient(
             base_url = base_url,
             timeout = request_timeout,
-            verify = verify
+            params = params,
+            headers = headers,
+            cookies = cookies,
+            auth = auth,
+            verify = verify,
+            transport = transport
         )
     
     async def close(self) -> None:

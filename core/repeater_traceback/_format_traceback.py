@@ -4,9 +4,9 @@ import traceback
 
 from loguru import logger
 from datetime import datetime
-from uvicorn import Server
 from fastapi.responses import ORJSONResponse
 
+from ..server import Server
 from ..special_exception import CriticalException, HTTPException
 from ..global_config_manager import ConfigManager
 from ._shutdown_server import shutdown_server

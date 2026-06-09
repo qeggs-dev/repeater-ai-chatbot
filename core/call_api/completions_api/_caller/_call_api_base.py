@@ -1,13 +1,22 @@
 import sys
 import openai
 
-from typing import Literal, AsyncIterator, TextIO, TypeVar, Any
+from typing import (
+    Literal,
+    AsyncIterator,
+    TextIO,
+    TypeVar,
+    Any,
+    Coroutine,
+    overload
+)
 from abc import ABC, abstractmethod
-from .._objects import Request, Response, Delta, Runtime
+from .._objects import Request, Response, Delta, Runtime, InterfaceType
 from .._exceptions import *
 from ....pools.client_pool import ClientInfo
 
 T = TypeVar("T")
+T_Value = TypeVar("T_Value")
 
 class BaseCallAPI(ABC):
     """
@@ -24,6 +33,8 @@ class BaseCallAPI(ABC):
             limits = request.limits,
             timeout = request.timeout,
             encoding = request.encoding,
+            headers = request.headers,
+            params = request.params,
         )
         client = runtime.client_pool.get_openai(
             client_info = client_info,
@@ -32,7 +43,17 @@ class BaseCallAPI(ABC):
         return client
     
     @staticmethod
-    def none_to_omit(value: Any) -> Any:
+    @overload
+    def none_to_omit(value: None) -> openai.Omit:
+        ...
+    
+    @staticmethod
+    @overload
+    def none_to_omit(value: T_Value) -> T_Value:
+        ...
+    
+    @staticmethod
+    def none_to_omit(value: T_Value | None) -> T_Value | openai.Omit:
         if value is None:
             return openai.omit
         return value
@@ -52,21 +73,87 @@ class BaseCallAPI(ABC):
         if not isinstance(runtime, Runtime):
             raise TypeError("runtime must be Runtime")
         
-        try:
-            return await self._call(user_id, request, runtime)
-        except openai.APITimeoutError as e:
-            raise APITimeoutError(str(e)) from e
-        except openai.BadRequestError as e:
-            raise BadRequestError(str(e)) from e
-        except openai.InternalServerError as e:
-            raise APIServerError(str(e)) from e
-        except openai.APIConnectionError as e:
-            raise APIConnectionError(str(e)) from e
-        except Exception as e:
-            raise CallAPIException(str(e)) from e
-    
+        match request.interface:
+            case InterfaceType.OPENAI:
+                try:
+                    return await self._openai_call(user_id, request, runtime)
+                except openai.APITimeoutError as e:
+                    raise APITimeoutError(
+                        e.message,
+                        request = e.request,
+                        body = e.body,
+                    ) from e
+                except openai.APIConnectionError as e:
+                    raise APIConnectionError(
+                        message = e.message,
+                        request = e.request,
+                    ) from e
+                except openai.APIStatusError as e:
+                    match e.status_code:
+                        case 400:
+                            raise BadRequestError(
+                                e.message,
+                                response = e.response,
+                                body = e.body,
+                            ) from e
+                        case 401:
+                            raise AuthenticationError(
+                                e.message,
+                                response = e.response,
+                                body = e.body,
+                            ) from e
+                        case 403:
+                            raise PermissionDeniedError(
+                                e.message,
+                                response = e.response,
+                                body = e.body,
+                            ) from e
+                        case 404:
+                            raise NotFoundError(
+                                e.message,
+                                response = e.response,
+                                body = e.body,
+                            ) from e
+                        case 422:
+                            raise UnprocessableEntityError(
+                                e.message,
+                                response = e.response,
+                                body = e.body,
+                            ) from e
+                        case 429:
+                            raise RateLimitError(
+                                e.message,
+                                response = e.response,
+                                body = e.body,
+                            ) from e
+                        case code:
+                            if 400 <= code < 500:
+                                raise ClientBadRequest(
+                                    e.message,
+                                    response = e.response,
+                                    body = e.body,
+                                ) from e
+                            elif 500 <= code < 600:
+                                raise InternalServerError(
+                                    e.message,
+                                    response = e.response,
+                                    body = e.body,
+                                ) from e
+                            else:
+                                raise UnknowAPIStatusError(
+                                    e.message,
+                                    response = e.response,
+                                    body = e.body,
+                                ) from e
+                except openai.APIError as e:
+                    raise APIError(
+                        e.message,
+                        request = e.request,
+                        body = e.body,
+                    ) from e
+            
     @abstractmethod
-    async def _call(self, user_id: str, request: Request, runtime: Runtime) -> T:
+    async def _openai_call(self, user_id: str, request: Request, runtime: Runtime) -> T:
         pass
 
     @property
@@ -84,7 +171,7 @@ class CallNstreamAPIBase(BaseCallAPI, ABC):
         return False
 
     @abstractmethod
-    async def _call(self, user_id: str, request: Request, runtime: Runtime) -> Response:
+    async def _openai_call(self, user_id: str, request: Request, runtime: Runtime) -> Response:
         pass
 
 class CallStreamAPIBase(BaseCallAPI, ABC):
@@ -97,5 +184,5 @@ class CallStreamAPIBase(BaseCallAPI, ABC):
         return True
 
     @abstractmethod
-    async def _call(self, user_id: str, request: Request, runtime: Runtime) -> AsyncIterator[Delta]:
+    async def _openai_call(self, user_id: str, request: Request, runtime: Runtime) -> Coroutine[Any, Any, AsyncIterator[Delta]]:
         pass

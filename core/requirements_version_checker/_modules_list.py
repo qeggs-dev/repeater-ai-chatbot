@@ -20,6 +20,7 @@ import asteval
 import pip_requirements_parser
 import jsonpatch
 import pythonping
+import cachetools
 
 modules_list = [
     aiofiles,
@@ -43,7 +44,8 @@ modules_list = [
     asteval,
     pip_requirements_parser,
     jsonpatch,
-    pythonping
+    pythonping,
+    cachetools,
 ]
 
 name_map = {

@@ -32,4 +32,7 @@ class HTTPException(Exception):
         return self.detail.extra_data
     
     def __str__(self):
-        return f"{self.status_code}({self.detail.http_code()}): {self.message}"
+        return self.message
+    
+    def __repr__(self):
+        return f"{self.__class__.__name__}(detail={repr(self.message)}, status_code={repr(self.status_code)}, extra_data={repr(self.extra_data)})"

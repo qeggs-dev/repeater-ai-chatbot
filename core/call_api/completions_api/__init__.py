@@ -9,20 +9,26 @@ from ._objects import (
     Runtime,
     Response,
     TokensCount,
-    TopLogprob,
     FinishReason,
-    Logprob,
     Delta,
     StreamOptions
 )
 from ._exceptions import (
     CallAPIException,
-    BadRequestError,
-    ModelNotFoundError,
+    APIError,
     APIConnectionError,
     APITimeoutError,
-    StreamNotAvailable,
-    APIServerError
+    APIStatusError,
+    ClientBadRequest,
+    BadRequestError,
+    AuthenticationError,
+    PermissionDeniedError,
+    NotFoundError,
+    ConflictError,
+    UnprocessableEntityError,
+    RateLimitError,
+    InternalServerError,
+    UnknowAPIStatusError
 )
 
 __all__ = [
@@ -34,16 +40,22 @@ __all__ = [
     "Runtime",
     "Response",
     "TokensCount",
-    "TopLogprob",
     "FinishReason",
-    "Logprob",
     "Delta",
     "StreamOptions",
     "CallAPIException",
-    "BadRequestError",
-    "ModelNotFoundError",
+    "APIError",
     "APIConnectionError",
     "APITimeoutError",
-    "StreamNotAvailable",
-    "APIServerError"
+    "APIStatusError",
+    "ClientBadRequest",
+    "BadRequestError",
+    "AuthenticationError",
+    "PermissionDeniedError",
+    "NotFoundError",
+    "ConflictError",
+    "UnprocessableEntityError",
+    "RateLimitError",
+    "InternalServerError",
+    "UnknowAPIStatusError"
 ]

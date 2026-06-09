@@ -235,11 +235,12 @@ class FunctionCaller:
             call_type = function.call_type.name
         )
 
-        logger.info(
-            "Use Arguments:\n{arguments}",
-            user_id = user_id,
-            arguments = orjson.dumps(arguments.model_dump(), option=orjson.OPT_INDENT_2).decode("utf-8")
-        )
+        if isinstance(arguments, BaseModel):
+            logger.info(
+                "Use Arguments:\n{arguments}",
+                user_id = user_id,
+                arguments = orjson.dumps(arguments.model_dump(), option=orjson.OPT_INDENT_2).decode("utf-8")
+            )
 
         start_time = time.perf_counter_ns()
         try:

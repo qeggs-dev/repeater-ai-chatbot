@@ -1,4 +1,5 @@
 # ==== 标准库 ==== #
+from urllib.parse import urljoin
 
 # ==== 第三方库 ==== #
 from loguru import logger
@@ -19,13 +20,14 @@ def print_request_info(
         user_id: str,
         api: ModelInfo,
         user_input: ContentUnit | None,
+        suffix: str | None,
         user_info: RequestUserInfo,
         role_name: str | None = None
     ) -> None:
     logger.info(
         "API URL: {url}",
         user_id = user_id,
-        url = api.url
+        url = urljoin(api.base_url, api.endpoint)
     )
     logger.info(
         "API Model: {parent}/{model_name}",
@@ -60,6 +62,13 @@ def print_request_info(
         logger.warning(
             "No message to send",
             user_id = user_id
+        )
+    
+    if suffix:
+        logger.info(
+            "Suffix: \n{suffix}",
+            user_id = user_id,
+            suffix = suffix
         )
 
     # 如果有设置用户信息，则打印日志

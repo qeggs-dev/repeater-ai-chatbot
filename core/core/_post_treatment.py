@@ -31,7 +31,7 @@ from ..template_render import (
 )
 from ..runtime_container import RepeaterRuntime
 from ..status_map import (
-    StatusMap
+    StatusStack
 )
 from ..request_log import (
     RequestLogManager
@@ -44,7 +44,7 @@ async def post_treatment(
     context_loader: ContextLoader,
     enable_assistant_template: bool,
     cross_user_data_routing: CrossUserDataRouting[str],
-    task_status_map: StatusMap[str, str],
+    task_status_stack: StatusStack[str],
     request_log_manager: RequestLogManager,
     extra_template_fields: dict[str, Any] | None = None,
     request_statistics_template: str = "",
@@ -54,7 +54,7 @@ async def post_treatment(
     save_only_text: bool = False,
     save_new_only: bool = False,
 ) -> Response:
-    with task_status_map.enter(user_id, "PostProcessing"):
+    with task_status_stack.enter("PostProcessing"):
         # 补充调用日志的时间信息
         saved_user_id = cross_user_data_routing.context.save_to_user_id
         if extra_template_fields is None:
@@ -92,7 +92,7 @@ async def post_treatment(
                 )
             new_context.last_content = content_unit
         
-        with task_status_map.enter(user_id, "Saving Context"):
+        with task_status_stack.enter("Saving Context"):
             if cross_user_data_routing.context.save_to_user_id == user_id:
                 historical_context = responses.historical_context
             else:
@@ -132,14 +132,14 @@ async def post_treatment(
             response.request_log.task_end_time = TimeStamp()
 
         # 记录调用日志
-        with task_status_map.enter(user_id, "Recording request log"):
+        with task_status_stack.enter("Recording request log"):
             await request_log_manager.add_multi_request_log(responses.request_logs())
 
         # 记录API调用成功
         logger.success(f"Task Finished!", user_id = saved_user_id)
 
         # 返回模型输出内容
-        with task_status_map.enter(user_id, "Returning response"):
+        with task_status_stack.enter("Returning response"):
             output.context = new_context
             output.create_time = responses[0].created
             output.id = responses[0].id

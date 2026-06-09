@@ -22,6 +22,7 @@ class GlobalConfigs(BaseModel):
     server: ServerConfig = Field(default_factory=ServerConfig)
     static: StaticConfig = Field(default_factory=StaticConfig)
     static_resources_server: StaticResourcesServerConfig = Field(default_factory=StaticResourcesServerConfig)
+    system_identification: SystemIdentificationConfig = Field(default_factory=SystemIdentificationConfig)
     user_data: UserDataConfig = Field(default_factory=UserDataConfig)
     user_nickname_mapping: UserNicknameMappingConfig = Field(default_factory=UserNicknameMappingConfig)
     web: WebConfig = Field(default_factory=WebConfig)

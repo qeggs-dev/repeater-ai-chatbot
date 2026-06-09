@@ -6,6 +6,7 @@ from .asteval_tool import Asteval
 from .get_models import GetModels
 from .call_model import CallModel
 from .token_count import TokenCount
+from .system_info import SystemInfo
 
 __all__ = [
     "HTTPRequests",
@@ -15,4 +16,5 @@ __all__ = [
     "GetModels",
     "CallModel",
     "TokenCount",
+    "SystemInfo",
 ]

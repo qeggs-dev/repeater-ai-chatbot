@@ -6,7 +6,7 @@ from .supported_parameters import SupportedParameters
 from .links import Links
 
 class ModelAPIData(BaseModel):
-    id: str = ""
+    id: str | None = None
     canonical_slug: str | None = None
     hugging_face_id: str | None = None
     name: str | None = None
@@ -21,6 +21,7 @@ class ModelAPIData(BaseModel):
     knowledge_cutoff: str | None = None
     expiration_date: str | None = None
     links: Links | None = None
+    disable_to: int | None = None
 
 class ModelAPIResponse(BaseModel):
     data: list[ModelAPIData] = Field(default_factory=list)

@@ -5,6 +5,7 @@
   - `url` (str): 请求的目标URL
   - `model` (str): 请求的模型ID
   - `user_id` (str): 请求的用户ID
+  - `task_id` (str): 请求的任务ID
   - `user_name` (str | null): 请求的用户名
   - `stream` (bool): 是否启用了流式响应
   - `total_chunk` (int): 请求的总 Chunk 数量
@@ -17,8 +18,11 @@
   - `stream_processing_start_time` (TimeStamp): 流式处理开始时间
   - `stream_processing_end_time` (TimeStamp): 流式处理结束时间
   - `task_end_time` (TimeStamp): 任务结束时间
-  - `chunk_times` (list[TimeStamp]): Parsed Chunk 时间列表
   - `chunk_generated_times` (list[TimeStamp]): Generated Chunk 时间列表
+  - `translation_chunk_times` (list[TimeStamp]): Translated Chunk 时间列表
+  - `translation_queue_backlog` (list[int]): Translated Chunk 队列延迟列表
+  - `chunk_times` (list[TimeStamp]): Parsed Chunk 时间列表
+  - `processor_queue_backlog` (list[int]): Parsed Chunk 队列延迟列表
   - `created_time` (int): API报告的创建时间
   - `total_tokens` (int): 请求的总 Token 数量
   - `prompt_tokens` (int): 输入的 Token 数量

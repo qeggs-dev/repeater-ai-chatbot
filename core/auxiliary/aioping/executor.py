@@ -1,3 +1,5 @@
+"""Module that actually performs the ping, sending and receiving packets"""
+
 import os
 import sys
 import asyncio
@@ -30,7 +32,7 @@ class AioCommunicator(Communicator):
     ):
         # Because the `AioSocket` is initialized instead of the `Socket`
         # So don't execute `Super().__init__()``
-        self.socket = AioSocket(
+        self.socket = self.create_socket(
             target,
             "icmp",
             options = socket_options,
@@ -45,7 +47,21 @@ class AioCommunicator(Communicator):
         # note that to make Communicator instances concurrency safe, the seed ID must be unique per instance
         if self.seed_id is None:
             self.seed_id = os.getpid() & 0xFFFF
-
+    
+    def create_socket(
+        self,
+        target: str,
+        protocol: str,
+        options: tuple | None = None,
+        source: str | None = None
+    ) -> AioSocket:
+        return AioSocket(
+            target,
+            protocol,
+            options = options,
+            source = source
+        )
+        
     async def send_ping(self, packet_id: int, sequence_number: int, payload: str | bytes):
         icmp_packet = icmp.ICMP(
             icmp.Types.EchoRequest,
@@ -123,11 +139,11 @@ class AioCommunicator(Communicator):
             if self.interval:
                 await asyncio.sleep(self.interval)
     
-    async def close(self):
-        await self.socket.close()
+    async def aclose(self):
+        await self.socket.aclose()
 
     async def __aenter__(self):
         return self
     
     async def __aexit__(self, exc_type, exc_val, exc_tb):
-        await self.close()
+        await self.aclose()

@@ -6,7 +6,17 @@ from yarl import URL
 from ...special_exception import HTTPException
 
 class StaticResourcesClient:
-    def __init__(self, base_url: str, timeout: int | float | None = None, verify: ssl.SSLContext | str | bool = True):
+    def __init__(
+            self,
+            base_url: str,
+            timeout: int | float | None = None,
+            params: dict[str, str | int | float | bool | None] | None = None,
+            headers: dict[str, str] | None = None,
+            cookies: dict[str, str] | None = None,
+            auth: tuple[str, str] | None = None,
+            verify: ssl.SSLContext | str | bool = True,
+            transport: httpx.AsyncHTTPTransport | None = None,
+        ):
         if isinstance(base_url, str):
             if base_url:
                 self._base_url = URL(base_url)
@@ -18,7 +28,12 @@ class StaticResourcesClient:
         self.client = httpx.AsyncClient(
             base_url = str(self._base_url),
             timeout = timeout,
-            verify = verify
+            params = params,
+            headers = headers,
+            cookies = cookies,
+            auth = auth,
+            verify = verify,
+            transport = transport
         )
     
     @property

@@ -28,3 +28,4 @@ This project includes the following third-party software components, licensed un
 - [Pip-requirements-parser](./pip-requirements-parser/index.md)
 - [JSONPatch](./jsonpatch/index.md)
 - [PythonPing](./pythonping/index.md)
+- [Cachetools](./cachetools/index.md)

@@ -2,7 +2,7 @@ import asyncio
 import inspect
 
 from loguru import logger
-from uvicorn import Server
+from ..server import Server
 from ..special_exception import CriticalException
 
 async def shutdown_server(server: Server, exception: CriticalException | None = None) -> None:
@@ -53,4 +53,4 @@ async def shutdown_server(server: Server, exception: CriticalException | None = 
         await asyncio.sleep(wait_time)
 
     logger.critical("The server crashed! exiting...")
-    await server.shutdown()
+    await server.shutdown(exit_code = exception.exit_code)

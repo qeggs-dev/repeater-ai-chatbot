@@ -1,11 +1,15 @@
 # ==== 标准库 ==== #
-import base64
-
-from typing import TypeVar, Generic, Callable
+from typing import (
+    TypeVar,
+    Generic,
+    Callable,
+    ClassVar,
+)
 from pathlib import Path
 
 # ==== 第三方库 ==== #
 from loguru import logger
+from cachetools import LRUCache
 
 # ==== 自定义库 ==== #
 from .sub_manager import SubManager, BranchInfo
@@ -16,6 +20,8 @@ from ...global_config_manager import ConfigManager
 T = TypeVar("T")
 
 class UserDataManager(Generic[T]):
+    _sub_manager_cache: ClassVar[LRUCache[str, SubManager] | None] = None
+
     def __init__(
             self,
             base_name: str,
@@ -24,13 +30,15 @@ class UserDataManager(Generic[T]):
             branches_dir_name:str = "branches",
             default_factory: Callable[[], T] | None = None
         ):
-        self._base_path = Path(ConfigManager.get_configs().user_data.dir)
+        configs = ConfigManager.get_configs()
+        self._base_path = Path(configs.user_data.dir)
         self._base_name = sanitize_filename(base_name)
         if not validate_path(self._base_path, self._base_name):
             raise ValueError(f"Invalid path \"{self._base_name}\" for \"{self._base_path}\"")
 
         self._cache_metadata = cache_metadata
         self._cache_data = cache_data
+        self._cache_maxsize = configs.user_data.get_user_data_cache_maxsize()
 
         self._sub_dir_name = branches_dir_name
 
@@ -40,6 +48,11 @@ class UserDataManager(Generic[T]):
             self._default_factory = default_factory
         else:
             raise ValueError("default_factory must be callable or None")
+        
+        if UserDataManager._sub_manager_cache is None:
+            UserDataManager._sub_manager_cache = LRUCache(
+                maxsize = ConfigManager.get_configs().user_data.get_max_sub_manager_cache_size()
+            )
     
     @property
     def default_factory(self) -> Callable[[], T]:
@@ -50,12 +63,18 @@ class UserDataManager(Generic[T]):
         return self._base_path / self._base_name
     
     def _get_sub_manager(self, user_id: str) -> SubManager:
-        manager = SubManager(
-            self.base_path / fname_b64_encode(user_id),
-            cache_metadata = self._cache_metadata,
-            cache_data = self._cache_data,
-            sub_dir_name = self._sub_dir_name,
-        )
+        if self._sub_manager_cache is None:
+            raise RuntimeError("SubManager cache is not initialized")
+        
+        if user_id in self._sub_manager_cache:
+            manager = self._sub_manager_cache[user_id]
+        else:
+            manager = SubManager(
+                self.base_path / fname_b64_encode(user_id),
+                cache_metadata = self._cache_metadata,
+                cache_data = self._cache_data,
+                sub_dir_name = self._sub_dir_name,
+            )
         return manager
     
     def _get_default_value(self, default_value: T | None) -> T:
@@ -223,11 +242,12 @@ class UserDataManager(Generic[T]):
         """
         manager = self._get_sub_manager(user_id)
         metadata = await manager.load_metadata()
+        configs = ConfigManager.get_configs()
 
         if isinstance(metadata, dict):
-            metadata[ConfigManager.get_configs().user_data.metadata_fields.branch_field] = branch_id
+            metadata[configs.user_data.metadata_fields.branch_field] = branch_id
         else:
-            metadata = {ConfigManager.get_configs().user_data.metadata_fields.branch_field: branch_id}
+            metadata = {configs.user_data.metadata_fields.branch_field: branch_id}
         
         logger.info(
             "Set Active Branch to [Branch:{base_name}/{encoded_user_id}/{dst_branch_id}]",
@@ -251,13 +271,14 @@ class UserDataManager(Generic[T]):
         """
         manager = self._get_sub_manager(user_id)
         metadata = await manager.load_metadata()
+        configs = ConfigManager.get_configs()
         
-        default_branch_id = ConfigManager.get_configs().user_data.default_branch_id
+        default_branch_id = configs.user_data.default_branch_id
         if isinstance(metadata, dict):
-            branch_name = metadata.get(ConfigManager.get_configs().user_data.metadata_fields.branch_field, default_branch_id)
+            branch_name = metadata.get(configs.user_data.metadata_fields.branch_field, default_branch_id)
             if not isinstance(branch_name, str):
                 branch_name = default_branch_id
-                metadata[ConfigManager.get_configs().user_data.metadata_fields.branch_field] = branch_name
+                metadata[configs.user_data.metadata_fields.branch_field] = branch_name
                 logger.warning(
                     "Branch name is not a string, using default branch name."
                 )
@@ -289,7 +310,7 @@ class UserDataManager(Generic[T]):
         Returns:
             list: A list of all user IDs.
         """
-        return [fname_b64_decode(f.name) for f in (self.base_path).glob("*.json") if f.is_dir()]
+        return [fname_b64_decode(f.name) for f in (self.base_path).iterdir() if f.is_dir()]
 
     async def get_all_branch_id(self, user_id: str) -> list[str]:
         """

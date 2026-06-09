@@ -3,6 +3,7 @@ import atexit
 import asyncio
 import traceback
 from pathlib import Path
+from uuid import uuid4
 from typing import (
     AsyncIterator,
     Any,
@@ -57,7 +58,8 @@ from ..runtime_container import RepeaterRuntime
 from ._make_request import make_request
 from ._make_context import make_context
 from ._post_treatment import post_treatment
-from ._get_model import get_model
+from ._check_rul import check_rul
+from ._task_lifespan import TaskLifespan
 
 class Core:
     # region > init
@@ -78,8 +80,9 @@ class Core:
             """
             退出时执行的任务
             """
+            configs = ConfigManager.get_configs()
             # 保存调用日志
-            if ConfigManager.get_configs().request_log.auto_save:
+            if configs.request_log.auto_save:
                 self.runtime.request_log.save_request_log()
             logger.info("Exiting...")
         
@@ -100,7 +103,7 @@ class Core:
     # endregion
     
     # region > nickname mapping
-    async def nickname_mapping(self, user_id: str, user_info: RequestUserInfo) -> RequestUserInfo:
+    async def nickname_mapping(self, user_id: str, user_info: RequestUserInfo, global_configs: GlobalConfigs) -> RequestUserInfo:
         """
         用户昵称映射
 
@@ -108,7 +111,7 @@ class Core:
         :param user_info: 用户信息
         :return: 昵称
         """
-        user_nickname_mapping_file_path = Path(ConfigManager.get_configs().user_nickname_mapping.file_path)
+        user_nickname_mapping_file_path = Path(global_configs.user_nickname_mapping.file_path)
         if not user_nickname_mapping_file_path.exists():
             return user_info
         async with aiofiles.open(user_nickname_mapping_file_path, "rb") as f:
@@ -160,14 +163,14 @@ class Core:
     # endregion
 
     # region > load blacklist
-    async def load_blacklist(self, path: str | Path | None = None) -> None:
+    async def load_blacklist(self, global_configs: GlobalConfigs, path: str | Path | None = None) -> None:
         """
         加载黑名单
 
         :param path: 黑名单文件路径
         """
         if not path:
-            blacklist_file_path = Path(ConfigManager.get_configs().blacklist.file_path)
+            blacklist_file_path = Path(global_configs.blacklist.file_path)
         else:
             blacklist_file_path = Path(path)
         
@@ -213,12 +216,11 @@ class Core:
         user_info: RequestUserInfo | None = None,
     ) -> TemplateParser:
         if model is None:
-            model_uid = user_config.model_uid
-            if model_uid is None:
-                model_uid = global_config.model_api.default_model_uid
-            model = await get_model(
-                model_uid = model_uid,
-                model_info_client = self.runtime.model_info_client,
+            model_id = user_config.model_id
+            if model_id is None:
+                model_id = global_config.model_api.default_model_id
+            model = await self.runtime.model_info_client.get_random_model(
+                model_id = model_id,
             )
         
         template_parser = TemplateParser(
@@ -248,6 +250,9 @@ class Core:
             self,
             message: str | None,
             user_id: str,
+            suffix: str | None = None,
+            echo: bool | None = None,
+            fim_mode: bool = False,
             history_messages: list[ContentUnit] | None = None,
             history_msg_role_map: dict[ContentRole, ContentRole | None] | None = None,
             user_info: RequestUserInfo = RequestUserInfo(),
@@ -257,7 +262,7 @@ class Core:
             extra_template_fields: dict[str, Any] | None = None,
             temporary_prompt: str | None = None,
             additional_data: AdditionalData | None = None,
-            model_uid: str | None = None,
+            model_id: str | list[str] | None = None,
             thinking: bool | None = None,
             load_prompt: bool | None = None,
             save_context: bool | None = None,
@@ -279,7 +284,7 @@ class Core:
         :param extra_template_fields: 模板字段扩展
         :param temporary_prompt: 临时提示词
         :param additional_data: 额外数据
-        :param model_uid: 模型UID
+        :param model_id: 模型 ID
         :param thinking: 使用思考模式
         :param load_prompt: 是否加载提示
         :param save_context: 是否保存上下文
@@ -296,19 +301,41 @@ class Core:
             # 获取用户锁对象
             lock = await self._get_namespace_lock(user_id)
 
+            # region [Getting Config]
+            global_configs = ConfigManager.get_configs()
+            configs = await self.get_config(user_id)
+            # endregion
+
+            enable_rul = check_rul(
+                fim_mode = fim_mode,
+                configs = configs,
+                global_configs = global_configs,
+                save_context = save_context
+            )
+
             # 进入RUL执行
-            async with lock:
+            async with TaskLifespan(
+                user_id = user_id,
+                rul = lock,
+                enable_rul = enable_rul,
+                runtime = self.runtime
+            ) as task_lifespan:
+                task_status_stack = task_lifespan.task_status_stack
 
                 # 进入状态
-                with self.runtime.task_status_map.enter(user_id, "Tasking"):
+                with task_status_stack.enter("Tasking"):
                 
-                    with self.runtime.task_status_map.enter(user_id, "Prepareing"):
+                    with task_status_stack.enter("Prepareing"):
                         prepare_start_time = TimeStamp()
                         logger.info("====================================", user_id = user_id)
-                        logger.info("Start Task", user_id = user_id)
+                        logger.info(
+                            "Start Task {task_id}",
+                            user_id = user_id,
+                            task_id = task_lifespan.task_id,
+                        )
 
                         # region [Checking Blacklist]
-                        with self.runtime.task_status_map.enter(user_id, "Checking Blacklist"):
+                        with task_status_stack.enter("Checking Blacklist"):
                             # 判断用户是否在黑名单中
                             if await self.in_blacklist(user_id):
                                 raise HTTPException(
@@ -316,24 +343,19 @@ class Core:
                                     detail = "Error: Sorry, you are in blacklist.",
                                 )
                             
-                            if not ConfigManager.get_configs().model.stream and stream:
+                            if not global_configs.model.stream and stream:
                                 raise HTTPException(
                                     status_code = 403,
                                     detail = "Error: The streaming response feature is turned off in the server configuration.",
                                 )
                         # endregion
-
-                        # region [Getting Config]
-                        with self.runtime.task_status_map.enter(user_id, "Getting Config"):
-                            configs = await self.get_config(user_id)
-                        # endregion
                         
                         # region [Processing Cross User Data Access]
-                        with self.runtime.task_status_map.enter(user_id, "Processing Cross User Data Access"):
+                        with task_status_stack.enter("Processing Cross User Data Access"):
                             if not configs.cross_user_data_access:
                                 logger.warning("Cross user data routing is not allowed.", user_id = user_id)
                                 cross_user_data_routing = None
-                            elif not ConfigManager.get_configs().user_data.cross_user_data_access:
+                            elif not global_configs.user_data.cross_user_data_access:
                                 logger.warning("Cross user data routing is not allowed.", user_id = user_id)
                                 cross_user_data_routing = None
                         
@@ -344,37 +366,40 @@ class Core:
                         # endregion
                         
                         # region [Getting model]
-                        with self.runtime.task_status_map.enter(user_id, "Getting model"):
+                        with task_status_stack.enter("Getting model"):
                             # 获取默认模型uid
-                            if not model_uid:
-                                model_uid = configs.model_uid
-                                if not model_uid:
-                                    model_uid = ConfigManager.get_configs().model_api.default_model_uid
-                            model = await get_model(
-                                model_uid = model_uid,
-                                model_info_client = self.runtime.model_info_client
+                            if not model_id:
+                                model_id = configs.model_id
+                                if not model_id:
+                                    model_id = global_configs.model_api.default_model_id
+                            model = await self.runtime.model_info_client.get_random_model(
+                                model_id = model_id
                             )
                         # endregion
 
                         # region [Getting model info]
-                        with self.runtime.task_status_map.enter(user_id, "Mapping user name"):
+                        with task_status_stack.enter("Mapping user name"):
                             # 进行用户名映射
-                            user_info = await self.nickname_mapping(user_id, user_info)
+                            user_info = await self.nickname_mapping(
+                                user_id = user_id,
+                                user_info = user_info,
+                                global_configs = global_configs
+                            )
                         # endregion
 
                         # region [Getting template parser]
-                        with self.runtime.task_status_map.enter(user_id, "Getting template parser"):
+                        with task_status_stack.enter("Getting template parser"):
                             # 获取变量展开器以展开变量内容
                             template_parser = await self.get_template_parser(
                                 user_config = configs,
-                                global_config = ConfigManager.get_configs(),
+                                global_config = global_configs,
                                 model = model,
                                 user_info = user_info,
                             )
                         # endregion
 
                         # region [Processing context]
-                        with self.runtime.task_status_map.enter(user_id, "Processing context"):
+                        with task_status_stack.enter("Processing context"):
                             context_loader = self.get_context_loader()
                             submit_context, user_input = await make_context(
                                 user_id = user_id,
@@ -383,7 +408,7 @@ class Core:
                                 context_loader = context_loader,
                                 template_parser = template_parser,
                                 static_resources_client = self.runtime.static_resources_client,
-                                history_messages = history_messages,
+                                history_messages = history_messages if not fim_mode else [],
                                 history_msg_role_map = history_msg_role_map,
                                 role = role,
                                 role_name = role_name,
@@ -392,26 +417,42 @@ class Core:
                                 additional_data = additional_data,
                                 load_prompt = load_prompt,
                                 cross_user_data_routing = cross_user_data_routing,
-                                task_status_map = self.runtime.task_status_map
+                                task_status_stack = task_status_stack
                             )
+                            if suffix:
+                                suffix = await template_parser.render_ex(
+                                    suffix,
+                                    user_id,
+                                    **extra_template_fields
+                                )
                         # endregion
                         
                         # region [Make Request Object]
-                        with self.runtime.task_status_map.enter(user_id, "Make Request Object"):
+                        with task_status_stack.enter("Make Request Object"):
                             request = make_request(
                                 user_id = user_id,
                                 user_input = user_input,
+                                suffix = suffix,
+                                echo = echo,
+                                fim_mode = fim_mode,
                                 user_info = user_info,
                                 submit_context = submit_context,
+                                model_id = model_id,
                                 model = model,
                                 configs = configs,
+                                global_configs = global_configs,
                                 assistant_role = assistant_role,
                                 role_name = role_name,
                                 thinking = thinking
                             )
+
+                            if configs.max_generate_times:
+                                max_generate_times = configs.max_generate_times
+                            else:
+                                max_generate_times = global_configs.callapi.max_generate_times
                             
-                            if ConfigManager.get_configs().tool_calls.enabled:
-                                tool_calls_configs = ConfigManager.get_configs().tool_calls
+                            if global_configs.tool_calls.enabled:
+                                tool_calls_configs = global_configs.tool_calls
                                 server_registed_tools = tool_calls_configs.registed
                                 if allowed_tool_calls:
                                     user_registed_tools = allowed_tool_calls
@@ -427,21 +468,20 @@ class Core:
                                 available_tool_calls = set()
                             
                             # 创建内容缓冲区
-                            content_buffer = ContentBuffer()
-                            await self.runtime.content_buffers_pool.add(user_id, content_buffer)
+                            content_buffer = task_lifespan.task_content_buffer
                         # endregion
                         
                         # region [Make Request Object]
-                        with self.runtime.task_status_map.enter(user_id, "Make Request Runtime Object"):
+                        with task_status_stack.enter("Make Request Runtime Object"):
                             request_runtime = RequestRuntime(
                                 client_pool = self.runtime.openai_pool,
-                                status_map = self.runtime.task_status_map,
+                                status_stack = task_status_stack,
                                 content_buffer = content_buffer
                             )
                         # endregion
 
                         # region [Pre-filled output]
-                        with self.runtime.task_status_map.enter(user_id, "Pre-filled output"):
+                        with task_status_stack.enter("Pre-filled output"):
                             # 输出 (为了自动填充输出内容)
                             output = Response()
                             output.model_group = model.parent
@@ -457,34 +497,35 @@ class Core:
                                 if configs.save_context is not None:
                                     save_context = configs.save_context
                                 else:
-                                    save_context = ConfigManager.get_configs().context.save_context
+                                    save_context = global_configs.context.save_context
                             
                             # 是否在保存时删除多模态内容
                             if configs.save_text_only is not None:
                                 save_only_text: bool = configs.save_text_only
                             else:
-                                save_only_text: bool = ConfigManager.get_configs().context.save_text_only
+                                save_only_text: bool = global_configs.context.save_text_only
                             
                             if save_new_only is None:
                                 if configs.save_new_only is not None:
                                     save_new_only = configs.save_new_only
                                 else:
-                                    save_new_only = ConfigManager.get_configs().context.save_new_only
+                                    save_new_only = global_configs.context.save_new_only
                             
-                            enable_assistant_template = ConfigManager.get_configs().text_template.enable.assistant_template
+                            enable_assistant_template = global_configs.text_template.enable.assistant_template
 
                             request_statistics_template = configs.request_statistics_template
                             if request_statistics_template is None:
-                                request_statistics_template = ConfigManager.get_configs().text_template.request_statistics_template
+                                request_statistics_template = global_configs.text_template.request_statistics_template
                         # endregion
 
                         # region [Pre-filled Model Response]
-                        with self.runtime.task_status_map.enter(user_id, "Pre-filled Model Response"):
+                        with task_status_stack.enter("Pre-filled Model Response"):
                             model_response = ModelResponse(
                                 user_id = user_id,
                                 stream = request.stream
                             )
                             model_response.request_log.user_id = user_id
+                            model_response.request_log.task_id = task_lifespan.get_task_id_str()
                             model_response.request_log.task_start_time = task_start_time
                             model_response.request_log.prepare_start_time = prepare_start_time
                     
@@ -495,13 +536,15 @@ class Core:
                     request_runtime.response = model_response
 
                     # region [Requesting]
-                    with self.runtime.task_status_map.enter(user_id, "Requesting"):
+                    with task_status_stack.enter("Requesting"):
                         # 初始化 Client 并设置并发大小
                         model_caller = ModelRequester(
                             user_id = user_id,
                             user_configs = configs,
+                            global_configs = global_configs,
+                            model_info_client = self.runtime.model_info_client,
                             max_concurrency = (
-                                ConfigManager.get_configs().callapi.max_concurrency
+                                global_configs.callapi.max_concurrency
                                 if self._max_concurrency is None else self._max_concurrency
                             ),
                             context_loader = context_loader,
@@ -516,21 +559,21 @@ class Core:
                                     user_id = user_id,
                                     request = request,
                                     runtime = request_runtime,
+                                    max_generated_times = max_generate_times,
                                     available_tool_calls = available_tool_calls,
                                     stream = stream
                                 )
                                 
-                                await self.runtime.content_buffers_pool.remove(user_id)
                                 output = await post_treatment(
                                     user_id = user_id,
                                     output = output,
                                     responses = model_responses,
                                     template_parser = template_parser,
                                     user_input = user_input,
-                                    save_context = save_context,
+                                    save_context = save_context if not fim_mode else False,
                                     save_new_only = save_new_only,
                                     context_loader = context_loader,
-                                    task_status_map = self.runtime.task_status_map,
+                                    task_status_stack = task_status_stack,
                                     request_log_manager = self.runtime.request_log,
                                     cross_user_data_routing = cross_user_data_routing,
                                     enable_assistant_template = enable_assistant_template,

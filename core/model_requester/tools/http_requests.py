@@ -4,12 +4,15 @@ import httpx
 import socket
 import asyncio
 import ipaddress
+from urllib.parse import urlparse
+from urllib.robotparser import RobotFileParser
 from ...context import ToolCallPacakage, CallType
 from ...global_config_manager import HTTPMethods, ConfigManager
 from .._caller import ModelRequester
 from ...auxiliary.http import get_ssl_context
-from typing import Any, Self
+from typing import Any, Self, ClassVar
 from pydantic import BaseModel, Field
+from cachetools import TTLCache
 
 class Request(BaseModel):
     method: HTTPMethods = Field(HTTPMethods.GET, description="The HTTP method to use for the request.")
@@ -22,6 +25,8 @@ class Request(BaseModel):
     auth: tuple[str, str] | None = Field(None, description="Basic authentication credentials as a (username, password) tuple.")
     follow_redirects: bool = Field(True, description="Whether to automatically follow HTTP redirects.")
     timeout_seconds: int = Field(10, description="Request timeout in seconds.")
+    verify_crawler_permissions: bool = Field(True, description="Whether to verify crawler permissions.")
+    exclude_crawler_user_agent: bool = Field(False, description="Whether to not actively add the `User-Agent` in the request header (turn off this option if you need to set 'User-Agent') .")
     
 class PublicIPOnlyTransport(httpx.AsyncHTTPTransport):
     class AddrInfo(BaseModel):
@@ -67,7 +72,7 @@ class PublicIPOnlyTransport(httpx.AsyncHTTPTransport):
             return (self.host, self.port)
     
     async def handle_async_request(self, request: httpx.Request) -> httpx.Response:
-        if not ConfigManager.get_configs().tool_calls.allow_private_network_requests:
+        if not ConfigManager.get_configs().tool_calls.tools_configs.http_requests.allow_private_network_requests:
             host = request.url.host
             port = request.url.port
 
@@ -117,9 +122,10 @@ class HTTPRequests(ToolCallPacakage):
     call_type = CallType.ASYNC
     json_result = True
     document = "send a any method HTTP request to a URL and return the response."
+    robots_cache: ClassVar[TTLCache[str, str, float] | None] = None
     
     def validation_method(self, method: HTTPMethods) -> bool:
-        allowed_http_methods = self.global_configs.tool_calls.allowed_http_methods
+        allowed_http_methods = self.global_configs.tool_calls.tools_configs.http_requests.allowed_http_methods
         if allowed_http_methods is None:
             return False
         elif isinstance(allowed_http_methods, list):
@@ -129,17 +135,87 @@ class HTTPRequests(ToolCallPacakage):
         else:
             return False
     
+    def __post_init__(self):
+        self.init_cache(
+            self.global_configs.tool_calls.tools_configs.http_requests.robots_cache_size,
+            self.global_configs.tool_calls.tools_configs.http_requests.robots_cache_timeout,
+        )
+    
+    @classmethod
+    def init_cache(cls, size: int, timeout: float):
+        if cls.robots_cache is None:
+            cls.robots_cache = TTLCache(
+                maxsize = size,
+                ttl = timeout
+            )
+    
+    @staticmethod
+    def get_root_url(url: str) -> str:
+        parsed = urlparse(url)
+        # 组合：scheme://netloc
+        root = f"{parsed.scheme}://{parsed.netloc}"
+        return root
+    
+    async def crawler_header(self) -> dict[str, str]:
+        return {
+            "User-Agent": self.global_configs.system_identification.crawler_name,
+        }
+    
+    async def verify_crawler_permissions(self, client: httpx.AsyncClient, url: str) -> bool:
+        base_url = self.get_root_url(client.base_url)
+        raw_url = client.base_url
+        if base_url != raw_url:
+            client.base_url = base_url
+            rewrite_url: bool = True
+        else:
+            rewrite_url: bool = False
+
+        try:
+            if self.robots_cache[base_url]:
+                text = self.robots_cache[base_url]
+            else:
+                response = await client.get(
+                    "/robots.txt"
+                )
+                if response.status_code == 200:
+                    text = response.text
+                    self.robots_cache[base_url] = text
+                else:
+                    return True
+
+            robot_file_parser = RobotFileParser()
+            robot_file_parser.parse(text.splitlines())
+            return robot_file_parser.can_fetch(
+                self.global_configs.system_identification.crawler_name, url
+            )
+        except Exception:
+            return True
+        finally:
+            if rewrite_url: 
+                client.base_url = raw_url
+            
     async def send_request(self, client: httpx.AsyncClient, request: Request) -> Response:
         if not self.validation_method(request.method):
             return self.Result(
                 reason=f"HTTP method {request.method} is not allowed."
             )
+        
+        headers = request.headers
+        if not request.exclude_crawler_user_agent:
+            headers.update(await self.crawler_header())
+        
+        if request.verify_crawler_permissions:
+            if not await self.verify_crawler_permissions(client, request.url):
+                return self.Result(
+                    reason = "Crawler permissions denied."
+                )
+
         try:
             response = await client.request(
                 request.method,
                 request.url,
                 params = request.query_params,
-                headers = request.headers,
+                headers = headers,
                 cookies = request.cookies,
                 data = request.form_data,
                 json = request.json_data,

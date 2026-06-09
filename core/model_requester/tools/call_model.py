@@ -31,7 +31,7 @@ class CallModel(ToolCallPacakage):
     call_type = CallType.ASYNC
     
     class Params(BaseModel):
-        model_uid: str = Field(
+        model_id: str = Field(
             "", 
             description="Unique identifier used to locate and load the target model."
         )
@@ -131,27 +131,23 @@ class CallModel(ToolCallPacakage):
     async def call(self, args: Params):
         runtime = RuntimeContainer.get_runtime()
         
-        response = await runtime.model_info_client.get_models(
-            model_uid = args.model_uid
+        model = await runtime.model_info_client.get_random_model(
+            model_id = args.model_id
         )
-        if response.code != 200:
-            raise ValueError(f"Error: {response.text}")
         
-        model_info = response.get_data()
-        if model_info is None:
-            raise ValueError("Error: Model Info Server response is empty.")
-        
-        if not model_info.models:
-            raise ValueError("Error: No model found.")
-
-        model = random.choice(model_info.models)
+        if self.user_configs.send_user_id is not None:
+            send_user_id = self.user_configs.send_user_id
+        else:
+            send_user_id = self.global_configs.callapi.send_user_id
 
         request = Request(
-            url = model.url,
+            url = model.get_base_url(),
             limits = model.limits,
             key = model.api_key,
             timeout = args.timeout if args.timeout is not None else model.timeout,
             model = model.id,
+            model_id = args.model_id,
+            model_uid = model.uid,
             user_name = args.user_name,
             temperature = args.temperature,
             top_p = args.top_p,
@@ -165,6 +161,7 @@ class CallModel(ToolCallPacakage):
             reasoning_effort = args.reasoning_effort,
             remove_reasoning_prompt = args.remove_reasoning_prompt,
             remove_created = True,
+            send_user_id = send_user_id,
             stream = ConfigManager.get_configs().model.stream,
             stream_options = StreamOptions(
                 include_obfuscation = ConfigManager.get_configs().callapi.include_obfuscation,
@@ -174,7 +171,6 @@ class CallModel(ToolCallPacakage):
         
         request_runtime = Runtime(
             client_pool = runtime.openai_pool,
-            status_map = runtime.task_status_map,
             content_buffer = ContentBuffer()
         )
         requestser = ModelRequester(

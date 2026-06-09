@@ -13,12 +13,14 @@
   - `user_custom_name`(str | null): 用户自定义名称
   - `user_custom_age`(int | float | null): 用户自定义年龄
   - `user_custom_gender`(str | null): 用户自定义性别
-  - `model_uid`(str): 模型ID
+  - `model_id`(str): 模型 ID
+  - `model_uid`(str): 模型 UID
   - `model_name`(str): 模型名称
-  - `model_type`(str): 模型类型
+  - `model_detailed`(dict[str, Any]): 模型详细描述
+  - `model_group`(str): 模型组
   - `model_group`(str): 模型组
   - `user_profile`(str): 用户简介
-  - `user_configs`(dict): 用户配置(副本)
+  - `user_configs`(dict[str, Any]): 用户配置(副本)
 - **Functions:**
   - [`age`](./functions/age.md): 获取用户年龄
   - [`copy_text`](./functions/copy_text.md): 复制文本
@@ -41,6 +43,7 @@
   - [`secrets_token_bytes`](./functions/secrets_token_bytes.md): 包含 nbytes 个字节的随机字节字符串
   - [`secrets_token_hex`](./functions/secrets_token_hex.md): 返回一个十六进制随机文本字符串
   - [`secrets_token_urlsafe`](./functions/secrets_token_urlsafe.md): 返回一个使用 Base64 编码的随机 URL 安全文本字符串
+  - [`see_fortune`](./functions/see_fortune.md): 生成今日随机幸运报告
   - [`text_matrix`](./functions/text_matrix.md): 生成文本矩阵
   - [`time`](./functions/time.md): 获取当前时间
   - [`zodiac`](./functions/zodiac.md): 计算一个日期所在的星座

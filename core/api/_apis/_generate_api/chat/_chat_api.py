@@ -29,6 +29,9 @@ async def chat_endpoint(
     chat_coroutine = server.core.chat(
         user_id = user_id,
         message = request.message,
+        suffix = request.suffix,
+        echo = request.echo,
+        fim_mode = request.fim_mode,
         history_messages = request.history_messages,
         history_msg_role_map = request.history_msg_role_map,
         user_info = request.user_info,
@@ -38,7 +41,7 @@ async def chat_endpoint(
         extra_template_fields = request.extra_template_fields,
         temporary_prompt = request.temporary_prompt,
         additional_data = request.additional_data,
-        model_uid = request.model_uid,
+        model_id = request.model_id,
         thinking = request.thinking,
         load_prompt = request.load_prompt,
         save_context = request.save_context,

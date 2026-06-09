@@ -4,7 +4,6 @@ from ..context import (
     Function,
     FunctionCaller,
     CallingRequest,
-    Context,
     ContentUnit,
     ToolChoice,
     ToolCallPacakage
@@ -15,10 +14,16 @@ from ..call_api.completions_api import (
     Request,
     Response,
     Runtime,
-    Delta
+    Delta,
+    APIConnectionError,
+    InternalServerError
+)
+from ..clients.model_info import (
+    ModelsClient,
+    ModelInfo
 )
 from ..user_config_manager import UserConfigs
-from ..global_config_manager import ConfigManager
+from ..global_config_manager import GlobalConfigs
 from typing import (
     AsyncGenerator,
     ClassVar,
@@ -30,7 +35,15 @@ from ._multi_response import MultiResponse
 
 class ModelRequester:
     _global_package: ClassVar[list[Type[ToolCallPacakage]]] = []
-    def __init__(self, user_id: str, user_configs: UserConfigs, max_concurrency: int | None = None, *args, **kwargs):
+    def __init__(
+            self,
+            user_id: str,
+            user_configs: UserConfigs,
+            global_configs: GlobalConfigs,
+            model_info_client: ModelsClient,
+            max_concurrency: int | None = None,
+            *args, **kwargs
+        ):
         self._tools_caller = FunctionCaller()
         self._tools_caller.register_packages(
             user_id = user_id,
@@ -40,13 +53,16 @@ class ModelRequester:
             **kwargs
         )
         self._api_client = NoStreamClient(
-            ConfigManager.get_configs().callapi.max_concurrency
+            global_configs.callapi.max_concurrency
             if max_concurrency is None else max_concurrency
         )
         self._stream_api_client = StreamClient(
-            ConfigManager.get_configs().callapi.max_concurrency
+            global_configs.callapi.max_concurrency
             if max_concurrency is None else max_concurrency
         )
+        self._user_configs = user_configs
+        self._global_configs = global_configs
+        self._model_info_client = model_info_client
         self._stream_chunk_queue: asyncio.Queue[Delta | ContentUnit | None] = asyncio.Queue()
         self._tool_responses: list[list[ContentUnit]] = []
     
@@ -97,44 +113,48 @@ class ModelRequester:
             self,
             request: Request,
             response: Response,
+            runtime: Runtime,
             available_tool_calls: set[str] | None = None,
-        ) -> Response:
+        ) -> None:
         if available_tool_calls and response.tool_calls:
-            calling_requests: list[CallingRequest] = []
-            for tool_call in response.tool_calls:
-                calling_requests.append(
-                    tool_call.to_calling_request()
+            with runtime.status_stack.enter("Calling Tools"):
+                calling_requests: list[CallingRequest] = []
+                for tool_call in response.tool_calls:
+                    calling_requests.append(
+                        tool_call.to_calling_request()
+                    )
+                results = await self._tools_caller.call_functions(
+                    response.user_id,
+                    calling_requests = calling_requests,
+                    available_tool_calls = available_tool_calls,
                 )
-            results = await self._tools_caller.call_functions(
-                response.user_id,
-                calling_requests = calling_requests,
-                available_tool_calls = available_tool_calls,
-            )
-            self._tool_responses.append(results)
-            for tool_response in results:
-                await self._stream_chunk_queue.put(tool_response)
-            if request.context:
-                request.context.extend(response.new_context)
-            else:
-                request.context = response.new_context
-            request.context.extend(results)
-            if request.thinking:
-                request.remove_reasoning_prompt = False
-            raise Regenerate(request)
+                self._tool_responses.append(results)
+                for tool_response in results:
+                    await self._stream_chunk_queue.put(tool_response)
+                if request.context:
+                    request.context.extend(response.new_context)
+                else:
+                    request.context = response.new_context
+                request.context.extend(results)
+                
+                if not request.tool_calling_remove_reasoning:
+                    request.remove_reasoning_prompt = False
+                raise Regenerate(request)
     
     async def submit(
         self,
         user_id:str,
         request: Request,
         runtime: Runtime,
+        max_generated_times: int = 16,
         available_tool_calls: set[str] | None = None,
         tool_choice_model: ToolChoice = ToolChoice.AUTO,
         stream: bool = False,
     ) -> MultiResponse:
         generated_times: int = 0
-        max_generated_times: int = ConfigManager.get_configs().callapi.max_regenerate_times
         responses: MultiResponse = MultiResponse()
         responses.historical_context = request.context.copy()
+        remove_reasoning_prompt = request.remove_reasoning_prompt
         if request.remove_reasoning_prompt:
             submit_context = request.context.remove_reasoning_content()
         else:
@@ -153,26 +173,18 @@ class ModelRequester:
                         now = generated_times,
                         max = max_generated_times
                     )
-                    if stream:
-                        async def send_chunk(delta: Delta):
-                            await self._stream_chunk_queue.put(delta)
-                        response = await self._stream_api_client.submit_request(
-                            user_id = user_id,
-                            request = request,
-                            runtime = runtime,
-                            chunk_callback = send_chunk
-                        )
-                    else:
-                        response = await self._api_client.submit_request(
-                            user_id = user_id,
-                            request = request,
-                            runtime = runtime
-                        )
+                    response = await self._send_request(
+                        user_id = user_id,
+                        request = request,
+                        runtime = runtime,
+                        stream = stream
+                    )
                     responses.add_copy(response)
                     responses.tool_requests = self._tool_responses
                     await self._parse_response(
                         request = request,
                         response = response,
+                        runtime = runtime,
                         available_tool_calls = available_tool_calls,
                     )
                     raise GenerateFinished
@@ -200,4 +212,59 @@ class ModelRequester:
             )
             runtime.content_buffer.clear()
             return responses
+        finally:
+            request.remove_reasoning_prompt = remove_reasoning_prompt
+    
+    async def _send_request(
+        self,
+        user_id: str,
+        request: Request,
+        runtime: Runtime,
+        stream: bool = False,
+    ) -> Response:
+        try:
+            if stream:
+                async def send_chunk(delta: Delta):
+                    await self._stream_chunk_queue.put(delta)
                 
+                response = await self._stream_api_client.submit_request(
+                    user_id = user_id,
+                    request = request,
+                    runtime = runtime,
+                    chunk_callback = send_chunk
+                )
+            else:
+                response = await self._api_client.submit_request(
+                    user_id = user_id,
+                    request = request,
+                    runtime = runtime
+                )
+
+            return response
+        except (APIConnectionError, InternalServerError) as e:
+            logger.error(
+                "{error_type}: {error_message}",
+                error_type = type(e).__name__,
+                error_message = e.message,
+            )
+            await self._model_info_client.disable(
+                model_id = request.model_uid,
+                timeout = int(self._global_configs.callapi.failed_disable_timeout * 1e9)
+            )
+            model = await self._model_info_client.get_random_model(
+                model_id = request.model_id
+            )
+            self.update_request_model(request, model)
+            raise Regenerate(request) from e
+
+    def update_request_model(self, request: Request, model: ModelInfo) -> None:
+        request.url = model.get_base_url()
+        request.model = model.id
+        request.model_uid = model.uid
+        request.limits = model.limits
+        request.timeout = model.timeout
+        if self._user_configs.model_timeout is None:
+            request.timeout = model.timeout
+        else:
+            request.timeout = self._user_configs.model_timeout
+        request.key = model.api_key

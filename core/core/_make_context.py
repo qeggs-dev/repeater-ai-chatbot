@@ -25,7 +25,7 @@ from ..special_exception import HTTPException
 from ..template_render import (
     TemplateParser
 )
-from ..status_map import StatusMap
+from ..status_map import StatusStack
 from ._get_context import get_context
 from ..clients.static_resources_client import (
     StaticResourcesClient
@@ -47,10 +47,10 @@ async def make_context(
     additional_data: AdditionalData | None = None,
     load_prompt: bool | None = None,
     cross_user_data_routing: CrossUserDataRouting[str | None] | None = None,
-    task_status_map: StatusMap[str, str] | None = None
-):
+    task_status_stack: StatusStack[str] | None = None
+) -> tuple[Context, ContentUnit]:
 
-    with task_status_map.enter(user_id, "Getting history context"):
+    with task_status_stack.enter("Getting history context"):
         if load_prompt is None:
             if configs.load_prompt is None:
                 load_prompt = ConfigManager.get_configs().prompt.load_prompt
@@ -68,19 +68,19 @@ async def make_context(
         )
     
     if history_msg_role_map is not None:
-        with task_status_map.enter(user_id, "Role mapping"):
+        with task_status_stack.enter("Role mapping"):
             logger.info(
                 "Role mapping:\n{role_map}",
                 role_map = "\n".join(f"{raw_role} -> {new_role}" for raw_role, new_role in history_msg_role_map.items()),
             )
             submit_context.role_map(history_msg_role_map)
 
-    with task_status_map.enter(user_id, "Check Multimodal Message"):
+    with task_status_stack.enter("Check Multimodal Message"):
         make_multimodal_message = configs.make_multimodal_message
         if make_multimodal_message is None:
             make_multimodal_message = ConfigManager.get_configs().context.make_multimodal_message
     
-    with task_status_map.enter(user_id, "Splicing user input"):
+    with task_status_stack.enter("Splicing user input"):
         if message is not None:
             user_input: ContentUnit = await context_loader.make_user_content(
                 user_id = user_id,
@@ -97,7 +97,7 @@ async def make_context(
         else:
             user_input = None
     
-    with task_status_map.enter(user_id, "Shrinking context"):
+    with task_status_stack.enter("Shrinking context"):
         # 如果上下文需要收缩，则进行收缩(为零或类型不对则不进行操作)
         if len(submit_context.context_list) > 0:
             max_context_length = configs.context_shrink_limit or ConfigManager.get_configs().context.context_shrink_limit

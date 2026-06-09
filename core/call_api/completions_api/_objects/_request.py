@@ -1,12 +1,15 @@
 from pydantic import BaseModel, Field, ConfigDict
 from typing import Callable, Any
-from ._delta import Delta
 from ._stream_options import StreamOptions
 from ....context import (
     ContentRole
 )
-from ....global_config_manager import ReasoningEffort
+from ....global_config_manager import (
+    ReasoningEffort,
+    ServiceTier
+)
 from ....context import Context
+from ._interface_type import InterfaceType
 from ....auxiliary.http import (
     ClientLimits,
     ClientTimeout
@@ -24,36 +27,50 @@ class Request(BaseModel):
     proxy: str | None = None
     limits: ClientLimits = Field(default_factory=ClientLimits)
     encoding: str = "utf-8"
+    headers: dict[str, str] = Field(default_factory=dict)
+    params: dict[str, str] = Field(default_factory=dict)
     timeout: int | float | ClientTimeout = 600.0
+    interface: InterfaceType = InterfaceType.OPENAI
+    service_tier: ServiceTier | None = None
 
-    key: str = ""
     model: str = ""
+    model_id: str | list[str] = ""
+    model_uid: str = ""
+    key: str = ""
 
     user_name: str | None = None
 
-    temperature: float = 1.0
-    top_p: float = 1.0
-    presence_penalty: float = 0.0
-    frequency_penalty: float = 0.0
-    max_tokens: int = 0
-    max_completion_tokens: int = 0
+    temperature: float | None = None
+    top_a: float | None = None
+    top_p: float | None = None
+    top_k: int | None = None
+    seed: int | None = None
+    repetition_penalty: float | None = None
+    frequency_penalty: float | None = None
+    presence_penalty: float | None = None
+    max_tokens: int | None = None
+    max_completion_tokens: int | None = None
     stream: bool = False
     thinking: bool | None = None
     stop: list[str] | None = None
     stream_options: StreamOptions = Field(default_factory=StreamOptions)
     reasoning_effort: ReasoningEffort | None = None
-    logprobs: bool = False
+    logprobs: bool | None = None
     top_logprobs: int | None = None
 
     context: Context | None = None
     prompt: str | None = None
     echo: bool | None = None
     suffix: str | None = None
+
+    fim_mode: bool = False
     
     remove_reasoning_prompt: bool = True
+    tool_calling_remove_reasoning: bool = True
     remove_created: bool = True
     
     print_chunk: bool = True
+    send_user_id: bool = False
     output_role: ContentRole = ContentRole.ASSISTANT
 
     tools: list[dict[str, Any]] | None = None

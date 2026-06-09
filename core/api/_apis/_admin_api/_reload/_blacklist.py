@@ -1,6 +1,5 @@
-import asyncio
 from .....repeater_main import RepeaterMain
-from .....special_exception import HTTPException
+from .....global_config_manager import ConfigManager
 from fastapi import (
     Header
 )
@@ -21,5 +20,7 @@ async def reload_blacklist_api():
     """
     server = RepeaterMain.get_now_server()
     logger.info("Reloading blacklist", user_id="[Admin API]")
-    await server.core.load_blacklist()
+    await server.core.load_blacklist(
+        global_configs = ConfigManager.get_configs(),
+    )
     return ORJSONResponse({"detail": "Blacklist reloaded"})
