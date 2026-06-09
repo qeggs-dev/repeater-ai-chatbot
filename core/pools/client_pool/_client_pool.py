@@ -13,7 +13,14 @@ class ClientPool:
         self._cache_misses: int = 0
         self._cache_size: int = cache_size
     
-    def get_client(self, client_info: ClientInfo):
+    def get_client(
+            self,
+            client_info: ClientInfo,
+            params: dict[str, str | int | float | bool | None] | None = None,
+            headers: dict[str, str] | None = None,
+            cookies: dict[str, str] | None = None,
+            auth: tuple[str, str] | None = None
+        ):
         if client_info in self._clients:
             client = self._clients[client_info]
             self._cache_hits += 1
@@ -23,7 +30,12 @@ class ClientPool:
             )
             return client
         else:
-            client = client_info.to_client()
+            client = client_info.to_client(
+                params = params,
+                headers = headers,
+                cookies = cookies,
+                auth = auth
+            )
             self._clients[client_info] = client
             self._cache_misses += 1
             logger.info(

@@ -139,6 +139,8 @@ class ModelRequester:
                 
                 if not request.tool_calling_remove_reasoning:
                     request.remove_reasoning_prompt = False
+                    
+                response.new_context.clear()
                 raise Regenerate(request)
     
     async def submit(
@@ -194,7 +196,6 @@ class ModelRequester:
                         user_id = user_id,
                     )
                     request = e.request
-                    response.new_context.clear()
                     runtime.content_buffer.clear()
                     if generated_times >= max_generated_times:
                         raise GenerateFinished

@@ -5,10 +5,6 @@ from ...auxiliary.http import ClientTimeout, ClientLimits, get_ssl_context
 
 class ClientInfo(BaseModel, frozen=True):
     url: str = ""
-    params: dict[str, str | int | float | bool | None] | None = None
-    headers: dict[str, str] | None = None
-    cookies: dict[str, str] | None = None
-    auth: tuple[str, str] | None = None
     proxy: str | None = None
     limits: ClientLimits | None = None
     follow_redirects: bool = True
@@ -26,7 +22,13 @@ class ClientInfo(BaseModel, frozen=True):
             timeout = 5.0
         )
 
-    def to_client(self) -> AsyncClient:
+    def to_client(
+        self,
+        params: dict[str, str | int | float | bool | None] | None = None,
+        headers: dict[str, str] | None = None,
+        cookies: dict[str, str] | None = None,
+        auth: tuple[str, str] | None = None
+    ) -> AsyncClient:
         if self.limits is None:
             limits = self._default_limits()
         else:
@@ -41,10 +43,10 @@ class ClientInfo(BaseModel, frozen=True):
         
         client = AsyncClient(
             base_url = self.url,
-            auth = self.auth,
-            params = self.params,
-            headers = self.headers,
-            cookies = self.cookies,
+            params = params,
+            headers = headers,
+            cookies = cookies,
+            auth = auth,
             proxy = self.proxy,
             follow_redirects = self.follow_redirects,
             verify = get_ssl_context(),
