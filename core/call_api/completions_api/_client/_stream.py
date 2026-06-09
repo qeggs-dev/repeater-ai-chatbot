@@ -36,19 +36,19 @@ class StreamClient(ClientBase):
         ) -> Response:
         """提交请求，并等待API返回结果"""
         generator: AsyncIterator[Delta] = self._submit_task(user_id, request, runtime)
-        warping_generator = StreamingResponseGenerationLayer(
+        wraping_generator = StreamingResponseGenerationLayer(
             user_id = user_id,
             request = request,
             content_buffer = runtime.content_buffer,
             response_iterator = generator
         )
-        async for delta in warping_generator:
+        async for delta in wraping_generator:
             if chunk_callback is not None:
                 await chunk_callback(delta)
 
-        await self._preprocess_response(user_id, request, warping_generator.response, runtime)
+        await self._preprocess_response(user_id, request, wraping_generator.response, runtime)
         
-        return warping_generator.response
+        return wraping_generator.response
     
     async def _submit_task(self, user_id: str, request: Request, runtime: Runtime) -> AsyncIterator[Delta]:
         if request.stream:
