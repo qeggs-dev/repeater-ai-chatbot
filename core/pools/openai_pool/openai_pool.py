@@ -7,8 +7,22 @@ class OpenAIPool:
             cache_size = cache_size
         )
     
-    def get_openai(self, client_info: ClientInfo, api_key: str):
-        client = self._clients.get_client(client_info)
+    def get_openai(
+            self,
+            client_info: ClientInfo,
+            api_key: str,
+            params: dict[str, str | int | float | bool | None] | None = None,
+            headers: dict[str, str] | None = None,
+            cookies: dict[str, str] | None = None,
+            auth: tuple[str, str] | None = None
+        ):
+        client = self._clients.get_client(
+            client_info = client_info,
+            params = params,
+            headers = headers,
+            cookies = cookies,
+            auth = auth
+        )
         openai = AsyncOpenAI(
             api_key = api_key,
             base_url = client_info.url,
