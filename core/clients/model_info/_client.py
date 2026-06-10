@@ -7,6 +7,7 @@ from .responses import (
     ModelInfoResponse,
     DisableResponse
 )
+from ...global_config_manager import ConfigManager
 from ._models import ModelInfo
 from ...special_exception import HTTPException
 from ...http_response import Response
@@ -82,10 +83,13 @@ class ModelsClient:
         return models
         
     async def get_random_model(self, model_id: str | list[str]) -> ModelInfo:
+        random_decay_index = ConfigManager.get_configs().model_api.random_decay_index
         models = await self.get_model_list(model_id)
-        model = random.choice(models)
+        if len(models) == 1:
+            return models[0]
+        choice_models = random.choices(models, weights = [random_decay_index ** index for index in range(len(models))], k=1)
 
-        return model
+        return choice_models[0]
     
     async def get_models(self, model_id: str) -> Response[ModelInfoResponse]:
         try:
