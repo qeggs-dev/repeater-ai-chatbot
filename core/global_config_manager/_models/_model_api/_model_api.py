@@ -1,4 +1,4 @@
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 from ._ping_provider import PingProvider
 
 class ModelAPIConfig(BaseModel):
@@ -9,3 +9,4 @@ class ModelAPIConfig(BaseModel):
     api_key_env_name: str = "MODEL_INFO_API_KEY"
     default_model_id: str | list[str] = "chat"
     ping_provider: PingProvider = PingProvider()
+    random_decay_index: float = Field(default=0.5, ge=0.0, le=1.0)
