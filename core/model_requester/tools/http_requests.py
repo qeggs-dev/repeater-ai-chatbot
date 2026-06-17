@@ -25,7 +25,7 @@ class Request(BaseModel):
     auth: tuple[str, str] | None = Field(None, description="Basic authentication credentials as a (username, password) tuple.")
     follow_redirects: bool = Field(True, description="Whether to automatically follow HTTP redirects.")
     timeout_seconds: int | float = Field(10, description="Request timeout in seconds.")
-    verify_crawler_permissions: bool = Field(True, description="Whether to verify crawler permissions.")
+    verify_crawler_permissions: bool = Field(True, description="Whether to verify crawler permissions. If the `robot.txt` is in the cache, it won't be accessed again for some time.")
     exclude_crawler_user_agent: bool = Field(False, description="Whether to not actively add the `User-Agent` in the request header (turn off this option if you need to set 'User-Agent') .")
     
 class PublicIPOnlyTransport(httpx.AsyncHTTPTransport):
