@@ -104,6 +104,12 @@ class Response(BaseModel):
     cookies: dict | None = None
     data: Any = None
 
+class Sleep(BaseModel):
+    seconds: int | float = Field(..., description="The number of seconds to sleep.")
+
+    async def sleep(self):
+        await asyncio.sleep(self.seconds)
+
 @ModelRequester.reg_global_package
 class HTTPRequests(ToolCallPacakage):
 
@@ -113,7 +119,7 @@ class HTTPRequests(ToolCallPacakage):
         base_cookies: dict[str, str] | None = Field(None, description="The base Cookie shared by all requests.")
         base_auth: tuple[str, str] | None = Field(None, description="The base Auth shared by all requests.")
         base_timeout: int | float = Field(5, description="Requests timeout in seconds.")
-        requests: list[list[Request]] = Field(..., description="Sending requests in batches using connection pooling (The outer list executes sequentially, and the inner list executes in parallel.).")
+        requests: list[list[Request] | Request | Sleep] = Field(..., description="Sending requests in batches using connection pooling (The outer list executes sequentially, and the inner list executes in parallel.).")
     
     class Result(BaseModel):
         responses: list[list[Response]] = Field(..., description="The responses of the requests.")
@@ -261,19 +267,31 @@ class HTTPRequests(ToolCallPacakage):
         
         tasks: set[asyncio.Task[Response]] = set()
         for requests in args.requests:
-            for request in requests:
+            if isinstance(requests, list):
+                for request in requests:
+                    tasks.add(
+                        asyncio.create_task(
+                            self.send_request(
+                                client,
+                                request,
+                            )
+                        )
+                    )
+            elif isinstance(requests, Request):
                 tasks.add(
                     asyncio.create_task(
                         self.send_request(
                             client,
-                            request,
+                            requests,
                         )
                     )
                 )
+            elif isinstance(requests, Sleep):
+                await requests.sleep()
             
             results = await asyncio.gather(*tasks)
             responses.append(results)
         
         return self.Result(
             responses = results,
-        ).model_dump(exclude_none=True)
+        ).model_dump(exclude_none = True)
