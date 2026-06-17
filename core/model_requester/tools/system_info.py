@@ -1,3 +1,4 @@
+import sys
 from ...context import ToolCallPacakage
 from .._caller import ModelRequester
 from pydantic import BaseModel
@@ -26,6 +27,7 @@ class SystemInfo(ToolCallPacakage):
             "copyright": __copyright__,
             "github": __github__,
             "system_identificationConfig": self.global_configs.system_identification.model_dump(),
+            "runtime": sys.version,
         }
 
     def call(self, args: Params):
