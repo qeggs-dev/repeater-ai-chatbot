@@ -76,10 +76,9 @@ class Asteval(ToolCallPacakage):
         aeval = Interpreter(
             writer = stdout,
             err_writer  = stderr,
+            user_symbols = args.symbols,
+            builtins_readonly = True,
         )
-
-        if args.symbols:
-            aeval.symtable.update(args.symbols)
         
         aeval.symtable.update(
             {
