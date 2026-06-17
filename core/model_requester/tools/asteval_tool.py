@@ -101,7 +101,7 @@ class Asteval(ToolCallPacakage):
             task.cancel()
             return "Expression execution timed out."
         return self.Result(
-            result = result,
+            result = repr(result),
             stdout = stdout.getvalue(),
             stderr = stderr.getvalue(),
         )
