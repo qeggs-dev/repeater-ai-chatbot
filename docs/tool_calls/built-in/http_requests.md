@@ -26,7 +26,7 @@
         "auth": null, // Basic authentication credentials as a (username, password) tuple.
         "follow_redirects": true, // Whether to automatically follow HTTP redirects.
         "timeout_seconds": 10, // Request timeout in seconds.
-        "verify_crawler_permissions": true, // Whether to verify crawler permissions.
+        "verify_crawler_permissions": true, // Whether to verify crawler permissions. If the `robot.txt` is in the cache, it won't be accessed again for some time.
         "exclude_crawler_user_agent": false // Whether to not actively add the `User-Agent` in the request header (turn off this option if you need to set 'User-Agent') .
       },
       {
