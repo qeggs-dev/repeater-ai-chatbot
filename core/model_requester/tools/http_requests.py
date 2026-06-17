@@ -24,7 +24,7 @@ class Request(BaseModel):
     json_data: Any | None = Field(None, description="JSON data to send in the request body.")
     auth: tuple[str, str] | None = Field(None, description="Basic authentication credentials as a (username, password) tuple.")
     follow_redirects: bool = Field(True, description="Whether to automatically follow HTTP redirects.")
-    timeout_seconds: int = Field(10, description="Request timeout in seconds.")
+    timeout_seconds: int | float = Field(10, description="Request timeout in seconds.")
     verify_crawler_permissions: bool = Field(True, description="Whether to verify crawler permissions.")
     exclude_crawler_user_agent: bool = Field(False, description="Whether to not actively add the `User-Agent` in the request header (turn off this option if you need to set 'User-Agent') .")
     
@@ -112,7 +112,7 @@ class HTTPRequests(ToolCallPacakage):
         base_headers: dict[str, str] | None = Field(None, description="The underlying request header shared by all requests.")
         base_cookies: dict[str, str] | None = Field(None, description="The base Cookie shared by all requests.")
         base_auth: tuple[str, str] | None = Field(None, description="The base Auth shared by all requests.")
-        base_timeout: int = Field(5, description="Requests timeout in seconds.")
+        base_timeout: int | float = Field(5, description="Requests timeout in seconds.")
         requests: list[list[Request]] = Field(..., description="Sending requests in batches using connection pooling (The outer list executes sequentially, and the inner list executes in parallel.).")
     
     class Result(BaseModel):
