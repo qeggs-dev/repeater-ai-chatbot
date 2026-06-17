@@ -1,5 +1,7 @@
+import sys
 import asyncio
-from typing import Any
+from io import StringIO
+from typing import Any, TextIO
 from ...context import ToolCallPacakage, CallType
 from .._caller import ModelRequester
 from asteval import Interpreter
@@ -11,6 +13,11 @@ class Asteval(ToolCallPacakage):
         expression: str | list[str] = Field(..., description="The Python expression to evaluate. (Ban high-risk functions.)")
         symbols: dict[str, Any] | None = Field(None, description="The symbols to use in the evaluation. ")
         timeout: int | float | None = Field(5, description="The timeout for the evaluation.")
+    
+    class Result(BaseModel):
+        result: Any = Field(..., description="The result of the evaluation.")
+        stdout: str = Field("", description="The standard output of the evaluation.")
+        stderr: str = Field("", description="The standard error of the evaluation.")
     
     name = "asteval"
     document = "Execute Python code safely and return results."
@@ -36,12 +43,50 @@ class Asteval(ToolCallPacakage):
                 ]
         except Exception as e:
             return e
+    
+    def _open(self, *args, **kwargs) -> None:
+        raise NotImplementedError
+    
+    def _input(self, *args, **kwargs) -> None:
+        raise NotImplementedError
+    
+    class InterpreterStdout(StringIO):
+        def __init__(self, *args, **kwargs) -> None:
+            super().__init__(*args, **kwargs)
+
+        def readable(self) -> bool:
+            return False
+        
+        def writable(self) -> bool:
+            return True
+
+    class InterpreterStderr(StringIO):
+        def __init__(self, *args, **kwargs) -> None:
+            super().__init__(*args, **kwargs)
+
+        def readable(self) -> bool:
+            return False
+
+        def writable(self) -> bool:
+            return True
 
     async def call(self, args: Params) -> Any:
-        aeval = Interpreter()
+        stdout = self.InterpreterStdout()
+        stderr = self.InterpreterStderr()
+        aeval = Interpreter(
+            writer = stdout,
+            err_writer  = stderr,
+        )
 
         if args.symbols:
             aeval.symtable.update(args.symbols)
+        
+        aeval.symtable.update(
+            {
+                "open": self._open,
+                "input": self._input,
+            }
+        )
         
         task = asyncio.create_task(
             asyncio.to_thread(
@@ -56,4 +101,8 @@ class Asteval(ToolCallPacakage):
         except asyncio.TimeoutError:
             task.cancel()
             return "Expression execution timed out."
-        return result
+        return self.Result(
+            result = result,
+            stdout = stdout.getvalue(),
+            stderr = stderr.getvalue(),
+        )
