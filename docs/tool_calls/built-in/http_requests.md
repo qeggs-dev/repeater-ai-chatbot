@@ -28,8 +28,19 @@
         "timeout_seconds": 10, // Request timeout in seconds.
         "verify_crawler_permissions": true, // Whether to verify crawler permissions.
         "exclude_crawler_user_agent": false // Whether to not actively add the `User-Agent` in the request header (turn off this option if you need to set 'User-Agent') .
+      },
+      {
+        "sleep_seconds": 10 // Sleep in a batch affects the end time of the batch.
       }
-    ]
+    ],
+    {
+      "sleep_seconds": 10.0 // Sleep on the outside suspends requests on the back end.
+    },
+    {
+      // If the batch had only one request, it could be written like this.
+      "method": "GET",
+      "url": "https://example.com"
+    }
   ]
 }
 ```
@@ -40,12 +51,12 @@
 {
   "responses":[
     {
-      "status_code": 200, // 状态码
-      "reason": "success", // 只要响应了就是 `success` 而超时等情况会是其他内容
-      "headers": {}, // 响应头
-      "cookies": {}, // 响应 cookie
-      "request": {},  // 之前填写的请求体对象
-      "data": {} // 响应内容(如果 JSON 解析失败，则将响应文本作为 `data` 返回，解析成功则该字段为任意 JSON 对象)
+      "status_code": 200, // HTTP Status Code
+      "reason": "success", // As long as the response is `success` and timeouts and the like will be something else
+      "headers": {}, // Response headers
+      "cookies": {}, // Response cookie
+      "request": {},  // Request object
+      "data": {} // The response content (if the JSON parsing fails, the response text is returned as `data` ; if the parsing succeeds, the field is any JSON object) 
     }
   ]
 }
