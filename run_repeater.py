@@ -1,12 +1,18 @@
-def main(run_server: bool = True):
-    while True:
-        import time
-        start_import_time = time.perf_counter_ns()
-        import sys
-        from core import RepeaterMain
-        from loguru import logger
-        end_import_time = time.perf_counter_ns()
+import sys
+import time
+from loguru import logger
 
+def main(run_server: bool = True):
+    try:
+        start_import_time = time.perf_counter_ns()
+        from core import RepeaterMain
+        end_import_time = time.perf_counter_ns()
+    except:
+        logger.exception(
+            "Import core failed."
+        )
+
+    while True:
         repeater_main = RepeaterMain()
 
         load_configs_start_time = time.perf_counter_ns()
