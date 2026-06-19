@@ -67,6 +67,7 @@
       "request_id": "", // The ID of the request.
       "status_code": 200, // HTTP Status Code
       "reason": "success", // As long as the response is `success` and timeouts and the like will be something else
+      "response_time": "", // The time it took to get the response
       "headers": {}, // Response headers
       "cookies": {}, // Response cookie
       "request": {},  // Request object
