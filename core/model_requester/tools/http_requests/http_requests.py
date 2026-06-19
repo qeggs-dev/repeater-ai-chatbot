@@ -202,7 +202,7 @@ class HTTPRequests(ToolCallPacakage):
                 if response is None:
                     return Response(
                         request_id = request.id,
-                        reason = "Failed to connect to server",
+                        reason = "The number of retries has run out.",
                         response = response
                     )
         except httpx.TimeoutException as e:
