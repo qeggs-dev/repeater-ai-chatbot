@@ -20,7 +20,7 @@ class SystemInfo(ToolCallPacakage):
 
     def base_info(self):
         return {
-            "name": "Repeater AI System",
+            "name": self.global_configs.system_identification.system_name,
             "version": __version__,
             "author": __author__,
             "license": __license__,
