@@ -222,7 +222,6 @@ class FunctionCaller:
         else:
             arguments = None
         
-        
         logger.info(
             "Calling Tool",
             user_id = user_id
@@ -244,7 +243,9 @@ class FunctionCaller:
 
         start_time = time.perf_counter_ns()
         try:
-            raw_result = await function.call(arguments)
+            raw_result = await function.call(
+                arguments
+            )
         finally:
             end_time = time.perf_counter_ns()
             logger.info(
