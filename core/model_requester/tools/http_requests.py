@@ -118,6 +118,7 @@ class HTTPRequests(ToolCallPacakage):
         base_headers: dict[str, str] | None = Field(None, description="The underlying request header shared by all requests.")
         base_cookies: dict[str, str] | None = Field(None, description="The base Cookie shared by all requests.")
         base_auth: tuple[str, str] | None = Field(None, description="The base Auth shared by all requests.")
+        base_proxy: str | None = Field(None, description="The base proxy shared by all requests.")
         base_timeout: int | float = Field(5, description="Requests timeout in seconds.")
         requests: list[list[Request | Sleep] | Request | Sleep] = Field(..., description="Sending requests in batches using connection pooling (The outer list executes sequentially, and the inner list executes in parallel.).")
     
@@ -259,8 +260,10 @@ class HTTPRequests(ToolCallPacakage):
             cookies = args.base_cookies,
             auth = args.base_auth,
             timeout = args.base_timeout,
-            transport = PublicIPOnlyTransport(),
-            verify = get_ssl_context()
+            transport = PublicIPOnlyTransport(
+                verify = get_ssl_context(),
+                proxy = args.base_proxy
+            ),
         )
 
         responses: list[list[Response]] = []
