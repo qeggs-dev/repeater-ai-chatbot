@@ -1,3 +1,5 @@
+from email import message
+
 import orjson
 import traceback
 
@@ -53,7 +55,13 @@ class ToolCallPacakage(ABC):
         """
         This method is called when an error occurs during the execution of the tool.
         """
-        return f"Could not call tool {self.name}: {error}"
+        logger.exception(
+            "Could not call tool {name}: {error}",
+            name = self.name,
+            error = error
+        )
+        message = f"Could not call tool {self.name}: {error}"
+        return message
     
     async def on_args_validation_error(self, error: ValidationError) -> T | None:
         errors = error.errors()
