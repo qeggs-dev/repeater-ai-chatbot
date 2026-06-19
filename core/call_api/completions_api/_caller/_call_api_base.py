@@ -91,60 +91,29 @@ class BaseCallAPI(ABC):
                 except openai.APIStatusError as e:
                     match e.status_code:
                         case 400:
-                            raise BadRequestError(
-                                e.message,
-                                response = e.response,
-                                body = e.body,
-                            ) from e
+                            except_type = BadRequestError
                         case 401:
-                            raise AuthenticationError(
-                                e.message,
-                                response = e.response,
-                                body = e.body,
-                            ) from e
+                            except_type = AuthenticationError
                         case 403:
-                            raise PermissionDeniedError(
-                                e.message,
-                                response = e.response,
-                                body = e.body,
-                            ) from e
+                            except_type = PermissionDeniedError
                         case 404:
-                            raise NotFoundError(
-                                e.message,
-                                response = e.response,
-                                body = e.body,
-                            ) from e
+                            except_type = NotFoundError
                         case 422:
-                            raise UnprocessableEntityError(
-                                e.message,
-                                response = e.response,
-                                body = e.body,
-                            ) from e
+                            except_type = UnprocessableEntityError
                         case 429:
-                            raise RateLimitError(
-                                e.message,
-                                response = e.response,
-                                body = e.body,
-                            ) from e
+                            except_type = RateLimitError
                         case code:
                             if 400 <= code < 500:
-                                raise ClientBadRequest(
-                                    e.message,
-                                    response = e.response,
-                                    body = e.body,
-                                ) from e
+                                except_type = ClientBadRequest
                             elif 500 <= code < 600:
-                                raise InternalServerError(
-                                    e.message,
-                                    response = e.response,
-                                    body = e.body,
-                                ) from e
+                                except_type = InternalServerError
                             else:
-                                raise UnknowAPIStatusError(
-                                    e.message,
-                                    response = e.response,
-                                    body = e.body,
-                                ) from e
+                                except_type = UnknowAPIStatusError
+                    raise except_type(
+                        e.message,
+                        response = e.request,
+                        body = e.body,
+                    ) from e
                 except openai.APIError as e:
                     raise APIError(
                         e.message,
