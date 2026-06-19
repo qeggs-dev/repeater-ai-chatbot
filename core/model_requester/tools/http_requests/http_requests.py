@@ -1,114 +1,23 @@
 from __future__ import annotations
 import json
 import httpx
-import socket
+import random
 import asyncio
-import ipaddress
 from urllib.parse import urlparse
 from urllib.robotparser import RobotFileParser
-from ...context import ToolCallPacakage, CallType
-from ...global_config_manager import HTTPMethods, ConfigManager
-from .._caller import ModelRequester
-from ...auxiliary.http import get_ssl_context
-from typing import Any, Self, ClassVar
+from ....context import ToolCallPacakage, CallType
+from ....global_config_manager import HTTPMethods, ConfigManager
+from ..._caller import ModelRequester
+from ....auxiliary.http import get_ssl_context
+from loguru import logger
+from typing import ClassVar, Literal
 from pydantic import BaseModel, Field
 from cachetools import TTLCache
-
-class Request(BaseModel):
-    method: HTTPMethods = Field(HTTPMethods.GET, description="The HTTP method to use for the request.")
-    url: str = Field("", description="The target URL of the request.")
-    query_params: dict[str, str] | None = Field(None, description="Query parameters to append to the request URL.")
-    headers: dict[str, str] | None = Field(None, description="HTTP headers to send with the request.")
-    cookies: dict[str, str] | None = Field(None, description="Cookies to attach to the request.")
-    form_data: dict[str, str] | None = Field(None, description="Form-data to send with the request.")
-    json_data: Any | None = Field(None, description="JSON data to send in the request body.")
-    auth: tuple[str, str] | None = Field(None, description="Basic authentication credentials as a (username, password) tuple.")
-    follow_redirects: bool = Field(True, description="Whether to automatically follow HTTP redirects.")
-    timeout_seconds: int | float = Field(10, description="Request timeout in seconds.")
-    verify_crawler_permissions: bool = Field(True, description="Whether to verify crawler permissions. If the `robot.txt` is in the cache, it won't be accessed again for some time.")
-    exclude_crawler_user_agent: bool = Field(False, description="Whether to not actively add the `User-Agent` in the request header (turn off this option if you need to set 'User-Agent') .")
-    
-class PublicIPOnlyTransport(httpx.AsyncHTTPTransport):
-    class AddrInfo(BaseModel):
-        family: socket.AddressFamily
-        type: socket.SocketKind
-        proto: int
-        canonname: str
-        host: str
-        port: int
-        flowinfo: int = 0
-        scope_id: int = 0
-        
-        @classmethod
-        def from_addr(cls, addr: tuple) -> Self:
-            family, type, proto, canonname, sockaddr = addr
-            
-            data = {
-                "family": family,
-                "type": type,
-                "proto": proto,
-                "canonname": canonname,
-                "host": sockaddr[0],
-                "port": sockaddr[1],
-            }
-            
-            if len(sockaddr) == 4:
-                data["flowinfo"] = sockaddr[2]
-                data["scope_id"] = sockaddr[3]
-            
-            return cls(**data)
-        
-        def to_ip_address(self) -> ipaddress.IPv4Address | ipaddress.IPv6Address:
-            return ipaddress.ip_address(self.host)
-        
-        @property
-        def is_ipv6(self) -> bool:
-            return self.family == socket.AF_INET6
-        
-        @property
-        def address_tuple(self) -> tuple[str, int] | tuple[str, int, int, int]:
-            if self.is_ipv6:
-                return (self.host, self.port, self.flowinfo, self.scope_id)
-            return (self.host, self.port)
-    
-    async def handle_async_request(self, request: httpx.Request) -> httpx.Response:
-        if not ConfigManager.get_configs().tool_calls.tools_configs.http_requests.allow_private_network_requests:
-            host = request.url.host
-            port = request.url.port
-
-            try:
-                ip = ipaddress.ip_address(host)
-                if ip.is_private:
-                    raise httpx.TransportError("Private network requests are not allowed")
-            except ValueError:
-                # is not an ip address
-                # try to DNS resolve
-                loop = asyncio.get_event_loop()
-                addrs: list[tuple[socket.AddressFamily, socket.SocketKind, int, str, tuple[str, int] | tuple[str, int, int, int]]] = await loop.getaddrinfo(
-                    host,
-                    port,
-                    type = socket.SOCK_STREAM
-                )
-                for addr in addrs:
-                    addr_info = self.AddrInfo.from_addr(addr)
-                    if addr_info.to_ip_address().is_private:
-                        raise httpx.TransportError("Private network requests are not allowed")
-            
-        return await super().handle_async_request(request)
-    
-class Response(BaseModel):
-    request: Request
-    status_code: int | None = None
-    reason: str = ""
-    headers: dict | None = None
-    cookies: dict | None = None
-    data: Any = None
-
-class Sleep(BaseModel):
-    sleep_seconds: int | float = Field(..., description="The number of seconds to sleep.")
-
-    async def sleep(self):
-        await asyncio.sleep(self.sleep_seconds)
+from .request import Request
+from .response import Response
+from .sleep import Sleep
+from .public_ip_only_transport import PublicIPOnlyTransport
+from .backoff import exponential_backoff_with_jitter
 
 @ModelRequester.reg_global_package
 class HTTPRequests(ToolCallPacakage):
@@ -123,7 +32,7 @@ class HTTPRequests(ToolCallPacakage):
         requests: list[list[Request | Sleep] | Request | Sleep] = Field(..., description="Sending requests in batches using connection pooling (The outer list executes sequentially, and the inner list executes in parallel.).")
     
     class Result(BaseModel):
-        responses: list[list[Response]] = Field(..., description="The responses of the requests.")
+        responses: list[list[str | Response]] = Field(..., description="The responses of the requests.")
     
     name = "http_requests"
     call_type = CallType.ASYNC
@@ -169,7 +78,13 @@ class HTTPRequests(ToolCallPacakage):
         }
     
     async def verify_crawler_permissions(self, client: httpx.AsyncClient, url: str) -> bool:
-        base_url = self.get_root_url(client.base_url)
+        if client.base_url.host:
+            base_url = client.base_url.host
+        elif url:
+            base_url = self.get_root_url(url)
+        else:
+            raise ValueError("base_url is None")
+        
         raw_url = client.base_url
         if base_url != raw_url:
             client.base_url = base_url
@@ -178,7 +93,7 @@ class HTTPRequests(ToolCallPacakage):
             rewrite_url: bool = False
 
         try:
-            if self.robots_cache[base_url]:
+            if base_url in self.robots_cache:
                 text = self.robots_cache[base_url]
             else:
                 response = await client.get(
@@ -200,58 +115,126 @@ class HTTPRequests(ToolCallPacakage):
         finally:
             if rewrite_url: 
                 client.base_url = raw_url
+    
+    @staticmethod
+    async def _send_request(
+        client: httpx.AsyncClient,
+        request: Request,
+        headers: dict | None = None,
+    ) -> httpx.Response:
+        response = await client.request(
+            request.method,
+            request.url,
+            params = request.query_params,
+            headers = headers,
+            cookies = request.cookies,
+            data = request.form_data,
+            json = request.json_data,
+            auth = request.auth,
+            follow_redirects = request.follow_redirects,
+            timeout = request.timeout_seconds,
+        )
+        return response
             
     async def send_request(self, client: httpx.AsyncClient, request: Request) -> Response:
         if not self.validation_method(request.method):
-            return self.Result(
-                reason=f"HTTP method {request.method} is not allowed."
+            return Response(
+                request_id = request.id,
+                reason = f"HTTP method {request.method} is not allowed."
             )
         
         headers = request.headers
+        if headers is None:
+            headers = {}
         if not request.exclude_crawler_user_agent:
             headers.update(await self.crawler_header())
         
         if request.verify_crawler_permissions:
             if not await self.verify_crawler_permissions(client, request.url):
-                return self.Result(
+                return Response(
+                    request_id = request.id,
                     reason = "Crawler permissions denied."
                 )
-
-        try:
-            response = await client.request(
-                request.method,
-                request.url,
-                params = request.query_params,
-                headers = headers,
-                cookies = request.cookies,
-                data = request.form_data,
-                json = request.json_data,
-                auth = request.auth,
-                follow_redirects = request.follow_redirects,
-                timeout = request.timeout_seconds,
-            )
-        except httpx.TimeoutException as e:
-            return self.Result(
-                reason = "Timeout",
-            )
-        except httpx.HTTPError as e:
-            return self.Result(
-                reason = f"Error: {e}",
-            )
         
         try:
-            data = response.json()
-        except json.JSONDecodeError:
-            data = response.text
+            if request.fail_to_retry is None:
+                response = await self._send_request(
+                    client,
+                    request,
+                    headers,
+                )
+            else:
+                for times in range(request.fail_to_retry.retries):
+                    try:
+                        response = await self._send_request(
+                            client,
+                            request,
+                            headers,
+                        )
+                        if response.status_code in request.fail_to_retry.status_codes:
+                            raise httpx.HTTPStatusError(
+                                f"HTTP status error: {response.status_code}",
+                                request = response.request,
+                                response = response,
+                            )
+                        break
+                    except httpx.HTTPStatusError as e:
+                        logger.error(
+                            "HTTP status error: {message}",
+                            message = str(e)
+                        )
+                    except httpx.HTTPError as e:
+                        logger.error(
+                            "HTTP error: {message}",
+                            message = str(e)
+                        )
+                    
+                    response = None
+                    
+                    await asyncio.sleep(
+                        exponential_backoff_with_jitter(
+                            times,
+                            base_delay = request.fail_to_retry.backoff,
+                            with_jitter = request.fail_to_retry.jitter
+                        )
+                    )
+                
+                if response is None:
+                    return Response(
+                        request_id = request.id,
+                        reason = "Failed to connect to server",
+                        response = response
+                    )
+        except httpx.TimeoutException as e:
+            return Response(
+                request_id = request.id,
+                reason = "Timeout"
+            )
+        except httpx.HTTPError as e:
+            return Response(
+                request_id = request.id,
+                reason = f"Error: {e}"
+            )
+        
+        if response is not None:
+            try:
+                data = response.json()
+            except json.JSONDecodeError:
+                data = response.text
     
-        return Response(
-            request = request,
-            status_code = response.status_code,
-            reason = "success",
-            headers = dict(response.headers),
-            cookies = dict(response.cookies),
-            data = data,
-        )
+            return Response(
+                request_id = request.id,
+                status_code = response.status_code,
+                reason = "Success",
+                headers = dict(response.headers),
+                cookies = dict(response.cookies),
+                data = data,
+            )
+        else:
+            return Response(
+                request_id = request.id,
+                reason = "No response"
+            )
 
     async def call(self, args: Params):
         client = httpx.AsyncClient(
@@ -303,5 +286,5 @@ class HTTPRequests(ToolCallPacakage):
             responses.append(results)
         
         return self.Result(
-            responses = results,
+            responses = responses,
         ).model_dump(exclude_none = True)
