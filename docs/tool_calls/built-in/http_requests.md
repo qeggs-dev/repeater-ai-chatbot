@@ -12,12 +12,16 @@
   "base_headers": null, // The underlying request header shared by all requests.
   "base_cookies": null, // The base Cookie shared by all requests.
   "base_auth": null, // The base Auth shared by all requests.
+  "base_proxy": null, // The base Proxy shared by all requests.
   "base_timeout": 5, // Requests timeout in seconds.
   "requests": [ // Sending requests in batches using connection pooling (The outer list executes sequentially, and the inner list executes in parallel.).
     [
       {
+        "type": "request", // The type of request.
         "method": "", // The HTTP method to use for the request.
+        "id": "", // The ID of the request.
         "url": "", // The target URL of the request.
+        "fail_to_retry": null, // Whether to retry the request if it fails.
         "query_params": null, // Query parameters to include in the request URL.
         "headers": null, // HTTP headers to send with the request.
         "cookies": null, // Cookies to attach to the request.
@@ -30,16 +34,25 @@
         "exclude_crawler_user_agent": false // Whether to not actively add the `User-Agent` in the request header (turn off this option if you need to set 'User-Agent') .
       },
       {
+        "type": "sleep", // The type of sleep.
         "sleep_seconds": 10 // Sleep in a batch affects the end time of the batch.
       }
     ],
     {
+      "type": "sleep",
       "sleep_seconds": 10.0 // Sleep on the outside suspends requests on the back end.
     },
     {
+      "type": "request",
       // If the batch had only one request, it could be written like this.
       "method": "GET",
-      "url": "https://example.com"
+      "url": "https://example.com",
+      "fail_to_retry": {
+        "status_codes": [500, 502, 503, 504], // The HTTP status codes to retry on.
+        "retiry": 3, // Retry 3 times
+        "backoff": 1.0, // Backoff Index (1.0, 2.0, 4.0, ...)
+        "jitter": 0.0 // No jitter
+      }
     }
   ]
 }
@@ -51,6 +64,7 @@
 {
   "responses":[
     {
+      "request_id": "", // The ID of the request.
       "status_code": 200, // HTTP Status Code
       "reason": "success", // As long as the response is `success` and timeouts and the like will be something else
       "headers": {}, // Response headers
