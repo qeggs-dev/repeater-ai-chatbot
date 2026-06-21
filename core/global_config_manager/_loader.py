@@ -10,6 +10,7 @@ from pathlib import Path
 from typing import ClassVar, Generator, Iterable
 
 from ._base_model import GlobalConfigs
+from ..auxiliary.type_checker import is_iterable
 
 class ConfigManager:
     _configs: ClassVar[GlobalConfigs] = GlobalConfigs()
@@ -27,9 +28,9 @@ class ConfigManager:
         return cls._instance
 
     @classmethod
-    def update_base_path(cls, path: str | os.PathLike, force_load_list: list[str | os.PathLike] | None = None) -> None:
+    def update_base_path(cls, path: str | os.PathLike, force_load_list: Iterable[str | os.PathLike] | None = None) -> None:
         cls._base_path = Path(path)
-        if isinstance(force_load_list, list):
+        if is_iterable(force_load_list):
             cls._force_load_list = [Path(f) for f in force_load_list]
         else:
             cls._force_load_list = []
