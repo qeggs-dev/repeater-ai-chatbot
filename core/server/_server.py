@@ -39,15 +39,19 @@ class Server:
             on_shutdown = shutdown,
             version = __version__
         )
-        self.runtime: RepeaterRuntime | None = None
-        self.server: uvicorn.Server | None = None
-        self.lifespan: AsyncContextManager[None] = lifespan
-        if self.lifespan is None:
+        self.runtime: RepeaterRuntime
+        self.server: uvicorn.Server
+        self.lifespan: AsyncContextManager[None]
+        self.admin_key_manager: AdminKeyManager
+        self.core: Core
+        self._serve_task: asyncio.Task[None]
+        self._inited = False
+
+        if lifespan:
+            self.lifespan = lifespan
+        else:
             self.lifespan = Lifespan(self.app)
         self.keyboard_interrupt_callback: Callable[[], Awaitable[None] | None] = lambda: logger.info("Keyboard interrupt")
-        self.admin_key_manager: AdminKeyManager | None = None
-        self.core: Core | None = None
-        self._serve_task: asyncio.Task[None] | None = None
         self._exit_code: int = 0
         self._shutdowned: bool = True
     
@@ -56,6 +60,11 @@ class Server:
         return self._exit_code
     
     async def shutdown(self, exit_code: int = 0) -> None:
+        """
+        Shutdown the server
+
+        :param exit_code: Exit code
+        """
         if self._shutdowned:
             return
         await self.server.shutdown()
@@ -66,27 +75,24 @@ class Server:
     
     @classmethod
     def logger_inited(cls):
+        """
+        Check if logger is inited
+        """
         return cls._logger_inited
 
     def inited(self):
-        if not self._logger_inited:
-            return False
-        
-        check_list: list[Any | None] = [
-            self.core,
-            self.server,
-            self.admin_key_manager,
-            self.runtime
-        ]
-        for item in check_list:
-            if item is None:
-                return False
-        return True
-
+        """
+        Check if server is inited
+        """
+        return Server._logger_inited and self._inited
+    
     async def run_server(self) -> int:
+        """
+        Run the server
+        """
         async with self.lifespan:
             if not self.inited():
-                raise RuntimeError("API not initialized")
+                raise RuntimeError("Server not initialized")
             self._shutdowned = False
             self._serve_task = asyncio.create_task(
                 self.server.serve()
