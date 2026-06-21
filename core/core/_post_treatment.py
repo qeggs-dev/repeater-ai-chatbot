@@ -65,39 +65,41 @@ async def post_treatment(
         # 展开模型输出内容中的变量
         if enable_assistant_template:
             content_unit = new_context.last_content
-            content = content_unit.content
-            if isinstance(content, str):
-                content = await template_parser.render_ex(
-                    content,
-                    user_id,
-                    **extra_template_fields
-                )
-                content_unit.content = content
-            else:
-                content = content_unit.to_plaintext_content()
-                content = await template_parser.render_ex(
-                    content,
-                    user_id,
-                    **extra_template_fields
-                )
-                content_unit.remove_context_block(TextBlock)
-                content_unit.content.append(
-                    TextBlock(content)
-                )
-            if content_unit.reasoning_content:
-                content_unit.reasoning_content = await template_parser.render_ex(
-                    content_unit.reasoning_content,
-                    user_id,
-                    **extra_template_fields
-                )
-            new_context.last_content = content_unit
+            if content_unit is not None:
+                if isinstance(content_unit.content, str):
+                    content = await template_parser.render_ex(
+                        content_unit.content,
+                        user_id,
+                        **extra_template_fields
+                    )
+                    content_unit.content = content
+                elif isinstance(content_unit.content, list):
+                    content = content_unit.to_plaintext_content()
+                    content = await template_parser.render_ex(
+                        content,
+                        user_id,
+                        **extra_template_fields
+                    )
+                    content_unit = content_unit.remove_context_block(TextBlock)
+                    if isinstance(content_unit.content, list):
+                        content_unit.content.append(
+                            TextBlock(text = content)
+                        )
+                if content_unit.reasoning_content:
+                    content_unit.reasoning_content = await template_parser.render_ex(
+                        content_unit.reasoning_content,
+                        user_id,
+                        **extra_template_fields
+                    )
+                new_context.last_content = content_unit
         
         with task_status_stack.enter("Saving Context"):
             if cross_user_data_routing.context.save_to_user_id == user_id:
                 historical_context = responses.historical_context
             else:
                 historical_context = await context_loader.load_context(saved_user_id)
-                historical_context.append(user_input)
+                if user_input is not None:
+                    historical_context.append(user_input)
 
             # 保存上下文
             if save_context:
