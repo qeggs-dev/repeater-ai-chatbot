@@ -65,8 +65,8 @@ class Server:
         self._shutdowned = True
     
     @classmethod
-    def logger_inited(self):
-        return self._logger_inited
+    def logger_inited(cls):
+        return cls._logger_inited
 
     def inited(self):
         if not self._logger_inited:

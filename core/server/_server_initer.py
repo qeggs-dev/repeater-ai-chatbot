@@ -16,6 +16,8 @@ from ..global_config_manager import ConfigManager
 from ._server import Server
 
 class ServerIniter:
+    init_list: list[Callable[..., None]] = []
+
     def __init__(
         self,
         server: Server,
@@ -26,10 +28,8 @@ class ServerIniter:
         return self.server.inited()
 
     def init_all(self):
-        self.init_runtime()
-        self.init_core()
-        self.init_routers()
-        self.init_admin_key_manager()
+        for init_func in ServerIniter.init_list:
+            init_func(self)
     
     def init_middleware(self):
         self.middleware_factory()
@@ -41,13 +41,15 @@ class ServerIniter:
             ConfigManager.get_configs().logger,
         )
         logger.info("Logger has been initialized.")
-        self.server._logger_inited = True
+        Server._logger_inited = True
     
+    @init_list.append
     @print_init_runtime("Runtime")
     def init_runtime(self):
         from ..runtime_container import RuntimeContainer
         self.server.runtime = RuntimeContainer.init_runtime()
     
+    @init_list.append
     @print_init_runtime("Core")
     def init_core(self):
         from ..core import Core
@@ -55,6 +57,7 @@ class ServerIniter:
             runtime = self.server.runtime
         )
     
+    @init_list.append
     @print_init_runtime("Routers")
     def init_routers(self):
         from ..api import root_router
@@ -62,6 +65,7 @@ class ServerIniter:
             root_router
         )
     
+    @init_list.append
     @print_init_runtime("Admin Key Manager")
     def init_admin_key_manager(self):
         from ..admin_api_key_manager import AdminKeyManager
