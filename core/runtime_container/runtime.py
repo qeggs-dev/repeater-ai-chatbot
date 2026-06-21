@@ -122,7 +122,7 @@ class RepeaterRuntime:
             logger.error("Invalid blacklist file")
         except FileNotFoundError:
             logger.error(f"Blacklist file not found: {blacklist_file_path}")
-        self.blacklist_match_timeout: int | None = self._configs.blacklist.match_timeout
+        self.blacklist_match_timeout: int | float | None = self._configs.blacklist.match_timeout
 
     @init_list.append
     @print_init_runtime("Task Status Map")
