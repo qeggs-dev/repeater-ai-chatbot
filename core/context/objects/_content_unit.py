@@ -21,8 +21,7 @@ class ContentUnit(BaseModel):
     上下文单元
     """
     model_config = ConfigDict(
-        validate_assignment = True,
-        exclude_none = True
+        validate_assignment = True
     )
 
     reasoning_content: str | None = None
@@ -46,7 +45,7 @@ class ContentUnit(BaseModel):
             length += len(self.reasoning_content)
         return length
     
-    def only_context_block(self, block_type: Type[ContentBlock]) -> None:
+    def only_context_block(self, block_type: Type[ContentBlock]) -> bool:
         """
         检查上下文单元是否只包含指定类型的ContentBlock
         """
@@ -57,7 +56,7 @@ class ContentUnit(BaseModel):
                 return False
         return True
     
-    def remove_context_block(self, block_type: Type[ContentBlock]) -> None:
+    def remove_context_block(self, *block_type: Type[ContentBlock]) -> ContentUnit:
         """
         移除指定类型的上下文块
         """
@@ -67,7 +66,9 @@ class ContentUnit(BaseModel):
         for block in self.content:
             if not isinstance(block, block_type):
                 new_content.append(block)
-        self.content = new_content
+        new = self.model_copy()
+        new.content = new_content
+        return new
     
     def to_plaintext_content(self) -> str:
         if isinstance(self.content, str):
@@ -95,16 +96,40 @@ class ContentUnit(BaseModel):
             return self.model_dump(exclude = exclude)
         return self.model_dump()
     
+    def to_text(
+            self,
+            remove_reasoning_prompt: bool = False,
+        ) -> str:
+        buffer: list[str] = []
+        if not remove_reasoning_prompt and self.reasoning_content:
+            buffer.append(self.reasoning_content)
+        
+        if self.content:
+            if isinstance(self.content, str):
+                buffer.append(self.content)
+            elif isinstance(self.content, list):
+                for block in self.content:
+                    if isinstance(block, TextBlock):
+                        buffer.append(block.text)
+            else:
+                raise TypeError(f"Unsupported content type: {type(self.content).__name__}")
+        
+        return "\n".join(buffer)
+    
     def __bool__(self) -> bool:
         return bool(self.content) or bool(self.reasoning_content) or bool(self.tool_call_id)
     
-    def reduce_to_text(self):
+    def reduce_to_text(self) -> ContentUnit:
         if isinstance(self.content, list):
             buffer: TextBuffer = TextBuffer(separator="\n")
             for block in self.content:
                 if isinstance(block, TextBlock):
                     buffer.push(block.text)
-            self.content = str(buffer)
+            new = self.model_copy()
+            new.content = str(buffer)
+            return new
+        else:
+            return self
     
     def content_to_string(self, non_text_length_limit: int | None = 10) -> str:
         if isinstance(self.content, str):
