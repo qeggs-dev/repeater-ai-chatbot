@@ -47,17 +47,3 @@ class RequestLog(BaseModel):
     total_context_length: int = 0
     reasoning_content_length: int = 0
     new_content_length: int = 0
-    
-
-class CallAPILog(BaseModel):
-    """
-    Class to represent a call API log object.
-    """
-    model_config = ConfigDict(
-        validate_assignment=True,
-    )
-    
-    source: str = ""
-    start_time: TimeStamp = Field(default_factory=lambda: TimeStamp(timestamp=0, monotonic=0))
-    end_time: TimeStamp = Field(default_factory=lambda: TimeStamp(timestamp=0, monotonic=0))
-    user_id: str = ""
