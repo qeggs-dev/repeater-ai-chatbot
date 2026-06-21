@@ -4,7 +4,7 @@ import orjson
 import traceback
 
 from abc import ABC, abstractmethod
-from typing import ClassVar, TypeVar
+from typing import ClassVar, TypeVar, Any, Generic
 from pydantic import BaseModel, ValidationError
 from .function import CallType
 from ....user_config_manager import UserConfigs
@@ -13,7 +13,7 @@ from loguru import logger
 
 T = TypeVar("T")
 
-class ToolCallPacakage(ABC):
+class ToolCallPacakage(ABC, Generic[T]):
     """
     Abstract class for tool calling package
     """
@@ -45,13 +45,13 @@ class ToolCallPacakage(ABC):
         """
         Override the method to customize more complex description rules.
         """
-        return self.document or self.__doc__
+        return self.document or self.__doc__ or ""
 
     @abstractmethod
     def call(self, args: Params) -> T:
         pass
 
-    async def on_error(self, error: Exception) -> T | None:
+    async def on_error(self, error: Exception) -> T | Any | None:
         """
         This method is called when an error occurs during the execution of the tool.
         """
@@ -63,19 +63,19 @@ class ToolCallPacakage(ABC):
         message = f"Could not call tool {self.name}: {error}"
         return message
     
-    async def on_args_validation_error(self, error: ValidationError) -> T | None:
+    async def on_args_validation_error(self, error: ValidationError) -> T | Any | None:
         errors = error.errors()
         buffer: list[str] = []
-        for error in errors:
-            buffer.append(f"{'.'.join(error['loc'])}: {error['msg']}")
+        for now_error in errors:
+            buffer.append(f"{'.'.join(str(i) for i in now_error['loc'])}: {now_error['msg']}")
         error_message = "\n".join(buffer)
         return f"Tool Args Validation Error for {self.name}:\n{error_message}"
 
-    async def on_args_json_decode_error(self, error: orjson.JSONDecodeError) -> T | None:
+    async def on_args_json_decode_error(self, error: orjson.JSONDecodeError) -> T | Any | None:
         return f"Invalid JSON: {error.msg}"
 
-    async def on_result_json_encode_error(self, error: orjson.JSONEncodeError) -> T | None:
+    async def on_result_json_encode_error(self, error: orjson.JSONEncodeError) -> T | Any | None:
         return f"Tool Result JSON Encode Error for {self.name}: {error}"
     
-    async def on_json_result_string_encode_error(self, error: UnicodeEncodeError) -> T | None:
+    async def on_json_result_string_encode_error(self, data: bytes, error: UnicodeEncodeError) -> T | Any | None:
         return f"Tool Result JSON Can't be encoded to utf-8 string for {self.name}: {error}"
