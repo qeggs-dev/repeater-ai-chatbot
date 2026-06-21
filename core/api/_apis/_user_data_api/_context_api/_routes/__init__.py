@@ -6,6 +6,7 @@ from ._withdraw import withdraw_context
 from ._inject import inject_context
 from ._rewrite import rewrite_context
 from ._role_mapping import role_mapping
+from ._set_context import set_context
 from ._get_userlist import get_context_userlist
 
 __all__ = [
@@ -17,5 +18,6 @@ __all__ = [
     "inject_context",
     "rewrite_context",
     "role_mapping",
+    "set_context",
     "get_context_userlist",
 ]
