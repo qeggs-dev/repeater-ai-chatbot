@@ -17,7 +17,7 @@ class ModelsClient:
             self,
             base_url: str,
             api_key: str | None = None,
-            timeout: int | None = None,
+            timeout: int | float | None = None,
             params: dict[str, str | int | float | bool | None] | None = None,
             headers: dict[str, str] | None = None,
             cookies: dict[str, str] | None = None,

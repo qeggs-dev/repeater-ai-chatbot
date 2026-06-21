@@ -7,7 +7,7 @@ class HTMLRenderClient:
     def __init__(
             self,
             base_url: str,
-            timeout: int,
+            timeout: int | float | None = None,
             params: dict[str, str | int | float | bool | None] | None = None,
             headers: dict[str, str] | None = None,
             cookies: dict[str, str] | None = None,
