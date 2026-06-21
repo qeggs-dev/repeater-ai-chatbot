@@ -29,7 +29,7 @@ class RequestLog(BaseModel):
     request_end_time: TimeStamp = Field(default_factory=lambda: TimeStamp(timestamp=0, monotonic=0))
     stream_processing_start_time: TimeStamp = Field(default_factory=lambda: TimeStamp(timestamp=0, monotonic=0))
     stream_processing_end_time: TimeStamp = Field(default_factory=lambda: TimeStamp(timestamp=0, monotonic=0))
-    task_end_time: TimeStamp = Field(default=lambda: TimeStamp(timestamp=0, monotonic=0))
+    task_end_time: TimeStamp = Field(default_factory=lambda: TimeStamp(timestamp=0, monotonic=0))
     chunk_generated_times: list[TimeStamp] = Field(default_factory=list)
     translation_chunk_times: list[TimeStamp] = Field(default_factory=list)
     translation_queue_backlog: list[int] = Field(default_factory=list)
