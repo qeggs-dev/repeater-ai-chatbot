@@ -40,7 +40,7 @@ class TimeStamp(BaseModel):
                 monotonic = other.monotonic + self.monotonic
             )
         elif isinstance(other, int):
-            other = TimeStamp(
+            return TimeStamp(
                 timestamp = other + self.timestamp,
                 monotonic = other + self.monotonic
             )
