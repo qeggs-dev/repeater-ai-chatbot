@@ -33,6 +33,8 @@ class FunctionCaller:
         request: list[dict[str, Any]] = []
         for name in self._functions:
             function = self._functions.get(name)
+            if function is None:
+                continue
             if function.name in available_tool_calls:
                 request.append(function.struct().model_dump(exclude_none=True))
         return request
@@ -72,11 +74,11 @@ class FunctionCaller:
             self._already_force_function = True
         self._functions[function.name] = function
     
-    def register_packages(self, user_id: str, packages: list[Type[ToolCallPacakage]], user_configs: UserConfigs, *args, **kwargs):
+    def register_packages(self, user_id: str, packages: list[Type[ToolCallPacakage[T]]], user_configs: UserConfigs, *args, **kwargs):
         for package in packages:
             if not issubclass(package, ToolCallPacakage):
                 raise ValueError("Package must be a subclass of ToolCallPacakage")
-            package_instance = package(
+            package_instance: ToolCallPacakage[T] = package(
                 user_id = user_id,
                 user_configs = user_configs,
                 global_configs = ConfigManager.get_configs(),
@@ -87,7 +89,7 @@ class FunctionCaller:
                 parameters = None
             else:
                 parameters = package_instance.Params
-            function = Function(
+            function: Function[T, BaseModel] = Function(
                 name = package_instance.name,
                 description = package_instance.document_method(),
                 enabled = package_instance.enabled,
@@ -112,11 +114,11 @@ class FunctionCaller:
         else:
             raise ValueError(f"Function {function_name} not found")
     
-    async def _any_call(self, func: Callable[..., Awaitable[T] | T] | None, *args, **kwargs) -> T:
+    async def _any_call(self, func: Callable[..., Awaitable[T]] | Callable[..., T] | None, *args, **kwargs) -> T | None:
         if callable(func):
             if inspect.iscoroutinefunction(func):
                 return await func(*args, **kwargs)
-            else:
+            elif inspect.isfunction(func):
                 return func(*args, **kwargs)
         else:
             return None
@@ -164,11 +166,11 @@ class FunctionCaller:
         
         return results_list
     
-    def _create_tool_content_unit(self, tool_call_id: str, content: str) -> ContentUnit:
+    def _create_tool_content_unit(self, tool_call_id: str, content: Any) -> ContentUnit:
         return ContentUnit(
             role = ContentRole.TOOL,
             tool_call_id = tool_call_id,
-            content = content
+            content = str(content)
         )
     
     async def call_function(
@@ -216,8 +218,8 @@ class FunctionCaller:
                 else:
                     errors = error.errors()
                     buffer: list[str] = []
-                    for error in errors:
-                        buffer.append(f"{'.'.join(error['loc'])}: {error['msg']}")
+                    for error_detail in errors:
+                        buffer.append(f"{'.'.join(str(i) for i in error_detail['loc'])}: {error_detail['msg']}")
                     raise ArgumentError("\n".join(buffer)) from error
         else:
             arguments = None
@@ -267,7 +269,7 @@ class FunctionCaller:
                 except UnicodeEncodeError as error:
                     result = await self._any_call(
                         function.on_json_result_string_encode_error,
-                        result,
+                        bin_result,
                         error
                     )
                 
@@ -283,7 +285,7 @@ class FunctionCaller:
             "Tool {name} Result:\n{result}",
             user_id = user_id,
             name = function.name,
-            result = text_content_cutter(result, ConfigManager.get_configs().tool_calls.result_max_length_for_logs)
+            result = text_content_cutter(str(result), ConfigManager.get_configs().tool_calls.result_max_length_for_logs)
         )
         
         return self._create_tool_content_unit(
