@@ -26,7 +26,7 @@ from ..auxiliary.time import (
     calculate_precise_age
 )
 from uuid import uuid4
-from typing import Any
+from typing import Any, Literal
 from ..clients.directives import (
     load_prompt_directive,
     load_prompt_directive_from_config,
@@ -74,7 +74,7 @@ class TemplateParser:
         return time.year ^ time.month ^ time.day
     
     @staticmethod
-    def int_to_bytes(n: int, byteorder: str = "big", signed: bool = False) -> bytes:
+    def int_to_bytes(n: int, byteorder: Literal["big", "little"] = "big", signed: bool = False) -> bytes:
         length = (n.bit_length() + 7) // 8
         if signed and n < 0:
             length = (n.bit_length() + 8) // 8
