@@ -38,7 +38,7 @@ class RepeaterMain:
             raise RuntimeError("Server not inited")
         return cls._now_server
 
-    def load_configs(self):
+    def load_configs(self) -> GlobalConfigs:
         """
         Load configs from file
 
@@ -57,7 +57,7 @@ class RepeaterMain:
             create_if_missing=True
         )
     
-    def init_server(self, configs: GlobalConfigs):
+    def init_server(self, configs: GlobalConfigs) -> None:
         """
         Init the server
 
@@ -104,7 +104,7 @@ class RepeaterMain:
 
         self.server_initer.init_middleware()
     
-    def check_package(self, configs: GlobalConfigs):
+    def check_package(self, configs: GlobalConfigs) -> None:
         """
         Check that the package meets the requirements
         
@@ -126,7 +126,7 @@ class RepeaterMain:
     def init_logger(self):
         self.server_initer.init_logger()
     
-    def init_all(self, configs: GlobalConfigs):
+    def init_all(self, configs: GlobalConfigs) -> None:
         """
         One-click handles most initialization.
 
