@@ -1,7 +1,7 @@
 from ......repeater_main import RepeaterMain
 from .._router import context_router
 from fastapi.responses import (
-    ORJSONResponse,
+    PlainTextResponse,
 )
 from ......context import ContentUnit, Context
 from loguru import logger
@@ -16,7 +16,7 @@ async def set_context(user_id: str, context: list[ContentUnit]):
         context (list[ContentUnit]): Context to set
     
     Returns:
-        ORJSONResponse: User context
+        PlainTextResponse: Success message
     """
     server = RepeaterMain.get_now_server()
 
@@ -30,4 +30,4 @@ async def set_context(user_id: str, context: list[ContentUnit]):
     logger.info("Set Context", user_id = user_id)
 
     # 返回JSON格式的上下文
-    return ORJSONResponse(context.to_context())
+    return PlainTextResponse("Success")
