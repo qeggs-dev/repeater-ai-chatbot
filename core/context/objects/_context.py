@@ -7,6 +7,7 @@ from .._exceptions import *
 from ._content_role import ContentRole
 from ._content_unit import ContentUnit
 from ._content_block import ContentBlock
+from ...auxiliary.type_checker import is_iterable
 
 
 class Context(BaseModel):
@@ -14,8 +15,7 @@ class Context(BaseModel):
     上下文对象
     """
     model_config = ConfigDict(
-        validate_assignment = True,
-        exclude_none = True
+        validate_assignment = True
     )
 
     prompt: ContentUnit | None = None
@@ -57,7 +57,14 @@ class Context(BaseModel):
         :param value: 值
         :return: 构建的对象
         """
-        self.context_list[index] = value
+        if isinstance(index, int) and isinstance(value, ContentUnit):
+            self.context_list[index] = value
+        elif not isinstance(index, int) and isinstance(value, ContentUnit):
+            self.context_list[index] = [value]
+        elif isinstance(index, slice) and is_iterable(value):
+            self.context_list[index] = value
+        else:
+            raise TypeError("index must be int or slice")
 
     def __len__(self):
         """
@@ -179,7 +186,7 @@ class Context(BaseModel):
         context_list = []
         if with_prompt and self.prompt:
             if reduce_to_text:
-                self.prompt.reduce_to_text()
+                self.prompt = self.prompt.reduce_to_text()
             context_list.append(
                 self.prompt.to_content(
                     remove_reasoning_prompt = remove_reasoning_prompt,
@@ -189,7 +196,7 @@ class Context(BaseModel):
         if self.context_list:
             for content in self.context_list:
                 if reduce_to_text:
-                    content.reduce_to_text()
+                    content = content.reduce_to_text()
                 context_list.append(
                     content.to_content(
                         remove_reasoning_prompt,
@@ -205,7 +212,7 @@ class Context(BaseModel):
         """
         return self.to_context(
             with_prompt = False,
-            remove_reasoner_prompt = False,
+            remove_reasoning_prompt = False,
             remove_created = True,
             reduce_to_text = False
         )
@@ -225,18 +232,27 @@ class Context(BaseModel):
                 return Context()
             try:
                 # 第一步：pop 直到不是用户消息
-                while (self.context_list and 
-                    self.last_content.role == ContentRole.USER):
+                while (
+                    self.context_list and 
+                    self.last_content is not None and
+                    self.last_content.role == ContentRole.USER
+                ):
                     pop_items.append(self.context_list.pop())
                 
                 # 第二步：pop 非用户消息
-                while (self.context_list and 
-                    self.last_content.role != ContentRole.USER):
+                while (
+                    self.context_list and 
+                    self.last_content is not None and
+                    self.last_content.role != ContentRole.USER
+                ):
                     pop_items.append(self.context_list.pop())
                 
                 # 第三步：pop 相关联的用户消息
-                while (self.context_list and 
-                    self.last_content.role == ContentRole.USER):
+                while (
+                    self.context_list and 
+                    self.last_content is not None and
+                    self.last_content.role == ContentRole.USER
+                ):
                     pop_items.append(self.context_list.pop())
             except IndexError:
                 pass
@@ -355,7 +371,7 @@ class Context(BaseModel):
                 content = content,
                 role = role,
                 role_name = role_name,
-                created = created,
+                created = created if created is not None else datetime.now(),
                 prefix = is_prefix,
                 tool_call_id = tool_call_id,
             )
@@ -505,8 +521,9 @@ class Context(BaseModel):
     def time_range(self, begin: int | float, end: int | float) -> Context:
         context = Context()
 
-        if begin <= self.prompt.created.timestamp() <= end:
-            context.prompt = self.prompt
+        if self.prompt is not None:
+            if begin <= self.prompt.created.timestamp() <= end:
+                context.prompt = self.prompt
         
         for content in self.context_list:
             if begin <= content.created.timestamp() <= end:
