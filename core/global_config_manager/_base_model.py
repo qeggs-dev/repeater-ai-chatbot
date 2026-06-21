@@ -2,8 +2,6 @@ from pydantic import BaseModel, ConfigDict, Field
 from ._models import *
 
 class GlobalConfigs(BaseModel):
-    model_config = ConfigDict(case_sensitive=False)
-
     blacklist: BacklistConfig = Field(default_factory=BacklistConfig)
     callapi: CallAPIConfig = Field(default_factory=CallAPIConfig)
     context: ContextConfig = Field(default_factory=ContextConfig)
