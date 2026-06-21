@@ -3,16 +3,12 @@ from ._sandbox import SandboxConfig
 from ._time import TimeConfig
 
 class EnableTemplateConfig(BaseModel):
-    model_config = ConfigDict(case_sensitive=False)
-
     user_input_template: bool = False
     assistant_template: bool = False
     request_statistics_template: bool = False
     api_template: bool = False
 
 class TextTemplateConfig(BaseModel):
-    model_config = ConfigDict(case_sensitive=False)
-
     version: str | None = None
     sandbox: SandboxConfig = Field(default_factory=SandboxConfig)
     time: TimeConfig = Field(default_factory=TimeConfig)

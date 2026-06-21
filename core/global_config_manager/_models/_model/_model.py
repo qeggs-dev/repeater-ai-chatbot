@@ -3,8 +3,6 @@ from ._reasoning_effort import ReasoningEffort
 from ._service_tier import ServiceTier
 
 class ModelConfig(BaseModel):
-    model_config = ConfigDict(case_sensitive=False)
-
     default_timeout: float = Field(600.0, ge = 0.0)
     default_seed: int | None = None
     default_temperature: float | None = Field(0.7, ge = 0.0, le = 2.0)

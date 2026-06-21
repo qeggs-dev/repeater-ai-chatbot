@@ -4,8 +4,6 @@ from ._data_types import DataTypes
 from ._metadata_fields import MetadataFields
 
 class UserDataConfig(BaseModel):
-    model_config = ConfigDict(case_sensitive=False)
-
     dir: str = "./workspace/data/user_data"
     branches_dir_name: str = "branches"
     default_branch_id: str = "main"

@@ -2,8 +2,6 @@ from pydantic import BaseModel, Field, ConfigDict
 from ._preprocess_map import PreprocessMapConfig
 
 class MarkdownToHTMLConfig(BaseModel):
-    model_config = ConfigDict(case_sensitive=False)
-
     default_style: str = "light"
     width: int = 1200
     styles_base_path: str = "/styles"

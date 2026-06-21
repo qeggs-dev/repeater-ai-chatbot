@@ -1,8 +1,6 @@
 from pydantic import BaseModel, ConfigDict, Field
 
 class CodeReaderConfig(BaseModel):
-    model_config = ConfigDict(case_sensitive=False)
-
     enable: bool = True
     code_encoding: str = "utf-8"
     code_line_dilation: int = Field(3, ge=0)
