@@ -18,7 +18,8 @@ from loguru import logger
 from ..call_api.completions_api import (
     Runtime as RequestRuntime,
     Response as ModelResponse,
-    CallAPIException
+    CallAPIException,
+    Delta
 )
 from ..model_requester import (
     ModelRequester,
@@ -191,7 +192,7 @@ class Core:
         :param user_id: 用户ID
         :return: 是否在黑名单中
         """
-        async def _match_blacklist(user_id: str, timeout: int | None) -> bool:
+        async def _match_blacklist(user_id: str, timeout: int | float | None) -> bool:
             if timeout is not None:
                 return bool(await asyncio.wait_for(asyncio.to_thread(self.runtime.blacklist.check, user_id), timeout = timeout))
             else:
@@ -238,11 +239,11 @@ class Core:
             cross_user_data_routing = CrossUserDataRouting()
         if not cross_user_data_routing.is_all_defined():
             cross_user_data_routing.fill_missing(user_id = user_id)
-        await cross_user_data_routing.removal_not_allowed_user(
+        parsed_cross_user_data_routing = await cross_user_data_routing.removal_not_allowed_user(
             user_id = user_id,
             user_config_manager = self.runtime.user_config_manager
         )
-        return cross_user_data_routing
+        return parsed_cross_user_data_routing
     # endregion
 
     # region > Chat
@@ -270,7 +271,7 @@ class Core:
             cross_user_data_routing: CrossUserDataRouting[str | None] | None = None,
             allowed_tool_calls: set[str] | None = None,
             stream: bool = False,
-        ) -> Response | AsyncIterator[dict[str, Any]]:
+        ) -> Response | AsyncIterator[Delta | ContentUnit]:
         """
         与模型对话
 
@@ -349,6 +350,11 @@ class Core:
                                     detail = "Error: The streaming response feature is turned off in the server configuration.",
                                 )
                         # endregion
+
+                        # region [Pre-Processing Arguments]
+                        with task_status_stack.enter("Pre-Processing Arguments"):
+                            extra_template_fields = extra_template_fields or {}
+                        # endregion
                         
                         # region [Processing Cross User Data Access]
                         with task_status_stack.enter("Processing Cross User Data Access"):
@@ -359,10 +365,10 @@ class Core:
                                 logger.warning("Cross user data routing is not allowed.", user_id = user_id)
                                 cross_user_data_routing = None
                         
-                            cross_user_data_routing = await self.fill_missing_cross_user_data_routing(user_id, cross_user_data_routing)
+                            parsed_cross_user_data_routing = await self.fill_missing_cross_user_data_routing(user_id, cross_user_data_routing)
 
-                            if user_id != cross_user_data_routing.config.load_from_user_id:
-                                configs = await self.get_config(cross_user_data_routing.config.load_from_user_id)
+                            if user_id != parsed_cross_user_data_routing.config.load_from_user_id:
+                                configs = await self.get_config(parsed_cross_user_data_routing.config.load_from_user_id)
                         # endregion
                         
                         # region [Getting model]
@@ -416,7 +422,7 @@ class Core:
                                 temporary_prompt = temporary_prompt,
                                 additional_data = additional_data,
                                 load_prompt = load_prompt,
-                                cross_user_data_routing = cross_user_data_routing,
+                                cross_user_data_routing = parsed_cross_user_data_routing,
                                 task_status_stack = task_status_stack
                             )
                             if suffix:
@@ -575,7 +581,7 @@ class Core:
                                     context_loader = context_loader,
                                     task_status_stack = task_status_stack,
                                     request_log_manager = self.runtime.request_log,
-                                    cross_user_data_routing = cross_user_data_routing,
+                                    cross_user_data_routing = parsed_cross_user_data_routing,
                                     enable_assistant_template = enable_assistant_template,
                                     request_statistics_template = request_statistics_template,
                                     save_only_text = save_only_text,
