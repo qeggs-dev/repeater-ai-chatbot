@@ -14,14 +14,11 @@ from ..server import (
     Server,
     ServerIniter,
 )
+from pathlib import Path
 from .._info import __version__
 from ..requirements_version_checker import check_package_list
 from loguru import logger
-from ..repeater_traceback import WarningHandler
-
-# 初始化警告处理器
-warning_handler = WarningHandler()
-warning_handler.inject()
+from .config_force_load_list import is_config_force_load_list
 
 class RepeaterMain:
     env = Env()
@@ -40,9 +37,13 @@ class RepeaterMain:
 
     def load_configs(self):
         config_loader = ConfigManager()
+        path = self.env.path("CONFIG_DIR", Path("./configs/project_configs"))
+        force_load_list = self.env.json("CONFIG_FORCE_LOAD_LIST", None)
+        if force_load_list is not None and not is_config_force_load_list(force_load_list):
+            raise RuntimeError("CONFIG_FORCE_LOAD_LIST is not valid")
         config_loader.update_base_path(
-            self.env.path("CONFIG_DIR", "./configs/project_configs"),
-            self.env.json("CONFIG_FORCE_LOAD_LIST", None)
+            path = path,
+            force_load_list = force_load_list
         )
         return config_loader.load(
             create_if_missing=True
@@ -59,19 +60,19 @@ class RepeaterMain:
 
         host: str | None = configs.server.host
         if host is None:
-            host: str = env_config_host
+            host = env_config_host
         
         port: int | None = configs.server.port
         if port is None:
-            port: int = env_config_port
+            port = env_config_port
         
         workers: int | None = configs.server.workers
         if workers is None:
-            workers: int = env_config_workers
+            workers = env_config_workers
         
         reload: bool | None = configs.server.reload
         if reload is None:
-            reload: bool = env_config_reload
+            reload = env_config_reload
 
         logger.info(f"Starting server at {host}:{port}")
 
@@ -120,6 +121,9 @@ class RepeaterMain:
             "Init Server Time: {init_resource_time:.2f}ms",
             init_resource_time = (end_init_resource_time - start_init_resource_time) / 1e6
         )
+    
+    def set_inited_flag(self):
+        self.server_initer.set_inited_flag()
     
     async def run_server(self):
         RepeaterMain._now_server = self.server
