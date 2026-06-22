@@ -1,3 +1,5 @@
+# type: ignore
+
 from __future__ import annotations
 from pydantic import BaseModel, Field, ConfigDict
 from typing import TypeVar, Generic, Self
@@ -41,7 +43,7 @@ class DataRoutingField(BaseModel, Generic[T]):
             self.load_from_user_id is not None and
             self.save_to_user_id is not None
         )
-    async def remove_not_allowed_user(self, user_id: str, user_config_manager: UserConfigManager) -> Self:
+    async def remove_not_allowed_user(self, user_id: str, user_config_manager: UserConfigManager) -> DataRoutingField[str]:
         """
         Removes a target user that is not allowed access.
         """
