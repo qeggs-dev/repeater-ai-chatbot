@@ -6,7 +6,7 @@ import traceback
 from abc import ABC, abstractmethod
 from typing import ClassVar, TypeVar, Any, Generic
 from pydantic import BaseModel, ValidationError
-from .function import CallType
+from .function import CallMode
 from ....user_config_manager import UserConfigs
 from ....global_config_manager import GlobalConfigs
 from loguru import logger
@@ -24,11 +24,22 @@ class ToolCallPacakage(ABC, Generic[T]):
         pass
 
     name: ClassVar[str] = ""
+    """The name of the tool"""
+
     enabled: ClassVar[bool] = True
+    """Enable the tool"""
+
     document: ClassVar[str] = ""
+    """The document of the tool"""
+
     force_choice: ClassVar[bool] = False
+    """Force choice the tool"""
+
     json_result: ClassVar[bool] = False
-    call_type: ClassVar[CallType] = CallType.SYNC
+    """Whether the result is json"""
+
+    call_mode: ClassVar[CallMode] = CallMode.SYNC
+    """The call mode of the tool"""
 
     def __init__(self, user_id: str, user_configs: UserConfigs, global_configs: GlobalConfigs, *args, **kwargs):
         self.user_id = user_id
