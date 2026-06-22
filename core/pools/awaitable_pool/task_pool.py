@@ -24,7 +24,7 @@ class TaskPool:
         ) -> T:
         """提交任务到任务池，并等待返回结果"""
         async with self._semaphore:  # 控制并发数
-            task = asyncio.create_task(coro)
+            task: asyncio.Task[T] = asyncio.create_task(coro)
             async with await self._pool_locks.get_lock(user_id):
                 if user_id not in self._tasks:
                     self._tasks[user_id] = set()
@@ -54,7 +54,7 @@ class TaskPool:
         
     async def shutdown(self):
         """关闭池，等待所有任务完成"""
-        await asyncio.gather(*self._tasks)
+        await asyncio.gather((task for task in tasks) for tasks in self._tasks.values())
 
     async def set_concurrency(self, new_max: int):
         """动态修改并发限制"""
