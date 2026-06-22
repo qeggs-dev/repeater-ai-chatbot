@@ -5,7 +5,7 @@ import random
 import asyncio
 from urllib.parse import urlparse
 from urllib.robotparser import RobotFileParser
-from ....context import ToolCallPacakage, CallType
+from ....context import ToolCallPacakage, CallMode
 from ....global_config_manager import HTTPMethods, ConfigManager
 from ..._caller import ModelRequester
 from ....auxiliary.http import get_ssl_context
@@ -35,7 +35,7 @@ class HTTPRequests(ToolCallPacakage):
         responses: list[list[str | Response]] = Field(..., description="The responses of the requests.")
     
     name = "http_requests"
-    call_type = CallType.ASYNC
+    call_type = CallMode.ASYNC
     json_result = True
     document = "send a any method HTTP request to a URL and return the response."
     robots_cache: ClassVar[TTLCache[str, str, float] | None] = None
