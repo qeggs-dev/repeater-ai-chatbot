@@ -2,7 +2,7 @@ import sys
 import asyncio
 from io import StringIO
 from typing import Any, TextIO
-from ...context import ToolCallPacakage, CallType
+from ...context import ToolCallPacakage, CallMode
 from .._caller import ModelRequester
 from asteval import Interpreter
 from pydantic import BaseModel, Field
@@ -21,7 +21,7 @@ class Asteval(ToolCallPacakage):
     
     name = "asteval"
     document = "Execute Python code safely and return results."
-    call_type = CallType.ASYNC
+    call_type = CallMode.ASYNC
 
     @staticmethod
     def safe_eval(

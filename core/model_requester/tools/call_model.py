@@ -5,7 +5,7 @@ from ...call_api.completions_api import (
     Runtime,
     StreamOptions
 )
-from ...context import ToolCallPacakage, CallType, Context, ContentRole
+from ...context import ToolCallPacakage, CallMode, Context, ContentRole
 from ...global_config_manager import ReasoningEffort
 from ...data_manager import PromptManager
 from .._caller import ModelRequester
@@ -28,7 +28,7 @@ class CallModel(ToolCallPacakage):
     prompt_manager: PromptManager = PromptManager()
     name = "call_model"
     document = "Send a request to an llm and get the generated results."
-    call_type = CallType.ASYNC
+    call_type = CallMode.ASYNC
     
     class Params(BaseModel):
         model_id: str = Field(
@@ -139,6 +139,9 @@ class CallModel(ToolCallPacakage):
             send_user_id = self.user_configs.send_user_id
         else:
             send_user_id = self.global_configs.callapi.send_user_id
+        
+        if model.api_key is None:
+            raise Exception("Model api key is not set")
 
         request = Request(
             url = model.get_base_url(),
@@ -203,7 +206,7 @@ class CallModel(ToolCallPacakage):
             case OutputFormat.JSON:
                 return self.Result(
                     model = model.to_safe(),
-                    content = context,
+                    context = context,
                 )
             case OutputFormat.CONTENT_ONLY:
                 buffer = TextBuffer(separator = "\n")
@@ -228,6 +231,12 @@ class CallModel(ToolCallPacakage):
                 )
                 return str(buffer)
             case OutputFormat.NEW_CONTENT_ONLY:
-                return context.last_content.content_to_string()
+                last_content = context.last_content
+                if last_content is None:
+                    return ""
+                return last_content.content_to_string()
             case OutputFormat.NEW_REASONING_ONLY:
-                return context.last_content.reasoning_content
+                last_content = context.last_content
+                if last_content is None:
+                    return ""
+                return last_content.reasoning_content

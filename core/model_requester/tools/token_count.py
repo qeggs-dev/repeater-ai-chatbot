@@ -1,4 +1,4 @@
-from ...context import ToolCallPacakage, CallType
+from ...context import ToolCallPacakage, CallMode
 from ...runtime_container import RuntimeContainer
 from .._caller import ModelRequester
 from pydantic import BaseModel
@@ -18,7 +18,7 @@ class TokenCount(ToolCallPacakage):
 
     name = "token_count"
     document = "Calculates the total Token consumption for the current user."
-    call_type = CallType.ASYNC
+    call_type = CallMode.ASYNC
 
     async def call(self, args: Params):
         runtime = RuntimeContainer.get_runtime()

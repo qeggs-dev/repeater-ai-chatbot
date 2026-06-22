@@ -1,4 +1,4 @@
-from ...context import ToolCallPacakage
+from ...context import ToolCallPacakage, CallMode
 from ...data_manager import PromptManager
 from .._caller import ModelRequester
 from pydantic import BaseModel, Field
@@ -11,9 +11,10 @@ class SetPrompt(ToolCallPacakage):
     prompt_manager: PromptManager = PromptManager()
     name = "set_prompt"
     document = "Overrides the current system prompt."
+    call_type = CallMode.ASYNC
 
-    def call(self, args: Params):
-        self.prompt_manager.save(
+    async def call(self, args: Params):
+        await self.prompt_manager.save(
             user_id = self.user_id,
             data = args.prompt
         )

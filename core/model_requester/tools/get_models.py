@@ -1,5 +1,5 @@
 from pydantic import BaseModel, Field
-from ...context import ToolCallPacakage, CallType
+from ...context import ToolCallPacakage, CallMode
 from ...data_manager import PromptManager
 from .._caller import ModelRequester
 from ...runtime_container import RuntimeContainer
@@ -10,7 +10,7 @@ class GetModels(ToolCallPacakage):
     prompt_manager: PromptManager = PromptManager()
     name = "get_models"
     document = "Gets a list of all available models."
-    call_type = CallType.ASYNC
+    call_type = CallMode.ASYNC
 
     class Params(BaseModel):
         model_id: str | list[str] | None = Field(None, description = "Model query expression.")
