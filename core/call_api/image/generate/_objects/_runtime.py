@@ -1,6 +1,7 @@
 from dataclasses import dataclass, field
-from openai import AsyncOpenAI
+from .....pools.openai_pool import OpenAIPool
 
 @dataclass
 class ImagesRuntime:
-    client: AsyncOpenAI = field(default_factory=AsyncOpenAI)
+    client_pool: OpenAIPool = field(default_factory=OpenAIPool)
+    
