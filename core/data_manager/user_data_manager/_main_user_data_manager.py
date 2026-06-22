@@ -42,8 +42,9 @@ class UserDataManager(Generic[T]):
 
         self._sub_dir_name = branches_dir_name
 
+        self._default_factory: Callable[[], T] | None
         if default_factory is None:
-            self._default_factory = lambda: None
+            self._default_factory = None
         elif callable(default_factory):
             self._default_factory = default_factory
         else:
@@ -55,14 +56,28 @@ class UserDataManager(Generic[T]):
             )
     
     @property
-    def default_factory(self) -> Callable[[], T]:
+    def default_factory(self) -> Callable[[], T] | None:
+        """
+        Default factory for the user data manager.
+        """
+        if self._default_factory is None:
+            return None
         return self._default_factory
     
     @property
     def base_path(self):
+        """
+        Base path of the user data manager.
+        """
         return self._base_path / self._base_name
     
     def _get_sub_manager(self, user_id: str) -> SubManager:
+        """
+        Get the sub manager for the given user_id.
+        If the sub manager is not in the cache, it will be created and added to the cache.
+
+        :param user_id: The user_id of the sub manager to get.
+        """
         if self._sub_manager_cache is None:
             raise RuntimeError("SubManager cache is not initialized")
         
@@ -77,7 +92,13 @@ class UserDataManager(Generic[T]):
             )
         return manager
     
-    def _get_default_value(self, default_value: T | None) -> T:
+    def _get_default_value(self, default_value: T | None) -> T | None:
+        """
+        Get default value from default_factory if default_value is None
+
+        Args:
+            default_value: Default value to return if not None
+        """
         if default_value is not None:
             return default_value
         
