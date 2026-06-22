@@ -5,7 +5,7 @@ import asyncio
 import inspect
 
 from datetime import datetime
-from typing import Any, Type, Awaitable, Callable, TypeVar
+from typing import Any, Literal, Type, Awaitable, Callable, TypeVar
 from pydantic import BaseModel, ValidationError
 from loguru import logger
 
@@ -39,7 +39,7 @@ class FunctionCaller:
                 request.append(function.struct().model_dump(exclude_none=True))
         return request
     
-    def to_choice(self, choice_mode: ToolChoice = ToolChoice.AUTO):
+    def to_choice(self, choice_mode: ToolChoice = ToolChoice.AUTO) -> dict[str, str | dict[str, str]] | Literal["none"] | Literal["auto"] | Literal["required"]:
         match choice_mode:
             case ToolChoice.NONE:
                 return ToolChoice.NONE.value
@@ -96,7 +96,7 @@ class FunctionCaller:
                 force_choice = package_instance.force_choice,
                 callable = package_instance.call, # type: ignore
                 json_result = package_instance.json_result,
-                call_type = package_instance.call_type,
+                call_type = package_instance.call_mode,
                 parameters = parameters,
                 on_error = package_instance.on_error,
                 on_args_json_decode_error = package_instance.on_args_json_decode_error,
