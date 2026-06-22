@@ -38,9 +38,9 @@ async def generate_image(
 
     model_id = request.model_id
     if model_id is None:
-        model_id = user_configs.model_id
+        model_id = user_configs.image_model_id
     if model_id is None:
-        model_id = global_configs.model_api.default_model_id
+        model_id = global_configs.model_api.default_image_model_id
     
     model = await model_client.get_random_model(
         model_id
@@ -68,7 +68,7 @@ async def generate_image(
         model = model.id,
         model_id = model_id,
         model_uid = model.uid,
-        
+
         limits = model.limits,
         headers = header,
         timeout = model.timeout,
