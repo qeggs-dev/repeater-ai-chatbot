@@ -1,5 +1,9 @@
 from pydantic import BaseModel
-from ....context import CallingRequest, SpecifiedFunction
+from ....context import (
+    CallingRequest,
+    SpecifiedFunction,
+    ToolTypes
+)
 
 class ToolCall(BaseModel):
     """
@@ -13,7 +17,7 @@ class ToolCall(BaseModel):
     def to_calling_request(self) -> CallingRequest:
         return CallingRequest(
             id = self.id,
-            type = self.type,
+            type = ToolTypes(self.type),
             function = SpecifiedFunction(
                 name = self.name,
                 arguments = self.arguments
