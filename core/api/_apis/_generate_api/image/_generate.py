@@ -10,6 +10,9 @@ from .....call_api.image import (
     ImagesRuntime,
     ImagesResponse
 )
+from .....special_exception import (
+    HTTPException,
+)
 from .....global_config_manager import ConfigManager
 from .....runtime_container import RuntimeContainer
 from ._router import image_router
@@ -52,13 +55,37 @@ async def generate_image(
         "User-Agent": global_configs.system_identification.system_ua
     }
 
+    if model.api_key is None:
+        raise HTTPException(
+            status_code = 400,
+            detail = "Model api key is not set."
+        )
+
     image_request = ImagesRequest(
         url = model.get_base_url(),
         proxy = model.proxy,
+        key = model.api_key,
+        model = model.id,
+        model_id = model_id,
+        model_uid = model.uid,
+        
         limits = model.limits,
         headers = header,
         timeout = model.timeout,
+
         prompt = request.prompt,
+        background = request.background,
+        moderation = request.moderation,
+        n = request.n,
+        output_compression = request.output_compression,
+        output_format = request.output_format,
+        partial_images = request.partial_images,
+        quality = request.quality,
+        response_format = request.response_format,
+        size = request.size,
+        stream = request.stream,
+        style = request.style,
+        user = request.user,
     )
 
     image_runtime = ImagesRuntime(
