@@ -28,8 +28,7 @@ class SubManager:
             cache_maxsize:int | float = float("inf"),
         ):
         self.base_path: Path = Path(base_path)
-        sub_dir_name: str = sanitize_filename(sub_dir_name)
-        self.sub_dir_name: str = sub_dir_name
+        self.sub_dir_name: str = sanitize_filename(sub_dir_name)
         self._global_lock: asyncio.Lock = asyncio.Lock()
         self._branches_locks: AsyncLockPool = AsyncLockPool()
         
@@ -39,22 +38,31 @@ class SubManager:
         self._metadata_cache: Any = {}
 
         self.cache_data:bool = cache_data
-        self._data_cache_size: int = cache_maxsize
+        self._data_cache_size: int | float = cache_maxsize
         self._data_cache: LRUCache[str, Any] = LRUCache(
             maxsize = self._data_cache_size
         )
 
     @property
     def _default_base_file(self) -> Path:
-        """获取默认文件路径"""
+        """
+        Gets the default file path.
+        """
         return self.base_path / self.sub_dir_name
     @property
     def _get_metadata_file_path(self) -> Path:
-        """获取元数据文件路径"""
+        """
+        Gets the path to the metadata file.
+        """
         return self.base_path / self._metadata_filename
     
     def _get_file_path(self, name: str) -> Path:
-        """获取文件路径"""
+        """
+        Gets the actual file path for the given name.
+        
+        Args:
+            name (str): The name of the file.
+        """
         # if not self._default_base_file.exists():
         #     self._default_base_file.mkdir(parents=True, exist_ok=True)
         name = sanitize_filename(name)
@@ -64,7 +72,13 @@ class SubManager:
         return self._default_base_file / file_name
     
     async def _get_branch_lock(self, branch_id: str) -> asyncio.Lock:
-        """获取 branch_id 对应的锁，如果没有则创建"""
+        """
+        Gets the lock for the branch, or creates a lock for the branch if none exists
+
+        
+        Args:
+            branch_id (str): The branch id to get the lock for
+        """
         async with self._global_lock:
             lock: asyncio.Lock = await self._branches_locks.get_lock(branch_id)
         return lock
@@ -77,7 +91,7 @@ class SubManager:
             default (Any, optional): Default value if file does not exist. Defaults to None.
 
         Returns:
-            Any: Metadata
+            Metadata (Any): The metadata
         """
         async with self._global_lock:
             try:
@@ -106,8 +120,6 @@ class SubManager:
 
         Args:
             data (Any): Metadata to save
-        Returns:
-            None
         """
         async with self._global_lock:
             if not self.base_path.exists():
@@ -125,9 +137,9 @@ class SubManager:
 
         Args:
             branch_id (str): Branch ID to load
-            default (Any | None, optional): Default value if item not found. Defaults to None.
+            default (Any | None): Default value if item not found. Defaults to None.
         Returns:
-            Any: Loaded data
+            data (Any): Loaded data
         """
         async with await self._get_branch_lock(branch_id):
             try:
@@ -158,9 +170,6 @@ class SubManager:
         Args:
             branch_id (str): The name of the branch to save.
             data (Any): The data to save.
-
-        Returns:
-            None
         """
         async with await self._get_branch_lock(branch_id):
             path = self._get_file_path(branch_id)
@@ -173,13 +182,11 @@ class SubManager:
             logger.info("Saved data")
     
     async def delete(self, branch_id: str) -> None:
-        """Delete a file from the cache.
+        """
+        Delete a file from the cache.
 
         Args:
             branch_id (str): The item of the file to delete.
-
-        Returns:
-            None
         """
         async with await self._get_branch_lock(branch_id):
             try:
@@ -194,16 +201,14 @@ class SubManager:
                 pass
     
     async def bind(self, src_branch_id: str, dst_branch_id: str) -> None:
-        """Bind a branch to another branch.
+        """
+        Bind a branch to another branch.
 
         Use hard links to bind a branch to another branch.
 
         Args:
             src_branch_id (str): The branch to bind from.
             dst_branch_id (str): The branch to bind to.
-
-        Returns:
-            None
         """
         async with await self._get_branch_lock(src_branch_id):
             src_path = self._get_file_path(src_branch_id)
@@ -220,24 +225,26 @@ class SubManager:
             )
     
     def exists(self, branch_id: str) -> bool:
-        """Check if a branch exists.
+        """
+        Check if a branch exists.
 
         Args:
             branch_id (str): The branch to check.
 
         Returns:
-            bool: True if the branch exists, False otherwise.
+            branch_exists (bool): True if the branch exists, False otherwise.
         """
         return self._get_file_path(branch_id).exists()
     
     async def info(self, branch_id: str) -> BranchInfo:
-        """Get the info of a branch.
+        """
+        Get the info of a branch.
 
         Args:
             branch_id (str): The branch to get the info of.
 
         Returns:
-            BranchInfo: The info of the branch.
+            branch_info (BranchInfo): The info of the branch.
         """
         async with await self._get_branch_lock(branch_id):
             path = self._get_file_path(branch_id)
