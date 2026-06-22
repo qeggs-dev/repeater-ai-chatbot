@@ -1,20 +1,40 @@
-from pydantic import BaseModel, ConfigDict
-from .auxiliary.background import Background
-from .auxiliary.moderation import Moderation
-from .auxiliary.output_format import OutputFormat
-from .auxiliary.quality import Quality
-from .auxiliary.response_format import ImageResponseFormat
-from .auxiliary.size import ImageSize
-from .auxiliary.style import ImageStyle
+from pydantic import BaseModel, ConfigDict, Field
+from typing import Any
+from .auxiliary import (
+    Background,
+    Moderation,
+    OutputFormat,
+    Quality,
+    ImageResponseFormat,
+    ImageSize,
+    ImageStyle,
+)
+from .....auxiliary.http import (
+    ClientLimits,
+    ClientTimeout
+)
 
 class ImagesRequest(BaseModel):
     model_config = ConfigDict(
         validate_assignment = True
     )
+
+    url: str = ""
+    proxy: str | None = None
+    limits: ClientLimits = Field(default_factory=ClientLimits)
+    encoding: str = "utf-8"
+    headers: dict[str, Any] = Field(default_factory=dict)
+    params: dict[str, Any] = Field(default_factory=dict)
+    cookies: dict[str, Any] = Field(default_factory=dict)
+    timeout: int | float | ClientTimeout = 600.0
+
+    model: str = ""
+    model_id: str | list[str] = ""
+    model_uid: str = ""
+    key: str = ""
     
-    prompt: str
+    prompt: str = Field(...)
     background: Background | None = None
-    model: str | None = None
     moderation: Moderation | None = None
     n: int | None = None
     output_compression: int | None = None
@@ -23,7 +43,6 @@ class ImagesRequest(BaseModel):
     quality: Quality | None = None
     response_format: ImageResponseFormat | None = None
     size: ImageSize | str | None = None
-    stream: bool | None = False
+    stream: bool = False
     style: ImageStyle | None = None
     user: str | None = None
-    timeout: int | float | None = None
