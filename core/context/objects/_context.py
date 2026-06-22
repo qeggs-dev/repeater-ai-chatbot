@@ -3,12 +3,12 @@ from pydantic import BaseModel, Field, ConfigDict
 from datetime import datetime
 from typing import overload, Iterable, Any
 from copy import deepcopy
+from openai.types.chat import ChatCompletionMessageParam
 from .._exceptions import *
 from ._content_role import ContentRole
 from ._content_unit import ContentUnit
 from ._content_block import ContentBlock
 from ...auxiliary.type_checker import is_iterable
-
 
 class Context(BaseModel):
     """
@@ -174,7 +174,7 @@ class Context(BaseModel):
             remove_reasoning_prompt: bool = False,
             remove_created: bool = False,
             reduce_to_text: bool = False,
-        ) -> list[dict]:
+        ) -> list[ChatCompletionMessageParam]:
         """
         获取上下文
 
@@ -206,7 +206,7 @@ class Context(BaseModel):
         return context_list
     
     @property
-    def context(self) -> list[dict]:
+    def context(self) -> list[ChatCompletionMessageParam]:
         """
         获取上下文
         """
