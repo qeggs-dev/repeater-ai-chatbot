@@ -58,7 +58,7 @@ class AdminKeyManager:
 
         self._automatic_rotation_thread: Optional[threading.Thread] = None
         self._automatic_rotation_thread_stop_event = threading.Event()
-        self._automatic_rotation_coroutine: Optional[asyncio.Task] = None
+        self._automatic_rotation_task: Optional[asyncio.Task] = None
 
     def __eq__(self, other: Any) -> bool:
         """
@@ -186,6 +186,9 @@ class AdminKeyManager:
         :param auto_create_dir: 如果文件所在目录不存在，是否自动创建
         :raise FileNotFoundError: 文件所在目录不存在
         """
+        if self._api_key is None:
+            raise ValueError("API Key must be set before saving to file")
+        
         path = Path(file_path)
         path.parent.mkdir(parents=True, exist_ok=True) if auto_create_dir else None
 
@@ -218,6 +221,9 @@ class AdminKeyManager:
         :param auto_create_dir: 是否自动创建目录
         :raise FileNotFoundError: 文件所在目录不存在
         """
+        if self._api_key is None:
+            raise ValueError("API Key is None")
+        
         path = Path(file_path)
         path.parent.mkdir(parents=True, exist_ok=True) if auto_create_dir else None
 
@@ -301,6 +307,8 @@ class AdminKeyManager:
 
         :param interval: 轮换间隔 (秒)
         """
+        if self._automatic_rotation_thread is None:
+            raise RuntimeError("Automatic rotation thread is not started")
         if not self._automatic_rotation_thread.is_alive():
             self._automatic_rotation_thread = threading.Thread(
                 target=self._automatic_rotation, args=(interval,)
@@ -313,8 +321,10 @@ class AdminKeyManager:
 
         :param interval: 轮换间隔 (秒)
         """
-        if self._automatic_rotation_coroutine.done():
-            self._automatic_rotation_coroutine = asyncio.create_task(
+        if self._automatic_rotation_task is None:
+            raise RuntimeError("Automatic rotation task is not started")
+        if self._automatic_rotation_task.done():
+            self._automatic_rotation_task = asyncio.create_task(
                 self._automatic_rotation_async(interval)
             )
     
@@ -329,5 +339,5 @@ class AdminKeyManager:
         """
         停止自动轮换 API Key
         """
-        if self._automatic_rotation_coroutine and not self._automatic_rotation_coroutine.done():
-            self._automatic_rotation_coroutine.cancel()
+        if self._automatic_rotation_task and not self._automatic_rotation_task.done():
+            self._automatic_rotation_task.cancel()
