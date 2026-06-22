@@ -14,7 +14,7 @@ from .request import (
 )
 
 T = TypeVar("T")
-T_BaseModel = TypeVar("T_BaseModel", BaseModel, NoneType)
+T_BaseModel = TypeVar("T_BaseModel", BaseModel, None)
 
 @dataclass
 class Function(Generic[T, T_BaseModel]):
@@ -41,7 +41,11 @@ class Function(Generic[T, T_BaseModel]):
                 case CallType.SYNC:
                     return self.callable(parameters)
                 case CallType.ASYNC:
-                    return await self.callable(parameters)
+                    result = self.callable(parameters)
+                    if inspect.isawaitable(result):
+                        return await result
+                    else:
+                        raise RuntimeError(f"Handler is not async, Please use {CallType.SYNC} or {CallType.SYNC_IN_THREAD}")
                 case CallType.SYNC_IN_THREAD:
                     return await asyncio.to_thread(self.callable, parameters)
                 case _:
@@ -62,7 +66,7 @@ class Function(Generic[T, T_BaseModel]):
     
     def function_parameters(self) -> dict[str, Any] | None:
         """Return function parameters"""
-        if self.parameters is None:
+        if self.parameters is None or self.parameters is NoneType:
             return None
         else:
             return self.parameters.model_json_schema()
