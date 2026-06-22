@@ -94,7 +94,7 @@ class FunctionCaller:
                 description = package_instance.document_method(),
                 enabled = package_instance.enabled,
                 force_choice = package_instance.force_choice,
-                callable = package_instance.call,
+                callable = package_instance.call, # type: ignore
                 json_result = package_instance.json_result,
                 call_type = package_instance.call_type,
                 parameters = parameters,
@@ -120,6 +120,12 @@ class FunctionCaller:
                 return await func(*args, **kwargs)
             elif inspect.isfunction(func):
                 return func(*args, **kwargs)
+            else:
+                result = func(*args, **kwargs)
+                if inspect.isawaitable(result):
+                    return await result
+                else:
+                    return result
         else:
             return None
     
