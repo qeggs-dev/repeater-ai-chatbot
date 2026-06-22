@@ -43,7 +43,7 @@ async def make_context(
     history_messages: list[ContentUnit] | None = None,
     history_msg_role_map: dict[ContentRole, ContentRole | None] | None = None,
     role: ContentRole = ContentRole.USER,
-    role_name:  str = "",
+    role_name:  str | None = "",
     extra_template_fields: dict[str, Any] | None = None,
     temporary_prompt: str | None = None,
     additional_data: AdditionalData | None = None,
