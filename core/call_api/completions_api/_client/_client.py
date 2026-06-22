@@ -52,20 +52,22 @@ class ClientBase(ABC):
         assert isinstance(response, Response)
 
         with runtime.status_stack.enter("Logging Response Content"):
-            if response.new_context.last_content.reasoning_content:
-                logger.info(
-                    "Reasoning_Content: \n\n{reasoning_content}\n",
-                    reasoning_content = response.new_context.last_content.reasoning_content,
-                    user_id = user_id,
-                    donot_send_console = True
-                )
-            if response.new_context.last_content.content:
-                logger.info(
-                    "Content: \n\n{content}\n",
-                    content = response.new_context.last_content.content,
-                    user_id = user_id,
-                    donot_send_console = True
-                )
+            last_content = response.new_context.last_content
+            if last_content is not None:
+                if last_content.reasoning_content:
+                    logger.info(
+                        "Reasoning_Content: \n\n{reasoning_content}\n",
+                        reasoning_content = last_content.reasoning_content,
+                        user_id = user_id,
+                        donot_send_console = True
+                    )
+                if last_content.content:
+                    logger.info(
+                        "Content: \n\n{content}\n",
+                        content = last_content.content,
+                        user_id = user_id,
+                        donot_send_console = True
+                    )
         
         with runtime.status_stack.enter("Fast Statistics"):
             await self._print_fast_statistics(
@@ -77,9 +79,10 @@ class ClientBase(ABC):
     # endregion
 
     # region 任务
-    async def _submit_task(self, user_id: str, request: Request):
+    async def _submit_task(self, user_id: str, request: Request, runtime: Runtime):
         assert isinstance(user_id, str), "user_id must be a string"
         assert isinstance(request, Request), "request must be a Request object"
+        assert isinstance(runtime, Runtime), "runtime must be a Runtime object"
 
         if request.stream:
             client = StreamAPI()
@@ -87,7 +90,8 @@ class ClientBase(ABC):
             client = CallAPI()
         return await client.call(
             user_id = user_id,
-            request = request
+            request = request,
+            runtime = runtime
         ), client
     # endregion
 
@@ -374,10 +378,11 @@ class ClientBase(ABC):
             format_time_duration = format_time_duration_ns(stream_processing_time, use_abbreviation=True)
         )
 
-        fs_logger.info(
-            "Generation Speed: {generation_speed:.2f} Tokens/s",
-            generation_speed = response.token_usage.completion_tokens / (stream_processing_time / 1e9)
-        )
+        if response.token_usage is not None:
+            fs_logger.info(
+                "Generation Speed: {generation_speed:.2f} Tokens/s",
+                generation_speed = response.token_usage.completion_tokens / (stream_processing_time / 1e9)
+            )
 
         created_utc_dt = datetime.fromtimestamp(response.created, tz=timezone.utc)
         created_utc_str = created_utc_dt.strftime("%Y-%m-%d %H:%M:%S (UTC)")
@@ -710,54 +715,55 @@ class ClientBase(ABC):
                         median_queue_backlog = np.median(queue_backlog)
                     )
 
-        fs_logger.info("=========== Token Count ============")
-        fs_logger.info(
-            "Total Tokens: {total_tokens}({format_token_duration}Tokens)",
-            total_tokens = response.token_usage.total_tokens,
-            format_token_duration = format_token_duration(response.token_usage.total_tokens, use_abbreviation = True, delimiter = " ")
-        )
-        fs_logger.info(
-            "Context Input Tokens: {prompt_tokens}({format_token_duration}Tokens)",
-            prompt_tokens = response.token_usage.prompt_tokens,
-            format_token_duration = format_token_duration(response.token_usage.prompt_tokens, use_abbreviation = True, delimiter = " ")
-        )
-
-        if response.token_usage.prompt_cache_hit_tokens is not None:
+        if response.token_usage is not None:
+            fs_logger.info("=========== Token Count ============")
             fs_logger.info(
-                "Cache Hit Count: {prompt_cache_hit_tokens}({format_token_duration}Tokens)",
-                prompt_cache_hit_tokens = response.token_usage.prompt_cache_hit_tokens,
-                format_token_duration = format_token_duration(response.token_usage.prompt_cache_hit_tokens, use_abbreviation = True, delimiter = " ")
+                "Total Tokens: {total_tokens}({format_token_duration}Tokens)",
+                total_tokens = response.token_usage.total_tokens,
+                format_token_duration = format_token_duration(response.token_usage.total_tokens, use_abbreviation = True, delimiter = " ")
             )
-        if response.token_usage.prompt_cache_miss_tokens is not None:
             fs_logger.info(
-                "Cache Miss Count: {prompt_cache_miss_tokens}({format_token_duration}Tokens)",
-                prompt_cache_miss_tokens = response.token_usage.prompt_cache_miss_tokens,
-                format_token_duration = format_token_duration(response.token_usage.prompt_cache_miss_tokens, use_abbreviation = True, delimiter = " ")
+                "Context Input Tokens: {prompt_tokens}({format_token_duration}Tokens)",
+                prompt_tokens = response.token_usage.prompt_tokens,
+                format_token_duration = format_token_duration(response.token_usage.prompt_tokens, use_abbreviation = True, delimiter = " ")
             )
 
-        fs_logger.info(
-            "Completion Output Tokens: {completion_tokens}({format_token_duration}Tokens)",
-            completion_tokens = response.token_usage.completion_tokens,
-            format_token_duration = format_token_duration(response.token_usage.completion_tokens, use_abbreviation = True, delimiter = " ")
-        )
-        
-        if not math.isnan(response.token_usage.cache_hit_ratio()):
-            fs_logger.info(
-                "Cache Hit Ratio: {cache_hit_ratio:.2%}",
-                cache_hit_ratio = response.token_usage.cache_hit_ratio()
-            )
-        if response.stream and response.request_log.chunk_times:
-            if len(response.request_log.chunk_times) > 1:
+            if response.token_usage.prompt_cache_hit_tokens is not None:
                 fs_logger.info(
-                    "Average Generation Rate: {avg_gen_rate:.2f} Token/s",
-                    avg_gen_rate = response.token_usage.completion_tokens / 
-                    (
-                        (
-                            response.request_log.chunk_times[-1].monotonic -
-                            response.request_log.chunk_times[0].monotonic
-                        ) / 1e9
-                    )
+                    "Cache Hit Count: {prompt_cache_hit_tokens}({format_token_duration}Tokens)",
+                    prompt_cache_hit_tokens = response.token_usage.prompt_cache_hit_tokens,
+                    format_token_duration = format_token_duration(response.token_usage.prompt_cache_hit_tokens, use_abbreviation = True, delimiter = " ")
                 )
+            if response.token_usage.prompt_cache_miss_tokens is not None:
+                fs_logger.info(
+                    "Cache Miss Count: {prompt_cache_miss_tokens}({format_token_duration}Tokens)",
+                    prompt_cache_miss_tokens = response.token_usage.prompt_cache_miss_tokens,
+                    format_token_duration = format_token_duration(response.token_usage.prompt_cache_miss_tokens, use_abbreviation = True, delimiter = " ")
+                )
+
+            fs_logger.info(
+                "Completion Output Tokens: {completion_tokens}({format_token_duration}Tokens)",
+                completion_tokens = response.token_usage.completion_tokens,
+                format_token_duration = format_token_duration(response.token_usage.completion_tokens, use_abbreviation = True, delimiter = " ")
+            )
+            
+            if not math.isnan(response.token_usage.cache_hit_ratio()):
+                fs_logger.info(
+                    "Cache Hit Ratio: {cache_hit_ratio:.2%}",
+                    cache_hit_ratio = response.token_usage.cache_hit_ratio()
+                )
+            if response.stream and response.request_log.chunk_times:
+                if len(response.request_log.chunk_times) > 1:
+                    fs_logger.info(
+                        "Average Generation Rate: {avg_gen_rate:.2f} Token/s",
+                        avg_gen_rate = response.token_usage.completion_tokens / 
+                        (
+                            (
+                                response.request_log.chunk_times[-1].monotonic -
+                                response.request_log.chunk_times[0].monotonic
+                            ) / 1e9
+                        )
+                    )
 
         fs_logger.info("============= Content ==============")
         historical_context_text_length = response.historical_context.total_length
