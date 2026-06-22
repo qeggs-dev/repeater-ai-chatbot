@@ -22,6 +22,9 @@ class Context(BaseModel):
     context_list: list[ContentUnit] = Field(default_factory=list)
 
     def __bool__(self) -> bool:
+        """
+        判断上下文是否为空
+        """
         return bool(self.prompt or self.context_list)
 
     @overload
@@ -103,6 +106,9 @@ class Context(BaseModel):
     def clear(self, clear_prompt: bool = False) -> None:
         """
         清空上下文列表
+
+        :param clear_prompt: 是否清空提示词
+        :return: None
         """
         if clear_prompt and self.prompt is not None:
             self.prompt = None
@@ -281,6 +287,7 @@ class Context(BaseModel):
 
         :param content_unit: 内容单元
         :param index: 插入位置，默认为None，表示插入到末尾
+        :return: 当前对象
         """
         if index is None:
             self.context_list.append(content_unit)
@@ -307,6 +314,7 @@ class Context(BaseModel):
                     content_unit.role = role
             context_list.append(content_unit)
         self.context_list = context_list
+        return self
     
     @property
     def last_content(self) -> ContentUnit | None:
@@ -321,6 +329,8 @@ class Context(BaseModel):
     def last_content(self, content: ContentUnit) -> None:
         """
         设置最后一个上下文单元
+
+        :param content: 上下文单元
         """
         if not self.context_list:
             self.context_list.append(content)
@@ -336,6 +346,8 @@ class Context(BaseModel):
     def extend(self, content: Context | list[ContentUnit]) -> None:
         """
         扩展上下文单元
+
+        :param content: 上下文单元或上下文单元列表
         """
         if isinstance(content, Context):
             self.context_list.extend(content.context_list)
@@ -423,7 +435,7 @@ class Context(BaseModel):
     @property
     def is_empty(self) -> bool:
         """
-        判断上下文是否为空
+        上下文是否为空
         """
         return not self.prompt and not self.context_list
     
@@ -462,6 +474,7 @@ class Context(BaseModel):
     def copy(self) -> Context:
         """
         复制对象
+
         :return: 复制后的对象
         """
         return Context(
@@ -472,6 +485,7 @@ class Context(BaseModel):
     def deepcopy(self) -> Context:
         """
         深度复制对象
+
         :return: 深度复制后的对象
         """
         return Context(
@@ -502,6 +516,7 @@ class Context(BaseModel):
     def remove_reasoning_content(self) -> Context:
         """
         移除推理内容
+
         :return: 移除推理内容后的对象
         """
         context_list: list[ContentUnit] = []
@@ -519,6 +534,13 @@ class Context(BaseModel):
         )
     
     def time_range(self, begin: int | float, end: int | float) -> Context:
+        """
+        获取指定时间范围内的上下文内容
+
+        :param begin: 开始时间
+        :param end: 结束时间
+        :return: 指定时间范围内的上下文内容
+        """
         context = Context()
 
         if self.prompt is not None:
