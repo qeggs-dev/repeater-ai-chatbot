@@ -75,5 +75,5 @@ class Request(BaseModel):
     output_role: ContentRole = ContentRole.ASSISTANT
 
     tools: list[dict[str, Any]] | None = None
-    tool_choice: str | dict[str, dict[str, str]] | None = None
+    tool_choice: str | dict[str, str | dict[str, str]] | None = None
     
