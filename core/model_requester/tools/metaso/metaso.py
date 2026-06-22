@@ -3,7 +3,7 @@ import json
 import httpx
 from environs import Env
 from pydantic import BaseModel, Field
-from ....context import ToolCallPacakage, CallType
+from ....context import ToolCallPacakage, CallMode
 from ....auxiliary.http import get_ssl_context
 from ..._caller import ModelRequester
 from .scope import Scope
@@ -24,7 +24,7 @@ class Metaso(ToolCallPacakage):
         data: dict = Field(..., description="The data of the response")
     
     name = "metaso"
-    call_type = CallType.ASYNC
+    call_type = CallMode.ASYNC
     json_result = True
     _env = Env()
     client: httpx.AsyncClient | None = None
