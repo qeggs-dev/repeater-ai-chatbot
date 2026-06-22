@@ -2,7 +2,7 @@
 from typing import (
     Any,
     Awaitable,
-    AsyncIterator,
+    AsyncGenerator,
     Callable
 )
 
@@ -32,8 +32,10 @@ class NoStreamClient(ClientBase):
             request: Request,
             runtime: Runtime,
         ) -> Response:
-        """提交请求，并等待API返回结果"""
-        response = await self._submit_task(user_id, request, runtime)
+        """
+        提交请求，并等待API返回结果
+        """
+        response: AsyncGenerator[Delta, None] | Response = await self._submit_task(user_id, request, runtime)
         if not isinstance(response, Response):
             generator = StreamingResponseGenerationLayer(
                 user_id = user_id,
@@ -51,7 +53,7 @@ class NoStreamClient(ClientBase):
         
         return output
     
-    async def _submit_task(self, user_id: str, request: Request, runtime: Runtime) -> AsyncIterator[Delta] | Response:
+    async def _submit_task(self, user_id: str, request: Request, runtime: Runtime) -> AsyncGenerator[Delta, None] | Response:
         if request.stream:
             client = StreamAPI()
             call = await client.call(
