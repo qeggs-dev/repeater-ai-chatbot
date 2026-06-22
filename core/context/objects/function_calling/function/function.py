@@ -1,12 +1,13 @@
 import orjson
 import asyncio
 import inspect
+import textwrap
 
 from dataclasses import dataclass
 from typing import Callable, Type, TypeVar, Any, Awaitable, Generic
 from types import NoneType
 from pydantic import BaseModel, ValidationError
-from .call_type import CallType
+from .call_type import CallMode
 from ..._tool_types import ToolTypes
 from .request import (
     ToolStruct,
@@ -25,7 +26,7 @@ class Function(Generic[T, T_BaseModel]):
     enabled: bool = True
     force_choice: bool = False
     callable: Callable[[T_BaseModel], Awaitable[T] | T] | None = None
-    call_type: CallType = CallType.SYNC
+    call_type: CallMode = CallMode.SYNC
     json_result: bool = False
     parameters: Type[T_BaseModel] | None = None
     on_error: Callable[[Exception], Awaitable[T | Any | None] | T | Any | None] | None = None
@@ -38,15 +39,15 @@ class Function(Generic[T, T_BaseModel]):
         """Call the function with parameters"""
         if callable(self.callable):
             match self.call_type:
-                case CallType.SYNC:
+                case CallMode.SYNC:
                     return self.callable(parameters)
-                case CallType.ASYNC:
+                case CallMode.ASYNC:
                     result = self.callable(parameters)
                     if inspect.isawaitable(result):
                         return await result
                     else:
-                        raise RuntimeError(f"Handler is not async, Please use {CallType.SYNC} or {CallType.SYNC_IN_THREAD}")
-                case CallType.SYNC_IN_THREAD:
+                        raise RuntimeError(f"Handler is not async, Please use {CallMode.SYNC} or {CallMode.SYNC_IN_THREAD}")
+                case CallMode.SYNC_IN_THREAD:
                     return await asyncio.to_thread(self.callable, parameters)
                 case _:
                     raise ValueError("Invalid call type")
@@ -77,8 +78,20 @@ class Function(Generic[T, T_BaseModel]):
             type = ToolTypes.FUNCTION,
             function = FunctionStruct(
                 name = self.name,
-                description = self.description,
+                description = self.parse_description(
+                    description = self.description
+                ),
                 parameters = self.function_parameters(),
                 strict = strict,
+            )
+        )
+
+    @staticmethod
+    def parse_description(description: str) -> str:
+        """Parse description"""
+        
+        return textwrap.dedent(
+            description.expandtabs(
+                tabsize = 4
             )
         )
