@@ -27,8 +27,9 @@ class Request(BaseModel):
     proxy: str | None = None
     limits: ClientLimits = Field(default_factory=ClientLimits)
     encoding: str = "utf-8"
-    headers: dict[str, str] = Field(default_factory=dict)
-    params: dict[str, str] = Field(default_factory=dict)
+    headers: dict[str, Any] = Field(default_factory=dict)
+    params: dict[str, Any] = Field(default_factory=dict)
+    cookies: dict[str, Any] = Field(default_factory=dict)
     timeout: int | float | ClientTimeout = 600.0
     interface: InterfaceType = InterfaceType.OPENAI
     service_tier: ServiceTier | None = None
