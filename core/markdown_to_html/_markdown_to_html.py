@@ -10,6 +10,7 @@ from ._extensions import (
     DividingLineExtension
 )
 from jinja2 import Template, Environment
+from typing import Iterable, Callable
 
 async def markdown_to_html(
     input_text: str,
@@ -22,9 +23,9 @@ async def markdown_to_html(
     width: int = 800,
     markdown_extensions: list[str | markdown.Extension] | None = None,
     direct_output: bool = False,
-    allowed_tags: bool = False,
-    allowed_attrs: bool = False,
-    allowed_protocols: bool = False,
+    allowed_tags: Iterable[str] | None = None,
+    allowed_attrs: Callable[[str, str, str], bool] | dict[str, list[str]] | list[str] | None = None,
+    allowed_protocols: Iterable[str] | None = None,
     no_pre_labels: bool = False,
     document_bottom_comment: bool = False,
     preprocess_map_before: dict[str, str] | None = None,
@@ -54,7 +55,7 @@ async def markdown_to_html(
     
     # 2. 渲染 Markdown 为 HTML
     if not direct_output:
-        extensions = [
+        extensions: list[str | markdown.Extension] = [
             CodeBlockExtension(),
             DividingLineExtension(),
         ]
@@ -73,9 +74,9 @@ async def markdown_to_html(
     # 3. 清理不允许的 HTML 文本
     clean_html = bleach.clean(
         html_content,
-        tags = allowed_tags,
-        attributes = allowed_attrs,
-        protocols = allowed_protocols,
+        tags = allowed_tags or [],
+        attributes = allowed_attrs or [],
+        protocols = allowed_protocols or [],
         strip = True,  # 移除不允许的标签
         strip_comments = True  # 移除注释
     )
