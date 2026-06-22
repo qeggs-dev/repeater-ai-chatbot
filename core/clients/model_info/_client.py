@@ -26,6 +26,8 @@ class ModelsClient:
             transport: httpx.AsyncHTTPTransport | None = None,
         ):
         self._base_url = base_url
+        if headers is None:
+            headers = {}
         headers.update({
             "Authorization": f"Bearer {api_key}"
         })
@@ -63,6 +65,11 @@ class ModelsClient:
                     detail = f"Model Info Server Error: {response.text}",
                 )
             model_info = response.get_data()
+            if model_info is None:
+                raise HTTPException(
+                    status_code = 404,
+                    detail = "Error: Response is invalid."
+                )
             models.extend(model_info.models)
             if model_info.models:
                 break
