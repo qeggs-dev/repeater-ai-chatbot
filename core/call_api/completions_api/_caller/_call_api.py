@@ -81,7 +81,7 @@ class CallAPI(CallNstreamAPIBase):
         with runtime.status_stack.enter("Send Request"):
             logger.info(f"Send Request", user_id = user_id)
             request_start_time = TimeStamp()
-            response = await self._send_request(
+            response = await self._send_openai_request(
                 user_id = user_id,
                 request = request,
                 runtime = runtime,

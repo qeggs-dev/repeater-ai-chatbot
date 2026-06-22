@@ -147,7 +147,7 @@ class BaseCallAPI(ABC, Generic[T]):
         pass
 
     @overload
-    async def _send_request(
+    async def _send_openai_request(
         self,
         user_id: str,
         request: Request,
@@ -158,7 +158,7 @@ class BaseCallAPI(ABC, Generic[T]):
     ) -> ChatCompletion | Completion: ...
 
     @overload
-    async def _send_request(
+    async def _send_openai_request(
         self,
         user_id: str,
         request: Request,
@@ -168,7 +168,7 @@ class BaseCallAPI(ABC, Generic[T]):
         stream: Literal[True] = True,
     ) -> AsyncStream[ChatCompletionChunk] | AsyncStream[Completion]: ...
 
-    async def _send_request(
+    async def _send_openai_request(
         self,
         user_id: str,
         request: Request,

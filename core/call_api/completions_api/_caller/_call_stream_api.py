@@ -90,7 +90,7 @@ class StreamAPI(CallStreamAPIBase):
         with runtime.status_stack.enter("Send Request"):
             logger.info(f"Start Connecting to the API", user_id = user_id)
             runtime.response.request_log.request_start_time = TimeStamp()
-            response = await self._send_request(
+            response = await self._send_openai_request(
                 user_id = user_id,
                 request = request,
                 runtime = runtime,
