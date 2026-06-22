@@ -3,10 +3,12 @@ import atexit
 import asyncio
 import traceback
 from pathlib import Path
-from uuid import uuid4
 from typing import (
+    AsyncGenerator,
     AsyncIterator,
     Any,
+    overload,
+    Literal,
 )
 
 # ==== 第三方库 ==== #
@@ -259,7 +261,7 @@ class Core:
             user_info: RequestUserInfo = RequestUserInfo(),
             role: ContentRole = ContentRole.USER,
             assistant_role: ContentRole = ContentRole.ASSISTANT,
-            role_name:  str = "",
+            role_name:  str | None = "",
             extra_template_fields: dict[str, Any] | None = None,
             temporary_prompt: str | None = None,
             additional_data: AdditionalData | None = None,
@@ -271,7 +273,7 @@ class Core:
             cross_user_data_routing: CrossUserDataRouting[str | None] | None = None,
             allowed_tool_calls: set[str] | None = None,
             stream: bool = False,
-        ) -> Response | AsyncIterator[Delta | ContentUnit]:
+        ) -> Response | AsyncGenerator[Delta | ContentUnit, None]:
         """
         与模型对话
 
