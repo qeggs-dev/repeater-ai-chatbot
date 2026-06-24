@@ -6,9 +6,11 @@
   - [Get Part Of Context API](./get/part_of.md)
 
 ## 更新上下文
+  - [Set Context API](./set/set.md)
   - [Inject Context API](./set/inject.md)
   - [Rewrite Context API](./set/rewrite.md)
   - [Withdraw Context API](./set/withdraw.md)
+  - [Role Mapping API](./set/role_mapping.md)
 
 ## 删除上下文
   - [Delete Context API](./delete/delete.md)
