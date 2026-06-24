@@ -105,7 +105,7 @@ async def generate_image(
     else:
         async def stream(result: AsyncGenerator[PartialImageEvent | CompletedImageEvent, None]):
             async for image in result:
-                yield orjson.dumps(image.model_dump())
+                yield orjson.dumps(image.model_dump()) + b"\n"
         
         return StreamingResponse(
             stream(result),
