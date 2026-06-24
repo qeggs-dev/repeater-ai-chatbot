@@ -10,7 +10,7 @@
       - `type` (str):  配置类型
       - `value` (Any):  配置字段值
   - **Response**
-    - **type:** `Text`
+    - **type:** `JSON`
     - **Content:**
       - *\*Config 内容*
 
