@@ -74,7 +74,7 @@ def set_title(title: str):
             ctypes.windll.kernel32.SetConsoleTitleW(title)
         except Exception:
             subprocess.run(
-                "title", title,
+                ["title", title],
                 shell = True,
             )
     else:
@@ -422,7 +422,7 @@ class FindFile(BaseAsk, Generic[T_FILE]):
             for path in generator:
                 if str(path.resolve()) in path_set:
                     continue
-                path_set.add(str(path.resolve()))
+                path_set.add(path.resolve())
                 yield path
     
     def ask(self) -> Union[Path, None]:
@@ -613,7 +613,8 @@ class SlovesStarter:
             self.pause_program(ExitCode.ONLY_PAUSE)
         
         try:
-            self.parse_config(config)
+            if config:
+                self.parse_config(config)
         except Exception as e:
             print(f"Error parsing config: {e}")
             self.pause_program(ExitCode.CONFIG_PARSING_ERROR)
@@ -921,7 +922,8 @@ class SlovesStarter:
         :param env: The environment variables to use when running the command.
         :return: The result of the command. (Return None when the user has not approved.)
         """
-        cwd = absolute_path(cwd)
+        if cwd:
+            cwd = absolute_path(cwd)
         if self.allow_print:
             askfile.write(reason + "\n")
             askfile.flush()
@@ -1083,7 +1085,11 @@ class SlovesStarter:
                 skip_only_one=True,
                 file = askfile,
             )
-            script_name = absolute_path(find_file.ask(), self.work_directory)
+            asked = find_file.ask()
+            if asked is None:
+                self.pause_program(ExitCode.SCRIPT_NOT_FOUND)
+                
+            script_name = absolute_path(asked, self.work_directory)
         elif isinstance(self.script_name, list):
             choose = Choose(
                 "Python script file",
@@ -1222,7 +1228,7 @@ if __name__ == "__main__":
         starter.main()
     except KeyboardInterrupt:
         print("Program terminated by user.")
-        exit(ExitCode.USER_TERMINATED)
+        sys.exit(ExitCode.USER_TERMINATED.value)
     except Exception as e:
         with open("Traceback.txt", "w", encoding=text_encoding) as f:
             f.write(traceback.format_exc())
