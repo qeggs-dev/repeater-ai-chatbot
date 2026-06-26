@@ -23,9 +23,11 @@ def calculation_date_countdown(
     
     返回:
         timedelta: 距离目标时间的时间差
+        - 如果今天是目标日期，返回 timedelta(0)
+        - 如果目标日期在今天之前，计算到下一年的目标日期
+        - 如果目标日期在今天之后，计算到今年的目标日期
     
     注意:
-        - 如果目标日期在当年已过，则计算到下一年的目标日期
         - 非闰年的2月29日会被当作3月1日处理
         - 返回的时间差包含时分秒，不只是一整天
     """
@@ -49,7 +51,7 @@ def calculation_date_countdown(
     second = target_second if target_second is not None else 0
     
     # 4. 验证时间参数
-    if not (0 <= target_month <= 12):
+    if not (1 <= target_month <= 12):
         raise ValueError(f"target_month must be between 1 and 12, got {target_month}")
     if not (1 <= target_day <= 31):
         raise ValueError(f"target_day must be between 1 and 31, got {target_day}")
@@ -77,9 +79,8 @@ def calculation_date_countdown(
             )
         except ValueError:
             # 处理无效日期（如非闰年的2月29日）
-            # 注意：这里根据业务需求可以有不同的处理方式
             if target_month == 2 and target_day == 29:
-                # 方案1：改为3月1日
+                # 改为3月1日
                 return datetime(year, 3, 1, hour, minute, second, tzinfo=tz_offset)
             else:
                 # 其他无效日期，抛出异常
@@ -89,15 +90,28 @@ def calculation_date_countdown(
     try:
         target_this_year = create_target_datetime(current_year)
     except ValueError as e:
-        # 如果创建失败，尝试使用3月1日（仅当是2月29日的情况）
         if target_month == 2 and target_day == 29:
             target_this_year = datetime(current_year, 3, 1, hour, minute, second, tzinfo=tz_offset)
         else:
             raise ValueError(f"Invalid date: {target_month}/{target_day}") from e
     
+    # 🔑 关键：判断是否是当天（根据需求选择比较方式）
+    
+    # 方案1：精确到秒的"当天"判断（推荐）
+    # 当前时间在目标日期的当天范围内（00:00:00 到 23:59:59）
+    # 注意：这里如果当前时间已经过了目标时间点，仍然算作"当天"
+    if now.date() == target_this_year.date():
+        return timedelta(0)
+    
+    # 方案2：严格的"当天"判断（如果已经过了目标时间点，算作已过）
+    # 如果当前时间 >= 目标时间，且是同一日期，返回0
+    # 但这种情况会和下一年计算逻辑重叠，需要小心处理
+    # if now >= target_this_year and now.date() == target_this_year.date():
+    #     return timedelta(0)
+    
     # 7. 计算目标年份
-    # 判断逻辑：如果当前时间已经过了今年的目标时间，则计算到明年
-    if now >= target_this_year:
+    # 如果当前时间已经过了今年的目标日期，则计算到明年
+    if now > target_this_year:
         target_year = current_year + 1
     else:
         target_year = current_year
@@ -115,7 +129,6 @@ def calculation_date_countdown(
     time_left = target_date - now
     
     # 10. 安全保护：确保时间差不为负数
-    # 如果因为某些原因计算出负数（如时区问题），则加一年
     if time_left.total_seconds() < 0:
         target_year += 1
         try:
