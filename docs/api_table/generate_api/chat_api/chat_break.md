@@ -16,4 +16,3 @@
   - **Response**
     - `code` (int): HTTP 状态码
     - `msg` (str): API 返回的消息
-    - `cancel_count` (int): 取消的任务数量
