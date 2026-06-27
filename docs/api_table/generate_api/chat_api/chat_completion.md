@@ -9,6 +9,7 @@
     - **type:** `JSON`
     - **Content:**
       - `message` (str | null): 用户发送的消息，允许为空，但这时模型的行为可能是未定义的
+      - `task_id` (str | null): 任务 ID，如果客户端需要管理任务，可以由客户端生成，否则服务端自行生成
       - `suffix` (str | null): 消息后缀，需要保证 `fim_mode` = `true` 才可使用，允许为空
       - `echo` (bool): 是否回显用户消息，默认为 True，需要 `fim_mode` = `true` 才可使用
       - `fim_mode` (bool): 是否使用 FIM 模式，默认为 False
