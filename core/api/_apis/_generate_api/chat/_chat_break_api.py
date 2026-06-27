@@ -1,3 +1,4 @@
+from uuid import UUID
 from fastapi.responses import (
     ORJSONResponse
 )
@@ -17,9 +18,9 @@ async def chat_break_all_api(user_id: str):
     )
 
 @chat_router.post("/break/{user_id}/{task_id}")
-async def chat_break_api(user_id: str, task_id: str):
+async def chat_break_api(user_id: str, task_id: UUID):
     server = RepeaterMain.get_now_server()
-    canceled = await server.runtime.chat_task_pool.cancel_task(user_id, task_id)
+    canceled = await server.runtime.chat_task_pool.cancel_task(user_id, str(task_id))
     if canceled:
         return ORJSONResponse(
             {
