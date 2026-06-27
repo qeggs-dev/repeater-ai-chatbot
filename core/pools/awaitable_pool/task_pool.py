@@ -51,6 +51,16 @@ class TaskPool:
                     cancel_count += 1
                 del self._tasks[user_id]
             return cancel_count
+    
+    async def cancel_task(self, user_id: str, task_id: str):
+        """取消指定任务"""
+        async with await self._pool_locks.get_lock(user_id):
+            if user_id in self._tasks:
+                for task in self._tasks[user_id]:
+                    if task.get_name() == task_id:
+                        task.cancel()
+                        return True
+            return False
         
     async def shutdown(self):
         """关闭池，等待所有任务完成"""
