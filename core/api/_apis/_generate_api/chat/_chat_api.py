@@ -35,6 +35,7 @@ async def chat_endpoint(
     server = RepeaterMain.get_now_server()
     chat_coroutine: Coroutine[Any, Any, Response | AsyncGenerator[Delta | ContentUnit, None]] = server.core.chat(
         user_id = user_id,
+        task_id = request.task_id,
         message = request.message,
         suffix = request.suffix,
         echo = request.echo,
