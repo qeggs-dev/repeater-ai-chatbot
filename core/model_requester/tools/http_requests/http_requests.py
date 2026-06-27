@@ -32,10 +32,10 @@ class HTTPRequests(ToolCallPacakage):
         requests: list[list[Request | Sleep] | Request | Sleep] = Field(..., description="Sending requests in batches using connection pooling (The outer list executes sequentially, and the inner list executes in parallel.).")
     
     class Result(BaseModel):
-        responses: list[list[str | Response]] = Field(..., description="The responses of the requests.")
+        responses: list[list[str | Response | None]] = Field(..., description="The responses of the requests.")
     
     name = "http_requests"
-    call_type = CallMode.ASYNC
+    call_mode = CallMode.ASYNC
     json_result = True
     document = "send a any method HTTP request to a URL and return the response."
     robots_cache: ClassVar[TTLCache[str, str, float] | None] = None
@@ -93,6 +93,9 @@ class HTTPRequests(ToolCallPacakage):
             rewrite_url: bool = False
 
         try:
+            if self.robots_cache is None:
+                raise RuntimeError("robots_cache is None")
+            
             if base_url in self.robots_cache:
                 text = self.robots_cache[base_url]
             else:
@@ -202,8 +205,7 @@ class HTTPRequests(ToolCallPacakage):
                 if response is None:
                     return Response(
                         request_id = request.id,
-                        reason = "The number of retries has run out.",
-                        response = response
+                        reason = "The number of retries has run out."
                     )
         except httpx.TimeoutException as e:
             return Response(
@@ -249,9 +251,9 @@ class HTTPRequests(ToolCallPacakage):
             ),
         )
 
-        responses: list[list[Response]] = []
+        responses: list[list[Response | None]] = []
         
-        tasks: set[asyncio.Task[Response]] = set()
+        tasks: set[asyncio.Task[Response | None]] = set()
         for requests in args.requests:
             if isinstance(requests, list):
                 for request in requests:

@@ -21,7 +21,7 @@ class Asteval(ToolCallPacakage):
     
     name = "asteval"
     document = "Execute Python code safely and return results."
-    call_type = CallMode.ASYNC
+    call_mode = CallMode.ASYNC
 
     @staticmethod
     def safe_eval(

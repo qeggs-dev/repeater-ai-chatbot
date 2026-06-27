@@ -24,7 +24,7 @@ class Metaso(ToolCallPacakage):
         data: dict = Field(..., description="The data of the response")
     
     name = "metaso"
-    call_type = CallMode.ASYNC
+    call_mode = CallMode.ASYNC
     json_result = True
     _env = Env()
     client: httpx.AsyncClient | None = None

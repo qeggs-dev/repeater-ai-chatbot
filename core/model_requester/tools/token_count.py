@@ -18,7 +18,7 @@ class TokenCount(ToolCallPacakage):
 
     name = "token_count"
     document = "Calculates the total Token consumption for the current user."
-    call_type = CallMode.ASYNC
+    call_mode = CallMode.ASYNC
 
     async def call(self, args: Params):
         runtime = RuntimeContainer.get_runtime()
