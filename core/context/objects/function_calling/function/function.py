@@ -44,6 +44,7 @@ class Function(Generic[T, T_BaseModel]):
                 case CallMode.ASYNC:
                     if inspect.iscoroutinefunction(self.callable):
                         result = await self.callable(parameters)
+                        return result
                     else:
                         raise RuntimeError(f"Handler is not async, Please use {CallMode.SYNC} or {CallMode.SYNC_IN_THREAD}")
                 case CallMode.SYNC_IN_THREAD:
