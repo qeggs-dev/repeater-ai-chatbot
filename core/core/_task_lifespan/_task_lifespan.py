@@ -13,17 +13,28 @@ class TaskLifespan:
         user_id: str,
         rul: asyncio.Lock,
         enable_rul: bool,
-        runtime: RepeaterRuntime
+        runtime: RepeaterRuntime,
+        task_id: str | uuid.UUID | None = None,
     ):
         self._rul = rul
         self._enable_rul = enable_rul
-        task_id = uuid.uuid4()
+
+        if task_id is None:
+            task_id = uuid.uuid4()
+        elif isinstance(task_id, str):
+            task_id = uuid.UUID(task_id)
+        elif not isinstance(task_id, uuid.UUID):
+            raise TypeError("task_id must be str or uuid.UUID")
+        
         self._task_id = task_id
         self._runtime = runtime
         self._user_id = user_id
 
         self._task_status_stacks = TaskStatusStacks(self._runtime)
         self._task_context_buffers = TaskContextBuffers(self._runtime)
+
+        if self.get_task_id_str() in self._task_status_stacks or self.get_task_id_str() in self._task_context_buffers:
+            raise ValueError("task_id already exists")
     
     @property
     def user_id(self) -> str:

@@ -1,4 +1,5 @@
 # ==== 标准库 ==== #
+import uuid
 import atexit
 import asyncio
 import traceback
@@ -253,6 +254,7 @@ class Core:
             self,
             message: str | None,
             user_id: str,
+            task_id: str | uuid.UUID | None = None,
             suffix: str | None = None,
             echo: bool | None = None,
             fim_mode: bool = False,
@@ -279,6 +281,7 @@ class Core:
 
         :param message: 用户输入的消息
         :param user_id: 用户ID
+        :param task_id: 任务ID
         :param history_messages: 历史消息
         :param history_msg_role_map: 历史消息角色映射
         :param user_info: 用户信息

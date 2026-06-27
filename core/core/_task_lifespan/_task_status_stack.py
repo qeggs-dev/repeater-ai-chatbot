@@ -22,6 +22,9 @@ class TaskStatusStacks:
             )
         return user_status_stack
     
+    def __contains__(self, task_id: str) -> bool:
+        return task_id in self._runtime.task_status_stacks
+    
     async def get_task_status_stack(self, user_id: str, task_id: str) -> StatusStack[str]:
         user_status_stack = await self.get_user_status_stacks(user_id)
         if task_id in user_status_stack:
