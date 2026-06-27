@@ -48,8 +48,12 @@ class TaskLifespan:
     def runtime(self) -> RepeaterRuntime:
         return self._runtime
     
-    def get_task_id_str(self) -> str:
+    @property
+    def task_id_str(self) -> str:
         return str(self._task_id)
+    
+    def get_task_id_str(self) -> str:
+        return self.task_id_str
     
     @property
     def task_status_stack(self) -> StatusStack[str]:
