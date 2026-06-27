@@ -32,7 +32,7 @@ class HTTPRequests(ToolCallPacakage):
         requests: list[list[Request | Sleep] | Request | Sleep] = Field(..., description="Sending requests in batches using connection pooling (The outer list executes sequentially, and the inner list executes in parallel.).")
     
     class Result(BaseModel):
-        responses: list[list[str | Response | None]] = Field(..., description="The responses of the requests.")
+        responses: list[list[Response | None]] = Field(..., description="The responses of the requests.")
     
     name = "http_requests"
     call_mode = CallMode.ASYNC
