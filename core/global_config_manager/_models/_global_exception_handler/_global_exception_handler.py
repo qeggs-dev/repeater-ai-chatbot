@@ -4,8 +4,6 @@ from ._code_reader import CodeReaderConfig
 from ._repeater_traceback import RepeaterTracebackConfig
 
 class GlobalExceptionHandlerConfig(BaseModel):
-    model_config = ConfigDict(case_sensitive=False)
-
     error_message: str = "Internal Server Error"
     critical_error_message: str = "Critical Server Error!"
     crash_exit: bool = True

@@ -1,0 +1,165 @@
+# Image Generation API
+
+生成一张图片
+
+
+- **`/generate/image/generate/{user_id:str}`**
+  - **Requset**
+    - **method:** `POST`
+    - **type:** `JSON`
+    - **Content:**
+      - 
+      - `model_id` (str | list[str]): 模型 ID
+      - `prompt` (str): 提示词
+      - `background` (str): 背景设置
+        - `transparent`：透明背景
+        - `opaque`：不透明背景
+        - `auto`：自动选择背景类型
+      - `moderation` (str): 
+        - `low`：低风险
+        - `auto`：自动选择风险等级
+      - `n` (int): 生成图片的数量
+      - `output_compression` (int): 输出压缩级别
+      - `output_format` (str): 输出格式
+        - `png`：PNG 格式
+        - `jpeg`：JPEG 格式
+        - `webp`：WebP 格式
+      - `partial_images` (int): 是否允许部分图片
+      - `quality` (str): 图片质量
+        - `standard`：标准质量
+        - `hd`：高清质量
+        - `low`：低质量
+        - `medium`：中质量
+        - `high`：高质量
+        - `auto`：自动选择质量
+      - `response_format` (str): 响应格式
+        - `url`：返回图片 URL
+        - `b64_json`：返回图片 Base64 编码
+      - `size` (str): 图片尺寸
+        - `auto`：自动选择尺寸
+        - `1024x1024`：1024x1024 尺寸
+        - `1536x1024`：1536x1024 尺寸
+        - `1024x1536`：1024x1536 尺寸
+        - `256x256`：256x256 尺寸
+        - `512x512`：512x512 尺寸
+        - `1792x1024`：1792x1024 尺寸
+        - `1024x1792`：1024x1792 尺寸
+      - `stream` (bool): 是否流式传输
+      - `style` (str): 风格设置
+        - `vivid`：鲜艳风格
+        - `natural`：自然风格
+      - `user` (str): 用户标识
+  - **Response**
+    - **type:** `JSON` | `JSONL STREAM`
+    - **Content:**
+      - `JSON`:
+        - `created` (int): 请求创建时间
+        - `background` (str): 背景设置
+          - `transparent`：透明背景
+          - `opaque`：不透明背景
+          - `auto`：自动选择背景类型
+        - `data` (list): 图片数据
+          - *\*每一个元素*
+            - `b64_json` (str): 图片 Base64 编码
+            - `revised_prompt` (str): 修改后的提示词
+            - `url` (str): 图片 URL
+        - `output_format` (str): 输出格式
+          - `png`：PNG 格式
+          - `jpeg`：JPEG 格式
+          - `webp`：WebP 格式
+        - `quality` (str): 图片质量
+          - `standard`：标准质量
+          - `hd`：高清质量
+          - `low`：低质量
+          - `medium`：中质量
+          - `high`：高质量
+          - `auto`：自动选择质量
+        - `size` (str): 图片尺寸
+          - `auto`：自动选择尺寸
+          - `1024x1024`：1024x1024 尺寸
+          - `1536x1024`：1536x1024 尺寸
+          - `1024x1536`：1024x1536 尺寸
+          - `256x256`：256x256 尺寸
+          - `512x512`：512x512 尺寸
+          - `1792x1024`：1792x1024 尺寸
+          - `1024x1792`：1024x1792 尺寸
+        - `usage`
+          - `input_tokens` (int): 输入 Token 数
+          - `input_tokens_details`
+            - `image_tokens` (int): 图片 Token 数
+            - `text_tokens` (int): 文本 Token 数
+          - `output_tokens` (int): 输出 Token 数
+          - `output_tokens_details`
+            - `image_tokens` (int): 图片 Token 数
+            - `text_tokens` (int): 文本 Token 数
+          - `total_tokens` (int): 总 Token 数
+      - `JSON STREAM`:
+        - *\*每一行*
+          - **partial_image**:
+            - `b64_json` (str): 图片的 Base64 编码
+            - `background` (str): 背景设置
+              - `transparent`：透明背景
+              - `opaque`：不透明背景
+              - `auto`：自动选择背景类型
+            - `created_at` (str): 创建时间
+            - `output_format` (str): 输出格式
+              - `png`：PNG 格式
+              - `jpeg`：JPEG 格式
+              - `webp`：WebP 格式
+            - `partial_image_index` (int): 图片索引
+            - `quality` (str): 图片质量
+              - `standard`：标准质量
+              - `hd`：高清质量
+              - `low`：低质量
+              - `medium`：中质量
+              - `high`：高质量
+              - `auto`：自动选择质量
+            - `size` (str): 图片尺寸
+              - `auto`：自动选择尺寸
+              - `1024x1024`：1024x1024 尺寸
+              - `1536x1024`：1536x1024 尺寸
+              - `1024x1536`：1024x1536 尺寸
+              - `256x256`：256x256 尺寸
+              - `512x512`：512x512 尺寸
+              - `1792x1024`：1792x1024 尺寸
+              - `1024x1792`：1024x1792 尺寸
+            - `type` (Literal["image_generation.partial_image"]): 块类型
+          - **completed**
+            - `b64_json` (str): 图片的 Base64 编码
+            - `background` (str): 背景设置
+              - `transparent`：透明背景
+              - `opaque`：不透明背景
+              - `auto`：自动选择背景类型
+            - `created_at` (str): 创建时间
+            - `output_format` (str): 输出格式
+              - `png`：PNG 格式
+              - `jpeg`：JPEG 格式
+              - `webp`：WebP 格式
+            - `partial_image_index` (int): 图片索引
+            - `quality` (str): 图片质量
+              - `standard`：标准质量
+              - `hd`：高清质量
+              - `low`：低质量
+              - `medium`：中质量
+              - `high`：高质量
+              - `auto`：自动选择质量
+            - `size` (str): 图片尺寸
+              - `auto`：自动选择尺寸
+              - `1024x1024`：1024x1024 尺寸
+              - `1536x1024`：1536x1024 尺寸
+              - `1024x1536`：1024x1536 尺寸
+              - `256x256`：256x256 尺寸
+              - `512x512`：512x512 尺寸
+              - `1792x1024`：1792x1024 尺寸
+              - `1024x1792`：1024x1792 尺寸
+            - `type` (Literal["image_generation.completed"]): 块类型
+            - `usage`
+              - `input_tokens` (int): 输入 Token 数
+              - `input_tokens_details`
+                - `image_tokens` (int): 图片 Token 数
+                - `text_tokens` (int): 文本 Token 数
+              - `output_tokens` (int): 输出 Token 数
+              - `output_tokens_details`
+                - `image_tokens` (int): 图片 Token 数
+                - `text_tokens` (int): 文本 Token 数
+              - `total_tokens` (int): 总 Token 数

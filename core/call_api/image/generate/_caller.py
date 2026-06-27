@@ -3,14 +3,22 @@ from typing import (
     AsyncGenerator
 )
 from openai import (
-    AsyncStream, omit
+    AsyncOpenAI,
+    AsyncStream,
+    omit
 )
 from openai.types import (
     ImagesResponse as OpenAIImagesResponse,
+    ImageGenStreamEvent as OpenAIImageGenStreamEvent,
     ImageGenPartialImageEvent,
     ImageGenCompletedEvent
 )
+from ....pools.client_pool import ClientInfo
 from ....pools.awaitable_pool import CoroutinePool
+from ....auxiliary.http import (
+    ClientLimits,
+    ClientTimeout
+)
 from ._objects import (
     ImagesRequest,
     ImagesRuntime,
@@ -35,14 +43,32 @@ class ImageGenerateCaller:
             return omit
         return value
     
-    async def call(self, request: ImagesRequest, runtime: ImagesRuntime) -> ImagesResponse:
+    @staticmethod
+    def _get_client(request: ImagesRequest, runtime: ImagesRuntime) -> AsyncOpenAI:
+        client_info = ClientInfo(
+            url = request.url,
+            proxy = request.proxy,
+            limits = request.limits,
+            timeout = request.timeout,
+            encoding = request.encoding,
+        )
+        client = runtime.client_pool.get_openai(
+            client_info = client_info,
+            api_key = request.key,
+            params = request.params,
+            headers = request.headers,
+            cookies = request.cookies,
+        )
+        return client
+    
+    async def call(self, request: ImagesRequest, runtime: ImagesRuntime) -> AsyncGenerator[PartialImageEvent | CompletedImageEvent, None] | ImagesResponse:
         return await self.coroutine_pool.submit(
-            self._parse_response(request, runtime)
+            self._call(request, runtime)
         )
     
-    async def _call(self, request: ImagesRequest, runtime: ImagesRuntime) -> ImagesResponse | AsyncStream[ImageGenPartialImageEvent | ImageGenCompletedEvent]:
-        client = runtime.client
-        response: AsyncStream[ImageGenPartialImageEvent | ImageGenCompletedEvent] = await client.images.generate(
+    async def _call(self, request: ImagesRequest, runtime: ImagesRuntime) -> AsyncGenerator[PartialImageEvent | CompletedImageEvent, None] | ImagesResponse:
+        client: AsyncOpenAI = self._get_client(request, runtime)
+        response: OpenAIImagesResponse | AsyncStream[OpenAIImageGenStreamEvent] = await client.images.generate(
             prompt = request.prompt,
             background = self.none_to_omit(request.background),
             model = self.none_to_omit(request.model),
@@ -57,38 +83,27 @@ class ImageGenerateCaller:
             stream = request.stream,
             style = self.none_to_omit(request.style),
             user = self.none_to_omit(request.user),
-            timeout = request.timeout
+            timeout = request.timeout.model_dump() if isinstance(request.timeout, ClientTimeout) else request.timeout # type: ignore
         )
 
-        if request.stream:
+        if request.stream and isinstance(response, AsyncStream):
             parsed_response = self._parse_stream_response(response)
-        else:
+        elif isinstance(response, OpenAIImagesResponse):
             parsed_response = await self._parse_response(response)
+        else:
+            raise ValueError(f"Unexpected response type: {type(response).__name__}")
 
         return parsed_response
 
-    async def _parse_stream_response(self, response: AsyncStream[ImageGenPartialImageEvent | ImageGenCompletedEvent]) -> AsyncGenerator[PartialImageEvent | CompletedImageEvent, None]:
+    async def _parse_stream_response(self, response: AsyncStream[OpenAIImageGenStreamEvent]) -> AsyncGenerator[PartialImageEvent | CompletedImageEvent, None]:
         async for event in response:
             if isinstance(event, ImageGenPartialImageEvent):
                 yield PartialImageEvent(
-                    b64_json = event.b64_json,
-                    background = event.background,
-                    created_at = event.created_at,
-                    output_format = event.output_format,
-                    partial_image_index = event.partial_image_index,
-                    quality = event.quality,
-                    size = event.size,
-                    type = event.type
+                    **event.model_dump()
                 )
             elif isinstance(event, ImageGenCompletedEvent):
                 yield CompletedImageEvent(
-                    b64_json = event.b64_json,
-                    background = event.background,
-                    created_at = event.created_at,
-                    output_format = event.output_format,
-                    quality = event.quality,
-                    size = event.size,
-                    type = event.type
+                    **event.model_dump()
                 )
             else:
                 raise Exception(f"Unknown event type: {event}")

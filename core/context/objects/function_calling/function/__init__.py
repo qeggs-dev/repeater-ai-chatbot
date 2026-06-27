@@ -3,11 +3,11 @@ from .request import (
     ToolStruct,
     FunctionStruct,
 )
-from .call_type import CallType
+from .call_type import CallMode
 
 __all__ = [
     "Function",
     "ToolStruct",
     "FunctionStruct",
-    "CallType",
+    "CallMode",
 ]

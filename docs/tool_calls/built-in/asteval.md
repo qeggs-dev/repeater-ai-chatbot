@@ -8,9 +8,17 @@ Asteval 是一个用于执行 Python 表达式的工具。它允许你将 Python
 接受一个参数
 ``` json
 {
-  "expression": "", // The Python expression to be executed.
+  "expression": "result = 64 - 22\nprint(\"Hello, World!\")\nresult", // The Python expression to be executed.
   "timeout": 5 // The timeout for the execution of the expression. Default is 5 seconds.
 }
 ```
 
 返回执行结果
+
+``` json
+{
+  "result": 42, // The result of the executed expression.
+  "stdout": "Hello, World!\n", // The standard output of the evaluation.
+  "stderr": "" // The standard error of the evaluation.
+}
+```

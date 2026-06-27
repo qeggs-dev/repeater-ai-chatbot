@@ -3,25 +3,28 @@ from pydantic import BaseModel, Field, ConfigDict
 from datetime import datetime
 from typing import overload, Iterable, Any
 from copy import deepcopy
+from openai.types.chat import ChatCompletionMessageParam
 from .._exceptions import *
 from ._content_role import ContentRole
 from ._content_unit import ContentUnit
 from ._content_block import ContentBlock
-
+from ...auxiliary.type_checker import is_iterable
 
 class Context(BaseModel):
     """
     上下文对象
     """
     model_config = ConfigDict(
-        validate_assignment = True,
-        exclude_none = True
+        validate_assignment = True
     )
 
     prompt: ContentUnit | None = None
     context_list: list[ContentUnit] = Field(default_factory=list)
 
     def __bool__(self) -> bool:
+        """
+        判断上下文是否为空
+        """
         return bool(self.prompt or self.context_list)
 
     @overload
@@ -57,7 +60,14 @@ class Context(BaseModel):
         :param value: 值
         :return: 构建的对象
         """
-        self.context_list[index] = value
+        if isinstance(index, int) and isinstance(value, ContentUnit):
+            self.context_list[index] = value
+        elif not isinstance(index, int) and isinstance(value, ContentUnit):
+            self.context_list[index] = [value]
+        elif isinstance(index, slice) and is_iterable(value):
+            self.context_list[index] = value
+        else:
+            raise TypeError("index must be int or slice")
 
     def __len__(self):
         """
@@ -96,6 +106,9 @@ class Context(BaseModel):
     def clear(self, clear_prompt: bool = False) -> None:
         """
         清空上下文列表
+
+        :param clear_prompt: 是否清空提示词
+        :return: None
         """
         if clear_prompt and self.prompt is not None:
             self.prompt = None
@@ -167,7 +180,7 @@ class Context(BaseModel):
             remove_reasoning_prompt: bool = False,
             remove_created: bool = False,
             reduce_to_text: bool = False,
-        ) -> list[dict]:
+        ) -> list[ChatCompletionMessageParam]:
         """
         获取上下文
 
@@ -179,7 +192,7 @@ class Context(BaseModel):
         context_list = []
         if with_prompt and self.prompt:
             if reduce_to_text:
-                self.prompt.reduce_to_text()
+                self.prompt = self.prompt.reduce_to_text()
             context_list.append(
                 self.prompt.to_content(
                     remove_reasoning_prompt = remove_reasoning_prompt,
@@ -189,7 +202,7 @@ class Context(BaseModel):
         if self.context_list:
             for content in self.context_list:
                 if reduce_to_text:
-                    content.reduce_to_text()
+                    content = content.reduce_to_text()
                 context_list.append(
                     content.to_content(
                         remove_reasoning_prompt,
@@ -199,13 +212,13 @@ class Context(BaseModel):
         return context_list
     
     @property
-    def context(self) -> list[dict]:
+    def context(self) -> list[ChatCompletionMessageParam]:
         """
         获取上下文
         """
         return self.to_context(
             with_prompt = False,
-            remove_reasoner_prompt = False,
+            remove_reasoning_prompt = False,
             remove_created = True,
             reduce_to_text = False
         )
@@ -225,18 +238,27 @@ class Context(BaseModel):
                 return Context()
             try:
                 # 第一步：pop 直到不是用户消息
-                while (self.context_list and 
-                    self.last_content.role == ContentRole.USER):
+                while (
+                    self.context_list and 
+                    self.last_content is not None and
+                    self.last_content.role == ContentRole.USER
+                ):
                     pop_items.append(self.context_list.pop())
                 
                 # 第二步：pop 非用户消息
-                while (self.context_list and 
-                    self.last_content.role != ContentRole.USER):
+                while (
+                    self.context_list and 
+                    self.last_content is not None and
+                    self.last_content.role != ContentRole.USER
+                ):
                     pop_items.append(self.context_list.pop())
                 
                 # 第三步：pop 相关联的用户消息
-                while (self.context_list and 
-                    self.last_content.role == ContentRole.USER):
+                while (
+                    self.context_list and 
+                    self.last_content is not None and
+                    self.last_content.role == ContentRole.USER
+                ):
                     pop_items.append(self.context_list.pop())
             except IndexError:
                 pass
@@ -265,6 +287,7 @@ class Context(BaseModel):
 
         :param content_unit: 内容单元
         :param index: 插入位置，默认为None，表示插入到末尾
+        :return: 当前对象
         """
         if index is None:
             self.context_list.append(content_unit)
@@ -291,6 +314,7 @@ class Context(BaseModel):
                     content_unit.role = role
             context_list.append(content_unit)
         self.context_list = context_list
+        return self
     
     @property
     def last_content(self) -> ContentUnit | None:
@@ -305,6 +329,8 @@ class Context(BaseModel):
     def last_content(self, content: ContentUnit) -> None:
         """
         设置最后一个上下文单元
+
+        :param content: 上下文单元
         """
         if not self.context_list:
             self.context_list.append(content)
@@ -320,6 +346,8 @@ class Context(BaseModel):
     def extend(self, content: Context | list[ContentUnit]) -> None:
         """
         扩展上下文单元
+
+        :param content: 上下文单元或上下文单元列表
         """
         if isinstance(content, Context):
             self.context_list.extend(content.context_list)
@@ -355,7 +383,7 @@ class Context(BaseModel):
                 content = content,
                 role = role,
                 role_name = role_name,
-                created = created,
+                created = created if created is not None else datetime.now(),
                 prefix = is_prefix,
                 tool_call_id = tool_call_id,
             )
@@ -407,7 +435,7 @@ class Context(BaseModel):
     @property
     def is_empty(self) -> bool:
         """
-        判断上下文是否为空
+        上下文是否为空
         """
         return not self.prompt and not self.context_list
     
@@ -446,6 +474,7 @@ class Context(BaseModel):
     def copy(self) -> Context:
         """
         复制对象
+
         :return: 复制后的对象
         """
         return Context(
@@ -456,6 +485,7 @@ class Context(BaseModel):
     def deepcopy(self) -> Context:
         """
         深度复制对象
+
         :return: 深度复制后的对象
         """
         return Context(
@@ -486,6 +516,7 @@ class Context(BaseModel):
     def remove_reasoning_content(self) -> Context:
         """
         移除推理内容
+
         :return: 移除推理内容后的对象
         """
         context_list: list[ContentUnit] = []
@@ -503,10 +534,18 @@ class Context(BaseModel):
         )
     
     def time_range(self, begin: int | float, end: int | float) -> Context:
+        """
+        获取指定时间范围内的上下文内容
+
+        :param begin: 开始时间
+        :param end: 结束时间
+        :return: 指定时间范围内的上下文内容
+        """
         context = Context()
 
-        if begin <= self.prompt.created.timestamp() <= end:
-            context.prompt = self.prompt
+        if self.prompt is not None:
+            if begin <= self.prompt.created.timestamp() <= end:
+                context.prompt = self.prompt
         
         for content in self.context_list:
             if begin <= content.created.timestamp() <= end:

@@ -1,5 +1,6 @@
 from __future__ import annotations
 from typing import Generator, Iterable, Any, overload
+from ..auxiliary.type_checker import is_iterable
 
 class TextBuffer:
     """
@@ -80,9 +81,9 @@ class TextBuffer:
         """
         Sets the text at the specified index.
         """
-        if isinstance(index, int):
+        if isinstance(index, int) and isinstance(value, str):
             self._buffer[index] = value
-        elif isinstance(index, slice):
+        elif isinstance(index, slice) and is_iterable(value):
             self._buffer[index] = [str(v) for v in value]
 
     def __delitem__(self, index: int) -> None:

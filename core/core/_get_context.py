@@ -21,11 +21,11 @@ from ..clients.static_resources_client import (
     
 async def get_context(
     context_loader: ContextLoader,
+    cross_user_data_routing: CrossUserDataRouting[str],
     static_resources_client: StaticResourcesClient,
     history_messages: list[ContentUnit] | None = None,
     temporary_prompt: str | None = None,
     load_prompt: bool = True,
-    cross_user_data_routing: CrossUserDataRouting[str] | None = None,
     template_parser: TemplateParser | None = None
 ) -> Context:
     """
@@ -44,8 +44,8 @@ async def get_context(
     :param template_parser: 模板解析器
     :return: 上下文对象
     """
-    context_load_source = cross_user_data_routing.context.load_from_user_id
-    prompt_load_source = cross_user_data_routing.prompt.load_from_user_id
+    context_load_source: str = cross_user_data_routing.context.load_from_user_id
+    prompt_load_source: str = cross_user_data_routing.prompt.load_from_user_id
     
     if history_messages is None:
         context: Context = await context_loader.load_context(

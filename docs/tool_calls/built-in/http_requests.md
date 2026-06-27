@@ -12,12 +12,16 @@
   "base_headers": null, // The underlying request header shared by all requests.
   "base_cookies": null, // The base Cookie shared by all requests.
   "base_auth": null, // The base Auth shared by all requests.
+  "base_proxy": null, // The base Proxy shared by all requests.
   "base_timeout": 5, // Requests timeout in seconds.
   "requests": [ // Sending requests in batches using connection pooling (The outer list executes sequentially, and the inner list executes in parallel.).
     [
       {
+        "type": "request", // The type of request.
         "method": "", // The HTTP method to use for the request.
+        "id": "", // The ID of the request.
         "url": "", // The target URL of the request.
+        "fail_to_retry": null, // Whether to retry the request if it fails.
         "query_params": null, // Query parameters to include in the request URL.
         "headers": null, // HTTP headers to send with the request.
         "cookies": null, // Cookies to attach to the request.
@@ -26,10 +30,30 @@
         "auth": null, // Basic authentication credentials as a (username, password) tuple.
         "follow_redirects": true, // Whether to automatically follow HTTP redirects.
         "timeout_seconds": 10, // Request timeout in seconds.
-        "verify_crawler_permissions": true, // Whether to verify crawler permissions.
+        "verify_crawler_permissions": true, // Whether to verify crawler permissions. If the `robot.txt` is in the cache, it won't be accessed again for some time.
         "exclude_crawler_user_agent": false // Whether to not actively add the `User-Agent` in the request header (turn off this option if you need to set 'User-Agent') .
+      },
+      {
+        "type": "sleep", // The type of sleep.
+        "sleep_seconds": 10 // Sleep in a batch affects the end time of the batch.
       }
-    ]
+    ],
+    {
+      "type": "sleep",
+      "sleep_seconds": 10.0 // Sleep on the outside suspends requests on the back end.
+    },
+    {
+      "type": "request",
+      // If the batch had only one request, it could be written like this.
+      "method": "GET",
+      "url": "https://example.com",
+      "fail_to_retry": {
+        "status_codes": [500, 502, 503, 504], // The HTTP status codes to retry on.
+        "retiry": 3, // Retry 3 times
+        "backoff": 1.0, // Backoff Index (1.0, 2.0, 4.0, ...)
+        "jitter": 0.0 // No jitter
+      }
+    }
   ]
 }
 ```
@@ -40,12 +64,14 @@
 {
   "responses":[
     {
-      "status_code": 200, // 状态码
-      "reason": "success", // 只要响应了就是 `success` 而超时等情况会是其他内容
-      "headers": {}, // 响应头
-      "cookies": {}, // 响应 cookie
-      "request": {},  // 之前填写的请求体对象
-      "data": {} // 响应内容(如果 JSON 解析失败，则将响应文本作为 `data` 返回，解析成功则该字段为任意 JSON 对象)
+      "request_id": "", // The ID of the request.
+      "status_code": 200, // HTTP Status Code
+      "reason": "success", // As long as the response is `success` and timeouts and the like will be something else
+      "response_time": "", // The time it took to get the response
+      "headers": {}, // Response headers
+      "cookies": {}, // Response cookie
+      "request": {},  // Request object
+      "data": {} // The response content (if the JSON parsing fails, the response text is returned as `data` ; if the parsing succeeds, the field is any JSON object) 
     }
   ]
 }

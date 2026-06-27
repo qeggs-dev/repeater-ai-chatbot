@@ -1,7 +1,7 @@
 # ==== 标准库 ==== #
 import asyncio
 from typing import (
-    AsyncIterator,
+    AsyncGenerator,
     Any,
     Coroutine,
 )
@@ -24,7 +24,7 @@ from ._call_api_base import CallStreamAPIBase
 from .._exceptions import *
 
 class StreamAPI(CallStreamAPIBase):
-    async def _openai_call(self, user_id: str, request: Request, runtime: Runtime) -> Coroutine[Any, Any, AsyncIterator[Delta]]:
+    async def _openai_call(self, user_id: str, request: Request, runtime: Runtime) -> AsyncGenerator[Delta, Any]:
         """
         调用流式API
 
@@ -90,58 +90,23 @@ class StreamAPI(CallStreamAPIBase):
         with runtime.status_stack.enter("Send Request"):
             logger.info(f"Start Connecting to the API", user_id = user_id)
             runtime.response.request_log.request_start_time = TimeStamp()
-            if request.fim_mode:
-                response: AsyncStream[Completion] = await client.completions.create(
-                    model = request.model,
-                    prompt = request.prompt,
-                    echo = self.none_to_omit(request.echo),
-                    suffix = self.none_to_omit(request.suffix),
-                    temperature = self.none_to_omit(request.temperature),
-                    top_p = self.none_to_omit(request.top_p),
-                    frequency_penalty = self.none_to_omit(request.frequency_penalty),
-                    presence_penalty = self.none_to_omit(request.presence_penalty),
-                    max_tokens = self.none_to_omit(request.max_tokens),
-                    logprobs = self.none_to_omit(request.top_logprobs if request.logprobs else None),
-                    seed = self.none_to_omit(request.seed),
-                    stop = self.none_to_omit(request.stop),
-                    stream = True,
-                    stream_options = request.stream_options.model_dump(),
-                    extra_body = extra_body,
-                )
-            else:
-                messages = request.context.to_context(
-                    with_prompt = True,
-                    remove_reasoning_prompt = request.remove_reasoning_prompt,
-                    remove_created = request.remove_created,
-                )
-                response: AsyncStream[ChatCompletionChunk] = await client.chat.completions.create(
-                    model = request.model,
-                    temperature = self.none_to_omit(request.temperature),
-                    top_p = self.none_to_omit(request.top_p),
-                    frequency_penalty = self.none_to_omit(request.frequency_penalty),
-                    presence_penalty = self.none_to_omit(request.presence_penalty),
-                    max_tokens = self.none_to_omit(request.max_tokens),
-                    max_completion_tokens = self.none_to_omit(request.max_completion_tokens),
-                    stop = self.none_to_omit(request.stop),
-                    stream = True,
-                    messages = messages,
-                    seed = self.none_to_omit(request.seed),
-                    tools = self.none_to_omit(request.tools),
-                    tool_choice = self.none_to_omit(request.tool_choice),
-                    stream_options=request.stream_options.model_dump(),
-                    logprobs = self.none_to_omit(request.logprobs),
-                    top_logprobs = self.none_to_omit(request.top_logprobs if request.top_logprobs else None),
-                    extra_body = extra_body
-                )
+            response = await self._send_openai_request(
+                user_id = user_id,
+                request = request,
+                runtime = runtime,
+                client = client,
+                extra_body = extra_body,
+                stream = True,
+            )
             runtime.response.request_log.request_end_time = TimeStamp()
         
         with runtime.status_stack.enter("Streaming"):
-            chunk_queue: asyncio.Queue[ChatCompletionChunk | Exception | None] = asyncio.Queue()
+            chunk_queue: asyncio.Queue[ChatCompletionChunk | Completion | Exception | None] = asyncio.Queue()
             chunk_times: list[TimeStamp] = []
             translation_chunk_times:list[TimeStamp] = []
             translation_queue_backlog: list[int] = []
 
-            async def fetch_response_chunks(response: AsyncStream[ChatCompletionChunk]):
+            async def fetch_response_chunks(response: AsyncStream[ChatCompletionChunk] | AsyncStream[Completion]):
                 nonlocal chunk_queue, runtime
                 try:
                     async for chunk in response:
@@ -174,4 +139,5 @@ class StreamAPI(CallStreamAPIBase):
                     response
                 )
             )
+
             return translation_chunks()

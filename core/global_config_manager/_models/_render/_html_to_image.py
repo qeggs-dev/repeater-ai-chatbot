@@ -1,7 +1,5 @@
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 class HTMLToImageConfig(BaseModel):
-    model_config = ConfigDict(case_sensitive=False)
-
-    base_url: str = ""
-    timeout: int = 600.0
+    base_url: str = Field(default="")
+    timeout: int | float = Field(default=600.0)

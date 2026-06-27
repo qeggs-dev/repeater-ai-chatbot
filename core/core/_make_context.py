@@ -38,17 +38,17 @@ async def make_context(
     context_loader: ContextLoader,
     template_parser: TemplateParser,
     static_resources_client: StaticResourcesClient,
+    task_status_stack: StatusStack[str],
+    cross_user_data_routing: CrossUserDataRouting[str],
     history_messages: list[ContentUnit] | None = None,
     history_msg_role_map: dict[ContentRole, ContentRole | None] | None = None,
     role: ContentRole = ContentRole.USER,
-    role_name:  str = "",
+    role_name:  str | None = "",
     extra_template_fields: dict[str, Any] | None = None,
     temporary_prompt: str | None = None,
     additional_data: AdditionalData | None = None,
     load_prompt: bool | None = None,
-    cross_user_data_routing: CrossUserDataRouting[str | None] | None = None,
-    task_status_stack: StatusStack[str] | None = None
-) -> tuple[Context, ContentUnit]:
+) -> tuple[Context, ContentUnit | None]:
 
     with task_status_stack.enter("Getting history context"):
         if load_prompt is None:
@@ -81,8 +81,9 @@ async def make_context(
             make_multimodal_message = ConfigManager.get_configs().context.make_multimodal_message
     
     with task_status_stack.enter("Splicing user input"):
+        user_input: ContentUnit | None
         if message is not None:
-            user_input: ContentUnit = await context_loader.make_user_content(
+            user_input = await context_loader.make_user_content(
                 user_id = user_id,
                 new_message = message,
                 role = role,

@@ -1,6 +1,7 @@
 import asyncio
 
 from ..context import (
+    Context,
     Function,
     FunctionCaller,
     CallingRequest,
@@ -31,6 +32,7 @@ from typing import (
 )
 from loguru import logger
 from ._exceptions import *
+from ..special_exception import HTTPException
 from ._multi_response import MultiResponse
 
 class ModelRequester:
@@ -155,10 +157,14 @@ class ModelRequester:
     ) -> MultiResponse:
         generated_times: int = 0
         responses: MultiResponse = MultiResponse()
-        responses.historical_context = request.context.copy()
+        if request.context is None:
+            historical_context = Context()
+        else:
+            historical_context = request.context.copy()
+        responses.historical_context = historical_context.copy()
         remove_reasoning_prompt = request.remove_reasoning_prompt
         if request.remove_reasoning_prompt:
-            submit_context = request.context.remove_reasoning_content()
+            submit_context = historical_context.remove_reasoning_content()
         else:
             submit_context = request.context
         request.context = submit_context
@@ -268,4 +274,10 @@ class ModelRequester:
             request.timeout = model.timeout
         else:
             request.timeout = self._user_configs.model_timeout
-        request.key = model.api_key
+        if model.api_key is not None:
+            request.key = model.api_key
+        else:
+            raise HTTPException(
+                status_code = 403,
+                detail = "No api key for model",
+            )

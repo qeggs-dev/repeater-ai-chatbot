@@ -23,7 +23,7 @@ TIME_LEVELS: list[tuple[str, str, int]] = [
     ("year", "y", 100),
 ]
 
-def format_time_duration_ns(duration: int, start_with: int = 0, use_abbreviation: bool = False, delimiter: str = ", ") -> str:
+def format_time_duration_ns(duration: int | float, start_with: int = 0, use_abbreviation: bool = False, delimiter: str = ", ") -> str:
     """
     Format time duration in nanoseconds to a human-readable string.
     """
@@ -36,7 +36,7 @@ def format_time_duration_ns(duration: int, start_with: int = 0, use_abbreviation
         final_level=("century", "cent")
     )
 
-def format_time_duration(duration: int, start_with: int = 0, use_abbreviation: bool = False, delimiter: str = ", ") -> str:
+def format_time_duration(duration: int | float, start_with: int = 0, use_abbreviation: bool = False, delimiter: str = ", ") -> str:
     """
     Format time duration in seconds to a human-readable string.
     """

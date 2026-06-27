@@ -13,6 +13,9 @@ from ..data_manager import (
     ContextManager,
     PromptManager
 )
+from ..call_api.image import (
+    ImageGenerateCaller
+)
 from ..user_config_manager import (
     ConfigManager as UserConfigManager
 )
@@ -122,7 +125,7 @@ class RepeaterRuntime:
             logger.error("Invalid blacklist file")
         except FileNotFoundError:
             logger.error(f"Blacklist file not found: {blacklist_file_path}")
-        self.blacklist_match_timeout: int | None = self._configs.blacklist.match_timeout
+        self.blacklist_match_timeout: int | float | None = self._configs.blacklist.match_timeout
 
     @init_list.append
     @print_init_runtime("Task Status Map")

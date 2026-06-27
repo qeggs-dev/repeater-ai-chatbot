@@ -4,8 +4,6 @@ from ._data_types import DataTypes
 from ._metadata_fields import MetadataFields
 
 class UserDataConfig(BaseModel):
-    model_config = ConfigDict(case_sensitive=False)
-
     dir: str = "./workspace/data/user_data"
     branches_dir_name: str = "branches"
     default_branch_id: str = "main"
@@ -22,9 +20,13 @@ class UserDataConfig(BaseModel):
     def get_user_data_cache_maxsize(self) -> int | float:
         if self.user_data_cache_maxsize in ["infinite", "inf"]:
             return float("inf")
-        return self.user_data_cache_maxsize
+        if isinstance(self.user_data_cache_maxsize, int):
+            return self.user_data_cache_maxsize
+        raise ValueError("user_data_cache_maxsize must be an integer or 'infinite'")
     
     def get_max_sub_manager_cache_size(self) -> int | float:
         if self.max_sub_manager_cache_size in ["infinite", "inf"]:
             return float("inf")
-        return self.max_sub_manager_cache_size
+        if isinstance(self.max_sub_manager_cache_size, int):
+            return self.max_sub_manager_cache_size
+        raise ValueError("max_sub_manager_cache_size must be an integer or 'infinite'")

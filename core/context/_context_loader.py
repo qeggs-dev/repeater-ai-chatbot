@@ -54,11 +54,6 @@ class ContextLoader:
         self._prompt_manager: PromptManager = prompt
         self._config_manager: ConfigManager = config
     
-    @property
-    @staticmethod
-    def empty_content() -> ContentUnit:
-        return ContentUnit()
-    
     async def load_prompt(
             self,
             user_id: str,
@@ -196,7 +191,7 @@ class ContextLoader:
                 branch_id = branch_id,
             )
         else:
-            prompt = Context()
+            prompt = ContentUnit()
         
         context = await self.load_context(
             user_id = user_id,
@@ -296,7 +291,7 @@ class ContextLoader:
                     if isinstance(additional_data.audio_url, str):
                         content.content.append(
                             AudioBlock(
-                                audio_url = AudioDataBlock(
+                                input_audio = AudioDataBlock(
                                     data = additional_data.audio_url,
                                 )
                             )
@@ -305,7 +300,7 @@ class ContextLoader:
                         for url in additional_data.audio_url:
                             content.content.append(
                                 AudioBlock(
-                                    audio_url = AudioDataBlock(
+                                    input_audio = AudioDataBlock(
                                         data = url,
                                     )
                                 )
@@ -318,8 +313,8 @@ class ContextLoader:
                     if isinstance(additional_data.file_url, str):
                         content.content.append(
                             FileBlock(
-                                file_url = FileDataBlock(
-                                    data = additional_data.file_url,
+                                file = FileDataBlock(
+                                    file_data = additional_data.file_url,
                                 )
                             )
                         )
@@ -327,8 +322,8 @@ class ContextLoader:
                         for url in additional_data.file_url:
                             content.content.append(
                                 FileBlock(
-                                    file_url = FileDataBlock(
-                                        data = url,
+                                    file = FileDataBlock(
+                                        file_data = url,
                                     )
                                 )
                             )

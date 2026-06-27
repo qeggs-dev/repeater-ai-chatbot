@@ -1,10 +1,12 @@
 from pydantic import BaseModel, ConfigDict
-from .auxiliary.image import Image
-from .auxiliary.background import Background
-from .auxiliary.output_format import OutputFormat
-from .auxiliary.quality import Quality
-from .auxiliary.size import ImageSize
-from .auxiliary.token_usage import ImageTokenUsage
+from .auxiliary import (
+    Image,
+    Background,
+    OutputFormat,
+    Quality,
+    ImageSize,
+    ImageTokenUsage,
+)
 
 class ImagesResponse(BaseModel):
     model_config = ConfigDict(

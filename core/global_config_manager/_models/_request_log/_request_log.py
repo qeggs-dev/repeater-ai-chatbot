@@ -1,8 +1,6 @@
 from pydantic import BaseModel, ConfigDict
 
 class RequestLogConfig(BaseModel):
-    model_config = ConfigDict(case_sensitive=False)
-
     dir: str = "./workspace/request_log"
     auto_save: bool = True
     debonce_save_wait_time: float = 600.0

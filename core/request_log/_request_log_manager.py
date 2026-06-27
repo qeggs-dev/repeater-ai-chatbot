@@ -9,7 +9,7 @@ from pathlib import Path
 from loguru import logger
 from ..global_config_manager import ConfigManager
 from typing import List, AsyncIterator, Generator, Iterable
-from ._request_log_object import RequestLog, CallAPILog
+from ._request_log_object import RequestLog
 from pydantic import ValidationError
 
 class RequestLogManager:
@@ -23,8 +23,8 @@ class RequestLogManager:
         ):
 
         # 日志缓存列表
-        self._log_cache: List[RequestLog | CallAPILog] = []
-        self._log_list: List[RequestLog | CallAPILog] = []
+        self._log_cache: List[RequestLog] = []
+        self._log_list: List[RequestLog] = []
 
         # 防抖保存等待时间
         if debonce_save_wait_time is None:
@@ -97,7 +97,7 @@ class RequestLogManager:
             )
         )
 
-    async def add_request_log(self, request_log: RequestLog | CallAPILog) -> None:
+    async def add_request_log(self, request_log: RequestLog) -> None:
         """
         添加调用日志项
 
@@ -110,7 +110,7 @@ class RequestLogManager:
             logger.info("Request log added", user_id=request_log.user_id)
             await self._debonce_save()
 
-    async def add_multi_request_log(self, request_logs: list[RequestLog | CallAPILog]) -> None:
+    async def add_multi_request_log(self, request_logs: Iterable[RequestLog]) -> None:
         """
         添加多个调用日志项
 
@@ -135,7 +135,7 @@ class RequestLogManager:
         
     # 将日志列表转换为字节流
     @staticmethod
-    def _log_bytestream(log_list: Iterable[RequestLog | CallAPILog]) -> Generator[bytes, None, None]:
+    def _log_bytestream(log_list: Iterable[RequestLog]) -> Generator[bytes, None, None]:
         for log in log_list:
             yield orjson.dumps(log.model_dump()) + b"\n"
 
@@ -194,7 +194,7 @@ class RequestLogManager:
         # 清空日志列表
         self._log_list.clear()
 
-    async def read_request_log(self) -> List[RequestLog]:
+    async def read_request_log(self) -> list[RequestLog]:
         """
         从文件读取所有调用日志
 
@@ -225,7 +225,7 @@ class RequestLogManager:
                 readed_log_count += 1
             cached = True
         else:
-            cache: list[RequestLog | CallAPILog] = []
+            cache: list[RequestLog] = []
             full_memory_cache = ConfigManager.get_configs().request_log.full_memory_cache
 
             async for log in self._read_file_logs():
@@ -281,7 +281,7 @@ class RequestLogManager:
                                 logger.error(
                                     "Error in log file {file}/{error_field}: {error_message}",
                                     file = file,
-                                    error_field = "/".join(error["loc"]),
+                                    error_field = ".".join(str(i) for i in error["loc"]),
                                     error_message = error["msg"]
                                 )
                 log_file_count += 1  # 文件计数

@@ -1,12 +1,24 @@
-def main(run_server: bool = True):
-    while True:
-        import time
-        start_import_time = time.perf_counter_ns()
-        import sys
-        from core import RepeaterMain
-        from loguru import logger
-        end_import_time = time.perf_counter_ns()
+import sys
+import time
+from loguru import logger
 
+def main(run_server: bool = True):
+    start_import_time = time.perf_counter_ns()
+    try:
+        from core import RepeaterMain
+    except BaseException as e:
+        logger.exception(
+            "Import core failed. Please check code and try again. Error: {error_msg}",
+            error_msg = str(e),
+        )
+        input_str = input("Shall we proceed with the program? (y/N)")
+        if input_str.lower() in ["y", "yes", "1", "true", "t"]:
+            pass
+        else:
+            sys.exit(1)
+    end_import_time = time.perf_counter_ns()
+
+    while True:
         repeater_main = RepeaterMain()
 
         load_configs_start_time = time.perf_counter_ns()
@@ -35,6 +47,7 @@ def main(run_server: bool = True):
         
         repeater_main.init_all(configs)
         repeater_main.init_server(configs)
+        repeater_main.set_inited_flag() # Important! The program needs to set this Flag to start.
         
         if run_server:
             exit_code = repeater_main.run()

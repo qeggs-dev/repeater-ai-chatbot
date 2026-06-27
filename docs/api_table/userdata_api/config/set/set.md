@@ -9,7 +9,7 @@
     - **Content:**
       - *\*Config 内容*
   - **Response**
-    - **type:** `Text`
+    - **type:** `JSON`
     - **Content:**
       - *\*Config 内容*
 

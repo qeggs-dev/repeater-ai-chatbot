@@ -3,7 +3,7 @@ import asyncio
 from typing import (
     Any,
     Awaitable,
-    AsyncIterator,
+    AsyncGenerator,
     Callable,
 )
 
@@ -34,12 +34,14 @@ class StreamClient(ClientBase):
             runtime: Runtime,
             chunk_callback: Callable[[Delta], Awaitable[None]] | None = None
         ) -> Response:
-        """提交请求，并等待API返回结果"""
-        generator: AsyncIterator[Delta] = self._submit_task(user_id, request, runtime)
+        """
+        提交请求，并等待API返回结果
+        """
+        generator: AsyncGenerator[Delta, None] = self._submit_task(user_id, request, runtime)
         wraping_generator = StreamingResponseGenerationLayer(
             user_id = user_id,
             request = request,
-            content_buffer = runtime.content_buffer,
+            runtime = runtime,
             response_iterator = generator
         )
         async for delta in wraping_generator:
@@ -50,7 +52,7 @@ class StreamClient(ClientBase):
         
         return wraping_generator.response
     
-    async def _submit_task(self, user_id: str, request: Request, runtime: Runtime) -> AsyncIterator[Delta]:
+    async def _submit_task(self, user_id: str, request: Request, runtime: Runtime) -> AsyncGenerator[Delta, None]:
         if request.stream:
             client = StreamAPI()
         else:

@@ -14,15 +14,15 @@ class RuntimeContainer:
         return cls._instance
     
     @classmethod
-    def init_runtime(cls) -> None:
+    def init_runtime(cls) -> RepeaterRuntime:
         cls._objects = RepeaterRuntime()
         return cls._objects
     
     @classmethod
-    def get_runtime(cls, init: bool = False) -> RepeaterRuntime:
+    def get_runtime(cls, auto_init: bool = True) -> RepeaterRuntime:
         if cls._objects is None:
-            if init:
-                cls.init_runtime()
+            if auto_init:
+                return cls.init_runtime()
             else:
                 raise RuntimeError("GlobalObjects not initialized")
         return cls._objects

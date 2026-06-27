@@ -1,8 +1,8 @@
 from enum import Enum, auto
 
-class CallType(Enum):
+class CallMode(Enum):
     """
-    Enum for the type of function call
+    Tool calling mode
     """
     SYNC = auto()
     ASYNC = auto()

@@ -13,24 +13,21 @@ class ContentBlockType(StrEnum):
 
 class TextBlock(BaseModel):
     model_config = ConfigDict(
-        validate_assignment = True,
-        exclude_none = True
+        validate_assignment = True
     )
     type: Literal[ContentBlockType.TEXT] = ContentBlockType.TEXT
     text: str = ""
 
 class ImageUrlBlock(BaseModel):
     model_config = ConfigDict(
-        validate_assignment = True,
-        exclude_none = True
+        validate_assignment = True
     )
 
     url: str = ""
 
 class ImageBlock(BaseModel):
     model_config = ConfigDict(
-        validate_assignment = True,
-        exclude_none = True
+        validate_assignment = True
     )
 
     type: Literal[ContentBlockType.IMAGE_URL] = ContentBlockType.IMAGE_URL
@@ -38,16 +35,14 @@ class ImageBlock(BaseModel):
 
 class VideoUrlBlock(BaseModel):
     model_config = ConfigDict(
-        validate_assignment = True,
-        exclude_none = True
+        validate_assignment = True
     )
 
     url: str = ""
 
 class VideoBlock(BaseModel):
     model_config = ConfigDict(
-        validate_assignment = True,
-        exclude_none = True
+        validate_assignment = True
     )
 
     type: Literal[ContentBlockType.VIDEO_URL] = ContentBlockType.VIDEO_URL
@@ -55,16 +50,14 @@ class VideoBlock(BaseModel):
 
 class AudioDataBlock(BaseModel):
     model_config = ConfigDict(
-        validate_assignment = True,
-        exclude_none = True
+        validate_assignment = True
     )
 
     data: str = ""
 
 class AudioBlock(BaseModel):
     model_config = ConfigDict(
-        validate_assignment = True,
-        exclude_none = True
+        validate_assignment = True
     )
 
     type: Literal[ContentBlockType.INPUT_AUDIO] = ContentBlockType.INPUT_AUDIO
@@ -72,8 +65,7 @@ class AudioBlock(BaseModel):
 
 class FileDataBlock(BaseModel):
     model_config = ConfigDict(
-        validate_assignment = True,
-        exclude_none = True
+        validate_assignment = True
     )
 
     file_data: str = ""
@@ -82,8 +74,7 @@ class FileDataBlock(BaseModel):
 
 class FileBlock(BaseModel):
     model_config = ConfigDict(
-        validate_assignment = True,
-        exclude_none = True
+        validate_assignment = True
     )
 
     type: Literal[ContentBlockType.FILE] = ContentBlockType.FILE

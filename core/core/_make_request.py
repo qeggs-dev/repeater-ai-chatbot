@@ -39,8 +39,8 @@ from ._print_request_info import print_request_info
 def make_request(
     *,
     user_id: str,
-    user_input: ContentUnit,
-    suffix: str = None,
+    user_input: ContentUnit | None = None,
+    suffix: str | None = None,
     echo: bool | None = None,
     fim_mode: bool = False,
     user_info: RequestUserInfo,
@@ -70,6 +70,8 @@ def make_request(
         request.timeout = model.timeout
     else:
         request.timeout = configs.model_timeout
+    if model.api_key is None:
+        raise HTTPException("Model api key is None")
     request.key = model.api_key
     
     print_request_info(
@@ -168,7 +170,10 @@ def make_request(
     
     if fim_mode:
         request.fim_mode = fim_mode
-        request.prompt = user_input.content
+        if user_input is not None:
+            request.prompt = user_input.to_text()
+        else:
+            request.prompt = ""
         request.suffix = suffix
 
         if echo is not None:

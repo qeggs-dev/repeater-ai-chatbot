@@ -16,6 +16,8 @@ from ..global_config_manager import ConfigManager
 from ._server import Server
 
 class ServerIniter:
+    init_list: list[Callable[..., None]] = []
+
     def __init__(
         self,
         server: Server,
@@ -26,10 +28,8 @@ class ServerIniter:
         return self.server.inited()
 
     def init_all(self):
-        self.init_runtime()
-        self.init_core()
-        self.init_routers()
-        self.init_admin_key_manager()
+        for init_func in ServerIniter.init_list:
+            init_func(self)
     
     def init_middleware(self):
         self.middleware_factory()
@@ -41,29 +41,45 @@ class ServerIniter:
             ConfigManager.get_configs().logger,
         )
         logger.info("Logger has been initialized.")
-        self.server._logger_inited = True
+        Server._logger_inited = True
     
+    @init_list.append
     @print_init_runtime("Runtime")
     def init_runtime(self):
+        """
+        Init runtime instance.
+        """
         from ..runtime_container import RuntimeContainer
         self.server.runtime = RuntimeContainer.init_runtime()
     
+    @init_list.append
     @print_init_runtime("Core")
     def init_core(self):
+        """
+        Init core instance.
+        """
         from ..core import Core
         self.server.core = Core(
             runtime = self.server.runtime
         )
     
+    @init_list.append
     @print_init_runtime("Routers")
     def init_routers(self):
+        """
+        Init api routers.
+        """
         from ..api import root_router
         self.server.app.include_router(
             root_router
         )
     
+    @init_list.append
     @print_init_runtime("Admin Key Manager")
     def init_admin_key_manager(self):
+        """
+        Init admin key manager.
+        """
         from ..admin_api_key_manager import AdminKeyManager
         self.server.admin_key_manager = AdminKeyManager()
     
@@ -75,6 +91,9 @@ class ServerIniter:
         workers: int = 1,
         reload: bool = False
     ):
+        """
+        Init server.
+        """
         from uvicorn import Server, Config
         # 初始化API
         self.server.server = Server(
@@ -88,10 +107,30 @@ class ServerIniter:
             )
         )
     
+    def set_inited_flag(self):
+        """
+        Set the inited flag of the server initer.
+
+        Important! The program needs to set this Flag to start.
+        """
+        self.server._inited = True
+    
     def middleware_factory(self):
+        """
+        Make a http middleware.
+
+        :return: A http middleware.
+        """
         from ..repeater_traceback import log_traceback
         @self.server.app.middleware("http")
         async def http_middleware(request: Request, call_next: Callable[[Request], Awaitable[Response]]):
+            """
+            Http middleware.
+
+            :param request: Request
+            :param call_next: Callable[[Request], Awaitable[Response]]
+            :return: Response
+            """
             try:
                 return await call_next(request)
             except Exception as e:

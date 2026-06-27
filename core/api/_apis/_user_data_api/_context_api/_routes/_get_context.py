@@ -24,7 +24,7 @@ async def get_context(user_id: str):
     context_loader = server.core.get_context_loader()
     context = await context_loader.load_context(user_id)
 
-    logger.info(f"Get Context", user_id = user_id)
+    logger.info("Get Context", user_id = user_id)
 
     # 返回JSON格式的上下文
     return ORJSONResponse(context.to_context())

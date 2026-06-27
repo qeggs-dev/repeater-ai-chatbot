@@ -3,8 +3,6 @@ from ._log_level import LogLevel
 from ._log_compression import CompressionMode
 
 class LoggerConfig(BaseModel):
-    model_config = ConfigDict(case_sensitive=False)
-
     file_path: str = "./logs/repeater-log-{time:YYYY-MM-DD_HH-mm-ss.SSS}.log"
     level: LogLevel = LogLevel.DEBUG
     rotation: str = "1 days"

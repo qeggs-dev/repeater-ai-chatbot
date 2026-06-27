@@ -2,19 +2,11 @@ from __future__ import annotations
 import json
 import httpx
 from environs import Env
-from ...context import ToolCallPacakage, CallType
-from ...auxiliary.http import get_ssl_context
-from .._caller import ModelRequester
-from enum import StrEnum
 from pydantic import BaseModel, Field
-
-class Scope(StrEnum):
-    WEBPAGE = "webpage"
-    DOCUMENT = "document"
-    SCHOLAR = "scholar"
-    IMAGE = "image"
-    VIDEO = "video"
-    PODCAST = "podcast"
+from ....context import ToolCallPacakage, CallMode
+from ....auxiliary.http import get_ssl_context
+from ..._caller import ModelRequester
+from .scope import Scope
 
 @ModelRequester.reg_global_package
 class Metaso(ToolCallPacakage):
@@ -32,7 +24,7 @@ class Metaso(ToolCallPacakage):
         data: dict = Field(..., description="The data of the response")
     
     name = "metaso"
-    call_type = CallType.ASYNC
+    call_type = CallMode.ASYNC
     json_result = True
     _env = Env()
     client: httpx.AsyncClient | None = None

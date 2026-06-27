@@ -36,7 +36,11 @@ async def rewrite_context(user_id: str, rewrite_context: RewriteContext):
     else:
         raise HTTPException(400, "Index out of range")
     
-    logger.info(f"Rewrite {rewrite_context.index} Context", user_id = user_id)
+    logger.info(
+        "Rewrite {count} Context",
+        user_id = user_id,
+        count = abs(rewrite_context.index)
+    )
     
     # 返回ORJSONResponse，新的上下文内容
     return ORJSONResponse(context)

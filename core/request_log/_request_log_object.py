@@ -29,7 +29,7 @@ class RequestLog(BaseModel):
     request_end_time: TimeStamp = Field(default_factory=lambda: TimeStamp(timestamp=0, monotonic=0))
     stream_processing_start_time: TimeStamp = Field(default_factory=lambda: TimeStamp(timestamp=0, monotonic=0))
     stream_processing_end_time: TimeStamp = Field(default_factory=lambda: TimeStamp(timestamp=0, monotonic=0))
-    task_end_time: TimeStamp = Field(default=lambda: TimeStamp(timestamp=0, monotonic=0))
+    task_end_time: TimeStamp = Field(default_factory=lambda: TimeStamp(timestamp=0, monotonic=0))
     chunk_generated_times: list[TimeStamp] = Field(default_factory=list)
     translation_chunk_times: list[TimeStamp] = Field(default_factory=list)
     translation_queue_backlog: list[int] = Field(default_factory=list)
@@ -47,17 +47,3 @@ class RequestLog(BaseModel):
     total_context_length: int = 0
     reasoning_content_length: int = 0
     new_content_length: int = 0
-    
-
-class CallAPILog(BaseModel):
-    """
-    Class to represent a call API log object.
-    """
-    model_config = ConfigDict(
-        validate_assignment=True,
-    )
-    
-    source: str = ""
-    start_time: TimeStamp = Field(default_factory=lambda: TimeStamp(timestamp=0, monotonic=0))
-    end_time: TimeStamp = Field(default_factory=lambda: TimeStamp(timestamp=0, monotonic=0))
-    user_id: str = ""

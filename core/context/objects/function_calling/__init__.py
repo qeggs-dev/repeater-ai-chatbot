@@ -11,7 +11,7 @@ from .function import (
     Function,
     ToolStruct,
     FunctionStruct,
-    CallType,
+    CallMode,
 )
 
 __all__ = [
@@ -25,5 +25,5 @@ __all__ = [
     "Function",
     "ToolStruct",
     "FunctionStruct",
-    "CallType",
+    "CallMode",
 ]

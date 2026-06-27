@@ -47,7 +47,7 @@ async def download_from_nexus(user_id: str, user_data_type: UserDataType, reques
     
     await manager.save(
         user_id = user_id,
-        data = data
+        data = data.data
     )
 
     return ORJSONResponse(

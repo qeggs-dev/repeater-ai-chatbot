@@ -1,11 +1,18 @@
 import orjson
 import asyncio
 
-from typing import AsyncIterator
+from typing import (
+    Any,
+    AsyncGenerator,
+    AsyncIterator,
+    Coroutine
+)
 from fastapi.responses import (
     ORJSONResponse,
     StreamingResponse
 )
+
+from core.context.objects._content_unit import ContentUnit
 from .....special_exception import (
     HTTPException
 )
@@ -26,7 +33,7 @@ async def chat_endpoint(
     Endpoint for chat
     """
     server = RepeaterMain.get_now_server()
-    chat_coroutine = server.core.chat(
+    chat_coroutine: Coroutine[Any, Any, Response | AsyncGenerator[Delta | ContentUnit, None]] = server.core.chat(
         user_id = user_id,
         message = request.message,
         suffix = request.suffix,
@@ -66,7 +73,7 @@ async def chat_endpoint(
             status_code=response.status
         )
     else:
-        async def generator_wrapper(context: AsyncIterator[Delta]) -> AsyncIterator[bytes]:
+        async def generator_wrapper(context: AsyncGenerator[Delta | ContentUnit, None]) -> AsyncGenerator[bytes, None]:
             async for chunk in context:
                 yield orjson.dumps(chunk.model_dump(exclude_none=True)) + b"\n"
 

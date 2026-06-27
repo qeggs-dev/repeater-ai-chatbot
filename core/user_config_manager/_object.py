@@ -14,26 +14,26 @@ class UserConfigs(BaseModel):
     Configs for user.
     """
     model_config = ConfigDict(
-        case_sensitive=False,
         validate_assignment=True
     )
     
     # Model Parameters
     model_id: str | list[str] | None = None
+    image_model_id: str | list[str] | None = None
     fim_echo: bool | None = None
     seed: int | None = None
-    temperature: float | None = Field(None, ge=0.0, le=2.0)
-    top_a: float | None = Field(None, ge=0.0)
-    top_p: float | None = Field(None, ge=0.0, le=1.0)
-    top_k: int | None = Field(None, ge=1)
+    temperature: float | None = Field(default=None, ge=0.0, le=2.0)
+    top_a: float | None = Field(default=None, ge=0.0)
+    top_p: float | None = Field(default=None, ge=0.0, le=1.0)
+    top_k: int | None = Field(default=None, ge=1)
     max_tokens: int | None = None
     max_completion_tokens: int | None = None
     stop: list[str] | None = None
     thinking: bool | None = None
     model_timeout: int | float | None = None
-    repetition_penalty: float | None = Field(None, gt=0.0, le=2.0)
-    frequency_penalty: float | None = Field(None, ge=-2.0, le=2.0)
-    presence_penalty: float | None = Field(None, ge=-2.0, le=2.0)
+    repetition_penalty: float | None = Field(default=None, gt=0.0, le=2.0)
+    frequency_penalty: float | None = Field(default=None, ge=-2.0, le=2.0)
+    presence_penalty: float | None = Field(default=None, ge=-2.0, le=2.0)
     reasoning_effort: ReasoningEffort | None = None
     send_user_id: bool | None = None
 

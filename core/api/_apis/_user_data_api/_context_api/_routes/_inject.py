@@ -28,7 +28,10 @@ async def inject_context(user_id: str, request: ContentUnit):
 
     context.append(content = request)
     await context_loader.save(user_id, context)
-    logger.info(f"User {user_id} injected context")
+    logger.info(
+        "User {user_id} injected context",
+        user_id = user_id
+    )
     return ORJSONResponse(
         {
             "status": "success",

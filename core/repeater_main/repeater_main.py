@@ -14,14 +14,11 @@ from ..server import (
     Server,
     ServerIniter,
 )
+from pathlib import Path
 from .._info import __version__
 from ..requirements_version_checker import check_package_list
 from loguru import logger
-from ..repeater_traceback import WarningHandler
-
-# 初始化警告处理器
-warning_handler = WarningHandler()
-warning_handler.inject()
+from .config_force_load_list import is_config_force_load_list
 
 class RepeaterMain:
     env = Env()
@@ -34,21 +31,38 @@ class RepeaterMain:
 
     @classmethod
     def get_now_server(cls) -> Server:
+        """
+        Get the current server instance
+        """
         if cls._now_server is None:
             raise RuntimeError("Server not inited")
         return cls._now_server
 
-    def load_configs(self):
+    def load_configs(self) -> GlobalConfigs:
+        """
+        Load configs from file
+
+        Tip: The program needs a configuration file to boot, please load the configuration file first.
+        """
         config_loader = ConfigManager()
+        path = self.env.path("CONFIG_DIR", Path("./configs/project_configs"))
+        force_load_list = self.env.json("CONFIG_FORCE_LOAD_LIST", None)
+        if force_load_list is not None and not is_config_force_load_list(force_load_list):
+            raise RuntimeError("CONFIG_FORCE_LOAD_LIST is not valid")
         config_loader.update_base_path(
-            self.env.path("CONFIG_DIR", "./configs/project_configs"),
-            self.env.json("CONFIG_FORCE_LOAD_LIST", None)
+            path = path,
+            force_load_list = force_load_list
         )
         return config_loader.load(
             create_if_missing=True
         )
     
-    def init_server(self, configs: GlobalConfigs):
+    def init_server(self, configs: GlobalConfigs) -> None:
+        """
+        Init the server
+
+        :param configs: GlobalConfigs
+        """
         host = "0.0.0.0" # 默认监听所有地址
         port = 8000 # 默认监听8000端口
 
@@ -59,19 +73,19 @@ class RepeaterMain:
 
         host: str | None = configs.server.host
         if host is None:
-            host: str = env_config_host
+            host = env_config_host
         
         port: int | None = configs.server.port
         if port is None:
-            port: int = env_config_port
+            port = env_config_port
         
         workers: int | None = configs.server.workers
         if workers is None:
-            workers: int = env_config_workers
+            workers = env_config_workers
         
         reload: bool | None = configs.server.reload
         if reload is None:
-            reload: bool = env_config_reload
+            reload = env_config_reload
 
         logger.info(f"Starting server at {host}:{port}")
 
@@ -90,7 +104,14 @@ class RepeaterMain:
 
         self.server_initer.init_middleware()
     
-    def check_package(self, configs: GlobalConfigs):
+    def check_package(self, configs: GlobalConfigs) -> None:
+        """
+        Check that the package meets the requirements
+        
+        **Warning: it will be discarded**
+
+        :param configs: GlobalConfigs
+        """
         logger.info("Checking Packages...")
         start_check_packages_time = time.perf_counter_ns()
         check_package_list(
@@ -105,7 +126,12 @@ class RepeaterMain:
     def init_logger(self):
         self.server_initer.init_logger()
     
-    def init_all(self, configs: GlobalConfigs):
+    def init_all(self, configs: GlobalConfigs) -> None:
+        """
+        One-click handles most initialization.
+
+        :param configs: GlobalConfigs
+        """
         logger.info(f"Run With Python {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}")
         logger.info(f"Core Version: {__version__}")
 
@@ -121,14 +147,28 @@ class RepeaterMain:
             init_resource_time = (end_init_resource_time - start_init_resource_time) / 1e6
         )
     
-    async def run_server(self):
+    def set_inited_flag(self) -> None:
+        """
+        Set the inited flag of the server initer.
+
+        Important! The program needs to set this Flag to start.
+        """
+        self.server_initer.set_inited_flag()
+    
+    async def run_server(self) -> int:
+        """
+        Run the server in async mode.
+        """
         RepeaterMain._now_server = self.server
         try:
             return await self.server.run_server()
         finally:
             RepeaterMain._now_server = None
 
-    def run(self):
+    def run(self) -> int:
+        """
+        Run the server.
+        """
         logger.info("Server starting...")
         try:
             return asyncio.run(

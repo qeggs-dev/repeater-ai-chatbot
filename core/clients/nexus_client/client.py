@@ -19,7 +19,7 @@ class NexusClient:
     def __init__(
             self,
             base_url: str,
-            request_timeout: int = 60,
+            request_timeout: int | float | None = 60,
             params: dict[str, str | int | float | bool | None] | None = None,
             headers: dict[str, str] | None = None,
             cookies: dict[str, str] | None = None,

@@ -8,7 +8,7 @@ class SafeModelInfo(BaseModel):
     uid: str = ""
     parent: str = ""
     parent_id: str = ""
-    timeout: float = 600.0
+    timeout: float | ClientTimeout = 600.0
     detailed: ModelAPIData | None = None
 
 class ModelInfo(BaseModel):
@@ -17,7 +17,7 @@ class ModelInfo(BaseModel):
     fetch_models_endpoint: str = "/models"
     proxy: str | None = None
     limits: ClientLimits = Field(default_factory=ClientLimits)
-    timeout: ClientTimeout = Field(default_factory=ClientTimeout)
+    timeout: float | ClientTimeout = Field(default=600.0)
     
     name: str = ""
     id: str = ""
@@ -26,7 +26,6 @@ class ModelInfo(BaseModel):
     parent: str = ""
     parent_id: str = ""
     detailed: ModelAPIData = Field(default_factory=ModelAPIData)
-    timeout: float = 600.0
 
     def to_safe(self, detailed_info: bool = False) -> SafeModelInfo:
         return SafeModelInfo(

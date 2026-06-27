@@ -14,8 +14,6 @@ class SandboxMode(StrEnum):
 
 class SandboxConfig(BaseModel):
     """Sandbox config for Jinja2 templates."""
-    model_config = ConfigDict(case_sensitive = False)
-
     sandbox_mode: SandboxMode = SandboxMode.SANDBOXED
 
     def get_jinja_env(self) -> Environment:

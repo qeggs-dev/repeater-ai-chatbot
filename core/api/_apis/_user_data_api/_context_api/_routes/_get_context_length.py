@@ -22,7 +22,7 @@ async def get_context_length(user_id: str):
     context_loader = server.core.get_context_loader()
     context = await context_loader.load_context(user_id)
     
-    logger.info(f"Get Context length", user_id = user_id)
+    logger.info("Get Context length", user_id = user_id)
 
     # 返回ORJSONResponse，包含上下文的总长度和上下文的长度
     return ORJSONResponse(
