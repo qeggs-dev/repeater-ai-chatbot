@@ -10,7 +10,7 @@ class GetModels(ToolCallPacakage):
     prompt_manager: PromptManager = PromptManager()
     name = "get_models"
     document = "Gets a list of all available models."
-    call_type = CallMode.ASYNC
+    call_mode = CallMode.ASYNC
 
     class Params(BaseModel):
         model_id: str | list[str] | None = Field(None, description = "Model query expression.")

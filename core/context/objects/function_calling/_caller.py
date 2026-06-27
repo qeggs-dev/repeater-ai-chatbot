@@ -96,7 +96,7 @@ class FunctionCaller:
                 force_choice = package_instance.force_choice,
                 callable = package_instance.call, # type: ignore
                 json_result = package_instance.json_result,
-                call_type = package_instance.call_mode,
+                call_mode = package_instance.call_mode,
                 parameters = parameters,
                 on_error = package_instance.on_error,
                 on_args_json_decode_error = package_instance.on_args_json_decode_error,
@@ -239,7 +239,7 @@ class FunctionCaller:
             "Call Tool Name: {name}(Call Type: {call_type})",
             user_id = user_id,
             name = function.name,
-            call_type = function.call_type.name
+            call_type = function.call_mode.name
         )
 
         if isinstance(arguments, BaseModel):

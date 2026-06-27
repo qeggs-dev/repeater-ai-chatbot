@@ -22,6 +22,9 @@ class TaskContextBuffers:
             )
         return user_content_buffers
     
+    def __contains__(self, task_id: str) -> bool:
+        return task_id in self._runtime.content_buffers_pools
+    
     async def get_task_content_buffer(self, user_id: str, task_id: str) -> ContentBuffer:
         user_content_buffers = await self.get_user_content_buffers(user_id)
         if task_id in user_content_buffers:

@@ -1,3 +1,4 @@
+import uuid
 from pydantic import BaseModel, Field
 from ......context import ContentRole, ContentUnit
 from ......assist_struct import RequestUserInfo, CrossUserDataRouting, AdditionalData
@@ -5,6 +6,7 @@ from typing import Any
 
 class ChatRequest(BaseModel):
     message: str | None = ""
+    task_id: uuid.UUID | None = None
     suffix: str | None = None
     echo: bool = False
     fim_mode: bool = False

@@ -28,7 +28,7 @@ class CallModel(ToolCallPacakage):
     prompt_manager: PromptManager = PromptManager()
     name = "call_model"
     document = "Send a request to an llm and get the generated results."
-    call_type = CallMode.ASYNC
+    call_mode = CallMode.ASYNC
     
     class Params(BaseModel):
         model_id: str = Field(

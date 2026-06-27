@@ -9,3 +9,10 @@
     - `code` (int): HTTP 状态码
     - `msg` (str): API 返回的消息
     - `cancel_count` (int): 取消的任务数量
+
+- **`/generate/chat/break/{user_id:str}/{task_id:str}`**
+  - **Request**
+    - ***method:** `POST`
+  - **Response**
+    - `code` (int): HTTP 状态码
+    - `msg` (str): API 返回的消息

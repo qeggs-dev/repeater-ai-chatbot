@@ -1,3 +1,4 @@
+import uuid
 import orjson
 import asyncio
 
@@ -33,8 +34,10 @@ async def chat_endpoint(
     Endpoint for chat
     """
     server = RepeaterMain.get_now_server()
+    task_id = request.task_id or uuid.uuid4()
     chat_coroutine: Coroutine[Any, Any, Response | AsyncGenerator[Delta | ContentUnit, None]] = server.core.chat(
         user_id = user_id,
+        task_id = task_id,
         message = request.message,
         suffix = request.suffix,
         echo = request.echo,
@@ -58,7 +61,11 @@ async def chat_endpoint(
         stream = request.stream
     )
     try:
-        response = await server.runtime.chat_task_pool.run_task(user_id, chat_coroutine)
+        response = await server.runtime.chat_task_pool.run_task(
+            user_id = user_id,
+            task_id = str(task_id),
+            coro = chat_coroutine
+        )
     except asyncio.CancelledError:
         raise HTTPException(
             detail = "Chat Completion Task Cancelled or System Abnormal Shutdown.",

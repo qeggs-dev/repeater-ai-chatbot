@@ -1,4 +1,5 @@
 # ==== 标准库 ==== #
+import uuid
 import atexit
 import asyncio
 import traceback
@@ -253,6 +254,7 @@ class Core:
             self,
             message: str | None,
             user_id: str,
+            task_id: str | uuid.UUID | None = None,
             suffix: str | None = None,
             echo: bool | None = None,
             fim_mode: bool = False,
@@ -279,6 +281,7 @@ class Core:
 
         :param message: 用户输入的消息
         :param user_id: 用户ID
+        :param task_id: 任务ID
         :param history_messages: 历史消息
         :param history_msg_role_map: 历史消息角色映射
         :param user_info: 用户信息
@@ -301,6 +304,16 @@ class Core:
             # 记录开始时间
             task_start_time = TimeStamp()
 
+            if task_id is None:
+                task_id = uuid.uuid4()
+
+            logger.info("====================================", user_id = user_id)
+            logger.info(
+                "Start Task {task_id}",
+                user_id = user_id,
+                task_id = task_id,
+            )
+
             # 获取用户锁对象
             lock = await self._get_namespace_lock(user_id)
 
@@ -319,6 +332,7 @@ class Core:
             # 进入RUL执行
             async with TaskLifespan(
                 user_id = user_id,
+                task_id = task_id,
                 rul = lock,
                 enable_rul = enable_rul,
                 runtime = self.runtime
@@ -327,15 +341,14 @@ class Core:
 
                 # 进入状态
                 with task_status_stack.enter("Tasking"):
+                    logger.info(
+                        "Enter Task {task_id}",
+                        user_id = user_id,
+                        task_id = task_lifespan.task_id_str
+                    )
                 
                     with task_status_stack.enter("Prepareing"):
                         prepare_start_time = TimeStamp()
-                        logger.info("====================================", user_id = user_id)
-                        logger.info(
-                            "Start Task {task_id}",
-                            user_id = user_id,
-                            task_id = task_lifespan.task_id,
-                        )
 
                         # region [Checking Blacklist]
                         with task_status_stack.enter("Checking Blacklist"):

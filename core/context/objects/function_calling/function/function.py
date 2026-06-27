@@ -26,7 +26,7 @@ class Function(Generic[T, T_BaseModel]):
     enabled: bool = True
     force_choice: bool = False
     callable: Callable[[T_BaseModel], Awaitable[T] | T] | None = None
-    call_type: CallMode = CallMode.SYNC
+    call_mode: CallMode = CallMode.SYNC
     json_result: bool = False
     parameters: Type[T_BaseModel] | None = None
     on_error: Callable[[Exception], Awaitable[T | Any | None] | T | Any | None] | None = None
@@ -38,19 +38,19 @@ class Function(Generic[T, T_BaseModel]):
     async def _call(self, parameters: T_BaseModel) -> T | Any | None:
         """Call the function with parameters"""
         if callable(self.callable):
-            match self.call_type:
+            match self.call_mode:
                 case CallMode.SYNC:
                     return self.callable(parameters)
                 case CallMode.ASYNC:
-                    result = self.callable(parameters)
-                    if inspect.isawaitable(result):
-                        return await result
+                    if inspect.iscoroutinefunction(self.callable):
+                        result = await self.callable(parameters)
+                        return result
                     else:
                         raise RuntimeError(f"Handler is not async, Please use {CallMode.SYNC} or {CallMode.SYNC_IN_THREAD}")
                 case CallMode.SYNC_IN_THREAD:
                     return await asyncio.to_thread(self.callable, parameters)
                 case _:
-                    raise ValueError("Invalid call type")
+                    raise ValueError("Invalid call mode")
         else:
             raise ValueError("Callable is not callable")
 
