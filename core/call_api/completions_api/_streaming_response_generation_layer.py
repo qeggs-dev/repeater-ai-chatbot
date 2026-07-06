@@ -85,7 +85,7 @@ class StreamingResponseGenerationLayer:
         self._print_chunk = config_to_log_level(ConfigManager.get_configs().logger.level) > LogLevel.TRACE
     
     def finally_stream(self):
-        stream_processing_end_time: int = TimeStamp()
+        stream_processing_end_time: TimeStamp = TimeStamp()
         if self.request.print_chunk:
             self._print_file.write("\n\n")
             self._print_file.flush()
@@ -96,13 +96,15 @@ class StreamingResponseGenerationLayer:
         self.response.request_log.empty_chunk = self.empty_chunk_count
         self.response.request_log.created_time = self.response.created
         self.response.request_log.chunk_times = self.chunk_times
-        self.response.request_log.processor_queue_backlog = self.processor_queue_backlog
-        self.response.request_log.total_tokens = self.response.token_usage.total_tokens
-        self.response.request_log.prompt_tokens = self.response.token_usage.prompt_tokens
-        self.response.request_log.completion_tokens = self.response.token_usage.completion_tokens
-        self.response.request_log.cache_hit_count = self.response.token_usage.prompt_cache_hit_tokens
-        self.response.request_log.cache_miss_count = self.response.token_usage.prompt_cache_miss_tokens
+        self.response.request_log.queue_backlog = self.processor_queue_backlog
+        if self.response.token_usage is not None:
+            self.response.request_log.total_tokens = self.response.token_usage.total_tokens
+            self.response.request_log.prompt_tokens = self.response.token_usage.prompt_tokens
+            self.response.request_log.completion_tokens = self.response.token_usage.completion_tokens
+            self.response.request_log.cache_hit_count = self.response.token_usage.prompt_cache_hit_tokens
+            self.response.request_log.cache_miss_count = self.response.token_usage.prompt_cache_miss_tokens
         self.response.request_log.stream_processing_end_time = stream_processing_end_time
+        self.response.request_log.total_context_length = self.response.historical_context.total_length
 
         # 由于工具调用不分顺序，而是通过 ID 定位
         # 所以这里这里可以忽略索引
@@ -120,6 +122,8 @@ class StreamingResponseGenerationLayer:
             self.model_response_content_unit.content = str(self._content_buffer.content_buffer)
         if self.response.tool_calls:
             self.model_response_content_unit.tool_calls = [call.to_calling_request() for call in self.response.tool_calls]
+        if not self.request.context:
+            raise ValueError("Be must have context")
         self.response.historical_context = self.request.context
         self.response.new_context.append(self.model_response_content_unit)
     
