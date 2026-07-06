@@ -240,6 +240,9 @@ class StreamingResponseGenerationLayer:
         if delta_data.is_empty:
             self.empty_chunk_count += 1
         self.chunk_count += 1
+
+        if delta_data.finish_reason:
+            self.response.finish_reason = delta_data.finish_reason
         
         # 刷新打印缓冲区
         if self.request.print_chunk:
