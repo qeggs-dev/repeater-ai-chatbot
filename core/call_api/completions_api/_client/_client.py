@@ -217,8 +217,8 @@ class ClientBase(ABC):
                 else:
                     text_buffer.append(" ")
             
-                charts = "".join(text_buffer)
-                yield f"│ {charts} │"
+            charts = "".join(text_buffer)
+            yield f"│ {charts} │"
         end_line = "─" * (len(zoomed_data) + 2)
         yield f"└{end_line}┘"
     
@@ -560,6 +560,8 @@ class ClientBase(ABC):
         assert isinstance(response, Response), "response must be a Response object"
 
         fs_logger = logger.bind(user_id = user_id)
+
+        fs_logger.info("Generating fast statistics...")
 
         buffer: list[str] = []
 
