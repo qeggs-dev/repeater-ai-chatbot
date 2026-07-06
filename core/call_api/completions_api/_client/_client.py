@@ -290,23 +290,25 @@ class ClientBase(ABC):
         raw_timestamps: list[int],
         raw_queue_backlogs: list[int] | None = None,
         title_width: int = 36,
+        dividing_line_char: str = "=",
     ) -> Generator[str, None, None]:
         assert isinstance(name, str), "name must be a str"
         assert isinstance(request_log, RequestLog), "request_log must be a RequestLog"
         assert isinstance(raw_timestamps, list), "raw_timestamps must be a list"
         assert isinstance(raw_queue_backlogs, list) or raw_queue_backlogs is None, "raw_queue_backlogs must be a list or None"
         assert isinstance(title_width, int), "title_width must be an int"
+        assert isinstance(dividing_line_char, str), "dividing_line_char must be a str"
         if title_width < len(name) + 2:
             raise ValueError("title_width must be at least as long as the name")
 
         title = f"{name} Chunk Statistics"
         dividing_line_length = title_width - len(title) - 2
         if dividing_line_length % 2 == 0:
-            dividing_line_prefix = "-" * (dividing_line_length // 2)
+            dividing_line_prefix = dividing_line_char * (dividing_line_length // 2)
             dividing_line_suffix = dividing_line_prefix
         else:
-            dividing_line_prefix = "-" * (dividing_line_length // 2)
-            dividing_line_suffix = "-" * (dividing_line_length // 2 + 1)
+            dividing_line_prefix = dividing_line_char * (dividing_line_length // 2)
+            dividing_line_suffix = dividing_line_char * (dividing_line_length // 2 + 1)
         yield f"{dividing_line_prefix} {title} {dividing_line_suffix}"
         timestamps = np.array(raw_timestamps, dtype=np.int64)
         time_differences = np.diff(timestamps)
@@ -399,12 +401,14 @@ class ClientBase(ABC):
         :param request: 请求对象
         :param response: 响应对象
         """
+        now = datetime.now()
         assert isinstance(request, Request), "request must be a Request object"
         assert isinstance(response, Response), "response must be a Response object"
 
         yield "========== Fast Statistics ========="
         yield "Generating statistics..."
-        yield "============= API INFO ============="
+        yield f"Create Fast Statistics on {now.strftime('%Y-%m-%d %H:%M:%S.%f')}"
+        yield "========== Requests INFO ==========="
         yield f"API URL: {request.url}"
         yield f"Model: {request.model}"
         yield f"User Name: {request.user_name}"
@@ -432,7 +436,7 @@ class ClientBase(ABC):
         else:
             yield "Reasoning Prompt: Removed"
         
-        yield "============= Response ============="
+        yield "========== Response INFO ==========="
         if response.system_fingerprint:
             yield f"System Fingerprint: {response.system_fingerprint}"
         yield f"Finish Reason: {response.finish_reason}"
