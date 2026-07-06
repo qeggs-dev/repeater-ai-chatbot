@@ -44,16 +44,15 @@ class RepeaterMain:
 
         Tip: The program needs a configuration file to boot, please load the configuration file first.
         """
-        config_loader = ConfigManager()
         path = self.env.path("CONFIG_DIR", Path("./configs/project_configs"))
         force_load_list = self.env.json("CONFIG_FORCE_LOAD_LIST", None)
         if force_load_list is not None and not is_config_force_load_list(force_load_list):
             raise RuntimeError("CONFIG_FORCE_LOAD_LIST is not valid")
-        config_loader.update_base_path(
+        ConfigManager.update_base_path(
             path = path,
             force_load_list = force_load_list
         )
-        return config_loader.load(
+        return ConfigManager.load(
             create_if_missing=True
         )
     
@@ -170,9 +169,11 @@ class RepeaterMain:
         Run the server.
         """
         logger.info("Server starting...")
+        configs = ConfigManager.get_configs()
         try:
             return asyncio.run(
-                self.run_server()
+                self.run_server(),
+                debug = configs.server.asyncio_debug
             )
         except KeyboardInterrupt:
             logger.info("Server shutting down...")
