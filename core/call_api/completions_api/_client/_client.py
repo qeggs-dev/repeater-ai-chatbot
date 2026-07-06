@@ -282,6 +282,21 @@ class ClientBase(ABC):
         assert isinstance(token_count, int), "token_count must be an int"
         return f"{token_count}({format_token_duration(token_count, use_abbreviation=True, delimiter = ' ')}Tokens)"
     
+    @staticmethod
+    def _format_title(
+        title: str,
+        dividing: str = "=",
+        title_width: int = 50
+    ):
+        dividing_line_length = title_width - len(title) - 2
+        if dividing_line_length % 2 == 0:
+            dividing_line_prefix = dividing * (dividing_line_length // 2)
+            dividing_line_suffix = dividing_line_prefix
+        else:
+            dividing_line_prefix = dividing * (dividing_line_length // 2)
+            dividing_line_suffix = dividing * (dividing_line_length // 2 + 1)
+        return f"{dividing_line_prefix} {title} {dividing_line_suffix}"
+    
     @classmethod
     def _chunk_statistics(
         cls,
@@ -289,7 +304,7 @@ class ClientBase(ABC):
         request_log: RequestLog,
         raw_timestamps: list[int],
         raw_queue_backlogs: list[int] | None = None,
-        title_width: int = 36,
+        title_width: int = 50,
         dividing_line_char: str = "=",
     ) -> Generator[str, None, None]:
         assert isinstance(name, str), "name must be a str"
@@ -302,14 +317,11 @@ class ClientBase(ABC):
             raise ValueError("title_width must be at least as long as the name")
 
         title = f"{name} Chunk Statistics"
-        dividing_line_length = title_width - len(title) - 2
-        if dividing_line_length % 2 == 0:
-            dividing_line_prefix = dividing_line_char * (dividing_line_length // 2)
-            dividing_line_suffix = dividing_line_prefix
-        else:
-            dividing_line_prefix = dividing_line_char * (dividing_line_length // 2)
-            dividing_line_suffix = dividing_line_char * (dividing_line_length // 2 + 1)
-        yield f"{dividing_line_prefix} {title} {dividing_line_suffix}"
+        yield cls._format_title(
+            title = title,
+            dividing = dividing_line_char,
+            title_width = title_width
+        )
         timestamps = np.array(raw_timestamps, dtype=np.int64)
         time_differences = np.diff(timestamps)
         non_zero_time_differences = time_differences[time_differences != 0]
@@ -339,6 +351,12 @@ class ClientBase(ABC):
             kurtosis = cls._calculate_kurtosis(time_differences)
             entropy = cls._calculate_entropy(time_differences)
 
+            queue_backlog_title = f"{name} Queue Backlog"
+            yield cls._format_title(
+                title = queue_backlog_title,
+                dividing = dividing_line_char,
+                title_width = title_width
+            )
             yield from cls._draw_chart(
                 simple_chunk_times,
                 title = f"{name} Chunk Times",
@@ -375,10 +393,15 @@ class ClientBase(ABC):
                 else:
                     queue_backlog_relative_mad = np.nan
                 queue_backlog_cv = cls._calculate_cv(queue_backlog)
+                simple_backlog = cls._fixed_length_sample(queue_backlog, 34)
                 queue_backlog_skewness = cls._calculate_skewness(queue_backlog)
                 queue_backlog_kurtosis = cls._calculate_kurtosis(queue_backlog)
                 queue_backlog_entropy = cls._calculate_entropy(queue_backlog)
 
+                yield from cls._draw_chart(
+                    simple_backlog,
+                    title = f"{name} Queue Backlog",
+                )
                 yield f"{name} Max Queue Backlog: {max_queue_backlog}"
                 yield f"{name} Min Queue Backlog: {min_queue_backlog}"
                 yield f"{name} Avg Queue Backlog: {avg_queue_backlog:.2f}"
@@ -393,7 +416,13 @@ class ClientBase(ABC):
                 yield f"{name} Queue Backlog Kurtosis: {queue_backlog_kurtosis:.2%}"
                 yield f"{name} Queue Backlog Entropy: {queue_backlog_entropy:.2%}"
 
-    def _gen_fast_statistics(self, request: Request, response: Response) -> Generator[str, None, None]:
+    def _gen_fast_statistics(
+            self,
+            request: Request,
+            response: Response,
+            dividing: str = "=",
+            title_width: int = 40
+        ) -> Generator[str, None, None]:
         """
         快速统计请求内容并生成字符串
 
@@ -405,10 +434,18 @@ class ClientBase(ABC):
         assert isinstance(request, Request), "request must be a Request object"
         assert isinstance(response, Response), "response must be a Response object"
 
-        yield "========== Fast Statistics ========="
+        yield self._format_title(
+            "Fast Statistics",
+            dividing = dividing,
+            title_width = title_width
+        )
         yield "Generating statistics..."
         yield f"Create Fast Statistics on {now.strftime('%Y-%m-%d %H:%M:%S.%f')}"
-        yield "========== Requests INFO ==========="
+        yield self._format_title(
+            "Requests INFO",
+            dividing = dividing,
+            title_width = title_width
+        )
         yield f"API URL: {request.url}"
         yield f"Model: {request.model}"
         yield f"User Name: {request.user_name}"
@@ -436,7 +473,11 @@ class ClientBase(ABC):
         else:
             yield "Reasoning Prompt: Removed"
         
-        yield "========== Response INFO ==========="
+        yield self._format_title(
+            "Response INFO",
+            dividing = dividing,
+            title_width = title_width
+        )
         if response.system_fingerprint:
             yield f"System Fingerprint: {response.system_fingerprint}"
         yield f"Finish Reason: {response.finish_reason}"
@@ -455,7 +496,11 @@ class ClientBase(ABC):
                 chunk_effective_ratio = np.nan
             yield f"Chunk effective ratio: {chunk_effective_ratio:.2%}"
         
-        yield f"========== Time Statistics ========="
+        yield self._format_title(
+            "Time Statistics",
+            dividing = dividing,
+            title_width = title_width
+        )
         
         total_time = response.request_log.stream_processing_end_time.monotonic - response.request_log.request_start_time.monotonic
         yield f"Total Time: {self._format_timedelta(total_time)}"
@@ -506,7 +551,11 @@ class ClientBase(ABC):
                 )
 
         if response.token_usage is not None:
-            yield f"=========== Token Count ============"
+            yield self._format_title(
+                "Token Count",
+                dividing = dividing,
+                title_width = title_width
+            )
             yield f"Total Tokens: {self._format_token(response.token_usage.total_tokens)}"
             yield f"Context Input Tokens: {self._format_token(response.token_usage.prompt_tokens)}"
 
@@ -530,7 +579,11 @@ class ClientBase(ABC):
                     )
                     yield f"Average Generation Rate: {avg_gen_rate:.2f} Token/s"
 
-        yield "============= Content =============="
+        yield self._format_title(
+            "Content",
+            dividing = dividing,
+            title_width = title_width
+        )
         historical_context_text_length = response.historical_context.total_length
         new_context_text_length = response.new_context.total_length
         response.request_log.reasoning_content_length = sum(len(content.reasoning_content) for content in response.new_context.context_list if content.reasoning_content)
@@ -548,7 +601,7 @@ class ClientBase(ABC):
         yield f"Historical Context Text Length: {historical_context_length}"
         yield f"New Content Text Length: {new_context_length}"
 
-        yield f"===================================="
+        yield dividing * title_width
 
     # region 打印日志
     async def _print_fast_statistics(self, user_id: str, request: Request, response: Response):
