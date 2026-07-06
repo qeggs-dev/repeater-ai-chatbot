@@ -4,12 +4,11 @@ import math
 from datetime import datetime, timezone
 from abc import ABC, abstractmethod
 from typing import (
-    Annotated,
     Generator,
 )
 
 # ==== 第三方库 ==== #
-from loguru import logger, Logger
+from loguru import logger
 import numpy as np
 
 # ==== 自定义库 ==== #
