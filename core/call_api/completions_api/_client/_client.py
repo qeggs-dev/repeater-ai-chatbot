@@ -4,6 +4,7 @@ import math
 from datetime import datetime, timezone
 from abc import ABC, abstractmethod
 from typing import (
+    Any,
     Generator,
 )
 
@@ -155,6 +156,12 @@ class ClientBase(ABC):
         """
         从可变长度数据中均匀采样固定长度
         """
+        assert isinstance(data, np.ndarray), "data Must be a numpy array"
+        assert isinstance(target_length, int), "target_length Must be a integer"
+
+        if target_length <= 0:
+            raise ValueError("target_length must be a positive integer")
+        
         n = len(data)
         if n <= target_length:
             # 数据太短，直接返回原数据（或重复最后一个元素）
@@ -166,10 +173,16 @@ class ClientBase(ABC):
     
     @staticmethod
     def _min_max_normalize(arr: np.ndarray[tuple[int]]):
-        return (arr - arr.min()) / (arr.max() - arr.min())
+        """最小-最大归一化"""
+        assert isinstance(arr, np.ndarray), "arr Must be a numpy array"
+
+        array_range = arr.max() - arr.min()
+        if array_range == 0:
+            raise ZeroDivisionError("Array range is zero, cannot normalize")
+        return (arr - arr.min()) / array_range
     
     @staticmethod
-    def _parse_special_values(value) -> str:
+    def _parse_special_values(value: Any) -> str:
         if value is None:
             return "No Set"
         elif isinstance(value, bool):
@@ -179,6 +192,14 @@ class ClientBase(ABC):
     
     @classmethod
     def _draw_chart(cls, data: np.ndarray[tuple[int]], title: str, height: int = 5) -> Generator[str, None, None]:
+        """绘制图表"""
+        assert isinstance(data, np.ndarray), "data Must be a numpy array"
+        assert isinstance(title, str), "title Must be a string"
+        assert isinstance(height, int) and height > 0, "height Must be a positive integer"
+
+        if len(data) == 0:
+            yield "No Data"
+            return
         zoomed_data = cls._min_max_normalize(data) * height
         ctitle = f" {title} ".center(len(zoomed_data) + 2, "─")
         yield f"┌{ctitle}┐"
@@ -203,7 +224,11 @@ class ClientBase(ABC):
     
     @staticmethod
     def _calculate_skewness(data: np.ndarray[tuple[int]]) -> float:
+        assert isinstance(data, np.ndarray), "data must be a numpy array"
+
         n = len(data)
+        if n < 3:
+            return 0.0
         mean = np.mean(data)
         # 计算中心矩
         m2 = np.sum((data - mean) ** 2) / n      # 二阶矩
@@ -216,7 +241,11 @@ class ClientBase(ABC):
     
     @staticmethod
     def _calculate_kurtosis(data: np.ndarray[tuple[int]]) -> np.float64:
+        assert isinstance(data, np.ndarray), "data must be a numpy array"
+
         n = len(data)
+        if n < 4:
+            raise ValueError("Data set too small to calculate kurtosis")
         mean = np.mean(data)
         variance = np.var(data) # 注意：这是有偏的总体方差
         # 计算四阶中心矩并除以方差平方，最后减去3得到超额峰度
@@ -225,6 +254,10 @@ class ClientBase(ABC):
 
     @staticmethod
     def _calculate_entropy(data: np.ndarray[tuple[int]]) -> np.float64:
+        assert isinstance(data, np.ndarray), "data must be a numpy array"
+        if len(data) == 0:
+            return np.float64(0.0)
+        
         # 1. 统计每个唯一值出现的次数
         _, counts = np.unique(data, return_counts=True)
         # 2. 计算每个值的概率
@@ -238,6 +271,7 @@ class ClientBase(ABC):
     def _format_timedelta(
         timedelta: int | float,
     ) -> str:
+        assert isinstance(timedelta, (int, float)), "timedelta must be an int or float"
         return f"{timedelta / 1e6:.2f}ms({format_time_duration_ns(timedelta, use_abbreviation=True)})"
     
     
@@ -245,6 +279,7 @@ class ClientBase(ABC):
     def _format_token(
         token_count: int,
     ) -> str:
+        assert isinstance(token_count, int), "token_count must be an int"
         return f"{token_count}({format_token_duration(token_count, use_abbreviation=True, delimiter = ' ')}Tokens)"
     
     @classmethod
@@ -256,6 +291,14 @@ class ClientBase(ABC):
         raw_queue_backlogs: list[int] | None = None,
         title_width: int = 36,
     ) -> Generator[str, None, None]:
+        assert isinstance(name, str), "name must be a str"
+        assert isinstance(request_log, RequestLog), "request_log must be a RequestLog"
+        assert isinstance(raw_timestamps, list), "raw_timestamps must be a list"
+        assert isinstance(raw_queue_backlogs, list) or raw_queue_backlogs is None, "raw_queue_backlogs must be a list or None"
+        assert isinstance(title_width, int), "title_width must be an int"
+        if title_width < len(name) + 2:
+            raise ValueError("title_width must be at least as long as the name")
+
         title = f"{name} Chunk Statistics"
         dividing_line_length = title_width - len(title) - 2
         if dividing_line_length % 2 == 0:
@@ -279,8 +322,14 @@ class ClientBase(ABC):
             chunk_spawn_time_iqr = cls._calculate_interquartile_range(time_differences)
             chunk_spawn_time_idr = cls._calculate_interdecile_range(time_differences)
             chunk_spawn_time_mad = cls._calculate_mad(time_differences)
-            chunk_spawn_time_relative_mad = chunk_spawn_time_mad / chunk_median_time
-            chunk_generation_rate = request_log.total_chunk / (stream_processing_time / 1e9)
+            if chunk_median_time != 0:
+                chunk_spawn_time_relative_mad = chunk_spawn_time_mad / chunk_median_time
+            else:
+                chunk_spawn_time_relative_mad = np.nan
+            if stream_processing_time != 0:
+                chunk_generation_rate = request_log.total_chunk / (stream_processing_time / 1e9)
+            else:
+                chunk_generation_rate = np.nan
             chunk_stability_cv = cls._calculate_cv(time_differences)
             simple_chunk_times = cls._fixed_length_sample(time_differences, 34)
             first_chunk_wait_time = raw_timestamps[0] - request_log.stream_processing_start_time.monotonic
@@ -319,7 +368,10 @@ class ClientBase(ABC):
                 queue_backlog_iqr = cls._calculate_interquartile_range(queue_backlog)
                 queue_backlog_idr = cls._calculate_interdecile_range(queue_backlog)
                 queue_backlog_mad = cls._calculate_mad(queue_backlog)
-                queue_backlog_relative_mad = queue_backlog_mad / median_queue_backlog
+                if median_queue_backlog != 0:
+                    queue_backlog_relative_mad = queue_backlog_mad / median_queue_backlog
+                else:
+                    queue_backlog_relative_mad = np.nan
                 queue_backlog_cv = cls._calculate_cv(queue_backlog)
                 queue_backlog_skewness = cls._calculate_skewness(queue_backlog)
                 queue_backlog_kurtosis = cls._calculate_kurtosis(queue_backlog)
@@ -339,7 +391,7 @@ class ClientBase(ABC):
                 yield f"{name} Queue Backlog Kurtosis: {queue_backlog_kurtosis:.2%}"
                 yield f"{name} Queue Backlog Entropy: {queue_backlog_entropy:.2%}"
 
-    def _gen_fast_statistics(self, user_id: str, request: Request, response: Response) -> Generator[str, None, None]:
+    def _gen_fast_statistics(self, request: Request, response: Response) -> Generator[str, None, None]:
         """
         快速统计请求内容并生成字符串
 
@@ -347,6 +399,9 @@ class ClientBase(ABC):
         :param request: 请求对象
         :param response: 响应对象
         """
+        assert isinstance(request, Request), "request must be a Request object"
+        assert isinstance(response, Response), "response must be a Response object"
+
         yield "========== Fast Statistics ========="
         yield "Generating statistics..."
         yield "============= API INFO ============="
@@ -389,7 +444,12 @@ class ClientBase(ABC):
             if response.request_log.empty_chunk > 0:
                 yield f"Empty Chunk: {response.request_log.empty_chunk}"
                 yield f"Non-Empty Chunk: {response.request_log.total_chunk - response.request_log.empty_chunk}"
-            yield f"Chunk effective ratio: {1 - response.request_log.empty_chunk / response.request_log.total_chunk:.2%}"
+            
+            if response.request_log.total_chunk != 0:
+                chunk_effective_ratio = 1 - response.request_log.empty_chunk / response.request_log.total_chunk
+            else:
+                chunk_effective_ratio = np.nan
+            yield f"Chunk effective ratio: {chunk_effective_ratio:.2%}"
         
         yield f"========== Time Statistics ========="
         
@@ -506,7 +566,6 @@ class ClientBase(ABC):
         fast_statistics_start_time = time.perf_counter_ns()
         buffer.extend(
             self._gen_fast_statistics(
-                user_id = user_id,
                 request = request,
                 response = response,
             )
