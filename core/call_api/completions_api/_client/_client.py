@@ -1,13 +1,15 @@
 # ==== 标准库 ==== #
+import time
 import math
 from datetime import datetime, timezone
 from abc import ABC, abstractmethod
 from typing import (
-    Annotated
+    Annotated,
+    Generator,
 )
 
 # ==== 第三方库 ==== #
-from loguru import logger
+from loguru import logger, Logger
 import numpy as np
 
 # ==== 自定义库 ==== #
@@ -23,6 +25,7 @@ from ....auxiliary.time import (
 from ....auxiliary.token import (
     format_token_duration
 )
+from ....request_log import RequestLog
 from .._caller import (
     CallAPI,
     StreamAPI
@@ -176,12 +179,10 @@ class ClientBase(ABC):
             return str(value)
     
     @classmethod
-    def _draw_chart(cls, fs_logger, data: np.ndarray[tuple[int]], ctitle: str, height: int = 5):
+    def _draw_chart(cls, data: np.ndarray[tuple[int]], title: str, height: int = 5) -> Generator[str, None, None]:
         zoomed_data = cls._min_max_normalize(data) * height
-        fs_logger.info(
-            "┌{charts}┐",
-            charts = f" {ctitle} ".center(len(zoomed_data) + 2, "─"),
-        )
+        ctitle = f" {title} ".center(len(zoomed_data) + 2, "─")
+        yield f"┌{ctitle}┐"
         for i in range(height - 1, -1, -1):
             text_buffer: list[str] = []
             for j in zoomed_data:
@@ -195,14 +196,11 @@ class ClientBase(ABC):
                     text_buffer.append("░")
                 else:
                     text_buffer.append(" ")
-            fs_logger.info(
-                "│ {charts} │",
+            
                 charts = "".join(text_buffer)
-            )
-        fs_logger.info(
-            "└{charts}┘",
-            charts = "─" * (len(zoomed_data) + 2)
-        )
+                yield f"│ {charts} │"
+        end_line = "─" * (len(zoomed_data) + 2)
+        yield f"└{end_line}┘"
     
     @staticmethod
     def _calculate_skewness(data: np.ndarray[tuple[int]]) -> float:
@@ -216,6 +214,278 @@ class ClientBase(ABC):
         # 小样本修正因子
         correction = np.sqrt(n * (n - 1)) / (n - 2)
         return g1 * correction
+    
+    @staticmethod
+    def _calculate_kurtosis(data: np.ndarray[tuple[int]]) -> np.float64:
+        n = len(data)
+        mean = np.mean(data)
+        variance = np.var(data) # 注意：这是有偏的总体方差
+        # 计算四阶中心矩并除以方差平方，最后减去3得到超额峰度
+        kurtosis = np.sum((data - mean) ** 4 / (variance ** 2)) / n - 3
+        return kurtosis
+
+    @staticmethod
+    def _calculate_entropy(data: np.ndarray[tuple[int]]) -> np.float64:
+        # 1. 统计每个唯一值出现的次数
+        _, counts = np.unique(data, return_counts=True)
+        # 2. 计算每个值的概率
+        probabilities = counts / len(data)
+        # 3. 计算熵: -sum(p * log2(p))
+        # 添加一个极小值 np.finfo(float).eps 防止概率为0时出现 log(0) 的警告
+        entropy = -np.sum(probabilities * np.log2(probabilities + np.finfo(float).eps))
+        return entropy
+    
+    @staticmethod
+    def _format_timedelta(
+        timedelta: int | float,
+    ) -> str:
+        return f"{timedelta / 1e6:.2f}ms({format_time_duration_ns(timedelta, use_abbreviation=True)})"
+    
+    
+    @staticmethod
+    def _format_token(
+        token_count: int,
+    ) -> str:
+        return f"{token_count}({format_token_duration(token_count, use_abbreviation=True, delimiter = ' ')}Tokens)"
+    
+    @classmethod
+    def _chunk_statistics(
+        cls,
+        name: str,
+        request_log: RequestLog,
+        raw_timestamps: list[int],
+        raw_queue_backlogs: list[int] | None = None,
+        title_width: int = 36,
+    ) -> Generator[str, None, None]:
+        title = f"{name} Chunk Statistics"
+        dividing_line_length = title_width - len(title) - 2
+        if dividing_line_length % 2 == 0:
+            dividing_line_prefix = "-" * (dividing_line_length // 2)
+            dividing_line_suffix = dividing_line_prefix
+        else:
+            dividing_line_prefix = "-" * (dividing_line_length // 2)
+            dividing_line_suffix = "-" * (dividing_line_length // 2 + 1)
+        yield f"{dividing_line_prefix} {title} {dividing_line_suffix}"
+        timestamps = np.array(raw_timestamps, dtype=np.int64)
+        time_differences = np.diff(timestamps)
+        non_zero_time_differences = time_differences[time_differences != 0]
+        stream_processing_time = request_log.stream_processing_end_time.monotonic - request_log.stream_processing_start_time.monotonic
+        if time_differences.size > 0 and non_zero_time_differences.size > 0:
+
+            max_chunk_spawn_time = int(np.max(time_differences))
+            min_chunk_spawn_time = int(np.min(non_zero_time_differences))
+            ave_chunk_spawn_time = float(np.mean(time_differences))
+            chunk_median_time = float(np.median(time_differences))
+            chunk_spawn_time_std = float(np.std(time_differences))
+            chunk_spawn_time_iqr = cls._calculate_interquartile_range(time_differences)
+            chunk_spawn_time_idr = cls._calculate_interdecile_range(time_differences)
+            chunk_spawn_time_mad = cls._calculate_mad(time_differences)
+            chunk_spawn_time_relative_mad = chunk_spawn_time_mad / chunk_median_time
+            chunk_generation_rate = request_log.total_chunk / (stream_processing_time / 1e9)
+            chunk_stability_cv = cls._calculate_cv(time_differences)
+            simple_chunk_times = cls._fixed_length_sample(time_differences, 34)
+            first_chunk_wait_time = raw_timestamps[0] - request_log.stream_processing_start_time.monotonic
+            skewness = cls._calculate_skewness(time_differences)
+            kurtosis = cls._calculate_kurtosis(time_differences)
+            entropy = cls._calculate_entropy(time_differences)
+
+            yield from cls._draw_chart(
+                simple_chunk_times,
+                title = f"{name} Chunk Times",
+            )
+            yield f"{name} Chunk Rate: {chunk_generation_rate:.2f} Chunks/s"
+            yield f"{name} First Chunk Wait Time: {cls._format_timedelta(first_chunk_wait_time)}"
+            yield f"{name} Chunk Average Time: {cls._format_timedelta(ave_chunk_spawn_time)}"
+            yield f"{name} Chunk Max Time: {cls._format_timedelta(max_chunk_spawn_time)}"
+            yield f"{name} Chunk Min Time: {cls._format_timedelta(min_chunk_spawn_time)}"
+            yield f"{name} Chunk Time CV: {chunk_stability_cv:.2%}"
+            yield f"{name} Chunk Time Range: {cls._format_timedelta((max_chunk_spawn_time - min_chunk_spawn_time))}"
+            yield f"{name} Chunk Time Median: {cls._format_timedelta(chunk_median_time)}"
+            yield f"{name} Chunk Time STD: {cls._format_timedelta(chunk_spawn_time_std)}"
+            yield f"{name} Chunk Time MAD: {cls._format_timedelta(chunk_spawn_time_mad)})"
+            yield f"{name} Chunk Time Relative MAD: {chunk_spawn_time_relative_mad:.2%}"
+            yield f"{name} Chunk Time IQR: {cls._format_timedelta(chunk_spawn_time_iqr)}"
+            yield f"{name} Chunk Time IDR: {cls._format_timedelta(chunk_spawn_time_idr)}"
+            yield f"{name} Chunk Time Skewness: {skewness:.2%}"
+            yield f"{name} Chunk Time Kurtosis: {kurtosis:.2%}"
+            yield f"{name} Chunk Time Entropy: {entropy:.2%}"
+
+            if raw_queue_backlogs is not None:
+                queue_backlog = np.array(raw_queue_backlogs, dtype=np.int64)
+                max_queue_backlog = int(np.max(queue_backlog))
+                min_queue_backlog = int(np.min(queue_backlog))
+                avg_queue_backlog = int(np.mean(queue_backlog))
+                median_queue_backlog = float(np.median(queue_backlog))
+                queue_backlog_std = float(np.std(queue_backlog))
+                queue_backlog_iqr = cls._calculate_interquartile_range(queue_backlog)
+                queue_backlog_idr = cls._calculate_interdecile_range(queue_backlog)
+                queue_backlog_mad = cls._calculate_mad(queue_backlog)
+                queue_backlog_relative_mad = queue_backlog_mad / median_queue_backlog
+                queue_backlog_cv = cls._calculate_cv(queue_backlog)
+                queue_backlog_skewness = cls._calculate_skewness(queue_backlog)
+                queue_backlog_kurtosis = cls._calculate_kurtosis(queue_backlog)
+                queue_backlog_entropy = cls._calculate_entropy(queue_backlog)
+
+                yield f"{name} Max Queue Backlog: {max_queue_backlog}"
+                yield f"{name} Min Queue Backlog: {min_queue_backlog}"
+                yield f"{name} Avg Queue Backlog: {avg_queue_backlog:.2f}"
+                yield f"{name} Queue Backlog CV: {queue_backlog_cv:.2%}"
+                yield f"{name} Queue Backlog Median: {median_queue_backlog}"
+                yield f"{name} Queue Backlog STD: {queue_backlog_std:.2f}"
+                yield f"{name} Queue Backlog MAD: {queue_backlog_mad:.2f}"
+                yield f"{name} Queue Backlog Relative MAD: {queue_backlog_relative_mad:.2%}"
+                yield f"{name} Queue Backlog IQR: {queue_backlog_iqr}"
+                yield f"{name} Queue Backlog IDR: {queue_backlog_idr}"
+                yield f"{name} Queue Backlog Skewness: {queue_backlog_skewness:.2%}"
+                yield f"{name} Queue Backlog Kurtosis: {queue_backlog_kurtosis:.2%}"
+                yield f"{name} Queue Backlog Entropy: {queue_backlog_entropy:.2%}"
+
+    def _gen_fast_statistics(self, user_id: str, request: Request, response: Response) -> Generator[str, None, None]:
+        """
+        快速统计请求内容并生成字符串
+
+        :param user_id: 用户ID
+        :param request: 请求对象
+        :param response: 响应对象
+        """
+        yield "========== Fast Statistics ========="
+        yield "Generating statistics..."
+        yield "============= API INFO ============="
+        yield f"API URL: {request.url}"
+        yield f"Model: {request.model}"
+        yield f"User Name: {request.user_name}"
+        yield f"Task ID: {response.request_log.task_id}"
+        yield f"Response ID: {response.id}"
+        yield f"Thinking: {self._parse_special_values(request.thinking)}"
+        yield f"Seed: {self._parse_special_values(request.seed)}"
+        yield f"Temperature: {self._parse_special_values(request.temperature)}"
+        yield f"Top A: {self._parse_special_values(request.top_a)}"
+        yield f"Top P: {self._parse_special_values(request.top_p)}"
+        yield f"Top K: {self._parse_special_values(request.top_k)}"
+        yield f"Repetition Penalty: {self._parse_special_values(request.repetition_penalty)}"
+        yield f"Frequency Penalty: {self._parse_special_values(request.frequency_penalty)}"
+        yield f"Presence Penalty: {self._parse_special_values(request.presence_penalty)}"
+        yield f"Max Tokens: {self._parse_special_values(request.max_tokens)}"
+        yield f"Max Completion Tokens: {self._parse_special_values(request.max_completion_tokens)}"
+        if request.fim_mode:
+            yield "Completion Mode: FIM"
+            yield f"FIM Echo: {self._parse_special_values(request.echo)}"
+        else:
+            yield "Completion Mode: Chat"
+        
+        if not request.remove_reasoning_prompt:
+            yield "Reasoning Prompt: Retained"
+        else:
+            yield "Reasoning Prompt: Removed"
+        
+        yield "============= Response ============="
+        if response.system_fingerprint:
+            yield f"System Fingerprint: {response.system_fingerprint}"
+        yield f"Finish Reason: {response.finish_reason}"
+        yield f"Finish Reason Cause: {response.finish_reason_cause}"
+
+        if response.request_log.total_chunk > 0:
+            yield "============ Chunk Count ==========="
+            yield f"Total Chunk: {response.request_log.total_chunk}"
+            if response.request_log.empty_chunk > 0:
+                yield f"Empty Chunk: {response.request_log.empty_chunk}"
+                yield f"Non-Empty Chunk: {response.request_log.total_chunk - response.request_log.empty_chunk}"
+            yield f"Chunk effective ratio: {1 - response.request_log.empty_chunk / response.request_log.total_chunk:.2%}"
+        
+        yield f"========== Time Statistics ========="
+        
+        total_time = response.request_log.stream_processing_end_time.monotonic - response.request_log.request_start_time.monotonic
+        yield f"Total Time: {self._format_timedelta(total_time)}"
+
+        preprocessing_time = response.request_log.prepare_end_time.monotonic - response.request_log.prepare_start_time.monotonic
+        yield f"Preprocessing Time: {self._format_timedelta(preprocessing_time)}"
+
+        requests_time = response.request_log.request_end_time.monotonic - response.request_log.request_start_time.monotonic
+        yield f"API Request Time: {self._format_timedelta(requests_time)}"
+
+        stream_processing_time = response.request_log.stream_processing_end_time.monotonic - response.request_log.stream_processing_start_time.monotonic
+        yield f"Stream Processing Time: {self._format_timedelta(stream_processing_time)}"
+
+        if response.token_usage is not None:
+            generation_speed = response.token_usage.completion_tokens / (stream_processing_time / 1e9)
+            yield f"Generation Speed: {generation_speed:.2f} Tokens/s"
+
+        created_utc_dt = datetime.fromtimestamp(response.created, tz=timezone.utc)
+        created_utc_str = created_utc_dt.strftime("%Y-%m-%d %H:%M:%S (UTC)")
+        yield f"Created Time: {created_utc_str}"
+
+        created_local_dt = datetime.fromtimestamp(response.created)
+        created_local_str = created_local_dt.strftime("%Y-%m-%d %H:%M:%S (Local)")
+        yield f"Created Time: {created_local_str}"
+
+        if response.request_log.total_chunk > 0:
+            if response.request_log.chunk_generated_times:
+                yield from self._chunk_statistics(
+                    "Generated",
+                    request_log = response.request_log,
+                    raw_timestamps = [timestamp.monotonic for timestamp in response.request_log.chunk_generated_times]
+                )
+        
+            if response.request_log.chunk_generated_times:
+                yield from self._chunk_statistics(
+                    "Translation",
+                    request_log = response.request_log,
+                    raw_timestamps = [timestamp.monotonic for timestamp in response.request_log.translation_chunk_times],
+                    raw_queue_backlogs = response.request_log.translation_queue_backlog
+                )
+        
+            if response.request_log.chunk_times:
+                yield from self._chunk_statistics(
+                    "Transmitted",
+                    request_log = response.request_log,
+                    raw_timestamps = [timestamp.monotonic for timestamp in response.request_log.chunk_times],
+                    raw_queue_backlogs = response.request_log.queue_backlog
+                )
+
+        if response.token_usage is not None:
+            yield f"=========== Token Count ============"
+            yield f"Total Tokens: {self._format_token(response.token_usage.total_tokens)}"
+            yield f"Context Input Tokens: {self._format_token(response.token_usage.prompt_tokens)}"
+
+            if response.token_usage.prompt_cache_hit_tokens is not None:
+                yield f"Cache Hit Tokens: {self._format_token(response.token_usage.prompt_cache_hit_tokens)}"
+            if response.token_usage.prompt_cache_miss_tokens is not None:
+                yield f"Cache Miss Tokens: {self._format_token(response.token_usage.prompt_cache_miss_tokens)}"
+
+            yield f"Completion Output Tokens: {self._format_token(response.token_usage.completion_tokens)}"
+            
+            if not math.isnan(response.token_usage.cache_hit_ratio()):
+                yield f"Cache Hit Ratio: {response.token_usage.cache_hit_ratio():.2%}"
+            
+            if response.stream and response.request_log.chunk_times:
+                if len(response.request_log.chunk_times) > 1:
+                    avg_gen_rate = response.token_usage.completion_tokens / (
+                        (
+                            response.request_log.chunk_times[-1].monotonic -
+                            response.request_log.chunk_times[0].monotonic
+                        ) / 1e9
+                    )
+                    yield f"Average Generation Rate: {avg_gen_rate:.2f} Token/s"
+
+        yield "============= Content =============="
+        historical_context_text_length = response.historical_context.total_length
+        new_context_text_length = response.new_context.total_length
+        response.request_log.reasoning_content_length = sum(len(content.reasoning_content) for content in response.new_context.context_list if content.reasoning_content)
+        response.request_log.new_content_length = sum(len(content.content) for content in response.new_context.context_list)
+        total_context_length = historical_context_text_length + new_context_text_length
+        reasoning_content_length = response.request_log.reasoning_content_length
+        new_content_length = response.request_log.new_content_length
+        historical_context_length = historical_context_text_length
+        new_context_length = new_context_text_length
+        
+
+        yield f"Total Content Length: {total_context_length}"
+        yield f"New Reasoning Content Length: {reasoning_content_length}"
+        yield f"New Answer Content Length: {new_content_length}"
+        yield f"Historical Context Text Length: {historical_context_length}"
+        yield f"New Content Text Length: {new_context_length}"
+
+        yield f"===================================="
 
     # region 打印日志
     async def _print_fast_statistics(self, user_id: str, request: Request, response: Response):
@@ -232,565 +502,22 @@ class ClientBase(ABC):
 
         fs_logger = logger.bind(user_id = user_id)
 
-        fs_logger.info("========== Fast Statistics =========")
-        fs_logger.info("Generating statistics...")
-        fs_logger.info("============= API INFO =============")
-        fs_logger.info(
-            "API URL: {url}",
-            url = request.url,
-        )
-        fs_logger.info(
-            "Model: {model_id}",
-            model_id = request.model
-        )
-        fs_logger.info(
-            "User Name: {user_name}",
-            user_name = request.user_name
-        )
-        fs_logger.info(
-            "Task ID: {task_id}",
-            task_id = response.request_log.task_id
-        )
-        fs_logger.info(
-            "Response ID: {request_id}",
-            request_id = response.id
-        )
-        fs_logger.info(
-            "Thinking: {thinking}",
-            thinking = self._parse_special_values(request.thinking)
-        )
-        fs_logger.info(
-            "Seed: {seed}",
-            seed = self._parse_special_values(request.seed)
-        )
-        fs_logger.info(
-            "Temperature: {temperature}",
-            temperature = self._parse_special_values(request.temperature)
-        )
-        fs_logger.info(
-            "Top A: {top_p}",
-            top_p = self._parse_special_values(request.top_a)
-        )
-        fs_logger.info(
-            "Top P: {top_p}",
-            top_p = self._parse_special_values(request.top_p)
-        )
-        fs_logger.info(
-            "Top K: {top_k}",
-            top_k = self._parse_special_values(request.top_k)
-        )
-        fs_logger.info(
-            "Repetition Penalty: {repetition_penalty}",
-            repetition_penalty = self._parse_special_values(request.repetition_penalty)
-        )
-        fs_logger.info(
-            "Frequency Penalty: {frequency_penalty}",
-            frequency_penalty = self._parse_special_values(request.frequency_penalty)
-        )
-        fs_logger.info(
-            "Presence Penalty: {presence_penalty}",
-            presence_penalty = self._parse_special_values(request.presence_penalty)
-        )
-        fs_logger.info(
-            "Max Tokens: {max_tokens}",
-            max_tokens = self._parse_special_values(request.max_tokens)
-        )
-        fs_logger.info(
-            "Max Completion Tokens: {max_completion_tokens}",
-            max_completion_tokens = self._parse_special_values(request.max_completion_tokens)
-        )
-        if request.fim_mode:
-            fs_logger.info("Completion Mode: FIM")
-            fs_logger.info(
-                "FIM Echo: {fim_echo}",
-                fim_echo = self._parse_special_values(request.echo)
+        buffer: list[str] = []
+
+        fast_statistics_start_time = time.perf_counter_ns()
+        buffer.extend(
+            self._gen_fast_statistics(
+                user_id = user_id,
+                request = request,
+                response = response,
             )
-        else:
-            fs_logger.info("Completion Mode: Chat")
+        )
+        fast_statistics_end_time = time.perf_counter_ns()
+
+        fs_logger.info(
+            "Fast Statistics (Time: {fast_statistics_time:.3f}ms): \n{fast_statistics}",
+            fast_statistics_time = (fast_statistics_end_time - fast_statistics_start_time) / 1e6,
+            fast_statistics = "\n".join(buffer)
+        )
+
         
-        if not request.remove_reasoning_prompt:
-            fs_logger.info("Reasoning Prompt: Retained")
-        else:
-            fs_logger.info("Reasoning Prompt: Removed")
-        
-        fs_logger.info("============= Response =============")
-        if response.system_fingerprint:
-            fs_logger.info(
-                "System Fingerprint: {system_fingerprint}",
-                system_fingerprint = response.system_fingerprint
-            )
-        fs_logger.info(
-            "Finish Reason: {finish_reason}",
-            finish_reason = response.finish_reason
-        )
-        fs_logger.info(
-            "Finish Reason Cause: {finish_reason_cause}",
-            finish_reason_cause = response.finish_reason_cause
-        )
-
-        if response.request_log.total_chunk > 0:
-            fs_logger.info("============ Chunk Count ===========")
-            fs_logger.info(
-                "Total Chunk: {total_chunk}",
-                total_chunk = response.request_log.total_chunk
-            )
-            if response.request_log.empty_chunk > 0:
-                fs_logger.info(
-                    "Empty Chunk: {empty_chunk}",
-                    empty_chunk = response.request_log.empty_chunk
-                )
-                fs_logger.info(
-                    "Non-Empty Chunk: {non_empty_chunk}",
-                    non_empty_chunk = response.request_log.total_chunk - response.request_log.empty_chunk
-                )
-            fs_logger.info(
-                "Chunk effective ratio: {chunk_effective_ratio:.2%}",
-                chunk_effective_ratio = 1 - response.request_log.empty_chunk / response.request_log.total_chunk
-            )
-        
-        fs_logger.info("========== Time Statistics =========")
-        
-        total_time = response.request_log.stream_processing_end_time.monotonic - response.request_log.request_start_time.monotonic
-        fs_logger.info(
-            "Total Time: {total_time:.2f}s({format_time_duration})",
-            total_time = total_time / 1e9,
-            format_time_duration = format_time_duration_ns(total_time, use_abbreviation=True)
-        )
-
-        preprocessing_time = response.request_log.prepare_end_time.monotonic - response.request_log.prepare_start_time.monotonic
-        fs_logger.info(
-            "Preprocessing Time: {preprocessing_time:.2f}ms({format_time_duration})",
-            preprocessing_time = preprocessing_time / 1e6,
-            format_time_duration = format_time_duration_ns(preprocessing_time, use_abbreviation=True)
-        )
-
-        requests_time = response.request_log.request_end_time.monotonic - response.request_log.request_start_time.monotonic
-        fs_logger.info(
-            "API Request Time: {requests_time:.2f}ms({format_time_duration})",
-            requests_time = requests_time / 1e6,
-            format_time_duration = format_time_duration_ns(requests_time, use_abbreviation=True)
-        )
-
-        stream_processing_time = response.request_log.stream_processing_end_time.monotonic - response.request_log.stream_processing_start_time.monotonic
-        fs_logger.info(
-            "Stream Processing Time: {stream_processing_time:.2f}s({format_time_duration})",
-            stream_processing_time = stream_processing_time / 1e9,
-            format_time_duration = format_time_duration_ns(stream_processing_time, use_abbreviation=True)
-        )
-
-        if response.token_usage is not None:
-            fs_logger.info(
-                "Generation Speed: {generation_speed:.2f} Tokens/s",
-                generation_speed = response.token_usage.completion_tokens / (stream_processing_time / 1e9)
-            )
-
-        created_utc_dt = datetime.fromtimestamp(response.created, tz=timezone.utc)
-        created_utc_str = created_utc_dt.strftime("%Y-%m-%d %H:%M:%S (UTC)")
-        fs_logger.info(
-            "Created Time: {created_utc_str}",
-            created_utc_str = created_utc_str
-        )
-
-        created_local_dt = datetime.fromtimestamp(response.created)
-        created_local_str = created_local_dt.strftime("%Y-%m-%d %H:%M:%S (Local)")
-        fs_logger.info(
-            "Created Time: {created_local_str}",
-            created_local_str = created_local_str
-        )
-
-        if response.request_log.total_chunk > 0:
-            if response.request_log.chunk_generated_times:
-                fs_logger.info("==== Generated Chunk Statistics ====")
-                raw_timestamps = [time.monotonic for time in response.request_log.chunk_generated_times]
-                timestamps = np.array(raw_timestamps, dtype=np.int64)
-                time_differences = np.diff(timestamps)
-                non_zero_time_differences = time_differences[time_differences != 0]
-                if time_differences.size > 0 and non_zero_time_differences.size > 0:
-                    max_chunk_spawn_time = int(np.max(time_differences))
-                    min_chunk_spawn_time = int(np.min(non_zero_time_differences))
-                    ave_chunk_spawn_time = float(np.mean(time_differences))
-                    chunk_median_time = float(np.median(time_differences))
-                    chunk_spawn_time_std = float(np.std(time_differences))
-                    chunk_spawn_time_iqr = self._calculate_interquartile_range(time_differences)
-                    chunk_spawn_time_idr = self._calculate_interdecile_range(time_differences)
-                    chunk_spawn_time_mad = self._calculate_mad(time_differences)
-                    chunk_spawn_time_relative_mad = chunk_spawn_time_mad / chunk_median_time
-                    chunk_generation_rate = response.request_log.total_chunk / (stream_processing_time / 1e9)
-                    chunk_stability_cv = self._calculate_cv(time_differences)
-                    simple_chunk_times = self._fixed_length_sample(time_differences, 34)
-                    first_chunk_wait_time = raw_timestamps[0] - response.request_log.stream_processing_start_time.monotonic
-                    skewness = self._calculate_skewness(time_differences)
-                    self._draw_chart(
-                        fs_logger,
-                        simple_chunk_times,
-                        ctitle = "Generated Chunk Times"
-                    )
-                    fs_logger.info(
-                        "Generated Chunk Rate: {chunk_generation_rate:.2f} Chunks/s",
-                        chunk_generation_rate = chunk_generation_rate
-                    )
-                    fs_logger.info(
-                        "First Generated Chunk Wait Time: {chunk_wait_time:.2f}ms({format_time_duration})",
-                        chunk_wait_time = first_chunk_wait_time / 1e6,
-                        format_time_duration = format_time_duration_ns(first_chunk_wait_time, use_abbreviation=True)
-                    )
-                    fs_logger.info(
-                        "Generated Chunk Average Time: {ave_chunk_spawn_time:.2f}ms({format_time_duration})",
-                        ave_chunk_spawn_time = ave_chunk_spawn_time / 1e6,
-                        format_time_duration = format_time_duration_ns(int(ave_chunk_spawn_time), use_abbreviation=True)
-                    )
-                    fs_logger.info(
-                        "Generated Chunk Max Time: {max_chunk_spawn_time:.2f}ms({format_time_duration})",
-                        max_chunk_spawn_time = max_chunk_spawn_time / 1e6,
-                        format_time_duration = format_time_duration_ns(max_chunk_spawn_time, use_abbreviation=True)
-                    )
-                    fs_logger.info(
-                        "Generated Chunk Min Time: {min_chunk_spawn_time:.2f}ms({format_time_duration})",
-                        min_chunk_spawn_time = min_chunk_spawn_time / 1e6,
-                        format_time_duration = format_time_duration_ns(min_chunk_spawn_time, use_abbreviation=True)
-                    )
-                    fs_logger.info(
-                        "Generated Chunk Time CV: {chunk_stability_cv:.2%}",
-                        chunk_stability_cv = chunk_stability_cv,
-                    )
-                    fs_logger.info(
-                        "Generated Chunk Time Range: {chunk_stability_range:.2f}ms({format_time_duration})",
-                        chunk_stability_range = (max_chunk_spawn_time - min_chunk_spawn_time) / 1e6,
-                        format_time_duration = format_time_duration_ns(max_chunk_spawn_time - min_chunk_spawn_time, use_abbreviation=True)
-                    )
-                    fs_logger.info(
-                        "Generated Chunk Time Median: {chunk_median_time:.2f}ms({format_time_duration})",
-                        chunk_median_time = chunk_median_time / 1e6,
-                        format_time_duration = format_time_duration_ns(int(chunk_median_time), use_abbreviation=True)
-                    )
-                    fs_logger.info(
-                        "Generated Chunk Time STD: {chunk_std_time:.2f}ms({format_time_duration})",
-                        chunk_std_time = chunk_spawn_time_std / 1e6,
-                        format_time_duration = format_time_duration_ns(int(chunk_spawn_time_std), use_abbreviation=True)
-                    )
-                    fs_logger.info(
-                        "Generated Chunk Time MAD: {chunk_mad_time:.2f}ms({format_time_duration})",
-                        chunk_mad_time = chunk_spawn_time_mad / 1e6,
-                        format_time_duration = format_time_duration_ns(int(chunk_spawn_time_mad), use_abbreviation=True)
-                    )
-                    fs_logger.info(
-                        "Generated Chunk Time Relative MAD: {chunk_relative_time_mad:.2%}",
-                        chunk_relative_time_mad = chunk_spawn_time_relative_mad
-                    )
-                    fs_logger.info(
-                        "Generated Chunk Time IQR: {chunk_iqr_time:.2f}ms({format_time_duration})",
-                        chunk_iqr_time = chunk_spawn_time_iqr / 1e6,
-                        format_time_duration = format_time_duration_ns(int(chunk_spawn_time_iqr), use_abbreviation=True)
-                    )
-                    fs_logger.info(
-                        "Generated Chunk Time IDR: {chunk_idr_time:.2f}ms({format_time_duration})",
-                        chunk_idr_time = chunk_spawn_time_idr / 1e6,
-                        format_time_duration = format_time_duration_ns(int(chunk_spawn_time_idr), use_abbreviation=True)
-                    )
-                    fs_logger.info(
-                        "Generated Chunk Time Skewness {chunk_time_skewness:.4f}",
-                        chunk_time_skewness = skewness
-                    )
-        
-        if response.request_log.total_chunk > 0:
-            if response.request_log.chunk_generated_times:
-                fs_logger.info("=== Translation Chunk Statistics ===")
-                raw_timestamps = [time.monotonic for time in response.request_log.translation_chunk_times]
-                raw_queue_backlog = response.request_log.processor_queue_backlog
-                timestamps = np.array(raw_timestamps, dtype=np.int64)
-                queue_backlog = np.array(raw_queue_backlog, dtype=np.int64)
-                time_differences = np.diff(timestamps)
-                non_zero_time_differences = time_differences[time_differences != 0]
-                if time_differences.size > 0 and non_zero_time_differences.size > 0:
-                    max_chunk_spawn_time = int(np.max(time_differences))
-                    min_chunk_spawn_time = int(np.min(non_zero_time_differences))
-                    ave_chunk_spawn_time = float(np.mean(time_differences))
-                    chunk_median_time = float(np.median(time_differences))
-                    chunk_spawn_time_std = float(np.std(time_differences))
-                    chunk_spawn_time_iqr = self._calculate_interquartile_range(time_differences)
-                    chunk_spawn_time_idr = self._calculate_interdecile_range(time_differences)
-                    chunk_spawn_time_mad = self._calculate_mad(time_differences)
-                    chunk_spawn_time_relative_mad = chunk_spawn_time_mad / chunk_median_time
-                    chunk_generation_rate = response.request_log.total_chunk / (stream_processing_time / 1e9)
-                    chunk_stability_cv = self._calculate_cv(time_differences)
-                    simple_chunk_times = self._fixed_length_sample(time_differences, 34)
-                    first_chunk_wait_time = raw_timestamps[0] - response.request_log.stream_processing_start_time.monotonic
-                    skewness = self._calculate_skewness(time_differences)
-                    self._draw_chart(
-                        fs_logger,
-                        simple_chunk_times,
-                        ctitle = "Translation Chunk Times",
-                    )
-                    fs_logger.info(
-                        "Translation Chunk Rate: {chunk_generation_rate:.2f} Chunks/s",
-                        chunk_generation_rate = chunk_generation_rate
-                    )
-                    fs_logger.info(
-                        "Translation First Chunk Wait Time: {chunk_wait_time:.2f}ms({format_time_duration})",
-                        chunk_wait_time = first_chunk_wait_time / 1e6,
-                        format_time_duration = format_time_duration_ns(first_chunk_wait_time, use_abbreviation=True)
-                    )
-                    fs_logger.info(
-                        "Translation Chunk Average Time: {ave_chunk_spawn_time:.2f}ms({format_time_duration})",
-                        ave_chunk_spawn_time = ave_chunk_spawn_time / 1e6,
-                        format_time_duration = format_time_duration_ns(int(ave_chunk_spawn_time), use_abbreviation=True)
-                    )
-                    fs_logger.info(
-                        "Translation Chunk Max Time: {max_chunk_spawn_time:.2f}ms({format_time_duration})",
-                        max_chunk_spawn_time = max_chunk_spawn_time / 1e6,
-                        format_time_duration = format_time_duration_ns(max_chunk_spawn_time, use_abbreviation=True)
-                    )
-                    fs_logger.info(
-                        "Translation Chunk Min Time: {min_chunk_spawn_time:.2f}ms({format_time_duration})",
-                        min_chunk_spawn_time = min_chunk_spawn_time / 1e6,
-                        format_time_duration = format_time_duration_ns(min_chunk_spawn_time, use_abbreviation=True)
-                    )
-                    fs_logger.info(
-                        "Translation Chunk Time CV: {chunk_stability_cv:.2%}",
-                        chunk_stability_cv = chunk_stability_cv,
-                    )
-                    fs_logger.info(
-                        "Translation Chunk Time Range: {chunk_stability_range:.2f}ms({format_time_duration})",
-                        chunk_stability_range = (max_chunk_spawn_time - min_chunk_spawn_time) / 1e6,
-                        format_time_duration = format_time_duration_ns(max_chunk_spawn_time - min_chunk_spawn_time, use_abbreviation=True)
-                    )
-                    fs_logger.info(
-                        "Translation Chunk Time Median: {chunk_median_time:.2f}ms({format_time_duration})",
-                        chunk_median_time = chunk_median_time / 1e6,
-                        format_time_duration = format_time_duration_ns(int(chunk_median_time), use_abbreviation=True)
-                    )
-                    fs_logger.info(
-                        "Translation Chunk Time STD: {chunk_std_time:.2f}ms({format_time_duration})",
-                        chunk_std_time = chunk_spawn_time_std / 1e6,
-                        format_time_duration = format_time_duration_ns(int(chunk_spawn_time_std), use_abbreviation=True)
-                    )
-                    fs_logger.info(
-                        "Translation Chunk Time MAD: {chunk_mad_time:.2f}ms({format_time_duration})",
-                        chunk_mad_time = chunk_spawn_time_mad / 1e6,
-                        format_time_duration = format_time_duration_ns(int(chunk_spawn_time_mad), use_abbreviation=True)
-                    )
-                    fs_logger.info(
-                        "Translation Chunk Time Relative MAD: {chunk_relative_time_mad:.2%}",
-                        chunk_relative_time_mad = chunk_spawn_time_relative_mad
-                    )
-                    fs_logger.info(
-                        "Translation Chunk Time IQR: {chunk_iqr_time:.2f}ms({format_time_duration})",
-                        chunk_iqr_time = chunk_spawn_time_iqr / 1e6,
-                        format_time_duration = format_time_duration_ns(int(chunk_spawn_time_iqr), use_abbreviation=True)
-                    )
-                    fs_logger.info(
-                        "Translation Chunk Time IDR: {chunk_idr_time:.2f}ms({format_time_duration})",
-                        chunk_idr_time = chunk_spawn_time_idr / 1e6,
-                        format_time_duration = format_time_duration_ns(int(chunk_spawn_time_idr), use_abbreviation=True)
-                    )
-                    fs_logger.info(
-                        "Translation Chunk Time Skewness {chunk_time_skewness:.4f}",
-                        chunk_time_skewness = skewness
-                    )
-                    fs_logger.info(
-                        "Translation Max Queue Backlog: {max_queue_backlog}",
-                        max_queue_backlog = queue_backlog.max()
-                    )
-                    fs_logger.info(
-                        "Translation Min Queue Backlog: {min_queue_backlog}",
-                        min_queue_backlog = queue_backlog.min()
-                    )
-                    fs_logger.info(
-                        "Translation Mean Queue Backlog: {mean_queue_backlog:.4f}",
-                        mean_queue_backlog = queue_backlog.mean()
-                    )
-                    fs_logger.info(
-                        "Translation Median Queue Backlog: {median_queue_backlog:.4f}",
-                        median_queue_backlog = np.median(queue_backlog)
-                    )
-        
-            if response.request_log.chunk_times:
-                fs_logger.info("====== Parsed Chunk Statistics =====")
-                raw_timestamps = [time.monotonic for time in response.request_log.chunk_times]
-                raw_queue_backlog = response.request_log.processor_queue_backlog
-                timestamps = np.array(raw_timestamps, dtype=np.int64)
-                queue_backlog = np.array(raw_queue_backlog, dtype=np.int64)
-                time_differences = np.diff(timestamps)
-                non_zero_time_differences = time_differences[time_differences != 0]
-                if time_differences.size > 0 and non_zero_time_differences.size > 0:
-                    max_chunk_spawn_time = int(np.max(time_differences))
-                    min_chunk_spawn_time = int(np.min(non_zero_time_differences))
-                    ave_chunk_spawn_time = float(np.mean(time_differences))
-                    chunk_median_time = float(np.median(time_differences))
-                    chunk_spawn_time_std = float(np.std(time_differences))
-                    chunk_spawn_time_iqr = self._calculate_interquartile_range(time_differences)
-                    chunk_spawn_time_idr = self._calculate_interdecile_range(time_differences)
-                    chunk_spawn_time_mad = self._calculate_mad(time_differences)
-                    chunk_spawn_time_relative_mad = chunk_spawn_time_mad / chunk_median_time
-                    chunk_generation_rate = response.request_log.total_chunk / (stream_processing_time / 1e9)
-                    chunk_stability_cv = self._calculate_cv(time_differences)
-                    simple_chunk_times = self._fixed_length_sample(time_differences, 34)
-                    first_chunk_wait_time = raw_timestamps[0] - response.request_log.stream_processing_start_time.monotonic
-                    skewness = self._calculate_skewness(time_differences)
-                    self._draw_chart(
-                        fs_logger,
-                        simple_chunk_times,
-                        ctitle = "Parsed Chunk Times",
-                    )
-                    fs_logger.info(
-                        "Parsed Chunk Rate: {chunk_generation_rate:.2f} Chunks/s",
-                        chunk_generation_rate = chunk_generation_rate
-                    )
-                    fs_logger.info(
-                        "Parsed First Chunk Wait Time: {chunk_wait_time:.2f}ms({format_time_duration})",
-                        chunk_wait_time = first_chunk_wait_time / 1e6,
-                        format_time_duration = format_time_duration_ns(first_chunk_wait_time, use_abbreviation=True)
-                    )
-                    fs_logger.info(
-                        "Parsed Chunk Average Time: {ave_chunk_spawn_time:.2f}ms({format_time_duration})",
-                        ave_chunk_spawn_time = ave_chunk_spawn_time / 1e6,
-                        format_time_duration = format_time_duration_ns(int(ave_chunk_spawn_time), use_abbreviation=True)
-                    )
-                    fs_logger.info(
-                        "Parsed Chunk Max Time: {max_chunk_spawn_time:.2f}ms({format_time_duration})",
-                        max_chunk_spawn_time = max_chunk_spawn_time / 1e6,
-                        format_time_duration = format_time_duration_ns(max_chunk_spawn_time, use_abbreviation=True)
-                    )
-                    fs_logger.info(
-                        "Parsed Chunk Min Time: {min_chunk_spawn_time:.2f}ms({format_time_duration})",
-                        min_chunk_spawn_time = min_chunk_spawn_time / 1e6,
-                        format_time_duration = format_time_duration_ns(min_chunk_spawn_time, use_abbreviation=True)
-                    )
-                    fs_logger.info(
-                        "Parsed Chunk Time CV: {chunk_stability_cv:.2%}",
-                        chunk_stability_cv = chunk_stability_cv,
-                    )
-                    fs_logger.info(
-                        "Parsed Chunk Time Range: {chunk_stability_range:.2f}ms({format_time_duration})",
-                        chunk_stability_range = (max_chunk_spawn_time - min_chunk_spawn_time) / 1e6,
-                        format_time_duration = format_time_duration_ns(max_chunk_spawn_time - min_chunk_spawn_time, use_abbreviation=True)
-                    )
-                    fs_logger.info(
-                        "Parsed Chunk Time Median: {chunk_median_time:.2f}ms({format_time_duration})",
-                        chunk_median_time = chunk_median_time / 1e6,
-                        format_time_duration = format_time_duration_ns(chunk_median_time, use_abbreviation=True)
-                    )
-                    fs_logger.info(
-                        "Parsed Chunk Time STD: {chunk_std_time:.2f}ms({format_time_duration})",
-                        chunk_std_time = chunk_spawn_time_std / 1e6,
-                        format_time_duration = format_time_duration_ns(int(chunk_spawn_time_std), use_abbreviation=True)
-                    )
-                    fs_logger.info(
-                        "Parsed Chunk Time MAD: {chunk_mad_time:.2f}ms({format_time_duration})",
-                        chunk_mad_time = chunk_spawn_time_mad / 1e6,
-                        format_time_duration = format_time_duration_ns(int(chunk_spawn_time_mad), use_abbreviation=True)
-                    )
-                    fs_logger.info(
-                        "Parsed Chunk Time Relative MAD: {chunk_relative_time_mad:.2%}",
-                        chunk_relative_time_mad = chunk_spawn_time_relative_mad
-                    )
-                    fs_logger.info(
-                        "Parsed Chunk Time IQR: {chunk_iqr_time:.2f}ms({format_time_duration})",
-                        chunk_iqr_time = chunk_spawn_time_iqr / 1e6,
-                        format_time_duration = format_time_duration_ns(int(chunk_spawn_time_iqr), use_abbreviation=True)
-                    )
-                    fs_logger.info(
-                        "Parsed Chunk Time IDR: {chunk_idr_time:.2f}ms({format_time_duration})",
-                        chunk_idr_time = chunk_spawn_time_idr / 1e6,
-                        format_time_duration = format_time_duration_ns(int(chunk_spawn_time_idr), use_abbreviation=True)
-                    )
-                    fs_logger.info(
-                        "Parsed Chunk Time Skewness {chunk_time_skewness:.4f}",
-                        chunk_time_skewness = skewness
-                    )
-                    fs_logger.info(
-                        "Parsed Max Queue Backlog: {max_queue_backlog}",
-                        max_queue_backlog = queue_backlog.max()
-                    )
-                    fs_logger.info(
-                        "Parsed Min Queue Backlog: {min_queue_backlog}",
-                        min_queue_backlog = queue_backlog.min()
-                    )
-                    fs_logger.info(
-                        "Parsed Mean Queue Backlog: {mean_queue_backlog:.4f}",
-                        mean_queue_backlog = queue_backlog.mean()
-                    )
-                    fs_logger.info(
-                        "Parsed Median Queue Backlog: {median_queue_backlog:.4f}",
-                        median_queue_backlog = np.median(queue_backlog)
-                    )
-
-        if response.token_usage is not None:
-            fs_logger.info("=========== Token Count ============")
-            fs_logger.info(
-                "Total Tokens: {total_tokens}({format_token_duration}Tokens)",
-                total_tokens = response.token_usage.total_tokens,
-                format_token_duration = format_token_duration(response.token_usage.total_tokens, use_abbreviation = True, delimiter = " ")
-            )
-            fs_logger.info(
-                "Context Input Tokens: {prompt_tokens}({format_token_duration}Tokens)",
-                prompt_tokens = response.token_usage.prompt_tokens,
-                format_token_duration = format_token_duration(response.token_usage.prompt_tokens, use_abbreviation = True, delimiter = " ")
-            )
-
-            if response.token_usage.prompt_cache_hit_tokens is not None:
-                fs_logger.info(
-                    "Cache Hit Count: {prompt_cache_hit_tokens}({format_token_duration}Tokens)",
-                    prompt_cache_hit_tokens = response.token_usage.prompt_cache_hit_tokens,
-                    format_token_duration = format_token_duration(response.token_usage.prompt_cache_hit_tokens, use_abbreviation = True, delimiter = " ")
-                )
-            if response.token_usage.prompt_cache_miss_tokens is not None:
-                fs_logger.info(
-                    "Cache Miss Count: {prompt_cache_miss_tokens}({format_token_duration}Tokens)",
-                    prompt_cache_miss_tokens = response.token_usage.prompt_cache_miss_tokens,
-                    format_token_duration = format_token_duration(response.token_usage.prompt_cache_miss_tokens, use_abbreviation = True, delimiter = " ")
-                )
-
-            fs_logger.info(
-                "Completion Output Tokens: {completion_tokens}({format_token_duration}Tokens)",
-                completion_tokens = response.token_usage.completion_tokens,
-                format_token_duration = format_token_duration(response.token_usage.completion_tokens, use_abbreviation = True, delimiter = " ")
-            )
-            
-            if not math.isnan(response.token_usage.cache_hit_ratio()):
-                fs_logger.info(
-                    "Cache Hit Ratio: {cache_hit_ratio:.2%}",
-                    cache_hit_ratio = response.token_usage.cache_hit_ratio()
-                )
-            if response.stream and response.request_log.chunk_times:
-                if len(response.request_log.chunk_times) > 1:
-                    fs_logger.info(
-                        "Average Generation Rate: {avg_gen_rate:.2f} Token/s",
-                        avg_gen_rate = response.token_usage.completion_tokens / 
-                        (
-                            (
-                                response.request_log.chunk_times[-1].monotonic -
-                                response.request_log.chunk_times[0].monotonic
-                            ) / 1e9
-                        )
-                    )
-
-        fs_logger.info("============= Content ==============")
-        historical_context_text_length = response.historical_context.total_length
-        new_context_text_length = response.new_context.total_length
-        response.request_log.reasoning_content_length = sum(len(content.reasoning_content) for content in response.new_context.context_list if content.reasoning_content)
-        response.request_log.new_content_length = sum(len(content.content) for content in response.new_context.context_list)
-
-        fs_logger.info(
-            "Total Content Length: {total_context_length}",
-            total_context_length = historical_context_text_length + new_context_text_length
-        )
-        response.request_log.total_context_length = response.historical_context.total_length
-        fs_logger.info(
-            "New Reasoning Content Length: {reasoning_content_length}",
-            reasoning_content_length = response.request_log.reasoning_content_length
-        )
-        fs_logger.info(
-            "New Answer Content Length: {new_content_length}",
-            new_content_length = response.request_log.new_content_length
-        )
-        fs_logger.info(
-            "Historical Context Text Length: {historical_context_length}",
-            historical_context_length = historical_context_text_length
-        )
-        fs_logger.info(
-            "New Content Text Length: {new_context_length}",
-            new_context_length = new_context_text_length
-        )
-
-        fs_logger.info("====================================")
