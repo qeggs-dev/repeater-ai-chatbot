@@ -135,7 +135,7 @@ class StreamingResponseGenerationLayer:
         """
         Returns the streaming response generation layer as an iterator.
         """
-        stream_processing_start_time:int = TimeStamp()
+        stream_processing_start_time: TimeStamp = TimeStamp()
         self.response.request_log.stream_processing_start_time = stream_processing_start_time
         asyncio.create_task(self._read_chunk())
         return self
@@ -149,8 +149,8 @@ class StreamingResponseGenerationLayer:
         if delta_data is None:
             if not self._finished:
                 self._finished = True
-                self.finally_stream()
-                raise StopAsyncIteration
+            self.finally_stream()
+            raise StopAsyncIteration
         elif isinstance(delta_data, Exception):
             raise delta_data
         else:
