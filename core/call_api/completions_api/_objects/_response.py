@@ -24,8 +24,8 @@ class Response(BaseModel):
     token_usage: TokensCount | None = None
     stream: bool = False
     tool_calls: list[ToolCall] | None = None
-    finish_reason: FinishReason = FinishReason.STOP
-    system_fingerprint: str = ""
+    finish_reason: FinishReason | str = FinishReason.STOP
+    system_fingerprint: str | None = None
     logprobs: list[Logprob] | None = None
 
     stream_processing_start_time_ns:TimeStamp = Field(default_factory=TimeStamp)

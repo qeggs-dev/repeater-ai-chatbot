@@ -14,10 +14,10 @@ class Delta(BaseModel):
     content: str = ""
     tool_calls: list[ToolCall] | None = None
     token_usage: TokensCount = Field(default_factory=TokensCount)
-    finish_reason: FinishReason | None = None
+    finish_reason: FinishReason | str | None = None
     created: int = 0
     model: str = ""
-    system_fingerprint: str = ""
+    system_fingerprint: str | None = None
     logprobs: list[Logprob] = Field(default_factory=list)
 
     @property
