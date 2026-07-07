@@ -470,7 +470,11 @@ class ClientBase(ABC):
         yield f"Finish Reason Cause: {response.finish_reason_cause}"
 
         if response.request_log.total_chunk > 0:
-            yield "============ Chunk Count ==========="
+            yield self._format_title(
+                "Chunk Count",
+                dividing = dividing,
+                title_width = title_width
+            )
             yield f"Total Chunk: {response.request_log.total_chunk}"
             if response.request_log.empty_chunk > 0:
                 yield f"Empty Chunk: {response.request_log.empty_chunk}"
