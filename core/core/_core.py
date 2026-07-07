@@ -457,7 +457,8 @@ class Core:
                         
                         # region [Make Request Object]
                         with task_status_stack.enter("Make Request Object"):
-                            request = make_request(
+                            request = await asyncio.to_thread(
+                                make_request,
                                 user_id = user_id,
                                 user_input = user_input,
                                 suffix = suffix,
