@@ -288,14 +288,7 @@ class ClientBase(ABC):
         dividing: str = "=",
         title_width: int = 50
     ):
-        dividing_line_length = title_width - len(title) - 2
-        if dividing_line_length % 2 == 0:
-            dividing_line_prefix = dividing * (dividing_line_length // 2)
-            dividing_line_suffix = dividing_line_prefix
-        else:
-            dividing_line_prefix = dividing * (dividing_line_length // 2)
-            dividing_line_suffix = dividing * (dividing_line_length // 2 + 1)
-        return f"{dividing_line_prefix} {title} {dividing_line_suffix}"
+        return f" {title} ".center(title_width, dividing)
     
     @classmethod
     def _chunk_statistics(
