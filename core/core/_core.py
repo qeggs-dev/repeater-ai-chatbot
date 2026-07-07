@@ -123,7 +123,11 @@ class Core:
             try:
                 nickname_mapping = orjson.loads(fdata)
             except orjson.JSONDecodeError:
-                logger.warning(f"Failed to decode nickname mapping file [{user_nickname_mapping_file_path}]", user_id=user_id)
+                logger.warning(
+                    "Failed to decode nickname mapping file [{user_nickname_mapping_file_path}]",
+                    user_id = user_id,
+                    user_nickname_mapping_file_path = user_nickname_mapping_file_path
+                )
                 nickname_mapping = {}
         
         output = user_info
@@ -184,7 +188,10 @@ class Core:
                 try:
                     self.runtime.blacklist.load(await f.read())
                 except ValueError as e:
-                    logger.warning(f"load blacklist failed: {e}")
+                    logger.warning(
+                        "load blacklist failed: {error}",
+                        error = str(e),
+                    )
     # endregion
 
     # region > in blacklist

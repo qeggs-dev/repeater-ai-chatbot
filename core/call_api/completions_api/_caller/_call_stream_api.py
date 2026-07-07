@@ -41,7 +41,10 @@ class StreamAPI(CallStreamAPIBase):
 
         with runtime.status_stack.enter("Create OpenAI Client"):
             # 创建OpenAI Client
-            logger.info(f"Created OpenAI Client", user_id = user_id)
+            logger.info(
+                "Created OpenAI Client",
+                user_id = user_id
+            )
             client = self.get_client(
                 request = request,
                 runtime = runtime
@@ -88,7 +91,10 @@ class StreamAPI(CallStreamAPIBase):
         
         # 请求流式连接
         with runtime.status_stack.enter("Send Request"):
-            logger.info(f"Start Connecting to the API", user_id = user_id)
+            logger.info(
+                "Start Connecting to the API",
+                user_id = user_id
+            )
             runtime.response.request_log.request_start_time = TimeStamp()
             response = await self._send_openai_request(
                 user_id = user_id,

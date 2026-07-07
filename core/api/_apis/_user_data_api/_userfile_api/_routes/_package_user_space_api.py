@@ -35,7 +35,10 @@ async def get_userdata_file(user_id: str):
         file = buffer
     )
 
-    logger.info(f"User {user_id} package space", user_id = user_id)
+    logger.info(
+        "User {user_id} package space",
+        user_id = user_id
+    )
 
     # 获取文件大小
     buffer.seek(0, 2)

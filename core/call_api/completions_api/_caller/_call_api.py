@@ -36,7 +36,10 @@ class CallAPI(CallNstreamAPIBase):
 
         with runtime.status_stack.enter("Create OpenAI Client"):
             # 创建OpenAI Client
-            logger.info(f"Created OpenAI Client", user_id = user_id)
+            logger.info(
+                "Created OpenAI Client",
+                user_id = user_id
+            )
             client = self.get_client(
                 request = request,
                 runtime = runtime
@@ -79,7 +82,10 @@ class CallAPI(CallNstreamAPIBase):
 
         # 发送请求
         with runtime.status_stack.enter("Send Request"):
-            logger.info(f"Send Request", user_id = user_id)
+            logger.info(
+                "Send Request",
+                user_id = user_id
+            )
             request_start_time = TimeStamp()
             response = await self._send_openai_request(
                 user_id = user_id,

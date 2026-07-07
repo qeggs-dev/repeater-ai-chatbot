@@ -14,7 +14,10 @@ class LockPool(Generic[T_KEY]):
     async def get_lock(self, key: T_KEY) -> asyncio.Lock:
         async with self._lock:
             if key in self.locks:
-                logger.trace(f"LockPool: Get lock for {repr(key)}")
+                logger.trace(
+                    "LockPool: Get lock for {key}",
+                    key = repr(key)
+                )
                 return self.locks[key]
             
             class PackagedLock(asyncio.Lock):
@@ -40,25 +43,44 @@ class LockPool(Generic[T_KEY]):
                 
                 async def acquire(inner_self):
                     inner_self._increase_reference_counting()
-                    logger.trace(f"LockPool: Acquiring lock for {repr(key)}({inner_self.reference_count})")
+                    logger.trace(
+                        "LockPool: Acquiring lock for {key}({reference_count})",
+                        key = repr(key),
+                        reference_count = inner_self.reference_count
+                    )
                     try:
                         await super().acquire()
                     except Exception as e:
                         inner_self._reduce_reference_counting()
-                        logger.warning(f"LockPool: Failed to acquire lock for {repr(key)}: {e}")
+                        logger.warning(
+                            "LockPool: Failed to acquire lock for {key}: {e}",
+                            key = repr(key),
+                            e = e
+                        )
                         raise
 
                 def release(inner_self):
                     try:
                         super().release()
                         inner_self._reduce_reference_counting()
-                        logger.trace(f"LockPool: Released lock for {repr(key)}({inner_self.reference_count})")
+                        logger.trace(
+                            "LockPool: Released lock for {key}({reference_count})",
+                            key = repr(key),
+                            reference_count = inner_self.reference_count
+                        )
                     except Exception as e:
-                        logger.warning(f"LockPool: Failed to release lock for {repr(key)}: {e}")
+                        logger.warning(
+                            "LockPool: Failed to release lock for {key}: {e}",
+                            key = repr(key),
+                            e = e
+                        )
                         raise
             
             lock = PackagedLock()
-            logger.trace(f"LockPool: Created lock for {repr(key)}")
+            logger.trace(
+                "LockPool: Created lock for {key}",
+                key = repr(key)
+            )
             self.locks[key] = lock
             return lock
     

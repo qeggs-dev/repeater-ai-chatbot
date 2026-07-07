@@ -27,7 +27,10 @@ async def role_mapping(user_id: str, role_map: dict[ContentRole, ContentRole | N
 
     context.role_map(role_map)
     await context_loader.save(user_id, context)
-    logger.info(f"User {user_id} injected context")
+    logger.info(
+        "User {user_id} injected context",
+        user_id = user_id
+    )
     return ORJSONResponse(
         {
             "status": "success",

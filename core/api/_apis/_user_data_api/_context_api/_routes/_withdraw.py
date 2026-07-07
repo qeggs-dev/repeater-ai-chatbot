@@ -45,13 +45,18 @@ async def withdraw_context(user_id: str, context_pair_num: int = Form(1, gt=0), 
             )
     else:
         try:
-            pop_context = context.pop_last_n(context_pair_num)
+            pop_context_list = context.pop_last_n(context_pair_num)
+            pop_context = Context(context_list = pop_context_list)
         except (ValueError, IndexError) as e:
-            raise HTTPException(400, str(e)) from e
+            raise HTTPException(str(e), 400) from e
     
     # 返回ORJSONResponse，新的上下文内容
     await context_loader.save(user_id, context)
-    logger.info(f"User {user_id} withdraw {len(pop_context)} context pairs")
+    logger.info(
+        "User {user_id} withdraw {pop_context_len} context pairs",
+        user_id = user_id,
+        pop_context_len = len(pop_context)
+    )
     return ORJSONResponse(
         {
             "status": "success",

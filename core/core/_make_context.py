@@ -104,11 +104,19 @@ async def make_context(
             max_context_length = configs.context_shrink_limit or ConfigManager.get_configs().context.context_shrink_limit
             if isinstance(max_context_length, int) and max_context_length > 0:
                 if submit_context.total_length > max_context_length:
-                    logger.info(f"Context length exceeds {max_context_length}, auto shrink", user_id = user_id)
+                    logger.info(
+                        "Context length exceeds {max_context_length}, auto shrink",
+                        user_id = user_id,
+                        max_context_length = max_context_length
+                    )
                     try:
                         submit_context.shrink(max_context_length)
                     except Exception as e:
-                        logger.error(f"Failed to shrink context: {e}", user_id = user_id)
+                        logger.error(
+                            "Failed to shrink context: {error}",
+                            user_id = user_id,
+                            error = str(e)
+                        )
                         raise HTTPException(
                             status_code = 400,
                             detail = (
