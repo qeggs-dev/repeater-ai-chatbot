@@ -538,7 +538,7 @@ class ClientBase(ABC):
         
             if response.request_log.chunk_times:
                 yield from self._chunk_statistics(
-                    "Transmitted",
+                    "Buffered",
                     request_log = response.request_log,
                     raw_timestamps = [timestamp.monotonic for timestamp in response.request_log.chunk_times],
                     raw_queue_backlogs = response.request_log.queue_backlog,
