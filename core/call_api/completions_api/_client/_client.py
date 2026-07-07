@@ -404,6 +404,7 @@ class ClientBase(ABC):
 
     def _gen_fast_statistics(
             self,
+            user_id: str,
             request: Request,
             response: Response,
             dividing: str = "=",
@@ -434,6 +435,7 @@ class ClientBase(ABC):
         )
         yield f"API URL: {request.url}"
         yield f"Model: {request.model}"
+        yield f"User ID: {user_id}"
         yield f"User Name: {request.user_name}"
         yield f"Task ID: {response.request_log.task_id}"
         yield f"Response ID: {response.id}"
@@ -621,6 +623,7 @@ class ClientBase(ABC):
         fast_statistics_start_time = time.perf_counter_ns()
         buffer.extend(
             self._gen_fast_statistics(
+                user_id = user_id,
                 request = request,
                 response = response,
             )
