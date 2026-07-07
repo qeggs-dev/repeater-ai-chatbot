@@ -1,6 +1,7 @@
 # ==== 标准库 ==== #
 import time
 import math
+import asyncio
 from datetime import datetime, timezone
 from abc import ABC, abstractmethod
 from typing import (
@@ -73,7 +74,8 @@ class ClientBase(ABC):
                     )
         
         with runtime.status_stack.enter("Fast Statistics"):
-            await self._print_fast_statistics(
+            await asyncio.to_thread(
+                self._print_fast_statistics,
                 user_id = user_id,
                 request = request,
                 response = response
@@ -310,11 +312,6 @@ class ClientBase(ABC):
             raise ValueError("title_width must be at least as long as the name")
 
         title = f"{name} Chunk Statistics"
-        yield cls._format_title(
-            title = title,
-            dividing = dividing_line_char,
-            title_width = title_width
-        )
         timestamps = np.array(raw_timestamps, dtype=np.int64)
         time_differences = np.diff(timestamps)
         non_zero_time_differences = time_differences[time_differences != 0]
@@ -343,6 +340,13 @@ class ClientBase(ABC):
             skewness = cls._calculate_skewness(time_differences)
             kurtosis = cls._calculate_kurtosis(time_differences)
             entropy = cls._calculate_entropy(time_differences)
+
+            yield cls._format_title(
+                title = title,
+                dividing = dividing_line_char,
+                title_width = title_width
+            )
+
             yield from cls._draw_chart(
                 simple_chunk_times,
                 title = f"{name} Chunk Times",
@@ -602,7 +606,7 @@ class ClientBase(ABC):
         yield dividing * title_width
 
     # region 打印日志
-    async def _print_fast_statistics(self, user_id: str, request: Request, response: Response):
+    def _print_fast_statistics(self, user_id: str, request: Request, response: Response):
         """
         快速统计请求内容并输出到日志中
 
