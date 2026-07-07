@@ -46,6 +46,6 @@ class Response(BaseModel):
                 reason = "Output contains tool calls."
             case FinishReason.INSUFFICIENT_SYSTEM_RESOURCE:
                 reason = "Insufficient system resource to complete the request."
-            case _:
-                reason = "Unknown"
+            case finish_reason:
+                reason = f"Unknown finish reason: {finish_reason}"
         return reason
