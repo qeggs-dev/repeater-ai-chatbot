@@ -517,7 +517,9 @@ class ClientBase(ABC):
                 yield from self._chunk_statistics(
                     "Generated",
                     request_log = response.request_log,
-                    raw_timestamps = [timestamp.monotonic for timestamp in response.request_log.chunk_generated_times]
+                    raw_timestamps = [timestamp.monotonic for timestamp in response.request_log.chunk_generated_times],
+                    title_width = title_width,
+                    dividing_line_char = dividing
                 )
         
             if response.request_log.chunk_generated_times:
@@ -525,7 +527,9 @@ class ClientBase(ABC):
                     "Translation",
                     request_log = response.request_log,
                     raw_timestamps = [timestamp.monotonic for timestamp in response.request_log.translation_chunk_times],
-                    raw_queue_backlogs = response.request_log.translation_queue_backlog
+                    raw_queue_backlogs = response.request_log.translation_queue_backlog,
+                    title_width = title_width,
+                    dividing_line_char = dividing
                 )
         
             if response.request_log.chunk_times:
@@ -533,7 +537,9 @@ class ClientBase(ABC):
                     "Transmitted",
                     request_log = response.request_log,
                     raw_timestamps = [timestamp.monotonic for timestamp in response.request_log.chunk_times],
-                    raw_queue_backlogs = response.request_log.queue_backlog
+                    raw_queue_backlogs = response.request_log.queue_backlog,
+                    title_width = title_width,
+                    dividing_line_char = dividing
                 )
 
         if response.token_usage is not None:
