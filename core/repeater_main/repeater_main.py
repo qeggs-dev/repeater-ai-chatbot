@@ -86,7 +86,7 @@ class RepeaterMain:
         if reload is None:
             reload = env_config_reload
 
-        logger.info(f"Starting server at {host}:{port}")
+        logger.info(f"Starting server at <green>{host}:{port}</green>")
 
         if workers:
             logger.info(f"Server will run with {workers} workers")
@@ -131,8 +131,8 @@ class RepeaterMain:
 
         :param configs: GlobalConfigs
         """
-        logger.info(f"Run With Python {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}")
-        logger.info(f"Core Version: {__version__}")
+        logger.info(f"Run With Python <green>{sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}</green>")
+        logger.info(f"Repeater Version: <green>{__version__}</green>")
 
         if configs.requirements.enable_check:
             self.check_package(configs)
