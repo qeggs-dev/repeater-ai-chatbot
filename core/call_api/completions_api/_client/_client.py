@@ -350,13 +350,6 @@ class ClientBase(ABC):
             skewness = cls._calculate_skewness(time_differences)
             kurtosis = cls._calculate_kurtosis(time_differences)
             entropy = cls._calculate_entropy(time_differences)
-
-            queue_backlog_title = f"{name} Queue Backlog"
-            yield cls._format_title(
-                title = queue_backlog_title,
-                dividing = dividing_line_char,
-                title_width = title_width
-            )
             yield from cls._draw_chart(
                 simple_chunk_times,
                 title = f"{name} Chunk Times",
@@ -397,7 +390,7 @@ class ClientBase(ABC):
                 queue_backlog_skewness = cls._calculate_skewness(queue_backlog)
                 queue_backlog_kurtosis = cls._calculate_kurtosis(queue_backlog)
                 queue_backlog_entropy = cls._calculate_entropy(queue_backlog)
-
+                
                 yield from cls._draw_chart(
                     simple_backlog,
                     title = f"{name} Queue Backlog",
