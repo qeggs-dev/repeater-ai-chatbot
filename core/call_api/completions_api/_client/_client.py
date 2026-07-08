@@ -325,6 +325,12 @@ class ClientBase(ABC):
             chunk_spawn_time_std = float(np.std(time_differences))
             chunk_spawn_time_iqr = cls._calculate_interquartile_range(time_differences)
             chunk_spawn_time_idr = cls._calculate_interdecile_range(time_differences)
+            chunk_spawn_time_p01 = int(np.percentile(time_differences, 1, method="nearest"))
+            chunk_spawn_time_p50 = int(np.percentile(time_differences, 50, method="nearest"))
+            chunk_spawn_time_p75 = int(np.percentile(time_differences, 75, method="nearest"))
+            chunk_spawn_time_p90 = int(np.percentile(time_differences, 90, method="nearest"))
+            chunk_spawn_time_p95 = int(np.percentile(time_differences, 95, method="nearest"))
+            chunk_spawn_time_p99 = int(np.percentile(time_differences, 99, method="nearest"))
             chunk_spawn_time_mad = cls._calculate_mad(time_differences)
             if chunk_median_time != 0:
                 chunk_spawn_time_relative_mad = chunk_spawn_time_mad / chunk_median_time
@@ -364,6 +370,13 @@ class ClientBase(ABC):
             yield f"{name} Chunk Time Relative MAD: {chunk_spawn_time_relative_mad:.2%}"
             yield f"{name} Chunk Time IQR: {cls._format_timedelta(chunk_spawn_time_iqr)}"
             yield f"{name} Chunk Time IDR: {cls._format_timedelta(chunk_spawn_time_idr)}"
+            yield f"{name} Chunk P01 Time: {cls._format_timedelta(chunk_spawn_time_p01)}"
+            yield f"{name} Chunk P50 Time: {cls._format_timedelta(chunk_spawn_time_p50)}"
+            yield f"{name} Chunk P75 Time: {cls._format_timedelta(chunk_spawn_time_p75)}"
+            yield f"{name} Chunk P90 Time: {cls._format_timedelta(chunk_spawn_time_p90)}"
+            yield f"{name} Chunk P95 Time: {cls._format_timedelta(chunk_spawn_time_p95)}"
+            yield f"{name} Chunk P99 Time: {cls._format_timedelta(chunk_spawn_time_p99)}"
+            yield f"{name} Chunk P99 - P50 Time: {cls._format_timedelta(chunk_spawn_time_p99 - chunk_spawn_time_p50)}"
             yield f"{name} Chunk Time Skewness: {skewness:.2%}"
             yield f"{name} Chunk Time Kurtosis: {kurtosis:.2%}"
             yield f"{name} Chunk Time Entropy: {entropy:.2%}"
@@ -377,6 +390,12 @@ class ClientBase(ABC):
                 queue_backlog_std = float(np.std(queue_backlog))
                 queue_backlog_iqr = cls._calculate_interquartile_range(queue_backlog)
                 queue_backlog_idr = cls._calculate_interdecile_range(queue_backlog)
+                queue_backlog_p01 = np.percentile(queue_backlog, 1, method="nearest")
+                queue_backlog_p50 = np.percentile(queue_backlog, 50, method="nearest")
+                queue_backlog_p75 = np.percentile(queue_backlog, 75, method="nearest")
+                queue_backlog_p90 = np.percentile(queue_backlog, 90, method="nearest")
+                queue_backlog_p95 = np.percentile(queue_backlog, 95, method="nearest")
+                queue_backlog_p99 = np.percentile(queue_backlog, 99, method="nearest")
                 queue_backlog_mad = cls._calculate_mad(queue_backlog)
                 if median_queue_backlog != 0:
                     queue_backlog_relative_mad = queue_backlog_mad / median_queue_backlog
@@ -402,6 +421,13 @@ class ClientBase(ABC):
                 yield f"{name} Queue Backlog Relative MAD: {queue_backlog_relative_mad:.2%}"
                 yield f"{name} Queue Backlog IQR: {queue_backlog_iqr}"
                 yield f"{name} Queue Backlog IDR: {queue_backlog_idr}"
+                yield f"{name} Queue Backlog P01: {queue_backlog_p01:.2f}"
+                yield f"{name} Queue Backlog P50: {queue_backlog_p50:.2f}"
+                yield f"{name} Queue Backlog P75: {queue_backlog_p75:.2f}"
+                yield f"{name} Queue Backlog P90: {queue_backlog_p90:.2f}"
+                yield f"{name} Queue Backlog P95: {queue_backlog_p95:.2f}"
+                yield f"{name} Queue Backlog P99: {queue_backlog_p99:.2f}"
+                yield f"{name} Queue Backlog P99 - P50: {queue_backlog_p99 - queue_backlog_p50:.2f}"
                 yield f"{name} Queue Backlog Skewness: {queue_backlog_skewness:.2%}"
                 yield f"{name} Queue Backlog Kurtosis: {queue_backlog_kurtosis:.2%}"
                 yield f"{name} Queue Backlog Entropy: {queue_backlog_entropy:.2%}"
