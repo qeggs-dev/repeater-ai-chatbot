@@ -21,29 +21,32 @@ class ChunkStatistics:
         self.non_zero_time_differences = self.time_differences[self.time_differences != 0]
         self.stream_processing_time = request_log.stream_processing_end_time.monotonic - request_log.stream_processing_start_time.monotonic
         self.raw_queue_backlogs = raw_queue_backlogs
+        if self.raw_queue_backlogs is not None:
+            self.queue_backlogs = np.array(self.raw_queue_backlogs, dtype=np.int64)
 
         self.chunk_spawn_time_mean: ChunkSpawnTime | None = None
         self.queue_backlog: QueueBacklog | None = None
 
         if self.time_differences.size > 0 and self.non_zero_time_differences.size > 0:
-            first_chunk_spawn_time: np.int64 = self.timestamps[0] - request_log.stream_processing_start_time.monotonic
+            self.first_chunk_wait_time: np.int64 = self.timestamps[0] - request_log.stream_processing_start_time.monotonic
             self.chunk_spawn_time_mean = ChunkSpawnTime(
                 stream_processing_start_time = request_log.stream_processing_start_time,
                 stream_processing_end_time = request_log.stream_processing_end_time,
                 total_chunks = request_log.total_chunk,
-                first_chunk_spawn_time = int(first_chunk_spawn_time),
                 time_differences = self.time_differences,
                 non_zero_time_differences = self.non_zero_time_differences
             )
             if self.raw_queue_backlogs is not None:
                 self.queue_backlog = QueueBacklog(
-                    raw_queue_backlogs = self.raw_queue_backlogs
+                    queue_backlogs = self.queue_backlogs
                 )
     
     def format_statistics(
         self,
         name: str,
         title_width: int = 50,
+        chart_width: int = 50,
+        chart_height: int = 10,
         dividing_line_char: str = "=",
         step_char: str = "\n",
     ) -> str:
@@ -53,6 +56,8 @@ class ChunkStatistics:
             self.format_statistics_stream(
                 name = name,
                 title_width = title_width,
+                chart_width = chart_width,
+                chart_height = chart_height,
                 dividing_line_char = dividing_line_char,
             )
         )
@@ -62,12 +67,10 @@ class ChunkStatistics:
         self,
         name: str,
         title_width: int = 50,
+        chart_width: int = 50,
+        chart_height: int = 10,
         dividing_line_char: str = "=",
     ) -> Generator[str, None, None]:
-        assert isinstance(name, str), "name must be a str"
-        assert isinstance(title_width, int), "title_width must be an int"
-        assert isinstance(dividing_line_char, str), "dividing_line_char must be a str"
-
         if title_width < len(name) + 2:
             raise ValueError("title_width must be at least as long as the name")
 
@@ -81,11 +84,13 @@ class ChunkStatistics:
             )
 
             yield from draw_chart(
-                self.chunk_spawn_time_mean.simple_chunk_times,
+                self.time_differences,
                 title = f"{name} Chunk Times",
+                width = chart_width,
+                height = chart_height,
             )
             yield f"{name} Chunk Rate: {self.chunk_spawn_time_mean.chunk_generation_rate:.2f} Chunks/s"
-            yield f"{name} First Chunk Wait Time: {format_timedelta(self.chunk_spawn_time_mean.first_chunk_wait_time)}"
+            yield f"{name} First Chunk Wait Time: {format_timedelta(int(self.first_chunk_wait_time))}"
             yield f"{name} Chunk Average Time: {format_timedelta(self.chunk_spawn_time_mean.ave_chunk_spawn_time)}"
             yield f"{name} Chunk Max Time: {format_timedelta(self.chunk_spawn_time_mean.max_chunk_spawn_time)}"
             yield f"{name} Chunk Min Time: {format_timedelta(self.chunk_spawn_time_mean.min_chunk_spawn_time)}"
@@ -110,8 +115,10 @@ class ChunkStatistics:
 
             if self.queue_backlog is not None:
                 yield from draw_chart(
-                    self.queue_backlog.simple_backlog,
+                    self.queue_backlogs,
                     title = f"{name} Queue Backlog",
+                    width = chart_width,
+                    height = chart_height,
                 )
                 yield f"{name} Max Queue Backlog: {self.queue_backlog.max_queue_backlog}"
                 yield f"{name} Min Queue Backlog: {self.queue_backlog.min_queue_backlog}"

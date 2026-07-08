@@ -17,7 +17,6 @@ class ChunkSpawnTime:
         stream_processing_start_time: TimeStamp,
         stream_processing_end_time: TimeStamp,
         total_chunks: int,
-        first_chunk_spawn_time: int,
         time_differences: np.ndarray[tuple[int], np.dtype[np.int64]],
         non_zero_time_differences: np.ndarray[tuple[int], np.dtype[np.int64]],
     ):
@@ -48,8 +47,6 @@ class ChunkSpawnTime:
             self.chunk_generation_rate = np.nan
         
         self.chunk_stability_cv = calculate_cv(time_differences)
-        self.simple_chunk_times = sample(time_differences, 34)
-        self.first_chunk_wait_time = first_chunk_spawn_time - stream_processing_start_time.monotonic
         self.skewness = calculate_skewness(time_differences)
         self.kurtosis = calculate_kurtosis(time_differences)
         self.entropy = calculate_entropy(time_differences)
