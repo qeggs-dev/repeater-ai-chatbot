@@ -1,21 +1,28 @@
 import numpy as np
 
 from typing import Generator
-from ..assist import min_max_normalize
+from ..assist import min_max_normalize, sample
 
-def draw_chart(data: np.ndarray[tuple[int]], title: str, height: int = 5) -> Generator[str, None, None]:
+def draw_chart(
+        data: np.ndarray[tuple[int]],
+        title: str,
+        width: int = 10,
+        height: int = 5
+    ) -> Generator[str, None, None]:
     """绘制图表"""
-    assert isinstance(data, np.ndarray), "data Must be a numpy array"
-    assert isinstance(title, str), "title Must be a string"
-    assert isinstance(height, int) and height > 0, "height Must be a positive integer"
-
     if len(data) == 0:
         yield "No Data"
         return
-    zoomed_data = min_max_normalize(data) * height
+    
+    if width < 5 or height < 3:
+        raise ValueError("width and height must be greater than 5 and 3")
+
+    sampled_data = sample(data, width - 4)
+
+    zoomed_data = min_max_normalize(sampled_data) * height - 2
     ctitle = f" {title} ".center(len(zoomed_data) + 2, "─")
     yield f"┌{ctitle}┐"
-    for i in range(height - 1, -1, -1):
+    for i in range(height - 3, -1, -1):
         text_buffer: list[str] = []
         for j in zoomed_data:
             if j - i > 1:
