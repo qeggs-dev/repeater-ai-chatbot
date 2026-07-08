@@ -90,6 +90,8 @@ class FastStatistics:
         self,
         dividing: str = "=",
         title_width: int = 40,
+        chart_width: int = 50,
+        chart_height: int = 10,
         step_char: str = "\n",
     ) -> str:
         """
@@ -104,6 +106,8 @@ class FastStatistics:
         buffer.extend(
             self.format_statistics_stream(
                 dividing = dividing,
+                chart_width = chart_width,
+                chart_height = chart_height,
                 title_width = title_width
             )
         )
@@ -112,6 +116,8 @@ class FastStatistics:
     def format_statistics_stream(
         self,
         dividing: str = "=",
+        chart_width: int = 50,
+        chart_height: int = 10,
         title_width: int = 40
     ) -> Generator[str, None, None]:
         """
@@ -161,6 +167,8 @@ class FastStatistics:
         with Runtimer() as timer:
             yield from self._chunk_statistics(
                 dividing = dividing,
+                chart_width = chart_width,
+                chart_height = chart_height,
                 title_width = title_width
             )
             running_time.chunk_statistics = timer.get_time()
@@ -286,13 +294,17 @@ class FastStatistics:
     def _chunk_statistics(
         self,
         dividing: str = "=",
-        title_width: int = 40
+        title_width: int = 40,
+        chart_width: int = 50,
+        chart_height: int = 10,
     ) -> Generator[str, None , None]:
         if self.response.request_log.total_chunk > 0:
             if self.response.request_log.chunk_generated_times:
                 yield from self.generated_chunk_statistics.format_statistics_stream(
                     "Generated",
                     title_width = title_width,
+                    chart_width = chart_width,
+                    chart_height = chart_height,
                     dividing_line_char = dividing
                 )
         
@@ -300,6 +312,8 @@ class FastStatistics:
                 yield from self.translation_chunk_statistics.format_statistics_stream(
                     "Translation",
                     title_width = title_width,
+                    chart_width = chart_width,
+                    chart_height = chart_height,
                     dividing_line_char = dividing
                 )
         
@@ -307,6 +321,8 @@ class FastStatistics:
                 yield from self.buffer_chunk_statistics.format_statistics_stream(
                     "Buffered",
                     title_width = title_width,
+                    chart_width = chart_width,
+                    chart_height = chart_height,
                     dividing_line_char = dividing
                 )
 
