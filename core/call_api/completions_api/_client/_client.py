@@ -18,6 +18,7 @@ from .._caller import (
     StreamAPI
 )
 from .._fast_statistics import FastStatistics
+from ....global_config_manager import ConfigManager
 
 class ClientBase(ABC):
     def __init__(self, max_concurrency: int = 1000):
@@ -99,6 +100,7 @@ class ClientBase(ABC):
         assert isinstance(user_id, str), "user_id must be a string"
         assert isinstance(request, Request), "request must be a Request object"
         assert isinstance(response, Response), "response must be a Response object"
+        configs = ConfigManager.get_configs().callapi.fast_statistics
 
         fs_logger = logger.bind(user_id = user_id)
 
@@ -117,7 +119,9 @@ class ClientBase(ABC):
         format_start_time = time.perf_counter_ns()
         buffer.extend(
             fast_statistics.format_statistics_stream(
-                title_width = 50
+                title_width = configs.title_width,
+                chart_width = configs.chart_width,
+                chart_height = configs.chart_height
             )
         )
         format_end_time = time.perf_counter_ns()
