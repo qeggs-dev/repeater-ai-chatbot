@@ -102,35 +102,34 @@ class ClientBase(ABC):
         assert isinstance(response, Response), "response must be a Response object"
         configs = ConfigManager.get_configs().callapi.fast_statistics
 
-        fs_logger = logger.bind(user_id = user_id)
+        if configs.enable:
+            fs_logger = logger.bind(user_id = user_id)
 
-        fs_logger.info("Generating fast statistics...")
+            fs_logger.info("Generating fast statistics...")
 
-        buffer: list[str] = []
+            buffer: list[str] = []
 
-        fast_statistics_start_time = time.perf_counter_ns()
-        fast_statistics = FastStatistics(
-            user_id = user_id,
-            request = request,
-            response = response,
-        )
-        fast_statistics_end_time = time.perf_counter_ns()
-
-        format_start_time = time.perf_counter_ns()
-        buffer.extend(
-            fast_statistics.format_statistics_stream(
-                title_width = configs.title_width,
-                chart_width = configs.chart_width,
-                chart_height = configs.chart_height
+            fast_statistics_start_time = time.perf_counter_ns()
+            fast_statistics = FastStatistics(
+                user_id = user_id,
+                request = request,
+                response = response,
             )
-        )
-        format_end_time = time.perf_counter_ns()
+            fast_statistics_end_time = time.perf_counter_ns()
 
-        fs_logger.info(
-            "Fast Statistics (Operation Time: {fast_statistics_time:.3f}ms | Format Time: {format_time:.3f}ms): \n{fast_statistics}",
-            fast_statistics_time = (fast_statistics_end_time - fast_statistics_start_time) / 1e6,
-            format_time = (format_end_time - format_start_time) / 1e6,
-            fast_statistics = "\n".join(buffer)
-        )
+            format_start_time = time.perf_counter_ns()
+            buffer.extend(
+                fast_statistics.format_statistics_stream(
+                    title_width = configs.title_width,
+                    chart_width = configs.chart_width,
+                    chart_height = configs.chart_height
+                )
+            )
+            format_end_time = time.perf_counter_ns()
 
-        
+            fs_logger.info(
+                "Fast Statistics (Operation Time: {fast_statistics_time:.3f}ms | Format Time: {format_time:.3f}ms): \n{fast_statistics}",
+                fast_statistics_time = (fast_statistics_end_time - fast_statistics_start_time) / 1e6,
+                format_time = (format_end_time - format_start_time) / 1e6,
+                fast_statistics = "\n".join(buffer)
+            )
