@@ -1,12 +1,9 @@
 import numpy as np
 
-def sample(data: np.ndarray[tuple[int], np.dtype[np.int64]], target_length: int):
+def sample(data: np.ndarray[tuple[int], np.dtype], target_length: int) -> np.ndarray[tuple[int], np.dtype]:
     """
     从可变长度数据中均匀采样固定长度
     """
-    assert isinstance(data, np.ndarray), "data Must be a numpy array"
-    assert isinstance(target_length, int), "target_length Must be a integer"
-
     if target_length <= 0:
         raise ValueError("target_length must be a positive integer")
     

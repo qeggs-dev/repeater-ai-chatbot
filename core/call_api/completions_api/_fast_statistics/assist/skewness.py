@@ -1,8 +1,6 @@
 import numpy as np
 
 def calculate_skewness(data: np.ndarray[tuple[int]]) -> float:
-    assert isinstance(data, np.ndarray), "data must be a numpy array"
-
     n = len(data)
     if n < 3:
         return 0.0

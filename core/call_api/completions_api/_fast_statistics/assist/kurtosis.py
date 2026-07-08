@@ -2,7 +2,6 @@ import numpy as np
 
 
 def calculate_kurtosis(data: np.ndarray[tuple[int]]) -> np.float64:
-    assert isinstance(data, np.ndarray), "data must be a numpy array"
 
     n = len(data)
     if n < 4:

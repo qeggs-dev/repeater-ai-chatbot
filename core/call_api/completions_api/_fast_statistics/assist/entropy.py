@@ -2,7 +2,6 @@ import numpy as np
 
 
 def calculate_entropy(data: np.ndarray[tuple[int]]) -> np.float64:
-    assert isinstance(data, np.ndarray), "data must be a numpy array"
     if len(data) == 0:
         return np.float64(0.0)
     

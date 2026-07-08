@@ -2,8 +2,6 @@ import numpy as np
 
 def calculate_cv(intervals: np.ndarray[tuple[int], np.dtype[np.int64]]):
     """使用变异系数衡量数据稳定度"""
-    assert isinstance(intervals, np.ndarray), "intervals Must be a numpy array"
-
     if len(intervals) == 0:
         return np.inf  # 无穷大表示不稳定
     
