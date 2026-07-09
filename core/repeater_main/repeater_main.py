@@ -179,16 +179,20 @@ class RepeaterMain:
         finally:
             RepeaterMain._now_server = None
 
-    def run(self) -> int:
+    def run(self, debug: bool | None = None) -> int:
         """
         Run the server.
         """
         logger.info("Server starting...")
         configs = ConfigManager.get_configs()
+        asyncio_debug = debug
+        if asyncio_debug is None:
+            asyncio_debug = configs.server.asyncio_debug
+        
         try:
             return asyncio.run(
                 self.run_server(),
-                debug = configs.server.asyncio_debug
+                debug = asyncio_debug
             )
         except KeyboardInterrupt:
             logger.info("Server shutting down...")
