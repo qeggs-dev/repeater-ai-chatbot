@@ -44,16 +44,15 @@ class RepeaterMain:
 
         Tip: The program needs a configuration file to boot, please load the configuration file first.
         """
-        config_loader = ConfigManager()
         path = self.env.path("CONFIG_DIR", Path("./configs/project_configs"))
         force_load_list = self.env.json("CONFIG_FORCE_LOAD_LIST", None)
         if force_load_list is not None and not is_config_force_load_list(force_load_list):
             raise RuntimeError("CONFIG_FORCE_LOAD_LIST is not valid")
-        config_loader.update_base_path(
+        ConfigManager.update_base_path(
             path = path,
             force_load_list = force_load_list
         )
-        return config_loader.load(
+        return ConfigManager.load(
             create_if_missing=True
         )
     
@@ -87,10 +86,17 @@ class RepeaterMain:
         if reload is None:
             reload = env_config_reload
 
-        logger.info(f"Starting server at {host}:{port}")
+        logger.info(
+            "Starting server at {host}:{port}",
+            host = host,
+            port = port
+        )
 
         if workers:
-            logger.info(f"Server will run with {workers} workers")
+            logger.info(
+                "Server will run with {workers} workers",
+                workers = workers
+            )
         
         if reload:
             logger.info("Server will reload on code change")
@@ -132,8 +138,16 @@ class RepeaterMain:
 
         :param configs: GlobalConfigs
         """
-        logger.info(f"Run With Python {sys.version_info.major}.{sys.version_info.minor}.{sys.version_info.micro}")
-        logger.info(f"Core Version: {__version__}")
+        logger.info(
+            "Run With Python {major}.{minor}.{micro}",
+            major = sys.version_info.major,
+            minor = sys.version_info.minor,
+            micro = sys.version_info.micro
+        )
+        logger.info(
+            "Repeater Version: {version}",
+            version = __version__
+        )
 
         if configs.requirements.enable_check:
             self.check_package(configs)
@@ -165,14 +179,20 @@ class RepeaterMain:
         finally:
             RepeaterMain._now_server = None
 
-    def run(self) -> int:
+    def run(self, debug: bool | None = None) -> int:
         """
         Run the server.
         """
         logger.info("Server starting...")
+        configs = ConfigManager.get_configs()
+        asyncio_debug = debug
+        if asyncio_debug is None:
+            asyncio_debug = configs.server.asyncio_debug
+        
         try:
             return asyncio.run(
-                self.run_server()
+                self.run_server(),
+                debug = asyncio_debug
             )
         except KeyboardInterrupt:
             logger.info("Server shutting down...")

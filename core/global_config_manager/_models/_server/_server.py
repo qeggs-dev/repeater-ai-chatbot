@@ -7,3 +7,4 @@ class ServerConfig(BaseModel):
     reload: bool | None = None
     restart: bool = False
     run_server: bool = True
+    asyncio_debug: bool = False

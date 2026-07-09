@@ -76,6 +76,7 @@ class Asteval(ToolCallPacakage):
         aeval = Interpreter(
             writer = stdout,
             err_writer  = stderr,
+            use_numpy = False,
             user_symbols = args.symbols,
             builtins_readonly = True,
         )

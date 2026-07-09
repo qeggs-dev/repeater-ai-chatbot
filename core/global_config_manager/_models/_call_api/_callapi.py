@@ -1,4 +1,5 @@
 from pydantic import BaseModel, ConfigDict, Field
+from ._fast_statistics import FastStatisticsConfig
 
 class CallAPIConfig(BaseModel):
     max_concurrency: int = 1024
@@ -8,3 +9,4 @@ class CallAPIConfig(BaseModel):
     max_generate_times: int = Field(default=10, ge=1)
     failed_disable_timeout: int | float = Field(default=60, ge=1)
     send_user_id: bool = False
+    fast_statistics: FastStatisticsConfig = Field(default_factory=FastStatisticsConfig)

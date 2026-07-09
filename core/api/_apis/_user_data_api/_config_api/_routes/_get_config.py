@@ -16,7 +16,10 @@ async def get_config(user_id: str):
     # 获取用户ID为user_id的配置
     config = await server.core.get_config(user_id = user_id)
     
-    logger.info(f"Get user config", user_id = user_id)
+    logger.info(
+        "Get user config",
+        user_id = user_id
+    )
 
     # 返回配置
     return ORJSONResponse(config.model_dump(exclude_none=True))

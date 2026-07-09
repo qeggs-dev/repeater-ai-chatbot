@@ -108,7 +108,10 @@ class Server:
             except asyncio.CancelledError:
                 logger.info("Server cancelled")
             except Exception as e:
-                logger.error(f"Server error: {e}")
+                logger.error(
+                    "Server error: {error}",
+                    error = str(e),
+                )
             finally:
                 await self.shutdown()
         return self._exit_code

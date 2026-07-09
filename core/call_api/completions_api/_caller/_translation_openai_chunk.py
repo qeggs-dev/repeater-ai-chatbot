@@ -71,11 +71,14 @@ async def translation_openai_chunk(
                 # 2026 前来考古
                 # 这里终于在上面写上包含 None 了
                 if choice.finish_reason is not None:
-                    delta_data.finish_reason = FinishReason(choice.finish_reason)
+                    try:
+                        delta_data.finish_reason = FinishReason(choice.finish_reason)
+                    except ValueError:
+                        delta_data.finish_reason = choice.finish_reason
             
             # 处理logprobs
-            if hasattr(choice, "logprobs"):
-                if hasattr(choice.logprobs, "content"):
+            if hasattr(choice, "logprobs") and choice.logprobs is not None:
+                if hasattr(choice.logprobs, "content") and choice.logprobs.content is not None:
                     logprobs = []
                     for token in choice.logprobs.content:
                         logprob = Logprob()

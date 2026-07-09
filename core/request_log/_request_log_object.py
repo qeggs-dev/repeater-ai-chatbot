@@ -34,7 +34,7 @@ class RequestLog(BaseModel):
     translation_chunk_times: list[TimeStamp] = Field(default_factory=list)
     translation_queue_backlog: list[int] = Field(default_factory=list)
     chunk_times: list[TimeStamp] = Field(default_factory=list)
-    processor_queue_backlog: list[int] = Field(default_factory=list)
+    queue_backlog: list[int] = Field(default_factory=list)
     created_time: int = 0
 
     total_tokens: int = 0

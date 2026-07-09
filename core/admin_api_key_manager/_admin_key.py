@@ -130,7 +130,10 @@ class AdminKeyManager:
         except (environs.EnvError, ValueError):
             api_key = self._generate_an_api_key()
             source = AdminKeySource.RANDOM
-            logger.warning(f"API Key Not Found in Environment Variables, Generated Randomly(Only for Development): {api_key}", user_id="[System]")
+            logger.warning(
+                "API Key Not Found in Environment Variables, Generated Randomly(Only for Development): {api_key}",
+                api_key = api_key
+            )
         
         self._api_key = self._examine_api_key(api_key)
         self._source = source
@@ -176,7 +179,10 @@ class AdminKeyManager:
         
         self._api_key = self._examine_api_key(path.read_text().strip())
         self._source = AdminKeySource.FILE
-        logger.info(f"API Key Loaded from File: {path}", user_id="[System]")
+        logger.info(
+            "API Key Loaded from File: {path}",
+            path = path
+        )
 
     def save_to_file(self, file_path: Union[str, Path], auto_create_dir: bool = True) -> None:
         """
@@ -196,7 +202,10 @@ class AdminKeyManager:
             raise FileNotFoundError(f"Directory not found: {path.parent}")
         
         path.write_text(self._api_key)
-        logger.info(f"API Key Saved to File: {path}", user_id="[System]")
+        logger.info(
+            "API Key Saved to File: {path}",
+            path = path
+        )
 
     async def load_from_file_async(self, file_path: Union[str, Path]) -> None:
         """
@@ -211,7 +220,10 @@ class AdminKeyManager:
         async with aiofiles.open(path, "r") as f:
             self._api_key = self._examine_api_key((await f.read()).strip())
             self._source = AdminKeySource.FILE
-            logger.info(f"API Key Loaded from File: {path}", user_id="[System]")
+            logger.info(
+                "API Key Loaded from File: {path}",
+                path = path
+            )
 
     async def save_to_file_async(self, file_path: Union[str, Path], auto_create_dir: bool = True) -> None:
         """
@@ -231,7 +243,10 @@ class AdminKeyManager:
             raise FileNotFoundError(f"Directory not found: {path.parent}")
         async with aiofiles.open(path, "w") as f:
             await f.write(self._api_key)
-        logger.info(f"Saved API Key to file: {path}", user_id="[System]")
+        logger.info(
+            "Saved API Key to file: {path}",
+            path = path
+        )
 
     def validate_key(self, input_key: str) -> bool:
         """

@@ -13,7 +13,11 @@ class ConfigManager(UserConfigManager):
         try:
             user_configs = UserConfigs(**user_configs)
         except ValidationError as e:
-            logger.error(f"Invalid user configs for user {user_id}: {e}")
+            logger.error(
+                "Invalid user configs for user {user_id}: {error}",
+                user_id = user_id,
+                error = str(e)
+            )
             raise ConfigFieldError(e) from e
         return user_configs
     

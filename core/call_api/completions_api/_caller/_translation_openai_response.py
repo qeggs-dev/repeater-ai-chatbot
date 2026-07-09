@@ -56,7 +56,10 @@ def translation_openai_response(
         choices = response.choices[0]
         # 写入完成原因
         if hasattr(choices, "finish_reason"):
-            model_response.finish_reason = FinishReason(choices.finish_reason)
+            try:
+                model_response.finish_reason = FinishReason(choices.finish_reason)
+            except ValueError:
+                model_response.finish_reason = choices.finish_reason
         
         # 写入内容
         if hasattr(choices, "message"):

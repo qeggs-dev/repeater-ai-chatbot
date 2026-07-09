@@ -38,7 +38,10 @@ async def get_userdata_file(user_id: str):
         user_configs = config
     )
 
-    logger.info(f"Downloaded userdata file", user_id = user_id)
+    logger.info(
+        "Downloaded userdata file",
+        user_id = user_id
+    )
 
     # 获取文件大小
     buffer.seek(0, 2)

@@ -8,6 +8,9 @@ from typing import (
 from loguru import logger
 
 # ==== 自定义库 ==== #
+from ..call_api.completions_api import (
+    FinishReason
+)
 from ..model_requester import (
     MultiResponse
 )
@@ -146,8 +149,10 @@ async def post_treatment(
             output.create_time = responses[0].created
             output.id = responses[0].id
 
-            output.finish_reason_cause = responses[-1].finish_reason_cause
-            output.finish_reason_code = responses[-1].finish_reason.value
+            last_response = responses[-1]
+
+            output.finish_reason_cause = last_response.finish_reason_cause
+            output.finish_reason_code = last_response.finish_reason.value if isinstance(last_response.finish_reason, FinishReason) else last_response.finish_reason
             output.request_log = responses.request_logs()
 
             if ConfigManager.get_configs().text_template.enable.request_statistics_template:

@@ -18,7 +18,9 @@ async def get_config_userlist():
     # 获取所有用户ID
     userid_list = await server.runtime.user_config_manager.get_all_user_id()
 
-    logger.info(f"Get user config userlist")
+    logger.info(
+        "Get user config userlist"
+    )
 
     # 返回用户ID列表
     return ORJSONResponse(userid_list)

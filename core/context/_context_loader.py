@@ -81,11 +81,17 @@ class ContextLoader:
 
         if temporary_prompt is not None:
             prompt = temporary_prompt
-            logger.info(f"Load Temporary Prompt", user_id = user_id)
+            logger.info(
+                "Load Temporary Prompt",
+                user_id = user_id
+            )
         elif user_prompt:
             # 使用用户提示词
             prompt = user_prompt
-            logger.info(f"Load User Prompt", user_id = user_id)
+            logger.info(
+                "Load User Prompt",
+                user_id = user_id
+            )
         else:
             # 加载默认提示词
             default_prompt_base_path = URL(GlobalConfigManager.get_configs().prompt.base_path)
@@ -101,7 +107,11 @@ class ContextLoader:
 
             # 加载默认提示词文件
             default_prompt_file = default_prompt_base_path / f"{sanitize_filename_with_dir(parset_prompt_name)}{suffix}"
-            logger.info(f"Load Default Prompt File: {default_prompt_file}", user_id = user_id)
+            logger.info(
+                "Load Default Prompt File: {default_prompt_file}",
+                user_id = user_id,
+                default_prompt_file = default_prompt_file
+            )
             try:
                 prompt = await static_resources_client.get_text(
                     default_prompt_file,
@@ -158,7 +168,11 @@ class ContextLoader:
         # 构建上下文对象
         context = Context.from_context(context_data)
 
-        logger.info(f"Load Context: {len(context)}", user_id = user_id)
+        logger.info(
+            "Load Context: {context_length}",
+            user_id = user_id,
+            context_length = len(context)
+        )
         return context
     
     async def load(
@@ -389,7 +403,11 @@ class ContextLoader:
             data = context.to_context(reduce_to_text = reduce_to_text),
             branch_id = branch_id
         )
-        logger.info(f"Save Context: {context.context_item_length}", user_id = user_id)
+        logger.info(
+            "Save Context: {context_length}",
+            user_id = user_id,
+            context_length = len(context)
+        )
     
     async def get_context_branchs(self, user_id: str) -> list[str]:
         """

@@ -20,9 +20,9 @@
   - `task_end_time` (TimeStamp): 任务结束时间
   - `chunk_generated_times` (list[TimeStamp]): Generated Chunk 时间列表
   - `translation_chunk_times` (list[TimeStamp]): Translated Chunk 时间列表
-  - `translation_queue_backlog` (list[int]): Translated Chunk 队列延迟列表
-  - `chunk_times` (list[TimeStamp]): Parsed Chunk 时间列表
-  - `processor_queue_backlog` (list[int]): Parsed Chunk 队列延迟列表
+  - `translation_queue_backlog` (list[int]): Translated Chunk 队列积压列表
+  - `chunk_times` (list[TimeStamp]): Buffer 中每个 Chunk 添加完毕的时间列表
+  - `queue_backlog` (list[int]): Buffer 队列积压列表
   - `created_time` (int): API报告的创建时间
   - `total_tokens` (int): 请求的总 Token 数量
   - `prompt_tokens` (int): 输入的 Token 数量

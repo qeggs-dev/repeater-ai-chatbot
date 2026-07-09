@@ -128,9 +128,16 @@ class RequestLogManager:
                     user_ids[request_log.user_id] += 1
             for user_id, count in user_ids.items():
                 if count == 1:
-                    logger.info(f"Request log added", user_id=user_id)
+                    logger.info(
+                        "Request log added",
+                        user_id = user_id
+                    )
                 else:
-                    logger.info(f"Request log added {count} times", user_id=user_id)
+                    logger.info(
+                        "Request log added {count} times",
+                        user_id = user_id,
+                        count = count
+                    )
             await self._debonce_save()
         
     # 将日志列表转换为字节流
@@ -160,7 +167,10 @@ class RequestLogManager:
                 for chunk in self._log_bytestream(self._log_list):
                     f.write(chunk)
         
-        logger.info(f"Saved {len(self._log_list)} request logs to file")
+        logger.info(
+            "Saved {log_list_len} request logs to file",
+            log_list_len = len(self._log_list)
+        )
 
         # 清空日志列表
         self._log_list.clear()
@@ -189,7 +199,10 @@ class RequestLogManager:
                 for chunk in self._log_bytestream(self._log_list):
                     await f.write(chunk)
         
-        logger.info(f"Saved {len(self._log_list)} request logs to file")
+        logger.info(
+            "Saved {log_list_len} request logs to file",
+            log_list_len = len(self._log_list)
+        )
 
         # 清空日志列表
         self._log_list.clear()
@@ -215,7 +228,10 @@ class RequestLogManager:
         async with self._data_lock:
             mem_logs = copy.deepcopy(self._log_list)
         mem_log_count = len(mem_logs)
-        logger.info(f"From {mem_log_count} memory logs")
+        logger.info(
+            "From {mem_log_count} memory logs",
+            mem_log_count = mem_log_count
+        )
         readed_log_count: int = 0
         cached = False
 
@@ -285,7 +301,10 @@ class RequestLogManager:
                                     error_message = error["msg"]
                                 )
                 log_file_count += 1  # 文件计数
-        logger.info(f"From {log_file_count} file read logs")
+        logger.info(
+            "From {log_file_count} file read logs",
+            log_file_count = log_file_count
+        )
         
     
     def save_request_log(self) -> None:
@@ -308,7 +327,10 @@ class RequestLogManager:
     async def _wait_and_remove_cache(self, wait_time: float = 5) -> None:
         """等待并移除缓存"""
         try:
-            logger.info(f"Wait {wait_time} seconds to remove cache")
+            logger.info(
+                "Wait {wait_time} seconds to remove cache",
+                wait_time = wait_time
+            )
             # 等待指定时间
             await asyncio.sleep(wait_time)
             # 时间到后保存日志
@@ -320,7 +342,10 @@ class RequestLogManager:
     async def _wait_and_save_async(self, wait_time: float = 5) -> None:
         """等待并保存日志到文件"""
         try:
-            logger.info(f"Wait {wait_time} seconds to save request log")
+            logger.info(
+                "Wait {wait_time} seconds to save request log",
+                wait_time = wait_time
+            )
             # 等待指定时间
             await asyncio.sleep(wait_time)
             # 时间到后保存日志
