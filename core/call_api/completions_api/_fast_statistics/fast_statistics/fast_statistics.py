@@ -285,7 +285,8 @@ class FastStatistics:
         
         yield f"Total Time: {format_timedelta(self.total_time)}"
         yield f"Preprocessing Time: {format_timedelta(self.preprocessing_time)}"
-        yield f"API Request Time: {format_timedelta(self.requests_time)}"
+        yield f"API Request Time (TTFB): {format_timedelta(self.requests_time)}"
+        yield f"Response First Chunk Wait Time (TTFC): {format_timedelta(self.requests_time + int(self.generated_chunk_statistics.first_chunk_wait_time))}"
         yield f"Stream Processing Time: {format_timedelta(self.stream_processing_time)}"
         yield f"Generation Speed: {self.generation_speed:.2f} Tokens/s"
         yield f"Created Time: {self.created_utc_str}"
