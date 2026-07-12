@@ -16,11 +16,14 @@ def draw_chart(
     
     if width < 5 or height < 3:
         raise ValueError("width and height must be greater than 5 and 3")
+    
+    draw_width = width - 4
+    draw_height = height - 2
 
-    sampled_data = sample(data, width - 4)
+    sampled_data = sample(data, draw_width)
 
-    zoomed_data = min_max_normalize(sampled_data) * height - 2
-    ctitle = f" {title} ".center(len(zoomed_data) + 2, "─")
+    zoomed_data = min_max_normalize(sampled_data) * draw_height
+    ctitle = f" {title} ".center(draw_width + 2, "─")
     yield f"┌{ctitle}┐"
     for i in range(height - 3, -1, -1):
         text_buffer: list[str] = []
@@ -36,7 +39,8 @@ def draw_chart(
             else:
                 text_buffer.append(" ")
         
-        charts = "".join(text_buffer)
-        yield f"│ {charts} │"
-    end_line = "─" * (len(zoomed_data) + 2)
+        chart_str = "".join(text_buffer)
+        fill_space = " " * (width - 4 - len(chart_str))
+        yield f"│ {chart_str}{fill_space} │"
+    end_line = "─" * (draw_width + 2)
     yield f"└{end_line}┘"
