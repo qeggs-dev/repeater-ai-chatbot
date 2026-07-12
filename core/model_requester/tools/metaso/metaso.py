@@ -28,7 +28,7 @@ class Metaso(ToolCallPacakage):
     json_result = True
     _env = Env()
     client: httpx.AsyncClient | None = None
-    document = "AI Network Search API"
+    document = "Metaso Internet AI Search"
 
     async def call(self, args: Params):
         if self.client is None:
