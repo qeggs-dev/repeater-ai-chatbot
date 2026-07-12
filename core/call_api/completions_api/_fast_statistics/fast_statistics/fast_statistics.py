@@ -47,16 +47,19 @@ class FastStatistics:
         self.created_local_str = self.created_local_dt.strftime("%Y-%m-%d %H:%M:%S (Local)")
 
         self.generated_chunk_statistics = ChunkStatistics(
-            response.request_log,
+            name = "Generated",
+            request_log = response.request_log,
             raw_timestamps = [timestamp.monotonic for timestamp in response.request_log.chunk_generated_times]
         )
         self.translation_chunk_statistics = ChunkStatistics(
-            response.request_log,
+            name = "Translation",
+            request_log = response.request_log,
             raw_timestamps = [timestamp.monotonic for timestamp in response.request_log.translation_chunk_times],
             raw_queue_backlogs = response.request_log.translation_queue_backlog
         )
         self.buffer_chunk_statistics = ChunkStatistics(
-            response.request_log,
+            name = "Buffered",
+            request_log = response.request_log,
             raw_timestamps = [timestamp.monotonic for timestamp in response.request_log.chunk_times],
             raw_queue_backlogs = response.request_log.queue_backlog
         )
@@ -302,7 +305,6 @@ class FastStatistics:
         if self.response.request_log.total_chunk > 0:
             if self.response.request_log.chunk_generated_times:
                 yield from self.generated_chunk_statistics.format_statistics_stream(
-                    "Generated",
                     title_width = title_width,
                     chart_width = chart_width,
                     chart_height = chart_height,
@@ -311,7 +313,6 @@ class FastStatistics:
         
             if self.response.request_log.chunk_generated_times:
                 yield from self.translation_chunk_statistics.format_statistics_stream(
-                    "Translation",
                     title_width = title_width,
                     chart_width = chart_width,
                     chart_height = chart_height,
@@ -320,7 +321,6 @@ class FastStatistics:
         
             if self.response.request_log.chunk_times:
                 yield from self.buffer_chunk_statistics.format_statistics_stream(
-                    "Buffered",
                     title_width = title_width,
                     chart_width = chart_width,
                     chart_height = chart_height,
