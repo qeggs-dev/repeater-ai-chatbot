@@ -23,7 +23,7 @@
   - `translation_queue_backlog` (list[int]): Translated Chunk 队列积压列表
   - `chunk_times` (list[TimeStamp]): Buffer 中每个 Chunk 添加完毕的时间列表
   - `queue_backlog` (list[int]): Buffer 队列积压列表
-  - `created_time` (int): API报告的创建时间
+  - `created_time` (int): LLM API 报告的创建时间
   - `total_tokens` (int): 请求的总 Token 数量
   - `prompt_tokens` (int): 输入的 Token 数量
   - `completion_tokens` (int): 生成的 Token 数量
