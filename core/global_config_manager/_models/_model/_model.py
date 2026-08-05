@@ -1,3 +1,4 @@
+from typing import Any
 from pydantic import BaseModel, ConfigDict, Field
 from ._reasoning_effort import ReasoningEffort
 from ._service_tier import ServiceTier
@@ -22,3 +23,6 @@ class ModelConfig(BaseModel):
     logprobs: bool | None = None
     top_logprobs: int | None = Field(default=None, ge = 0)
     stream: bool = True
+    extra_bodys_priority: dict[str, Any] | None = None
+    extra_bodys: dict[str, Any] | None = None
+    enable_user_extra_bodys: bool = False
